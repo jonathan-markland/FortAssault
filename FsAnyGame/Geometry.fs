@@ -16,23 +16,27 @@ let FloatWuToIntEpx x = x |> FloatEpxToInt |> IntToIntEpx
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-/// A cartesian point.
+/// A floating-point cartesian point in Engine coordinate space.
 type PointF32 =
     {
-        xwf:float32<epx> ; ywf:float32<epx>
+        ptx : float32<epx>
+        pty : float32<epx>
     }
 
-/// A movement delta.
+/// A movement delta in Engine coordinate space.
 type MovementDeltaF32 =
     {
-        MovementDeltaX: float32<epx>
-        MovementDeltaY: float32<epx>
+        modx : float32<epx>
+        mody : float32<epx>
     }
 
-/// A rectangle in cartesian World-Space.
+/// A floating-point rectangle in Engine coordinate space.
 type RectangleF32 =
     {
-        Left:float32<epx> ; Top:float32<epx> ; Right:float32<epx> ; Bottom:float32<epx>
+        Left   : float32<epx>
+        Top    : float32<epx>
+        Right  : float32<epx>
+        Bottom : float32<epx>
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -41,10 +45,10 @@ let RectangleWidth  r = r.Right - r.Left
 let RectangleHeight r = r.Bottom - r.Top
 
 /// Return true if p1 is located to the left of p2.
-let PointToLeftOf  p1 p2 =  p1.xwf < p2.xwf
+let PointToLeftOf  p1 p2 =  p1.ptx < p2.ptx
 
 /// Return true if p1 is located to the right of p2.
-let PointToRightOf p1 p2 =  p1.xwf > p2.xwf
+let PointToRightOf p1 p2 =  p1.ptx > p2.ptx
 
 /// Return true if a and b are within a given distance from each other.
 let IsWithinRangeOf (a:float32<epx>) triggerDistance (b:float32<epx>) =
@@ -52,8 +56,8 @@ let IsWithinRangeOf (a:float32<epx>) triggerDistance (b:float32<epx>) =
 
 /// Return true if points a and b are within a given distance from each other.
 let IsWithinRegionOf a triggerDistance b =
-    let { xwf=ax ; ywf=ay } = a
-    let { xwf=bx ; ywf=by } = b
+    let { ptx=ax ; pty=ay } = a
+    let { ptx=bx ; pty=by } = b
     (abs (ax-bx)) < triggerDistance && (abs (ay-by)) < triggerDistance
 
 /// Return y value given x, where x specifies a point on a line.
@@ -66,10 +70,10 @@ let InterpolateLineSegment (x1:float32) (y1:float32) (x2:float32) (y2:float32) (
 /// Return true if a point lies within a rectangle.
 /// This is floating point, and inclusive in the ranges.
 let IsPointWithinRectangle rectangle point =
-    point.xwf >= rectangle.Left 
-        && point.xwf <= rectangle.Right 
-        && point.ywf >= rectangle.Top
-        && point.ywf <= rectangle.Bottom
+    point.ptx >= rectangle.Left 
+        && point.ptx <= rectangle.Right 
+        && point.pty >= rectangle.Top
+        && point.pty <= rectangle.Bottom
 
 /// Returns true if the rectangles r1 and r2 intersect.
 let RectangleIntersects r1 r2 =
@@ -79,8 +83,8 @@ let RectangleIntersects r1 r2 =
 /// in 2D space by the given 2D delta.
 let PointMovedByDelta delta point =
     {
-        xwf = point.xwf + delta.MovementDeltaX
-        ywf = point.ywf + delta.MovementDeltaY
+        ptx = point.ptx + delta.modx
+        pty = point.pty + delta.mody
     }
 
 /// Returns a floating point movement delta that, if applied, would 
@@ -91,8 +95,8 @@ let SimpleMovementDeltaToGetTo toPoint speed fromPoint =
     // NB Slightly weird formulae to eliminate floating point wiggle potential
 
     {
-        MovementDeltaX =
-            let delta = toPoint.xwf - fromPoint.xwf
+        modx =
+            let delta = toPoint.ptx - fromPoint.ptx
             if delta > speed then
                 speed
             elif delta < 0.0F<epx> then
@@ -100,8 +104,8 @@ let SimpleMovementDeltaToGetTo toPoint speed fromPoint =
             else
                 0.0F<epx>
 
-        MovementDeltaY =
-            let delta = toPoint.ywf - fromPoint.ywf
+        mody =
+            let delta = toPoint.pty - fromPoint.pty
             if delta > speed then
                 speed
             elif delta < 0.0F<epx> then

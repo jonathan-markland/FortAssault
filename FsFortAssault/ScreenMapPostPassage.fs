@@ -13,7 +13,7 @@ open MapScreenSharedDetail
 open StoryboardChapterChange
 
 
-let DefaultAlliedFleetLocation = { xwf=124.0F<epx> ; ywf=75.0F<epx> }
+let DefaultAlliedFleetLocation = { ptx=124.0F<epx> ; pty=75.0F<epx> }
 
 /// These are permitted to overlap other rectangles, including the trigger rectangles.
 let PermissableTravelLocationRectangles =
@@ -62,8 +62,8 @@ let RenderMapPostPassageScreen render (model:MapPostPassageScreenModel) =
     match model.AlliedState with
         | AlliedFleetInPlay(location)
         | Paused(location, _) ->
-            CentreImage render location.xwf location.ywf ImageAlliedFleetSymbol
-            CentreImage render model.EnemyFleetCentre.xwf model.EnemyFleetCentre.ywf ImageEnemyFleetSymbol
+            CentreImage render location.ptx location.pty ImageAlliedFleetSymbol
+            CentreImage render model.EnemyFleetCentre.ptx model.EnemyFleetCentre.pty ImageEnemyFleetSymbol
         | PostPassageScreenOver ->
             ()
 

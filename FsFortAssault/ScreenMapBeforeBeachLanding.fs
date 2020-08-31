@@ -13,7 +13,7 @@ open MapScreenSharedDetail
 open StoryboardChapterChange
 
 
-let DefaultAlliedFleetLocation = { xwf=120.0F<epx> ; ywf=97.0F<epx> }
+let DefaultAlliedFleetLocation = { ptx=120.0F<epx> ; pty=97.0F<epx> }
 
 /// These are permitted to overlap other rectangles, including the trigger rectangles.
 let PermissableTravelLocationRectangles =
@@ -62,7 +62,7 @@ let RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenM
     match model.AlliedState with
         | FleetBeforeBeachLandingInPlay(location)
         | EngagedBeachLanding(location, _) ->
-            CentreImage render location.xwf location.ywf ImageAlliedFleetSymbol
+            CentreImage render location.ptx location.pty ImageAlliedFleetSymbol
         | ScreenOver ->
             ()
 

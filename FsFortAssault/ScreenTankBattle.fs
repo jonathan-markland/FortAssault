@@ -142,14 +142,14 @@ let NewMissile originX originY gameTime =
         FlickBookMechanicsObject = 
             MechanicsControlledMovingObject
                 LinearMotion
-                { xwf = originX ; ywf = originY }
-                { xwf = originX - ScreenWidth ; ywf = originY }
+                { ptx = originX ; pty = originY }
+                { ptx = originX - ScreenWidth ; pty = originY }
                 gameTime
                 TankReFireInterval
     }
 
 let NewEnemyMissile centreLocation gameTime =
-    let { xwf=originX ; ywf=originY } = centreLocation
+    let { ptx=originX ; pty=originY } = centreLocation
     let originX = originX + EnemyTankGunOffsetFromCentreX
     let originY = originY - EnemyTankGunOffsetFromCentreY
     {
@@ -158,8 +158,8 @@ let NewEnemyMissile centreLocation gameTime =
         FlickBookMechanicsObject = 
             MechanicsControlledMovingObject
                 LinearMotion
-                { xwf = originX ; ywf = originY }
-                { xwf = originX + ScreenWidth ; ywf = originY }  // Doesn't really matter if it flies a screen width
+                { ptx = originX ; pty = originY }
+                { ptx = originX + ScreenWidth ; pty = originY }  // Doesn't really matter if it flies a screen width
                 gameTime
                 TankReFireInterval
     }
@@ -188,7 +188,7 @@ let EnemyTankMatrixLocationToScreen numTilesHorizontally enemyLocation gameTime 
     let { etmx=ex ; etmy=ey } = enemyLocation
     let ofsX = TileMatrixOffsetXAtTimeOffset numTilesHorizontally gameTime |> IntToFloatEpx  // TODO: We repeat these calculations from elsewhere.
     let ofsY = ScrollingSectionTopY |> IntToFloatEpx
-    { xwf=ofsX + ex ; ywf=ofsY + ey }
+    { ptx=ofsX + ex ; pty=ofsY + ey }
 
 let CanTankPassOverTile tileImageId =
     tileImageId = ImageTileSand.ImageID || tileImageId = ImageTileBridge.ImageID
@@ -442,7 +442,7 @@ let AlliedMissileCollidesWithEnemyTank numTilesHorizontally gameTime alliedMissi
 
 let EnemyMissileCollidesWithPlayer gameTime enemyMissile tankY =
     
-    let thePlayer = { xwf=TankX ; ywf=tankY }
+    let thePlayer = { ptx=TankX ; pty=tankY }
     
     enemyMissile 
         |> FlickBookPositionAtTime gameTime 
@@ -574,7 +574,7 @@ let PlayerMovementAndCrashDetection alliedState decoratives frameElapsedTime inp
             let tankDirection = TankDirectionFromInput input
 
             if HasTankCrashed tankY tankDirection gameTime constants then
-                let tankLocation = { xwf=TankX ; ywf=tankY }
+                let tankLocation = { ptx=TankX ; pty=tankY }
                 let decoratives  = (NewExplosion tankLocation gameTime)::decoratives
                 AlliedTankExploding(gameTime), decoratives
             
@@ -626,7 +626,7 @@ let HasInPlayTankCrashedIntoEnemyTanks alliedState decoratives enemyTanks numTil
         | AlliedTankInPlay(tankY, tankDirection) ->
             if DoesPlayerCollideWithEnemyTank numTilesHorizontally gameTime enemyTanks tankY tankDirection then
                 let alliedState = AlliedTankExploding(gameTime)
-                let tankCentre  = {xwf=TankX ; ywf=tankY}
+                let tankCentre  = {ptx=TankX ; pty=tankY}
                 let decoratives = (NewExplosion tankCentre gameTime)::decoratives
                 alliedState, decoratives
             else

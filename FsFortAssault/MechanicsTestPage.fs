@@ -29,7 +29,7 @@ let RenderMechanicsTestPageScreen render (model:MechanicsTestPageScreenModel) ga
     Rectangle render 25<epx> 25<epx> 270<epx> 150<epx> (SolidColour(0x000050u))
     model.Functions |> List.iter (fun positionGetter ->
         match positionGetter gameTime with
-            | MOMVisibleAtPosition( {xwf=x;ywf=y} ) -> CentreImage render x y ImageAlliedFleetSymbol
+            | MOMVisibleAtPosition( {ptx=x;pty=y} ) -> CentreImage render x y ImageAlliedFleetSymbol
             | _ -> ()
     )
 
@@ -40,8 +40,8 @@ let NewMechanicsTestPageScreen gameTime =
     let test motionFunction x =
         FunctionThatGetsPositionOfMovingObject 
             motionFunction 
-            {xwf=x ; ywf=150.0F<epx>}
-            {xwf=x ; ywf=50.0F<epx>}
+            {ptx=x ; pty=150.0F<epx>}
+            {ptx=x ; pty=50.0F<epx>}
             gameTime
             AnimDurationSeconds
 

@@ -100,7 +100,7 @@ let DrawGun render gunBaseY gunAim gameTime =
     let drawShell shell =
         match shell.ShellMechanicsObject.PositionGetter gameTime with
 
-            | MOMVisibleAtPosition({xwf=x ; ywf=y}) ->
+            | MOMVisibleAtPosition({ptx=x ; pty=y}) ->
                 let v = (1.0F - ShellPercentageCompleted gunAim.GunTraits shell gameTime)
                 let w = v * 12.0F<epx> + 4.0F<epx>   // TODO: base on ShipGunBulletImageWidth
                 let h = v * 5.0F<epx> + 1.0F<epx>
@@ -147,8 +147,8 @@ let NewShell gunCentreX gunBaseY gunAim gameTime =
     
     let x = gunCentreX
 
-    let shellStartPosition = { xwf=x ; ywf=nozzleTopY }
-    let shellEndPosition   = { xwf=x ; ywf=TopmostScreenPositionOfShellByElevation gunAim.GunTraits nozzleTopY gunAim.GunElevation       }
+    let shellStartPosition = { ptx=x ; pty=nozzleTopY }
+    let shellEndPosition   = { ptx=x ; pty=TopmostScreenPositionOfShellByElevation gunAim.GunTraits nozzleTopY gunAim.GunElevation       }
 
     {
         ShellStartTime = gameTime

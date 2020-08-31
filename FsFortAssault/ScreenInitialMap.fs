@@ -12,7 +12,7 @@ open MapScreenSharedDetail
 open Rules
 
 
-let DefaultAlliedFleetLocation = { xwf=290.0F<epx> ; ywf=15.0F<epx> }
+let DefaultAlliedFleetLocation = { ptx=290.0F<epx> ; pty=15.0F<epx> }
 
 /// These are permitted to overlap other rectangles, including the trigger rectangles.
 let PermissableTravelLocationRectangles =
@@ -98,8 +98,8 @@ let RenderInitialMapScreen render (model:InitialMapScreenModel) =
     match model.AlliedState with
         | MapInPlay(location)
         | FleetEngagedOnMap(location, _, _) ->
-            CentreImage render location.xwf location.ywf ImageAlliedFleetSymbol
-            CentreImage render model.EnemyFleetCentre.xwf model.EnemyFleetCentre.ywf ImageEnemyFleetSymbol
+            CentreImage render location.ptx location.pty ImageAlliedFleetSymbol
+            CentreImage render model.EnemyFleetCentre.ptx model.EnemyFleetCentre.pty ImageEnemyFleetSymbol
         | ScreenOverEngagedEnemyAtSea
         | ScreenOverEngagedSecretPassage ->
             ()

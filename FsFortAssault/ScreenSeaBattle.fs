@@ -74,7 +74,7 @@ let SplashFlickBookType =
 let NewSplashFlickBook gameTime x y =
     {
         FlickBookType            = SplashFlickBookType
-        FlickBookMechanicsObject = MechanicsControlledStationaryObject { xwf = x ; ywf = y } gameTime SplashDuration
+        FlickBookMechanicsObject = MechanicsControlledStationaryObject { ptx = x ; pty = y } gameTime SplashDuration
         FlickBookStartTime       = gameTime
     }
 
@@ -138,8 +138,8 @@ let FlickbooksForEnemyLaunchFrom (ship:EnemyShip) decoratives willHit gameTime =
             FlickBookMechanicsObject = 
                 MechanicsControlledMovingObject
                     SpeedingUpMotion
-                    { xwf = x ; ywf = originY }
-                    { xwf = x ; ywf = -10.0F<epx> }
+                    { ptx = x ; pty = originY }
+                    { ptx = x ; pty = -10.0F<epx> }
                     t1
                     EnemyLaunchPart1FlickbookType.FlickBookDuration
         }
@@ -151,8 +151,8 @@ let FlickbooksForEnemyLaunchFrom (ship:EnemyShip) decoratives willHit gameTime =
             FlickBookMechanicsObject = 
                 MechanicsControlledMovingObject
                     SpeedingUpMotion
-                    { xwf = x ; ywf = -100.0F<epx> }
-                    { xwf = x ; ywf = targetY }
+                    { ptx = x ; pty = -100.0F<epx> }
+                    { ptx = x ; pty = targetY }
                     t3
                     EnemyLaunchPart2FlickbookType.FlickBookDuration
         }

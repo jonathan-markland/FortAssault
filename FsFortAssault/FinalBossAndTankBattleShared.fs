@@ -46,7 +46,7 @@ let NewFinalBossAndTankBattleData () =
         TargetsOnFinalBoss = 
             InitialTargetLocations |> List.map (fun (x,y) -> 
                 {
-                    TargetLocation = { xwf=x ; ywf=y }
+                    TargetLocation = { ptx=x ; pty=y }
                 })
 
         TankBattleMapNumber = 0

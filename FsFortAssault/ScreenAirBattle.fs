@@ -158,7 +158,7 @@ let ResultOfWhateverShellsHitThePlanes shells planes explosions score gameTime =
 let DrawDebugPlaneHitTestRectangle render planes gameTime =
 
     planes |> List.iter (fun plane ->
-        let {xwf=x;ywf=y} = plane.PlaneFlickBookInstance |> FlickBookPositionAtTime gameTime
+        let {ptx=x;pty=y} = plane.PlaneFlickBookInstance |> FlickBookPositionAtTime gameTime
         let x,y = x |> FloatWuToIntEpx , y |> FloatWuToIntEpx
         let dist = PlaneTriggerDistance |> FloatWuToIntEpx
         SquareAroundPoint render x y (dist * 2) (SolidColour(0xFF0000u))
@@ -244,7 +244,7 @@ let NewPlane gameTime =
                 FlickBookMechanicsObject = 
                     MechanicsControlledMovingObject 
                         SpeedingUpMotion 
-                        {xwf=startX ; ywf=90.0F<epx>} {xwf=endX ; ywf = -14.0F<epx>} gameTime PlaneDuration
+                        {ptx=startX ; pty=90.0F<epx>} {ptx=endX ; pty = -14.0F<epx>} gameTime PlaneDuration
             }
 
         PlaneHasReleasedBombs  = false
@@ -257,8 +257,8 @@ let NewPlaneBombFor planeThatIsFiring gameTime =
     let bombStartPos =
         planeThatIsFiring.PlaneFlickBookInstance |> FlickBookPositionAtTime gameTime
 
-    let {xwf=x ; ywf=y} = bombStartPos
-    let bombEndPos = {xwf=x ; ywf=PlaneBombTargetY}
+    let {ptx=x ; pty=y} = bombStartPos
+    let bombEndPos = {ptx=x ; pty=PlaneBombTargetY}
 
     {
         FlickBookType            = PlaneBombsFlickBookType

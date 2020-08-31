@@ -175,15 +175,15 @@ let Sine shipRotation =
 
 let NewShipLocation oldShipLocation rotation speed =
 
-    let {xwf=oldx ; ywf=oldy} = oldShipLocation
+    let {ptx=oldx ; pty=oldy} = oldShipLocation
 
     let speed = 
         speed |> SpeedInWorldUnits
 
     let result =
         {
-            xwf = oldx + Cosine rotation * -speed
-            ywf = oldy - Sine rotation   * speed
+            ptx = oldx + Cosine rotation * -speed
+            pty = oldy - Sine rotation   * speed
         }
 
     result
@@ -231,8 +231,8 @@ let ToMineLocation (xpc,ypc) =
     {
         MineLocation = 
             {
-                xwf = float32 xpc * w
-                ywf = float32 ypc * h
+                ptx = float32 xpc * w
+                pty = float32 ypc * h
             }
     }
 
@@ -290,7 +290,7 @@ let NewTorpedoForFiringPosition launchDetail gameTime =
 
         TorpedoPositionGetter =
             FunctionThatGetsPositionOfMovingObject
-                LinearMotion {xwf=sx'; ywf=sy'} {xwf=ex'; ywf=ey'} t duration
+                LinearMotion {ptx=sx'; pty=sy'} {ptx=ex'; pty=ey'} t duration
 
         TorpedoIsHorizontal = 
             (sy' = ey')
@@ -316,7 +316,7 @@ let DefaultShipLocation =
     {
         ShipRotation = FacingLeft
         ShipSpeed    = ShipStationary
-        ShipCentre   = { xwf = 0.886F * w ; ywf = 0.938F * h }
+        ShipCentre   = { ptx = 0.886F * w ; pty = 0.938F * h }
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -329,8 +329,8 @@ let FoldAllShipTriggerPoints shipCentre direction f state =
     let sin = Sine direction
 
     let calcTriggerPoint p (factor:float32<epx>) = 
-        let {xwf=x ; ywf=y} = p
-        { xwf = x+cos*factor ; ywf = y+sin*factor }
+        let {ptx=x ; pty=y} = p
+        { ptx = x+cos*factor ; pty = y+sin*factor }
 
     let state = f state (calcTriggerPoint shipCentre (length * 1.0F))
     let state = f state shipCentre
@@ -468,7 +468,7 @@ let CoastXAt (defaultCoastX, coastLines) (y:float32<epx>) =
         findResult |> Option.defaultValue defaultIfNotFound
 
     let left    = findIn coastLines defaultCoastX
-    let leftPos = {xwf=left * w  ; ywf=y}
+    let leftPos = {ptx=left * w  ; pty=y}
     leftPos
 
 let CoastLeftAndRightAtY (y:float32<epx>) =
@@ -482,7 +482,7 @@ let ShipBeyondBound ship inequality coastLine =
             | Some(_) ->
                 state
             | None ->
-                let coastX = CoastXAt coastLine pointOnShip.ywf
+                let coastX = CoastXAt coastLine pointOnShip.pty
                 if inequality pointOnShip coastX then Some(pointOnShip) else None
 
     FoldAllShipTriggerPoints ship.ShipCentre ship.ShipRotation folder None
@@ -510,7 +510,7 @@ let ShipVersusCoastline explosions shipState gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let PositionHasGotThrough {xwf=_ ; ywf=y} =
+let PositionHasGotThrough {ptx=_ ; pty=y} =
 
     y < PassageSuccessBarrierY
 
@@ -557,7 +557,7 @@ let RenderSecretPassageScreen render gameTime secretPassageScreenModel =
 
     let DrawMines mines =
         mines |> List.iter (fun {MineLocation=loc} ->
-            CentreImage render loc.xwf loc.ywf ImageMine
+            CentreImage render loc.ptx loc.pty ImageMine
             // SquareAroundPoint render loc.xwf loc.ywf (MineTriggerDistance * 2.0F) 0xFF0000u
             )
     
@@ -567,7 +567,7 @@ let RenderSecretPassageScreen render gameTime secretPassageScreenModel =
             match posToDrawAt with
                 | MOMYetToAppear(_) -> ()
                 | MOMDisappeared(_) -> ()
-                | MOMVisibleAtPosition({xwf=x ; ywf=y}) ->
+                | MOMVisibleAtPosition({ptx=x ; pty=y}) ->
                     let img = if isHoriz then ImageTorpedo0 else ImageTorpedo22Degrees
                     CentreImage render x y img
                     // Debug:  SquareAroundPoint render x y (TorpedoTriggerDistance * 2.0F) 0xFFFF00u
@@ -583,7 +583,7 @@ let RenderSecretPassageScreen render gameTime secretPassageScreenModel =
             | ShipGotThrough(_,ship)
             | ShipInPlay(ship) ->
                 let c = ship.ShipCentre
-                CentreImage render c.xwf c.ywf (ShipImageFor ship.ShipRotation) 
+                CentreImage render c.ptx c.pty (ShipImageFor ship.ShipRotation) 
                 // Debug:  FoldAllShipTriggerPoints c ship.ShipRotation (fun a point -> SquareAroundPoint render point.xwf point.ywf 2.0F<wu> 0xFFFFFFu) ()
 
     // Debug:  let DrawCoastSensitiveRegions () =

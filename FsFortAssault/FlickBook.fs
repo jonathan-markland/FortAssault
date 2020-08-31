@@ -78,20 +78,20 @@ let DrawFlickbookInstance render flickBookInstance gameTime =
 
             if startVis = Visible && numImages > 0 then
                 let pos = mom.StartPosition
-                CentreImage render pos.xwf pos.ywf (imageArray.[0])
+                CentreImage render pos.ptx pos.pty (imageArray.[0])
 
         | MOMVisibleAtPosition (pos) ->
 
             let timePerImage = duration / (float32 numImages)
             let index = abs (int (elapsed / timePerImage))
             if index < numImages then
-                CentreImage render pos.xwf pos.ywf (imageArray.[index])
+                CentreImage render pos.ptx pos.pty (imageArray.[index])
 
         | MOMDisappeared ->
 
             if endVis = Visible && numImages > 0 then
                 let pos = mom.FinalPosition
-                CentreImage render pos.xwf pos.ywf (imageArray.[imageArray.Length - 1])
+                CentreImage render pos.ptx pos.pty (imageArray.[imageArray.Length - 1])
 
 
 /// For each generic record in a list, obtain a flickbook from a field, and draw it.

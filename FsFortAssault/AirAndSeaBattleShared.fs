@@ -138,7 +138,7 @@ let NewSkyExplosionFlickBook gameTime =
 
     {
         FlickBookType            = SkyExplosionFlickBookType
-        FlickBookMechanicsObject = MechanicsControlledStationaryObject { xwf = w / 2.0F ; ywf = h / 2.0F } gameTime SkyExplosionDuration
+        FlickBookMechanicsObject = MechanicsControlledStationaryObject { ptx = w / 2.0F ; pty = h / 2.0F } gameTime SkyExplosionDuration
         FlickBookStartTime       = gameTime
     }
 

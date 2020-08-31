@@ -12,7 +12,7 @@ let EnemyEngagementDistance = 20.0F<epx>
 let AlliedSpeed          = 0.3F<epx>
 let EnemySpeed           = 0.3F<epx>
 
-let DefaultEnemyFleetLocation  = { xwf= 97.0F<epx> ; ywf=129.0F<epx> }
+let DefaultEnemyFleetLocation  = { ptx= 97.0F<epx> ; pty=129.0F<epx> }
 
 let PauseTimeOnceEngaged = 2.0F<seconds>
 
@@ -56,8 +56,8 @@ let MovementDeltaForInput speed input =
             0.0F<epx>
 
     {
-        MovementDeltaX = moveDelta input.Left input.Right
-        MovementDeltaY = moveDelta input.Up input.Down
+        modx = moveDelta input.Left input.Right
+        mody = moveDelta input.Up input.Down
     }
         
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

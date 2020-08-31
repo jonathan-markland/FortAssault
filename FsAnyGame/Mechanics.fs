@@ -43,8 +43,8 @@ let FunctionThatGetsPositionOfMovingObject  // TODO Should these really take dur
     (startTime : float32<seconds>) 
     (duration  : float32<seconds>) =
 
-    let dx = (endPos.xwf - startPos.xwf) / duration
-    let dy = (endPos.ywf - startPos.ywf) / duration
+    let dx = (endPos.ptx - startPos.ptx) / duration
+    let dy = (endPos.pty - startPos.pty) / duration
 
     let getPosAtTimeFunction (atTime:float32<seconds>) =
 
@@ -53,9 +53,9 @@ let FunctionThatGetsPositionOfMovingObject  // TODO Should these really take dur
         if t >= 0.0F<seconds> then
             if t <= duration then
                 let t = motionFunction t duration
-                let x = startPos.xwf + dx * t
-                let y = startPos.ywf + dy * t
-                MOMVisibleAtPosition ({xwf=x ; ywf=y})
+                let x = startPos.ptx + dx * t
+                let y = startPos.pty + dy * t
+                MOMVisibleAtPosition ({ptx=x ; pty=y})
             else
                 MOMDisappeared
         else

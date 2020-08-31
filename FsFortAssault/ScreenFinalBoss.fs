@@ -22,7 +22,7 @@ open FinalBossAndTankBattleShared
 
 let TargetTriggerDistance     =   3.0F<epx>
 let InitialPlayerGunPositionX = 160.0F<epx>
-let BossGunCentrePosition     = { xwf=160.0F<epx> ; ywf=20.0F<epx> }
+let BossGunCentrePosition     = { ptx=160.0F<epx> ; pty=20.0F<epx> }
 let PauseTimeWhenEnded        =   4.0F<seconds>
 let BossAnimationDuration     =  20.0F<seconds>
 let ExplosionDuration         =   0.75F<seconds>
@@ -107,7 +107,7 @@ let ResultOfWhateverShellsHitTheFort shells (targets:Target list) explosions sco
         targets
         (shellCollidesWithFort gameTime)
         (fun x -> x.ShellStartTime)
-        (fun x -> x.TargetLocation.xwf)
+        (fun x -> x.TargetLocation.ptx)
         explosions
         score
         createExplosionAndScoreFor
@@ -125,7 +125,7 @@ let RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
                 | [] -> ()
                 | {TargetLocation=pos}::tail ->
                     let targetImage = if isActiveTarget then ImageFinalBossActiveTarget else ImageFinalBossTarget
-                    CentreImage render pos.xwf pos.ywf targetImage
+                    CentreImage render pos.ptx pos.pty targetImage
                     drawTargets false tail
         drawTargets true targetList
 
@@ -139,7 +139,7 @@ let RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
     let DrawSurrender gameTime =
         let pos     = BossGunCentrePosition
         let elapsed = gameTime - model.ScreenStartTime
-        CycleImages render pos.xwf pos.ywf SurrenderImages FlagFlutterAnimDuration elapsed
+        CycleImages render pos.ptx pos.pty SurrenderImages FlagFlutterAnimDuration elapsed
 
     let h = ImageFinalBossBackground.ImageHeight
 
