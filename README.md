@@ -26,13 +26,13 @@ I *also* have distilled a re-usable game algorithm library out of this.
 Screenshots
 ===========
 
-![Game screenshot](/WebImages/Image1.jpg)
-
 ![Game screenshot](/WebImages/Image2.jpg)
 
 ![Game screenshot](/WebImages/Image3.jpg)
 
 ![Game screenshot](/WebImages/Image4.jpg)
+
+![Game screenshot](/WebImages/Image5.jpg)
 
 
 Important Build Note
