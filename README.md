@@ -65,12 +65,12 @@ like drawing to the screen, and sectioned them off from main processing.
 Architecture
 ------------
 
-FsAnyGame           | Game algorithm library, based on F# core library only.
-FsAnyGameTests      | Automation Tests for FsAnyGame.  Top priority of all the tests.
-FsFortAssault       | Host-environment-agnostic library, based on F# core library only.
-FsFortAssaultSDL2CS | Game entry point, .Net Core, for Desktop Windows (and hopefully Linux-- but not tested yet!)
-FsSDL2              | F#-to-SDL2 smoothing library.  Done via the (third party) SDL2-CS interop library.
-FsXUnitExtensions   | Jonathan's attempt at making XUnit tests nicer on F#, in lieu of looking for a proper F# test lib.
+| FsAnyGame           | Game algorithm library, based on F# core library only.                                             |
+| FsAnyGameTests      | Automation Tests for FsAnyGame.  Top priority of all the tests.                                    |
+| FsFortAssault       | Host-environment-agnostic library, based on F# core library only.                                  |
+| FsFortAssaultSDL2CS | Game entry point, .Net Core, for Desktop Windows (and hopefully Linux-- but not tested yet!)       |
+| FsSDL2              | F#-to-SDL2 smoothing library.  Done via the (third party) SDL2-CS interop library.                 |
+| FsXUnitExtensions   | Jonathan's attempt at making XUnit tests nicer on F#, in lieu of looking for a proper F# test lib. |
 
 Note - The Fable in-browser version is under development on a separate Spike repo, because 
 this is my first time using Fable, and I need to investigate a ton of stuff.  Well, a small
@@ -79,9 +79,10 @@ wheelbarrow of stuff really.  Fable will be coming to this repo in due course.
 
 Pure Functional Programming Notes
 ---------------------------------
-FsAnyGame           | 100% PFP
-FsFortAssault       | 100% PFP
-FsFortAssaultSDL2CS | The main loop is a loop, so not PFP
+
+| FsAnyGame           | 100% PFP                            |
+| FsFortAssault       | 100% PFP                            |
+| FsFortAssaultSDL2CS | The main loop is a loop, so not PFP |
 
 
 Source code guide
