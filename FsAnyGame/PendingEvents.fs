@@ -24,10 +24,15 @@ let ToBeDoneAtTime t data =
     }
 
 
+
 [<Struct>]
-type FutureApplicationResult<'state,'changeData> =
-    | FutureDone of 'state
-    | FutureDoneWithAdditionalToDos of 'state * Pending<'changeData> list
+type PendingApplicationResult<'state,'changeData> =
+    | PendingDone of 'state
+    | PendingDoneWithAdditionalToDos of 'state * Pending<'changeData> list
+
+
+
+let ReverseSecond (struct (a,b)) =  struct (a, b |> List.rev)
 
 
 
@@ -36,7 +41,7 @@ type FutureApplicationResult<'state,'changeData> =
 /// Returns the user's resulting accumulator, and the list of the remaining items that were not done.
 let AppliedForTime 
     gameTime 
-    (f:'state -> 'changeData -> float32<seconds> -> FutureApplicationResult<'state,'changeData>) 
+    (f:'state -> 'changeData -> float32<seconds> -> PendingApplicationResult<'state,'changeData>) 
     (struct ((state:'state) , (pendingList:Pending<'changeData> list))) 
         : (struct ('state * Pending<'changeData> list)) =
 
@@ -49,7 +54,9 @@ let AppliedForTime
         // Something is due, so process:
 
         pendingList 
-            |> List.rev // Apply in the order of first-added.
+
+            |> List.rev // Consider items in the order of the first that was added.
+
             |> List.fold (fun struct (actionAccumulator, newListAccumulator) toDoItem ->
         
                 if toDoItem |> isDueAt gameTime then
@@ -59,10 +66,10 @@ let AppliedForTime
 
                     match f actionAccumulator toDoItem.ToDoData gameTime with
 
-                        | FutureDone newState -> 
+                        | PendingDone newState -> 
                             struct (newState , newListAccumulator)
 
-                        | FutureDoneWithAdditionalToDos (newState , additionals) -> 
+                        | PendingDoneWithAdditionalToDos (newState , additionals) -> 
                             struct (newState , (List.append additionals newListAccumulator))
 
                 else
@@ -72,6 +79,8 @@ let AppliedForTime
                     struct (actionAccumulator, toDoItem::newListAccumulator)
 
             ) struct (state, [])
+
+            |> ReverseSecond // because the fold will have effectively reversed the list.
 
     else
         struct (state, pendingList)

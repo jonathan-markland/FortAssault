@@ -173,7 +173,7 @@ let rec PossiblyLaunchEnemyFire currentState _changeRequired gameTime =
 
     match enemyShips with  // Only the head of the enemyShips list shall fire
 
-        | [] -> FutureDone currentState // no change
+        | [] -> PendingDone currentState // no change
 
         | ship::_ ->
 
@@ -190,13 +190,13 @@ let rec PossiblyLaunchEnemyFire currentState _changeRequired gameTime =
 
                     let alliedCountToSink = alliedCountToSink - 1
                             
-                    FutureDoneWithAdditionalToDos (
+                    PendingDoneWithAdditionalToDos (
                         (enemyShips , decoratives , futureDamage , alliedCountToSink),
                         [IncomingChange () |> ToBeDoneAtTime t5]
                     )
 
                 | Some(_) ->  // The head enemy ship is sinking.
-                    FutureDoneWithAdditionalToDos (
+                    PendingDoneWithAdditionalToDos (
                         currentState,
                         [IncomingChange () |> ToBeDoneAtTime (gameTime + SinkingShipFiringPauseDuration)]
                     )
@@ -412,7 +412,7 @@ let NextSeaBattleScreenState oldState input gameTime frameElapsedTime =
                     let struct((alliedState , skyExplosion , alliedCountToSink), futureDamage) =
                         struct((alliedState , skyExplosion , alliedCountToSink), futureDamage)
                             |> AppliedForTime gameTime (fun _ _ gameTime -> 
-                                FutureDone (
+                                PendingDone (
                                     ShipSinking(gameTime),
                                     [NewSkyExplosionFlickBook gameTime],
                                     EnemyFireTriesCount))
@@ -420,17 +420,17 @@ let NextSeaBattleScreenState oldState input gameTime frameElapsedTime =
                     let struct(enemyShips, futureHits) =
                         struct(enemyShips, futureHits)
                             |> AppliedForTime gameTime (fun oldEnemyShips {HitShipX=enemyShipX} gameTime -> 
-                                FutureDone (oldEnemyShips |> WithEnemyShipSinking gameTime enemyShipX))
+                                PendingDone (oldEnemyShips |> WithEnemyShipSinking gameTime enemyShipX))
 
                     let struct(messageText, futureMessageTexts) =
                         struct(messageText, futureMessageTexts)
                             |> AppliedForTime gameTime (fun _ messageText _ -> 
-                                FutureDone messageText)
+                                PendingDone messageText)
 
                     let struct(scoreAndHiScore, futureScoreChanges) =
                         struct(scoreAndHiScore, futureScoreChanges) 
                             |> AppliedForTime gameTime (fun oldScore scoreDelta _ -> 
-                                FutureDone (oldScore |> ScoreIncrementedBy scoreDelta))
+                                PendingDone (oldScore |> ScoreIncrementedBy scoreDelta))
 
                     let gun =
                         gun |> UpdatedGunAimWithCompletedShellsRemoved gameTime 
