@@ -65,6 +65,8 @@ like drawing to the screen, and sectioned them off from main processing.
 Architecture
 ------------
 
+| Assembly            | Purpose                                                                                            |
+|---------------------|----------------------------------------------------------------------------------------------------|
 | FsAnyGame           | Game algorithm library, based on F# core library only.                                             |
 | FsAnyGameTests      | Automation Tests for FsAnyGame.  Top priority of all the tests.                                    |
 | FsFortAssault       | Host-environment-agnostic library, based on F# core library only.                                  |
@@ -80,6 +82,8 @@ wheelbarrow of stuff really.  Fable will be coming to this repo in due course.
 Pure Functional Programming Notes
 ---------------------------------
 
+| Assembly            | Compliance note                     |
+|---------------------|-------------------------------------|
 | FsAnyGame           | 100% PFP                            |
 | FsFortAssault       | 100% PFP                            |
 | FsFortAssaultSDL2CS | The main loop is a loop, so not PFP |
