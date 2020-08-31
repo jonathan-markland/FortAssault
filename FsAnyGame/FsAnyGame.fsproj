@@ -12,10 +12,10 @@
     <Compile Include="Angle.fs" />
     <Compile Include="Time.fs" />
     <Compile Include="Keyboard.fs" />
+    <Compile Include="Geometry.fs" />
     <Compile Include="Tiles.fs" />
     <Compile Include="StoryboardChapterChange.fs" />
     <Compile Include="Algorithm.fs" />
-    <Compile Include="Geometry.fs" />
     <Compile Include="Mechanics.fs" />
     <Compile Include="Input.fs" />
     <Compile Include="FontAlignment.fs" />

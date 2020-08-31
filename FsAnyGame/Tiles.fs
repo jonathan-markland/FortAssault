@@ -1,25 +1,27 @@
 ﻿module Tiles
 
+open Geometry
+
 type TileMatrixTraits =
     {
         TilesHorizontally : int
         TilesVertically   : int
-        TileWidthPixels   : int
-        TileHeightPixels  : int
+        TileWidthPixels   : int<epx>
+        TileHeightPixels  : int<epx>
     }
 
 type TileMatrixViewportWindow =
     {
-        WindowLeft   : int
-        WindowTop    : int
-        WindowWidth  : int
-        WindowHeight : int
+        WindowLeft   : int<epx>
+        WindowTop    : int<epx>
+        WindowWidth  : int<epx>
+        WindowHeight : int<epx>
     }
 
 type TileMatrixOffset =
     {
-        OffsetX : int
-        OffsetY : int
+        OffsetX : int<epx>
+        OffsetY : int<epx>
     }
 
 /// tilingOffset is relative to the top left of the viewportWindow.
@@ -27,8 +29,8 @@ type TileMatrixOffset =
 /// with indices that lie within the TileMatrixTraits extents.
 let ForEachTileWithVisiblePortion tileMatrix viewportWindow tilingOffset f =
 
-    let startPixelPositionAndTileIndex side offset =
-        if offset <= 0 then
+    let startPixelPositionAndTileIndex (side:int<epx>) offset =
+        if offset <= 0<epx> then
             let tileIndex = (-offset) / side
             let pixelPos = offset + (side * tileIndex)
             struct (pixelPos,tileIndex)
@@ -51,7 +53,7 @@ let ForEachTileWithVisiblePortion tileMatrix viewportWindow tilingOffset f =
     let viewLeft = viewportWindow.WindowLeft
     let viewTop  = viewportWindow.WindowTop
 
-    if viewportWindow.WindowWidth > 0 && viewportWindow.WindowHeight > 0 then
+    if viewportWindow.WindowWidth > 0<epx> && viewportWindow.WindowHeight > 0<epx> then
 
         let endX = viewLeft + viewportWindow.WindowWidth
         let endY = viewTop  + viewportWindow.WindowHeight
