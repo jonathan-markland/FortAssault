@@ -6,7 +6,7 @@ open ImagesAndFonts
 open FontAlignment
 open Geometry
 open InputEventData
-open StoryboardChapters
+open StoryboardChapterChange
 open EnterYourName
 open BeachBackgroundRenderer
 open ScoreHiScore

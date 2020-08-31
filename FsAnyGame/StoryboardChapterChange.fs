@@ -1,4 +1,4 @@
-﻿module StoryboardChapters
+﻿module StoryboardChapterChange
 
 [<Struct>]
 type NextStoryboardStateType<'storyboardType,'gameGlobalsType> =

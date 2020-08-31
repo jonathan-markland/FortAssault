@@ -10,7 +10,7 @@ open Geometry
 open ImagesAndFonts
 open ScorePanel
 open MapScreenSharedDetail
-open StoryboardChapters
+open StoryboardChapterChange
 
 
 let DefaultAlliedFleetLocation = { xwf=120.0F<wu> ; ywf=97.0F<wu> }

@@ -13,7 +13,7 @@
     <Compile Include="Time.fs" />
     <Compile Include="Keyboard.fs" />
     <Compile Include="Tiles.fs" />
-    <Compile Include="StoryboardChapters.fs" />
+    <Compile Include="StoryboardChapterChange.fs" />
     <Compile Include="Algorithm.fs" />
     <Compile Include="Geometry.fs" />
     <Compile Include="Mechanics.fs" />
@@ -22,7 +22,7 @@
     <Compile Include="FontCharacterPositioning.fs" />
     <Compile Include="ScoreHiScore.fs" />
     <Compile Include="Collisions.fs" />
-    <Compile Include="FutureEvents.fs" />
+    <Compile Include="PendingEvents.fs" />
     <Compile Include="DrawingCommands.fs" />
     <Compile Include="DrawingCommandsEx.fs" />
   </ItemGroup>

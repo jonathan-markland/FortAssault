@@ -16,9 +16,9 @@ type MOMReason =
 
 
 let FunctionThatGetsPositionOfStationaryObject  // TODO Should these really take durations for convenience?
-    (pos:PointF32)
-    (startTime:float32<seconds>) 
-    (duration:float32<seconds>) =
+    (pos       : PointF32)
+    (startTime : float32<seconds>) 
+    (duration  : float32<seconds>) =
 
     let endTime = startTime + duration
 
@@ -38,10 +38,10 @@ let FunctionThatGetsPositionOfStationaryObject  // TODO Should these really take
 
 let FunctionThatGetsPositionOfMovingObject  // TODO Should these really take durations for convenience?
     motionFunction
-    (startPos:PointF32) 
-    (endPos:PointF32)
-    (startTime:float32<seconds>) 
-    (duration:float32<seconds>) =
+    (startPos  : PointF32) 
+    (endPos    : PointF32)
+    (startTime : float32<seconds>) 
+    (duration  : float32<seconds>) =
 
     let dx = (endPos.xwf - startPos.xwf) / duration
     let dy = (endPos.ywf - startPos.ywf) / duration
@@ -95,16 +95,16 @@ let ArcMotion (t:float32<seconds>) (duration:float32<seconds>) =
 
 type MechanicsObjectModel =
     {
-        PositionGetter:    (float32<seconds> -> MOMReason)
-        StartPosition:     PointF32
-        FinalPosition:     PointF32
-        EndGameTime:       float32<seconds>
+        PositionGetter  :  (float32<seconds> -> MOMReason)
+        StartPosition   :  PointF32
+        FinalPosition   :  PointF32
+        EndGameTime     :  float32<seconds>
     }
 
 let MechanicsControlledStationaryObject
-        (pos:PointF32)
-        (startTime:float32<seconds>) 
-        (duration:float32<seconds>) =
+        (pos       : PointF32)
+        (startTime : float32<seconds>) 
+        (duration  : float32<seconds>) =
     {
         PositionGetter   = FunctionThatGetsPositionOfStationaryObject pos startTime duration
         StartPosition    = pos
@@ -114,10 +114,10 @@ let MechanicsControlledStationaryObject
 
 let MechanicsControlledMovingObject
         motionFunction
-        (startPos:PointF32) 
-        (endPos:PointF32)
-        (startTime:float32<seconds>) 
-        (duration:float32<seconds>) =
+        (startPos  : PointF32) 
+        (endPos    : PointF32)
+        (startTime : float32<seconds>) 
+        (duration  : float32<seconds>) =
     {
         PositionGetter   = FunctionThatGetsPositionOfMovingObject motionFunction startPos endPos startTime duration
         StartPosition    = startPos

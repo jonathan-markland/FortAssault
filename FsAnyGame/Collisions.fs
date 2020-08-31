@@ -8,20 +8,20 @@ open ScoreHiScore
 [<Struct>]
 type private Notepad<'explosion> =
     {
-        ExplosionsList: 'explosion list
-        TotalScore:     uint32
+        ExplosionsList : 'explosion list
+        TotalScore     : uint32
     }
 
 
 
 let ResultOfProjectileCollisions
-        (projectiles:'projectile list)
-        (targets:'target list)
+        (projectiles     : 'projectile list)
+        (targets         : 'target list)
         collides
-        (getProjectileId:'projectile -> 'projectileId)
-        (getTargetId:'target -> 'targetId)
-        (explosions:'explosion list)
-        (score:ScoreAndHiScore)
+        (getProjectileId : 'projectile -> 'projectileId)
+        (getTargetId     : 'target -> 'targetId)
+        (explosions      : 'explosion list)
+        (score           : ScoreAndHiScore)
         createExplosionAndScoreFor =
 
     let collidingPairs =
@@ -75,12 +75,12 @@ type PlayerSurvival =
 
 
 let ResultOfProjectileCollisionsWithSingleTarget
-    (projectiles:'projectile list)
-    (target:'target)
+    (projectiles     : 'projectile list)
+    (target          : 'target)
     collides
-    (getProjectileId:'projectile -> 'projectileId)
-    (explosions:'explosion list)
-    (score:ScoreAndHiScore)
+    (getProjectileId : 'projectile -> 'projectileId)
+    (explosions      : 'explosion list)
+    (score           : ScoreAndHiScore)
     createExplosionAndScoreFor =
 
     let survivingProjectiles, survivingTargets, newExplosions, score =

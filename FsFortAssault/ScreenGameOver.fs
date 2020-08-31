@@ -1,6 +1,5 @@
 ﻿module ScreenGameOver
 
-open Time
 open DrawingCommands
 open DrawingCommandsEx
 open ImagesAndFonts
@@ -8,7 +7,7 @@ open ScoreHiScore
 open FontAlignment
 open Geometry
 open InputEventData
-open StoryboardChapters
+open StoryboardChapterChange
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

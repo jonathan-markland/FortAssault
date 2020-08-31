@@ -1,13 +1,12 @@
 ﻿module ScreenVictory
 
 open Time
-open SharedDrawing
 open DrawingCommandsEx
 open ScoreHiScore
 open FontAlignment
 open Geometry
 open InputEventData
-open StoryboardChapters
+open StoryboardChapterChange
 open ImagesAndFonts
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

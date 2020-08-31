@@ -15,7 +15,7 @@ open FlickBook
 open AirAndSeaBattleShared
 open Collisions
 open Rules
-open StoryboardChapters
+open StoryboardChapterChange
 open ImagesAndFonts
 
 let InitialGunElevation       =   30.0F<degrees>

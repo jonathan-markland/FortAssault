@@ -16,7 +16,7 @@ open ScreenVictory
 open ScreenPotentialEnterYourName
 open FinalBossAndTankBattleShared
 open Rules
-open StoryboardChapters
+open StoryboardChapterChange
 open TankMapFileLoader
 open GameGlobalState
 

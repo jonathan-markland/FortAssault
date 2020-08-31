@@ -14,9 +14,9 @@ open FlickBook
 open AirAndSeaBattleShared
 open Rules
 open FontAlignment
-open FutureEvents
+open PendingEvents
 open InputEventData
-open StoryboardChapters
+open StoryboardChapterChange
 
 
 let InitialGunElevation            =   30.0F<degrees>
@@ -53,11 +53,11 @@ type SeaBattleScreenModel =
         EnemyShips          : EnemyShip list
         Decoratives         : FlickBookInstance list
         SkyExplosion        : FlickBookInstance list   // Slightly special treatment as I didn't want more than one going on at once.
-        FutureIncoming      : PendingList<IncomingChange>
-        FutureDamage        : PendingList<DamageChange>
-        FutureHits          : PendingList<HitsChange>
-        FutureMessageTexts  : PendingList<string>
-        FutureScoreChanges  : PendingList<uint32>
+        PendingIncoming     : Pending<IncomingChange> list
+        PendingDamage       : Pending<DamageChange> list
+        PendingHits         : Pending<HitsChange> list
+        PendingMessageTexts : Pending<string> list
+        PendingScoreChanges : Pending<uint32> list
         MessageText         : string
     }
 
@@ -347,20 +347,20 @@ let RenderSeaBattleScreen render (model:SeaBattleScreenModel) gameTime =
 
 let NewSeaBattleScreen scoreAndHiScore shipsRemaining gameTime =
     {
-        ScoreAndHiScore    = scoreAndHiScore
-        ShipsRemaining     = shipsRemaining
-        GunAim             = NewGunWithDefaultTraits DoubleBarrelGun InitialPlayerGunPositionX InitialGunElevation GunStepRate gameTime
-        AlliedState        = AlliedShipInPlay
-        AlliedCountToSink  = EnemyFireTriesCount
-        EnemyShips         = DefaultEnemyShipsArrangement
-        Decoratives        = []
-        SkyExplosion       = []
-        FutureIncoming     = [ToBeDoneAtTimeII gameTime (IncomingChange ())]
-        FutureDamage       = []
-        FutureHits         = []
-        FutureMessageTexts = []
-        FutureScoreChanges = []
-        MessageText        = ""
+        ScoreAndHiScore     = scoreAndHiScore
+        ShipsRemaining      = shipsRemaining
+        GunAim              = NewGunWithDefaultTraits DoubleBarrelGun InitialPlayerGunPositionX InitialGunElevation GunStepRate gameTime
+        AlliedState         = AlliedShipInPlay
+        AlliedCountToSink   = EnemyFireTriesCount
+        EnemyShips          = DefaultEnemyShipsArrangement
+        Decoratives         = []
+        SkyExplosion        = []
+        PendingIncoming     = [ToBeDoneAtTimeII gameTime (IncomingChange ())]
+        PendingDamage       = []
+        PendingHits         = []
+        PendingMessageTexts = []
+        PendingScoreChanges = []
+        MessageText         = ""
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -382,11 +382,11 @@ let NextSeaBattleScreenState oldState input gameTime frameElapsedTime =
                     let alliedState        = oldState.AlliedState
                     let alliedCountToSink  = oldState.AlliedCountToSink
                     let enemyShips         = oldState.EnemyShips
-                    let futureIncoming     = oldState.FutureIncoming
-                    let futureDamage       = oldState.FutureDamage
-                    let futureHits         = oldState.FutureHits
-                    let futureMessageTexts = oldState.FutureMessageTexts
-                    let futureScoreChanges = oldState.FutureScoreChanges
+                    let futureIncoming     = oldState.PendingIncoming
+                    let futureDamage       = oldState.PendingDamage
+                    let futureHits         = oldState.PendingHits
+                    let futureMessageTexts = oldState.PendingMessageTexts
+                    let futureScoreChanges = oldState.PendingScoreChanges
                     let decoratives        = oldState.Decoratives
                     let messageText        = oldState.MessageText
 
@@ -449,20 +449,20 @@ let NextSeaBattleScreenState oldState input gameTime frameElapsedTime =
                     let decoratives        = decoratives        |> consOption newDecorative
 
                     {
-                        ShipsRemaining     = oldState.ShipsRemaining  // we don't decrement until the screen is lost.
-                        GunAim             = gun
-                        SkyExplosion       = skyExplosion
-                        ScoreAndHiScore    = scoreAndHiScore
-                        AlliedState        = alliedState
-                        AlliedCountToSink  = alliedCountToSink
-                        EnemyShips         = enemyShips
-                        FutureIncoming     = futureIncoming
-                        FutureDamage       = futureDamage
-                        FutureHits         = futureHits
-                        FutureMessageTexts = futureMessageTexts
-                        FutureScoreChanges = futureScoreChanges
-                        Decoratives        = decoratives
-                        MessageText        = messageText
+                        ShipsRemaining      = oldState.ShipsRemaining  // we don't decrement until the screen is lost.
+                        GunAim              = gun
+                        SkyExplosion        = skyExplosion
+                        ScoreAndHiScore     = scoreAndHiScore
+                        AlliedState         = alliedState
+                        AlliedCountToSink   = alliedCountToSink
+                        EnemyShips          = enemyShips
+                        PendingIncoming     = futureIncoming
+                        PendingDamage       = futureDamage
+                        PendingHits         = futureHits
+                        PendingMessageTexts = futureMessageTexts
+                        PendingScoreChanges = futureScoreChanges
+                        Decoratives         = decoratives
+                        MessageText         = messageText
                     }
 
             | WonScreen(timeEnded) -> 

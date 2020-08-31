@@ -9,7 +9,7 @@ open DrawingCommands
 open GameGlobalState
 open Keyboard
 open Storyboard
-open StoryboardChapters
+open StoryboardChapterChange
 open TankMapFileLoader
 open ResourceFileMetadata
 open ResourceFiles

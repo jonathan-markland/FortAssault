@@ -15,7 +15,7 @@ open ImagesAndFonts
 open InputEventData
 open ScorePanel
 open FlickBook
-open StoryboardChapters
+open StoryboardChapterChange
 open ImagesAndFonts
 
 let TorpedoTriggerDistance      =    4.0F<wu>

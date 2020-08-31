@@ -5,7 +5,7 @@ open ImagesAndFonts
 open Geometry
 open FontAlignment
 open InputEventData
-open StoryboardChapters
+open StoryboardChapterChange
 open BeachBackgroundRenderer
 open Time
 open GameGlobalState

@@ -5,7 +5,7 @@ open ImagesAndFonts
 open DrawingCommandsEx
 open FontAlignment
 open Geometry
-open StoryboardChapters
+open StoryboardChapterChange
 
 let IntermissionDuration = 4.0F<seconds>
 
