@@ -17,11 +17,11 @@ Technology:
 
     - Windows desktop (F# / .Net Core / SDL2-CS / SDL2)
     - Linux desktop (F# / .Net Core / SDL2-CS / SDL2)
-    - In the browser (F# / Fable / Web Canvas / HTML)  (if not also Bolero)
+    - [Forthcoming!] In the browser (F# / Fable / Web Canvas / HTML)  (if not also Bolero)
 
 In other words, one game, one language, its goes three places.
 
-I *also* have distilled a re-usable game algorithm library out of this.
+I also have distilled a re-usable game algorithm library out of this.
 
 Screenshots
 ===========
