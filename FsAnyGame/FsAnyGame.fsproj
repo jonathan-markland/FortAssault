@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="ResourceFileMetadata.fs" />
+    <Compile Include="EnterYourName.fs" />
+    <Compile Include="ScoreboardModel.fs" />
+    <Compile Include="ListSplicer.fs" />
+    <Compile Include="Angle.fs" />
+    <Compile Include="Time.fs" />
+    <Compile Include="Keyboard.fs" />
+    <Compile Include="Tiles.fs" />
+    <Compile Include="StoryboardChapters.fs" />
+    <Compile Include="Algorithm.fs" />
+    <Compile Include="Geometry.fs" />
+    <Compile Include="Mechanics.fs" />
+    <Compile Include="Input.fs" />
+    <Compile Include="FontAlignment.fs" />
+    <Compile Include="FontCharacterPositioning.fs" />
+    <Compile Include="ScoreHiScore.fs" />
+    <Compile Include="Collisions.fs" />
+    <Compile Include="FutureEvents.fs" />
+    <Compile Include="DrawingCommands.fs" />
+    <Compile Include="DrawingCommandsEx.fs" />
+  </ItemGroup>
+
+</Project>

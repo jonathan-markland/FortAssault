@@ -1,0 +1,45 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="ResourceFiles.fs" />
+    <Compile Include="GameGlobalState.fs" />
+    <Compile Include="SoundEffects.fs" />
+    <Compile Include="EffectRequest.fs" />
+    <Compile Include="Rules.fs" />
+    <Compile Include="InputEventData.fs" />
+    <Compile Include="ImagesAndFonts.fs" />
+    <Compile Include="SharedDrawing.fs" />
+    <Compile Include="FlickBook.fs" />
+    <Compile Include="MapScreenSharedDetail.fs" />
+    <Compile Include="Gun.fs" />
+    <Compile Include="ScorePanel.fs" />
+    <Compile Include="BeachBackgroundRenderer.fs" />
+    <Compile Include="AirAndSeaBattleShared.fs" />
+    <Compile Include="FinalBossAndTankBattleShared.fs" />
+    <Compile Include="TankMapFileLoader.fs" />
+    <Compile Include="ScreenGameTitle.fs" />
+    <Compile Include="ScreenInitialMap.fs" />
+    <Compile Include="ScreenSecretPassage.fs" />
+    <Compile Include="ScreenMapPostPassage.fs" />
+    <Compile Include="ScreenAirBattle.fs" />
+    <Compile Include="ScreenSeaBattle.fs" />
+    <Compile Include="ScreenMapBeforeBeachLanding.fs" />
+    <Compile Include="ScreenTankBattle.fs" />
+    <Compile Include="ScreenFinalBoss.fs" />
+    <Compile Include="ScreenGameOver.fs" />
+    <Compile Include="ScreenPotentialEnterYourName.fs" />
+    <Compile Include="ScreenVictory.fs" />
+    <Compile Include="ScreenIntermission.fs" />
+    <Compile Include="Storyboard.fs" />
+    <Compile Include="MechanicsTestPage.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FsAnyGame\FsAnyGame.fsproj" />
+  </ItemGroup>
+
+</Project>

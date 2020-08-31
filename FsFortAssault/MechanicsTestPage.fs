@@ -1,0 +1,67 @@
+﻿module MechanicsTestPage
+
+open Time
+open SharedDrawing
+open DrawingCommands
+open DrawingCommandsEx
+open FontAlignment
+open Geometry
+open Mechanics
+open ImagesAndFonts
+
+let AnimDurationSeconds = 3.0F<seconds>
+let AnimRepeatPeriod    = 5.0F<seconds>
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+type MechanicsTestPageScreenModel =
+    {
+        Functions:    (float32<seconds> -> MOMReason) list
+        RepeatAtTime:  float32<seconds>
+    }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let RenderMechanicsTestPageScreen render (model:MechanicsTestPageScreenModel) gameTime =
+
+    Rectangle render 0<wu> 0<wu> ScreenWidthInt ScreenHeightInt (SolidColour(0x000000u))
+    Text render YellowFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (15<wu>) "MECHANICS TEST SCREEN"
+    Rectangle render 25<wu> 25<wu> 270<wu> 150<wu> (SolidColour(0x000050u))
+    model.Functions |> List.iter (fun positionGetter ->
+        match positionGetter gameTime with
+            | MOMVisibleAtPosition( {xwf=x;ywf=y} ) -> CentreImage render x y ImageAlliedFleetSymbol
+            | _ -> ()
+    )
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let NewMechanicsTestPageScreen gameTime =
+
+    let test motionFunction x =
+        FunctionThatGetsPositionOfMovingObject 
+            motionFunction 
+            {xwf=x ; ywf=150.0F<wu>}
+            {xwf=x ; ywf=50.0F<wu>}
+            gameTime
+            AnimDurationSeconds
+
+    {
+        RepeatAtTime = gameTime + AnimRepeatPeriod
+        Functions = 
+            [
+                test LinearMotion        50.0F<wu>
+                test SpeedingUpMotion   100.0F<wu>
+                test SlowingDownMotion  150.0F<wu>
+                test ArcMotion          200.0F<wu>
+            ]
+    }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let NextMechanicsTestPageScreenState oldState input gameTime =
+
+    if gameTime > oldState.RepeatAtTime then
+        NewMechanicsTestPageScreen gameTime
+    else
+        oldState
+        

@@ -1,0 +1,79 @@
+Fort Assault to do
+------------------
+
+MVP must do
+-----------
+
+[ ] Fable + browser version (no sound)
+[ ] Investigate why elapsed time was observed as negative?  Every time we calculate elapsed time, assert it.
+[ ] The final boss gun looks terrible
+[ ] Cartoonify the characters on the victory screen
+
+
+Post MVP
+--------
+[ ] Sound
+[ ] Final boss must explode.
+[ ] Easy | Med | Hard  -- and decide how this affects things!
+    [ ] Scoring change with difficulty
+[ ] The troop carrier ship needs to sail off in the sea battle.
+[ ] Re-binding of records at the end of the screen should not use WITH -- explicitly state all fields.
+[ ] Naming conventions :  "model" vs "oldState"
+[ ] "Far splash" and "Near splash" distinction required on the sea battle screen.
+[ ] The sea battle launch graphics re-uses the ImagePlaneBomb0 (etc) images
+[ ] ResultOfProjectileCollisions - There was an intention that we could score according to type of thing hit, but the target isn't passed to this function yet, so we could only return a constant score, in which case there's no point in having a lambda return it!
+[ ] ResultOfProjectileCollisionsWithSingleTarget - There was an intention that we could score according to type of thing hit, but the target isn't passed to this function yet, so we could only return a constant score, in which case there's no point in having a lambda return it!
+[ ] Sea battle screen:  Ammunition not modelled yet.
+[ ] Sea battle screen:  Don't show elevation angle on this screen.
+[ ] Sea battle screen:  Reconnaisance planes
+[ ] Sea battle screen:  Damage shown as percentage
+[ ] Fort screen:  I may not wish to continue using the ship's explosion on the fort screen!!
+[ ] Air battle screen:  The hit test region for the planes is constant throughout.  We could do 
+    with getting the sprite extents from the Flickbook module, and basing the region on that.
+
+[ ] Sea battle screen: Should we model "enemy strength" as a factor passed between screens?
+[ ] Sea battle screen: What will be the implication of letting the big ship escape?  Increase enemy strength.
+[ ] Sea battle screen: Clear the advistory text after a little while.
+[ ] Sea battle screen: Damage shown (as percentage)
+
+Done
+----
+
+[X] Require more accuracy on final boss targets
+[X] BUG:  The tank should not go down between the tank battle and the boss screen (ie: when the tank gets through!)
+[X] Intermission screen to finish  'get ready'
+[X] Enemy ship firing must have better sizing on the bombs in the distance.
+[X] Poorly named:  CVOYetToAppear etc 
+[X] Get rid of "level" number?
+[X] Final boss - surrender flag must flutter
+[X] Graphics re-done
+[X] Bug:  Tank battle -- you get shot but still continue through to the boss if the screen-timer expires during the explosion sequence!
+[X] The tanks repeat their firing pattern each screen repeat -- should be different
+    Not a probkem:  Likely not be a problem if the tanks themselves are randomly appearing.
+[X] Missiles must fire from tank cannon positions.
+[X] Collision detection of missiles with enemy tanks is poor.  Remember that missile is rectangular.
+[X] Gun movement left/right  must be related to seconds, not frames.
+[X] Tank movement must be related to seconds not frames.
+[X] Gun winding up/down speed must be related to seconds, not frames.
+[X] Bug - Sea battle:  I don't think the elevation-to-hit works.
+[X] Bug - Sea battle:  Sinking ships wobble.
+[X] Integer coordinates in graphics interface to avoid scroll "seam" artifacts on tank battle, except for 
+    things that are "superimposed sprite"-like.
+[X] Victory screen
+[X] PAUSE key
+[X] We dont' have a decimal point on the angle in the UI.
+[X] AMMUNITION readout is not used on the sea battle
+[X] Bug - Sea battle:  Too sensitive on elevation change (throttle)
+
+[X] Enter your name
+[X] Hi score table on screen
+[X] We now can't alter the gun elevation in the air battle quickly enough.
+[X] Tune game parameters for MVP
+[X] No score for sinking the ships!
+[X] Hiscore goes to a GET READY followed by the main screen.  The GET READY should not be there.
+[X] Declaring this OK.  Bug - hiscore display waits for fire to be pressed.  We should just time out.  
+[X] Sea battle screen: Altering the gun angle is difficult.
+[X] Sea battle screen: Score for ship sinking.
+[X] Shortcut mode to somehow skip stages for test purposes.
+[X] Investigate what coordinates should be returned to integers rather than floating point.
+    Suspect only CentreImage should be floating point?
