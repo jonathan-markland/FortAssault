@@ -40,26 +40,24 @@ let AppliedForTime
     (struct ((state:'state) , (pendingList:Pending<'changeData> list))) 
         : (struct ('state * Pending<'changeData> list)) =
 
-    // TODO: Apply in the order of oldest-first.
+    // Garbage and performance optimisation if no items are due (could be very high percentage of cases):
 
-    // Performance optimisation if none due (could be very high percentage of cases):
+    let isDueAt gameTime { ToDoTime=itemTime } = gameTime >= itemTime
 
-    if pendingList
-        |> List.exists (fun { ToDoTime=itemTime } -> gameTime >= itemTime) then
+    if pendingList |> List.exists (isDueAt gameTime) then
 
         // Something is due, so process:
 
         pendingList 
+            |> List.rev // Apply in the order of first-added.
             |> List.fold (fun struct (actionAccumulator, newListAccumulator) toDoItem ->
         
-                let { ToDoTime=itemTime ; ToDoData=data } = toDoItem
-
-                if gameTime >= itemTime then
+                if toDoItem |> isDueAt gameTime then
 
                     // This item is due, so call the action handler and obtain
                     // a new user-accumulator.  We drop the toDoItem.
 
-                    match f actionAccumulator data gameTime with
+                    match f actionAccumulator toDoItem.ToDoData gameTime with
 
                         | FutureDone newState -> 
                             struct (newState , newListAccumulator)
@@ -69,7 +67,7 @@ let AppliedForTime
 
                 else
 
-                    // This item is NOT due, so re-attach to the return to-do list:
+                    // This item is NOT due, so let's keep the toDoItem:
 
                     struct (actionAccumulator, toDoItem::newListAccumulator)
 
