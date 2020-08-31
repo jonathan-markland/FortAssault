@@ -2,6 +2,7 @@ module TilesTests
 
 open Xunit
 open FsXunit
+open Geometry
 open Tiles
 
         // All tests are automatically run reflected in a 45-degree mirror,
@@ -42,8 +43,8 @@ let ReflectedOffset o =
 
 type OutputTile =
     {
-        x  : int
-        y  : int
+        x  : int<epx>
+        y  : int<epx>
         ix : int
         iy : int
     }
@@ -51,10 +52,8 @@ type OutputTile =
 let OutputTileToString t =
     sprintf "(%d,%d) (ix%d,iy%d)" t.x t.y t.ix t.iy
 
-type SortKey = { key1:int ; key2:int }
-
 let SortedByIyThenIx outputTileList =
-    outputTileList |> List.sortBy (fun {ix=ix;iy=iy} -> {key1=iy;key2=ix})
+    outputTileList |> List.sortBy (fun {ix=ix;iy=iy} -> struct (iy,ix))
 
 let ReflectedOutputTile t =
     {
@@ -107,56 +106,56 @@ let Matrix1 =
     {
         TilesHorizontally = 20
         TilesVertically   = 10
-        TileWidthPixels   = 16
-        TileHeightPixels  = 16
+        TileWidthPixels   = 16<epx>
+        TileHeightPixels  = 16<epx>
     }
 
 let ZeroSizedWindow =
     {
-        WindowLeft   = 50
-        WindowTop    = 20
-        WindowWidth  = 0
-        WindowHeight = 0
+        WindowLeft   = 50<epx>
+        WindowTop    = 20<epx>
+        WindowWidth  = 0<epx>
+        WindowHeight = 0<epx>
     }
 
 let WindowFourByFourTiles =
     {
-        WindowLeft   = 50
-        WindowTop    = 20
-        WindowWidth  = 64
-        WindowHeight = 64
+        WindowLeft   = 50<epx>
+        WindowTop    = 20<epx>
+        WindowWidth  = 64<epx>
+        WindowHeight = 64<epx>
     }
 
 let WindowOnSingleTile =
     {
-        WindowLeft   = 50
-        WindowTop    = 20
-        WindowWidth  = 16
-        WindowHeight = 16
+        WindowLeft   = 50<epx>
+        WindowTop    = 20<epx>
+        WindowWidth  = 16<epx>
+        WindowHeight = 16<epx>
     }
 
 let WindowOnThreeByTwoTiles =
     {
-        WindowLeft   = 50
-        WindowTop    = 20
-        WindowWidth  = 16*3
-        WindowHeight = 16*2
+        WindowLeft   = 50<epx>
+        WindowTop    = 20<epx>
+        WindowWidth  = 16<epx>*3
+        WindowHeight = 16<epx>*2
     }
 
 let WindowOnTwoWideLessOnePixel =
     {
-        WindowLeft   = 50
-        WindowTop    = 20
-        WindowWidth  = 16*2-1
-        WindowHeight = 16
+        WindowLeft   = 50<epx>
+        WindowTop    = 20<epx>
+        WindowWidth  = 16<epx>*2-1<epx>
+        WindowHeight = 16<epx>
     }
 
 let WindowOnTwoWidePlusOnePixel =
     {
-        WindowLeft   = 50
-        WindowTop    = 20
-        WindowWidth  = 16*2+1
-        WindowHeight = 16
+        WindowLeft   = 50<epx>
+        WindowTop    = 20<epx>
+        WindowWidth  = 16<epx>*2+1<epx>
+        WindowHeight = 16<epx>
     }
 
 
@@ -168,7 +167,7 @@ let WindowOnTwoWidePlusOnePixel =
 [<Fact>]
 let ``Zero sized window never reports no tiles`` () =
 
-    let tilePanningOffsetRelativeToWindow = { OffsetX = 0 ; OffsetY = 0 }
+    let tilePanningOffsetRelativeToWindow = { OffsetX = 0<epx> ; OffsetY = 0<epx> }
 
     TilesResultReport Matrix1 ZeroSizedWindow tilePanningOffsetRelativeToWindow
         |> ShouldEqual
@@ -178,7 +177,7 @@ let ``Zero sized window never reports no tiles`` () =
 [<Fact>]
 let ``Zero sized window with slight panning offset reports no tiles`` () =
 
-    let tilePanningOffsetRelativeToWindow = { OffsetX = -10 ; OffsetY = -5 }
+    let tilePanningOffsetRelativeToWindow = { OffsetX = -10<epx> ; OffsetY = -5<epx> }
 
     TilesResultReport Matrix1 ZeroSizedWindow tilePanningOffsetRelativeToWindow
         |> ShouldEqual
@@ -193,7 +192,7 @@ let ``Zero sized window with slight panning offset reports no tiles`` () =
 [<Fact>]
 let ``Single tile window reports one tile when no offset`` () =
 
-    let tilePanningOffsetRelativeToWindow = { OffsetX = 0 ; OffsetY = 0 }
+    let tilePanningOffsetRelativeToWindow = { OffsetX = 0<epx> ; OffsetY = 0<epx> }
 
     TilesResultReport Matrix1 WindowOnSingleTile tilePanningOffsetRelativeToWindow
         |> ShouldEqual
@@ -204,7 +203,7 @@ let ``Single tile window reports one tile when no offset`` () =
 [<Fact>]
 let ``Single tile window reports two tiles with horizontal slight offset`` () =
 
-    let tilePanningOffsetRelativeToWindow = { OffsetX = -10 ; OffsetY = 0 }
+    let tilePanningOffsetRelativeToWindow = { OffsetX = -10<epx> ; OffsetY = 0<epx> }
 
     TilesResultReport Matrix1 WindowOnSingleTile tilePanningOffsetRelativeToWindow
         |> ShouldEqual
@@ -215,7 +214,7 @@ let ``Single tile window reports two tiles with horizontal slight offset`` () =
 [<Fact>]
 let ``Single tile window reports two tiles with horizontal slight offset (2)`` () =
 
-    let tilePanningOffsetRelativeToWindow = { OffsetX = -(10+16) ; OffsetY = 0 }
+    let tilePanningOffsetRelativeToWindow = { OffsetX = -(10<epx> + 16<epx>) ; OffsetY = 0<epx> }
 
     TilesResultReport Matrix1 WindowOnSingleTile tilePanningOffsetRelativeToWindow
         |> ShouldEqual
@@ -226,7 +225,7 @@ let ``Single tile window reports two tiles with horizontal slight offset (2)`` (
 [<Fact>]
 let ``Single tile window reports two tiles with horizontal slight offset (3)`` () =
 
-    let tilePanningOffsetRelativeToWindow = { OffsetX = -(10+32) ; OffsetY = 0 }
+    let tilePanningOffsetRelativeToWindow = { OffsetX = -(10<epx> + 32<epx>) ; OffsetY = 0<epx> }
 
     TilesResultReport Matrix1 WindowOnSingleTile tilePanningOffsetRelativeToWindow
         |> ShouldEqual
@@ -237,7 +236,7 @@ let ``Single tile window reports two tiles with horizontal slight offset (3)`` (
 [<Fact>]
 let ``Single tile window reports four tiles with dual offsets`` () =
 
-    let tilePanningOffsetRelativeToWindow = { OffsetX = -10 ; OffsetY = -5 }
+    let tilePanningOffsetRelativeToWindow = { OffsetX = -10<epx> ; OffsetY = -5<epx> }
 
     TilesResultReport Matrix1 WindowOnSingleTile tilePanningOffsetRelativeToWindow
         |> ShouldEqual
@@ -251,7 +250,7 @@ let ``Single tile window reports four tiles with dual offsets`` () =
 [<Fact>]
 let ``Single tile window reports four tiles with dual offsets (2)`` () =
 
-    let tilePanningOffsetRelativeToWindow = { OffsetX = -(10+64) ; OffsetY = -(5+128) }
+    let tilePanningOffsetRelativeToWindow = { OffsetX = -(10<epx> + 64<epx>) ; OffsetY = -(5<epx> + 128<epx>) }
 
     TilesResultReport Matrix1 WindowOnSingleTile tilePanningOffsetRelativeToWindow
         |> ShouldEqual
@@ -270,7 +269,7 @@ let ``Single tile window reports four tiles with dual offsets (2)`` () =
 [<Fact>]
 let ``Tiles fitting perfectly in window with no tiles clipped gives 4 x 4 matrix`` () =
 
-    let tilePanningOffsetRelativeToWindow = { OffsetX = 0 ; OffsetY = 0 }
+    let tilePanningOffsetRelativeToWindow = { OffsetX = 0<epx> ; OffsetY = 0<epx> }
 
     TilesResultReport Matrix1 WindowFourByFourTiles tilePanningOffsetRelativeToWindow
         |> ShouldEqual
@@ -286,7 +285,7 @@ let ``Tiles fitting perfectly in window with no tiles clipped gives 4 x 4 matrix
 [<Fact>]
 let ``Sliding tiles gives 5 x 5 matrix because of reveal of partial tiles`` () =
 
-    let tilePanningOffsetRelativeToWindow = { OffsetX = -33 ; OffsetY = -17 }
+    let tilePanningOffsetRelativeToWindow = { OffsetX = -33<epx> ; OffsetY = -17<epx> }
 
     TilesResultReport Matrix1 WindowFourByFourTiles tilePanningOffsetRelativeToWindow
         |> ShouldEqual
@@ -312,7 +311,7 @@ let ``Sliding tiles gives 5 x 5 matrix because of reveal of partial tiles`` () =
 [<Fact>]
 let ``We never report out of range indexes - no offsetting`` () =
 
-    let tilePanningOffsetRelativeToWindow = { OffsetX = 0 ; OffsetY = 0 }
+    let tilePanningOffsetRelativeToWindow = { OffsetX = 0<epx> ; OffsetY = 0<epx> }
 
     TilesResultReport Matrix1 WindowOnThreeByTwoTiles tilePanningOffsetRelativeToWindow
         |> ShouldEqual
@@ -326,7 +325,7 @@ let ``We never report out of range indexes - no offsetting`` () =
 [<Fact>]
 let ``We never see request with ix minus 1`` () =
 
-    let tilePanningOffsetRelativeToWindow = { OffsetX = 5 ; OffsetY = 0 }
+    let tilePanningOffsetRelativeToWindow = { OffsetX = 5<epx> ; OffsetY = 0<epx> }
 
     TilesResultReport Matrix1 WindowOnThreeByTwoTiles tilePanningOffsetRelativeToWindow
         |> ShouldEqual
@@ -340,7 +339,7 @@ let ``We never see request with ix minus 1`` () =
 [<Fact>]
 let ``We never see request with ix minus 1 or minus 2`` () =
 
-    let tilePanningOffsetRelativeToWindow = { OffsetX = 32 ; OffsetY = 0 }
+    let tilePanningOffsetRelativeToWindow = { OffsetX = 32<epx> ; OffsetY = 0<epx> }
 
     TilesResultReport Matrix1 WindowOnThreeByTwoTiles tilePanningOffsetRelativeToWindow
         |> ShouldEqual
@@ -354,7 +353,7 @@ let ``We never see request with ix minus 1 or minus 2`` () =
 [<Fact>]
 let ``We never see request with ix beyond 19`` () =
 
-    let tilePanningOffsetRelativeToWindow = { OffsetX = -(19*16) ; OffsetY = 0 }
+    let tilePanningOffsetRelativeToWindow = { OffsetX = -(19<epx> * 16) ; OffsetY = 0<epx> }
 
     TilesResultReport Matrix1 WindowOnThreeByTwoTiles tilePanningOffsetRelativeToWindow
         |> ShouldEqual
@@ -370,32 +369,32 @@ let ``We never see request with ix beyond 19`` () =
 
 [<Fact>]
 let ``Slide data. Just off left`` () =
-    TilesResultReport Matrix1 WindowOnThreeByTwoTiles { OffsetX = -(20*16) ; OffsetY = 0 }
+    TilesResultReport Matrix1 WindowOnThreeByTwoTiles { OffsetX = -(20<epx> * 16) ; OffsetY = 0<epx> }
         |> ShouldEqual []
 
 [<Fact>]
 let ``Slide data. Just off right`` () =
-    TilesResultReport Matrix1 WindowOnThreeByTwoTiles { OffsetX = 20*16 ; OffsetY = 0 }
+    TilesResultReport Matrix1 WindowOnThreeByTwoTiles { OffsetX = 20<epx> * 16 ; OffsetY = 0<epx> }
         |> ShouldEqual []
 
 [<Fact>]
 let ``Slide data. Completely off left`` () =
-    TilesResultReport Matrix1 WindowOnThreeByTwoTiles { OffsetX = -((20*16)+1) ; OffsetY = 0 }
+    TilesResultReport Matrix1 WindowOnThreeByTwoTiles { OffsetX = -((20<epx> * 16) + 1<epx>) ; OffsetY = 0<epx> }
         |> ShouldEqual []
 
 [<Fact>]
 let ``Slide data. Completely off right`` () =
-    TilesResultReport Matrix1 WindowOnThreeByTwoTiles { OffsetX = (20*16)+1 ; OffsetY = 0 }
+    TilesResultReport Matrix1 WindowOnThreeByTwoTiles { OffsetX = (20<epx> * 16) + 1<epx> ; OffsetY = 0<epx> }
         |> ShouldEqual []
 
 [<Fact>]
 let ``Slide data. Completely off left (2)`` () =
-    TilesResultReport Matrix1 WindowOnThreeByTwoTiles { OffsetX = -(21*16) ; OffsetY = 0 }
+    TilesResultReport Matrix1 WindowOnThreeByTwoTiles { OffsetX = -(21<epx> * 16) ; OffsetY = 0<epx> }
         |> ShouldEqual []
 
 [<Fact>]
 let ``Slide data. Completely off right (2)`` () =
-    TilesResultReport Matrix1 WindowOnThreeByTwoTiles { OffsetX = 21*16 ; OffsetY = 0 }
+    TilesResultReport Matrix1 WindowOnThreeByTwoTiles { OffsetX = 21<epx> * 16 ; OffsetY = 0<epx> }
         |> ShouldEqual []
 
 
@@ -405,25 +404,25 @@ let ``Slide data. Completely off right (2)`` () =
 
 [<Fact>]
 let ``Irregular window one pixel less`` () =
-    TilesResultReport Matrix1 WindowOnTwoWideLessOnePixel { OffsetX = 0 ; OffsetY = 0 }
+    TilesResultReport Matrix1 WindowOnTwoWideLessOnePixel { OffsetX = 0<epx> ; OffsetY = 0<epx> }
         |> ShouldEqual ["(50,20) (ix0,iy0)"; "(66,20) (ix1,iy0)"]
 
 [<Fact>]
 let ``Irregular window one pixel less (2)`` () =
-    TilesResultReport Matrix1 WindowOnTwoWideLessOnePixel { OffsetX = -1 ; OffsetY = 0 }
+    TilesResultReport Matrix1 WindowOnTwoWideLessOnePixel { OffsetX = -1<epx> ; OffsetY = 0<epx> }
         |> ShouldEqual ["(49,20) (ix0,iy0)"; "(65,20) (ix1,iy0)"]
 
 [<Fact>]
 let ``Irregular window one pixel more`` () =
-    TilesResultReport Matrix1 WindowOnTwoWidePlusOnePixel { OffsetX = 0 ; OffsetY = 0 }
+    TilesResultReport Matrix1 WindowOnTwoWidePlusOnePixel { OffsetX = 0<epx> ; OffsetY = 0<epx> }
         |> ShouldEqual ["(50,20) (ix0,iy0)"; "(66,20) (ix1,iy0)"; "(82,20) (ix2,iy0)"]
 
 [<Fact>]
 let ``Irregular window one pixel more (2)`` () =
-    TilesResultReport Matrix1 WindowOnTwoWidePlusOnePixel { OffsetX = -1 ; OffsetY = 0 }
+    TilesResultReport Matrix1 WindowOnTwoWidePlusOnePixel { OffsetX = -1<epx> ; OffsetY = 0<epx> }
         |> ShouldEqual ["(49,20) (ix0,iy0)"; "(65,20) (ix1,iy0)"; "(81,20) (ix2,iy0)"]
 
 [<Fact>]
 let ``Irregular window one pixel more (3)`` () =
-    TilesResultReport Matrix1 WindowOnTwoWidePlusOnePixel { OffsetX = 1 ; OffsetY = 0 }
+    TilesResultReport Matrix1 WindowOnTwoWidePlusOnePixel { OffsetX = 1<epx> ; OffsetY = 0<epx> }
         |> ShouldEqual ["(51,20) (ix0,iy0)"; "(67,20) (ix1,iy0)"]
