@@ -4,7 +4,7 @@ Fort Assault
 
 Retro remake of a fairly well-known 1980s computer game.
 
-![Bar chart](/WebImages/Game.jpg)
+![Main screen](/WebImages/Image1.jpg)
 
 "You can't use Functional Programming to make games!" -- Anon.
 
@@ -22,6 +22,17 @@ Technology:
 In other words, one game, one language, its goes three places.
 
 I *also* have distilled a re-usable game algorithm library out of this.
+
+Screenshots
+===========
+
+![Game screenshot](/WebImages/Image1.jpg)
+
+![Game screenshot](/WebImages/Image2.jpg)
+
+![Game screenshot](/WebImages/Image3.jpg)
+
+![Game screenshot](/WebImages/Image4.jpg)
 
 
 Important Build Note
