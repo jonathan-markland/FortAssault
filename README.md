@@ -35,12 +35,6 @@ Screenshots
 ![Game screenshot](/WebImages/Image5.jpg)
 
 
-Important Build Note
---------------------
-I MUST sort out the ../../..-style assembly-reference that points to my build of
-Mr flibitijibibo's SDL2-CS assembly.  This needs smoothing!!
-
-
 Functional Programming
 ----------------------
 In Functional Programming, the data model is READ ONLY, for which F# has 100% support.  
