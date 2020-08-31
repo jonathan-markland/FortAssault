@@ -4,7 +4,7 @@ open Geometry
 open DrawingCommands
 open DrawingCommandsEx
 
-// This game uses a 320*200 world-coordinate (wu) space:
+// This game uses a 320*200 engine-coordinate (epx) space:
 
 let ScreenWidthInt  = 320<epx>  // Must be the same as below!
 let ScreenHeightInt = 200<epx>  // Must be the same as below!

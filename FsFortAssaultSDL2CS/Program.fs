@@ -71,7 +71,7 @@ let LoadGameImagesAndFonts (renderer:RendererNativeInt) rootPath =
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 /// Render game drawing command to the screen.
-/// Here we are choosing to use a 1:1 mapping from world coordinates onto a 
+/// Here we are choosing to use a 1:1 mapping from engine 'epx' coordinates onto a 
 /// HostRetroScreenWidthPixels x HostRetroScreenHeightPixels pixel SDL surface, but 
 /// using Float32 allowing higher resolution positioning if this side supported it(!)
 let RenderToSdl gameResources renderer drawingCommand =

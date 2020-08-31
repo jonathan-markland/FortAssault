@@ -16,7 +16,7 @@ type SolidColour = SolidColour of uint32
 
 
 /// Drawing commands are communicated from the engine to the concrete renderer.
-/// These use World Coordinates for positions and sizes, and the renderer is at 
+/// These use engine 'epx' coordinates for positions and sizes, and the renderer is at 
 /// liberty to interpret these requests in any way is sees fit, when projecting
 /// the image onto the screen.
 // [<Struct>]
