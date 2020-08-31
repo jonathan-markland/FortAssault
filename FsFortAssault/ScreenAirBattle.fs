@@ -20,8 +20,8 @@ open ImagesAndFonts
 
 let InitialGunElevation       =   30.0F<degrees>
 let NumberOfRaidersWhenStrong =  NumShipsAtInitialEngagement * 4u
-let InitialPlayerGunPositionX =  160.0F<wu>
-let PlaneTriggerDistance      =    6.0F<wu>   // TODO: This might need to be rectangular at the very least, certainly not square.  Also is a candidate for the game difficulty!
+let InitialPlayerGunPositionX =  160.0F<epx>
+let PlaneTriggerDistance      =    6.0F<epx>   // TODO: This might need to be rectangular at the very least, certainly not square.  Also is a candidate for the game difficulty!
 let PauseTimeWhenEnded        =    4.0F<seconds>
 let ExplosionDuration         =    0.75F<seconds>
 let ScoreForHittingPlane      = 2000u
@@ -30,7 +30,7 @@ let PlaneDuration             =    6.0F<seconds>
 let PlaneFiringTimeOffset     =    3.0F<seconds>
 let SortieApproxInterval      =    5.0F<seconds>
 let BombsDuration             =    1.0F<seconds>
-let PlaneBombTargetY          =  150.0F<wu>  // TODO: Calculate somehow?
+let PlaneBombTargetY          =  150.0F<epx>  // TODO: Calculate somehow?
 let MaxPlanesActiveAtOnce     =    3
 let GunStepRate               =   30.0F<degrees/seconds>
 
@@ -159,8 +159,8 @@ let DrawDebugPlaneHitTestRectangle render planes gameTime =
 
     planes |> List.iter (fun plane ->
         let {xwf=x;ywf=y} = plane.PlaneFlickBookInstance |> FlickBookPositionAtTime gameTime
-        let x,y = x |> FloatWuToIntWu , y |> FloatWuToIntWu
-        let dist = PlaneTriggerDistance |> FloatWuToIntWu
+        let x,y = x |> FloatWuToIntEpx , y |> FloatWuToIntEpx
+        let dist = PlaneTriggerDistance |> FloatWuToIntEpx
         SquareAroundPoint render x y (dist * 2) (SolidColour(0xFF0000u))
     )
 
@@ -169,7 +169,7 @@ let DrawDebugPlaneHitTestRectangle render planes gameTime =
 let RenderAirBattleScreen render (model:AirBattleScreenModel) gameTime =
 
     let DrawBackground () =
-        Image1to1 render 0<wu> 0<wu> ImageSeaBattleBackground0.ImageID
+        Image1to1 render 0<epx> 0<epx> ImageSeaBattleBackground0.ImageID
         DrawFlickbookInstanceList render model.SkyExplosion gameTime
 
     let backgroundHeight = 
@@ -216,8 +216,8 @@ let RenderAirBattleScreen render (model:AirBattleScreenModel) gameTime =
             Elevation        = model.GunAim.GunElevation      
         }
 
-    ScoreboardArea render (backgroundHeight |> FloatWuToIntWu)
-    DrawScorePanel render (backgroundHeight |> FloatWuToIntWu) scorePanel
+    ScoreboardArea render (backgroundHeight |> FloatWuToIntEpx)
+    DrawScorePanel render (backgroundHeight |> FloatWuToIntEpx) scorePanel
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -226,14 +226,14 @@ let RenderAirBattleScreen render (model:AirBattleScreenModel) gameTime =
 let PlaneFlickbookFor gameTime =
 
     let n = (int gameTime) % 4
-    if   n = 0 then (PlaneBankingLeftFlickBookType,  -50.0F<wu>)
-    elif n = 1 then (PlaneBankingRightFlickBookType, +50.0F<wu>)
-    else            (PlaneStraightOnFlickBookType,     0.0F<wu>)
+    if   n = 0 then (PlaneBankingLeftFlickBookType,  -50.0F<epx>)
+    elif n = 1 then (PlaneBankingRightFlickBookType, +50.0F<epx>)
+    else            (PlaneStraightOnFlickBookType,     0.0F<epx>)
 
 let NewPlane gameTime =
 
     let (planeFlickBook, dx) = PlaneFlickbookFor gameTime
-    let startX = LanguagePrimitives.Float32WithMeasure<wu>( float32 (((int gameTime) % 24) * 10 + 40) )
+    let startX = LanguagePrimitives.Float32WithMeasure<epx>( float32 (((int gameTime) % 24) * 10 + 40) )
     let endX   = startX + dx
 
     {
@@ -244,7 +244,7 @@ let NewPlane gameTime =
                 FlickBookMechanicsObject = 
                     MechanicsControlledMovingObject 
                         SpeedingUpMotion 
-                        {xwf=startX ; ywf=90.0F<wu>} {xwf=endX ; ywf = -14.0F<wu>} gameTime PlaneDuration
+                        {xwf=startX ; ywf=90.0F<epx>} {xwf=endX ; ywf = -14.0F<epx>} gameTime PlaneDuration
             }
 
         PlaneHasReleasedBombs  = false

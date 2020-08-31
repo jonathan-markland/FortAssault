@@ -49,19 +49,19 @@ let AmmoBarChart panel =
 
 let DrawScorePanel render y (panel:ScorePanel) =
 
-    let c1x = 4<wu>
-    let c2x = c1x + 64<wu>
+    let c1x = 4<epx>
+    let c2x = c1x + 64<epx>
     let c3x = ScreenWidthInt / 2
-    let y   = y + 4<wu>
+    let y   = y + 4<epx>
 
     Text render YellowFontID LeftAlign TopAlign c1x y "SCORE"
     Num  render RedFontID LeftAlign TopAlign c2x y (panel.ScoreAndHiScore.Score)
 
-    let shy = y + 12<wu>
+    let shy = y + 12<epx>
     Text render YellowFontID LeftAlign TopAlign c1x shy "SHIPS"
     Bar  render c2x shy (panel |> ShipBarChart)
 
-    let dmy = y + 24<wu>
+    let dmy = y + 24<epx>
     Text render YellowFontID LeftAlign TopAlign c1x dmy "DAMAGE"
     Num  render BlueFontID LeftAlign TopAlign c2x dmy (panel.Damage)
 
@@ -72,19 +72,19 @@ let DrawScorePanel render y (panel:ScorePanel) =
     // Text render YellowFontVisual LeftAlign TopAlign c3x y "AMMUNITION"
     // Bar  render c3x (y + 8<wu>) (panel |> AmmoBarChart)
 
-    let tay = y + 16<wu>
+    let tay = y + 16<epx>
     Text render YellowFontID LeftAlign TopAlign c3x tay "TANKS"
-    Bar  render (c3x + 48<wu>) tay (panel |> TanksBarChart)
+    Bar  render (c3x + 48<epx>) tay (panel |> TanksBarChart)
 
-    let ely = y + 24<wu>
+    let ely = y + 24<epx>
     Text render YellowFontID LeftAlign TopAlign c3x ely "ELEVATION"
-    Flo  render BlueFontID LeftAlign TopAlign (c3x + 96<wu>) ely (float32 panel.Elevation)
+    Flo  render BlueFontID LeftAlign TopAlign (c3x + 96<epx>) ely (float32 panel.Elevation)
 
 
 let DrawTankBattleScorePanel render y (score:uint32) (numTanks:uint32) =
 
     let x = ScreenWidthInt / 2
-    let y = y + 2<wu>
+    let y = y + 2<epx>
 
     let message = sprintf "SCORE  %d     TANKS  %d" score numTanks
     Text render BlackFontID CentreAlign TopAlign x y message

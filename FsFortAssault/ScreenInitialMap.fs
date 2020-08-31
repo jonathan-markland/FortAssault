@@ -12,46 +12,46 @@ open MapScreenSharedDetail
 open Rules
 
 
-let DefaultAlliedFleetLocation = { xwf=290.0F<wu> ; ywf=15.0F<wu> }
+let DefaultAlliedFleetLocation = { xwf=290.0F<epx> ; ywf=15.0F<epx> }
 
 /// These are permitted to overlap other rectangles, including the trigger rectangles.
 let PermissableTravelLocationRectangles =
     [
         {
-            Left   =  38.0F<wu>
-            Top    =   7.0F<wu>
-            Right  = 310.0F<wu>
-            Bottom =  19.0F<wu>
+            Left   =  38.0F<epx>
+            Top    =   7.0F<epx>
+            Right  = 310.0F<epx>
+            Bottom =  19.0F<epx>
         }
         {
-            Left   = 125.0F<wu>
-            Top    =  19.0F<wu>
-            Right  = 310.0F<wu>
-            Bottom =  35.0F<wu>
+            Left   = 125.0F<epx>
+            Top    =  19.0F<epx>
+            Right  = 310.0F<epx>
+            Bottom =  35.0F<epx>
         }
         {
-            Left   = 133.0F<wu>
-            Top    =  35.0F<wu>
-            Right  = 310.0F<wu>
-            Bottom =  41.0F<wu>
+            Left   = 133.0F<epx>
+            Top    =  35.0F<epx>
+            Right  = 310.0F<epx>
+            Bottom =  41.0F<epx>
         }
         {
-            Left   = 168.0F<wu>
-            Top    =  41.0F<wu>
-            Right  = 310.0F<wu>
-            Bottom =  50.0F<wu>
+            Left   = 168.0F<epx>
+            Top    =  41.0F<epx>
+            Right  = 310.0F<epx>
+            Bottom =  50.0F<epx>
         }
         {
-            Left   = 200.0F<wu>
-            Top    =  49.0F<wu>
-            Right  = 310.0F<wu>
-            Bottom = 139.0F<wu>
+            Left   = 200.0F<epx>
+            Top    =  49.0F<epx>
+            Right  = 310.0F<epx>
+            Bottom = 139.0F<epx>
         }
         {
-            Left   =  86.0F<wu>
-            Top    =  75.0F<wu>
-            Right  = 276.0F<wu>
-            Bottom = 139.0F<wu>
+            Left   =  86.0F<epx>
+            Top    =  75.0F<epx>
+            Right  = 276.0F<epx>
+            Bottom = 139.0F<epx>
         }
         SecretPassageTriggerRectangle
         BeachLandingTriggerRectangle
@@ -90,7 +90,7 @@ let AlliesVersusSecretPassageOrEnemy alliesLocation enemyLocation gameTime =
 
 let RenderInitialMapScreen render (model:InitialMapScreenModel) =
 
-    Image1to1 render 0<wu> 0<wu> ImageMap.ImageID
+    Image1to1 render 0<epx> 0<epx> ImageMap.ImageID
 
     // PermissableTravelLocationRectangles |> List.iteri (fun i r ->
     //     render (DrawFilledRectangle(r.Left, r.Top, r |> RectangleWidth, r |> RectangleHeight, i |> AlternateOf 0xEE0000u 0x00FF00u)))
@@ -106,7 +106,7 @@ let RenderInitialMapScreen render (model:InitialMapScreenModel) =
 
     let mapHeight = ImageMap.ImageHeight
 
-    ScoreboardArea render (mapHeight |> FloatWuToIntWu)
+    ScoreboardArea render (mapHeight |> FloatWuToIntEpx)
 
     let scorePanel =
         {
@@ -119,7 +119,7 @@ let RenderInitialMapScreen render (model:InitialMapScreenModel) =
             Elevation        = 0.0F<degrees> // TODO:  Should this be optional?
         }
 
-    DrawScorePanel render (mapHeight |> FloatWuToIntWu) scorePanel
+    DrawScorePanel render (mapHeight |> FloatWuToIntEpx) scorePanel
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

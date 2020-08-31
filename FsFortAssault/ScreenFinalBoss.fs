@@ -20,9 +20,9 @@ open FinalBossAndTankBattleShared
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let TargetTriggerDistance     =   3.0F<wu>
-let InitialPlayerGunPositionX = 160.0F<wu>
-let BossGunCentrePosition     = { xwf=160.0F<wu> ; ywf=20.0F<wu> }
+let TargetTriggerDistance     =   3.0F<epx>
+let InitialPlayerGunPositionX = 160.0F<epx>
+let BossGunCentrePosition     = { xwf=160.0F<epx> ; ywf=20.0F<epx> }
 let PauseTimeWhenEnded        =   4.0F<seconds>
 let BossAnimationDuration     =  20.0F<seconds>
 let ExplosionDuration         =   0.75F<seconds>
@@ -117,7 +117,7 @@ let ResultOfWhateverShellsHitTheFort shells (targets:Target list) explosions sco
 let RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
 
     let DrawBackground () =
-        Image1to1 render 0<wu> 0<wu> ImageFinalBossBackground.ImageID
+        Image1to1 render 0<epx> 0<epx> ImageFinalBossBackground.ImageID
 
     let DrawTargets targetList =
         let rec drawTargets isActiveTarget targetList =
@@ -133,7 +133,7 @@ let RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
         DrawFlickbookInstance render model.BossGunFlickBook gameTime
 
     let DrawBlackout () =
-        Rectangle render 0<wu> 0<wu> ScreenWidthInt ScreenHeightInt (SolidColour(0000000u))
+        Rectangle render 0<epx> 0<epx> ScreenWidthInt ScreenHeightInt (SolidColour(0000000u))
         Text render RedFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (ScreenHeightInt / 2) "TANK DESTROYED"
 
     let DrawSurrender gameTime =
@@ -179,8 +179,8 @@ let RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
             Elevation        = model.GunAim.GunElevation      
         }
 
-    ScoreboardArea render (h |> FloatWuToIntWu)
-    DrawScorePanel render (h |> FloatWuToIntWu) scorePanel
+    ScoreboardArea render (h |> FloatWuToIntEpx)
+    DrawScorePanel render (h |> FloatWuToIntEpx) scorePanel
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

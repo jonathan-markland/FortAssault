@@ -23,38 +23,38 @@ type SolidColour = SolidColour of uint32
 type DrawingCommand =
     
     | DrawImageWithTopLeftAtInt      
-        of leftX_1     : int<wu> 
-        *  topY_1      : int<wu> 
+        of leftX_1     : int<epx> 
+        *  topY_1      : int<epx> 
         *  img_1       : ImageID
 
     | DrawFilledRectangle             
-        of leftX_2     : int<wu> 
-        *  topY_2      : int<wu> 
-        *  width_2     : int<wu> 
-        *  height_2    : int<wu> 
+        of leftX_2     : int<epx> 
+        *  topY_2      : int<epx> 
+        *  width_2     : int<epx> 
+        *  height_2    : int<epx> 
         *  colour_2    : SolidColour
 
     | DrawStretchedImageWithTopLeftAt 
-        of leftX_3     : float32<wu> 
-        *  topY_3      : float32<wu> 
+        of leftX_3     : float32<epx> 
+        *  topY_3      : float32<epx> 
         *  img_3       : ImageID 
-        *  width_3     : float32<wu> 
-        *  height_3    : float32<wu>
+        *  width_3     : float32<epx> 
+        *  height_3    : float32<epx>
 
     | DrawSubImageStretchedToTarget
         of srcleft_4   : int 
         *  srctop_4    : int 
         *  srcwidth_4  : int 
         *  srcheight_4 : int 
-        *  dstleft_4   : float32<wu> 
-        *  dsttop_4    : float32<wu> 
-        *  dstwidth_4  : float32<wu> 
-        *  dstheight_4 : float32<wu> 
+        *  dstleft_4   : float32<epx> 
+        *  dsttop_4    : float32<epx> 
+        *  dstwidth_4  : float32<epx> 
+        *  dstheight_4 : float32<epx> 
         *  img_4       : ImageID
 
     | DrawCharImageWithTopLeftAt      
-        of textX_5     : int<wu>
-        *  textY_5     : int<wu> 
+        of textX_5     : int<epx>
+        *  textY_5     : int<epx> 
         *  charIndex_5 : uint32 
         *  font_5      : FontID
 

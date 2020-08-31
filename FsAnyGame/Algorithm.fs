@@ -49,6 +49,8 @@ let ChooseItemFromListBasedOnGameTime theList (gameTime:float32<seconds>) =
             theList.[index]
 
 
+/// Only intended for use with very short lists, and where
+/// creating a temporary aliasing array would be undesireable.
 let inline ChooseItemFromListByModulo (hint:^num) (theList: 'a list) =
     
     let len = theList.Length

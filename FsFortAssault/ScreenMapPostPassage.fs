@@ -13,16 +13,16 @@ open MapScreenSharedDetail
 open StoryboardChapterChange
 
 
-let DefaultAlliedFleetLocation = { xwf=124.0F<wu> ; ywf=75.0F<wu> }
+let DefaultAlliedFleetLocation = { xwf=124.0F<epx> ; ywf=75.0F<epx> }
 
 /// These are permitted to overlap other rectangles, including the trigger rectangles.
 let PermissableTravelLocationRectangles =
     [
         {
-            Left   =  86.0F<wu>
-            Top    =  75.0F<wu>
-            Right  = 276.0F<wu>
-            Bottom = 139.0F<wu>
+            Left   =  86.0F<epx>
+            Top    =  75.0F<epx>
+            Right  = 276.0F<epx>
+            Bottom = 139.0F<epx>
         }
     ]
 
@@ -54,7 +54,7 @@ let AlliesVersusEnemy alliesLocation enemyLocation gameTime =
 
 let RenderMapPostPassageScreen render (model:MapPostPassageScreenModel) =
 
-    Image1to1 render 0<wu> 0<wu> ImageMap.ImageID
+    Image1to1 render 0<epx> 0<epx> ImageMap.ImageID
 
     // PermissableTravelLocationRectangles |> List.iteri (fun i r ->
     //     render (DrawFilledRectangle(r.Left, r.Top, r |> RectangleWidth, r |> RectangleHeight, i |> AlternateOf 0xEE0000u 0x00FF00u)))
@@ -67,7 +67,7 @@ let RenderMapPostPassageScreen render (model:MapPostPassageScreenModel) =
         | PostPassageScreenOver ->
             ()
 
-    let h = ImageMap.ImageHeight |> FloatWuToIntWu
+    let h = ImageMap.ImageHeight |> FloatWuToIntEpx
 
     ScoreboardArea render h
 

@@ -20,7 +20,7 @@ type IntermissionScreenModel<'nextChapterType> =
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let RenderIntermissionScreen render model gameTime =
-    Image1to1 render 0<wu> 0<wu> ImageIntermissionBackground.ImageID
+    Image1to1 render 0<epx> 0<epx> ImageIntermissionBackground.ImageID
     Text render YellowFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (ScreenHeightInt / 2) "GET READY"
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

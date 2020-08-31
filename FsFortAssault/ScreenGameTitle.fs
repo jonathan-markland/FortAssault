@@ -36,12 +36,12 @@ type GameTitleScreenModel =
 let RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 
     RenderBeachBackground render (gameTime / 4.0F)
-    CentreImage render 160.0F<wu> 68.0F<wu> ImageTitle
+    CentreImage render 160.0F<epx> 68.0F<epx> ImageTitle
 
     let scoreboardText = ScoreboardText 30 model.GameGlobalState.GameScoreBoard  // TODO: memoize in the model?
-    Paragraph render BlackFontID CentreAlign MiddleAlign 160<wu> 94<wu> 20<wu> scoreboardText
+    Paragraph render BlackFontID CentreAlign MiddleAlign 160<epx> 94<epx> 20<epx> scoreboardText
 
-    Text render BlackFontID CentreAlign MiddleAlign 160<wu> 180<wu> "USE CURSOR KEYS ... Z TO FIRE"
+    Text render BlackFontID CentreAlign MiddleAlign 160<epx> 180<epx> "USE CURSOR KEYS ... Z TO FIRE"
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

@@ -13,8 +13,8 @@ open Time
 type ImageWithDimensions =
     {
         ImageID     : ImageID
-        ImageWidth  : float32<wu>  // TODO: make int?
-        ImageHeight : float32<wu>
+        ImageWidth  : float32<epx>  // TODO: make int?
+        ImageHeight : float32<epx>
     }
 
 /// Draw image without stretching.
@@ -51,7 +51,7 @@ let Rectangle render left top width height colour =
 
 
 /// Draw a square of a given side, centred about a point.
-let SquareAroundPoint render left top (side:int<wu>) colour =
+let SquareAroundPoint render left top (side:int<epx>) colour =
     let h = side / 2
     Rectangle render (left - h) (top - h) side side colour
 
@@ -60,14 +60,14 @@ let SquareAroundPoint render left top (side:int<wu>) colour =
 // ---------------------------------------------------------------------------------------------------------
 
 /// Draw text string in a given font, aligned in a given way with respect to a point.
-let Text render fontResource hAlign vAlign (x:int<wu>) (y:int<wu>) message =
+let Text render fontResource hAlign vAlign (x:int<epx>) (y:int<epx>) message =
    
     let drawCharImage (index:int) left top =
         // TODO: Should algorithm use uint32 for the char index?
-        render (DrawCharImageWithTopLeftAt(IntToIntWu left, IntToIntWu top, uint32 index, fontResource))
+        render (DrawCharImageWithTopLeftAt(IntToIntEpx left, IntToIntEpx top, uint32 index, fontResource))
     
     // TODO: Constants?
-    LayOutMonospaceFontTextString drawCharImage 8 8 (IntWuToInt x) (IntWuToInt y) message hAlign vAlign  
+    LayOutMonospaceFontTextString drawCharImage 8 8 (IntEpxToInt x) (IntEpxToInt y) message hAlign vAlign  
 
 
 
@@ -87,7 +87,7 @@ let Flo render fontResource hAlign vAlign x y (value:float32) =
 //  Drawing paragraph
 // ---------------------------------------------------------------------------------------------------------
 
-let Paragraph render fontResource hAlign vAlign (x:int<wu>) (y:int<wu>) (ydelta:int<wu>) messageList =
+let Paragraph render fontResource hAlign vAlign (x:int<epx>) (y:int<epx>) (ydelta:int<epx>) messageList =
 
     messageList
         |> List.iteri (fun i message ->

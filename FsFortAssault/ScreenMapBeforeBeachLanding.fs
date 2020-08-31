@@ -13,16 +13,16 @@ open MapScreenSharedDetail
 open StoryboardChapterChange
 
 
-let DefaultAlliedFleetLocation = { xwf=120.0F<wu> ; ywf=97.0F<wu> }
+let DefaultAlliedFleetLocation = { xwf=120.0F<epx> ; ywf=97.0F<epx> }
 
 /// These are permitted to overlap other rectangles, including the trigger rectangles.
 let PermissableTravelLocationRectangles =
     [
         {
-            Left   =  86.0F<wu>
-            Top    =  75.0F<wu>
-            Right  = 156.0F<wu>
-            Bottom = 139.0F<wu>
+            Left   =  86.0F<epx>
+            Top    =  75.0F<epx>
+            Right  = 156.0F<epx>
+            Bottom = 139.0F<epx>
         }
         BeachLandingTriggerRectangle
     ]
@@ -54,7 +54,7 @@ let AlliesVersusBeach alliesLocation gameTime =
 
 let RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenModel) =
 
-    Image1to1 render 0<wu> 0<wu> ImageMap.ImageID
+    Image1to1 render 0<epx> 0<epx> ImageMap.ImageID
 
     // PermissableTravelLocationRectangles |> List.iteri (fun i r ->
     //     render (DrawFilledRectangle(r.Left, r.Top, r |> RectangleWidth, r |> RectangleHeight, i |> AlternateOf 0xEE0000u 0x00FF00u)))
@@ -68,7 +68,7 @@ let RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenM
 
     let mapHeight = ImageMap.ImageHeight
 
-    ScoreboardArea render (mapHeight |> FloatWuToIntWu)
+    ScoreboardArea render (mapHeight |> FloatWuToIntEpx)
 
     let scorePanel =
         {
@@ -81,7 +81,7 @@ let RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenM
             Elevation        = 0.0F<degrees>
         }
 
-    DrawScorePanel render (mapHeight  |> FloatWuToIntWu)scorePanel
+    DrawScorePanel render (mapHeight  |> FloatWuToIntEpx)scorePanel
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

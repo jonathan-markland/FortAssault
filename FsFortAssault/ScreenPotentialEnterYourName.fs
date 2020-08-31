@@ -26,7 +26,7 @@ type PotentialEnterYourNameScreenModel =
 let RenderPotentialEnterYourNameScreen render (model:PotentialEnterYourNameScreenModel) gameTime =
 
     RenderBeachBackground render gameTime
-    Paragraph render BlackFontID CentreAlign MiddleAlign 160<wu> 75<wu> 10<wu> model.MemoizedText
+    Paragraph render BlackFontID CentreAlign MiddleAlign 160<epx> 75<epx> 10<epx> model.MemoizedText
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

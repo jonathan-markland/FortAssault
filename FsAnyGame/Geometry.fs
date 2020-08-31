@@ -1,35 +1,42 @@
 ﻿module Geometry
 
-/// F# units-of-measure used to indicate "world" units.
-[<Measure>] type wu   // TODO: This is a really bad name because it's really "display units".
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let IntWuToInt (x:int<wu>) = int (x)
-let IntToIntWu (x:int)     = LanguagePrimitives.Int32WithMeasure x
+/// F# units-of-measure used to indicate Engine Pixels.
+/// This is the units with which the game engine calculates.
+[<Measure>] type epx
 
-let FloatWuToInt x = int (x + 0.5F<wu>)
-let IntToFloatWu x = LanguagePrimitives.Float32WithMeasure (float32 x)
+let IntEpxToInt (x:int<epx>) = int (x)
+let IntToIntEpx (x:int)      = LanguagePrimitives.Int32WithMeasure x
 
-let FloatWuToIntWu x = x |> FloatWuToInt |> IntToIntWu
+let FloatEpxToInt x = int (x + 0.5F<epx>)
+let IntToFloatEpx x = LanguagePrimitives.Float32WithMeasure (float32 x)
+
+let FloatWuToIntEpx x = x |> FloatEpxToInt |> IntToIntEpx
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 /// A cartesian point.
 type PointF32 =
     {
-        xwf:float32<wu> ; ywf:float32<wu>
+        xwf:float32<epx> ; ywf:float32<epx>
     }
 
 /// A movement delta.
 type MovementDeltaF32 =
     {
-        MovementDeltaX: float32<wu>
-        MovementDeltaY: float32<wu>
+        MovementDeltaX: float32<epx>
+        MovementDeltaY: float32<epx>
     }
 
 /// A rectangle in cartesian World-Space.
 type RectangleF32 =
     {
-        Left:float32<wu> ; Top:float32<wu> ; Right:float32<wu> ; Bottom:float32<wu>
+        Left:float32<epx> ; Top:float32<epx> ; Right:float32<epx> ; Bottom:float32<epx>
     }
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    
 let RectangleWidth  r = r.Right - r.Left
 let RectangleHeight r = r.Bottom - r.Top
 
@@ -40,7 +47,7 @@ let PointToLeftOf  p1 p2 =  p1.xwf < p2.xwf
 let PointToRightOf p1 p2 =  p1.xwf > p2.xwf
 
 /// Return true if a and b are within a given distance from each other.
-let IsWithinRangeOf (a:float32<wu>) triggerDistance (b:float32<wu>) =
+let IsWithinRangeOf (a:float32<epx>) triggerDistance (b:float32<epx>) =
     (abs (a-b)) < triggerDistance
 
 /// Return true if points a and b are within a given distance from each other.
@@ -88,19 +95,19 @@ let SimpleMovementDeltaToGetTo toPoint speed fromPoint =
             let delta = toPoint.xwf - fromPoint.xwf
             if delta > speed then
                 speed
-            elif delta < 0.0F<wu> then
+            elif delta < 0.0F<epx> then
                 -speed
             else
-                0.0F<wu>
+                0.0F<epx>
 
         MovementDeltaY =
             let delta = toPoint.ywf - fromPoint.ywf
             if delta > speed then
                 speed
-            elif delta < 0.0F<wu> then
+            elif delta < 0.0F<epx> then
                 -speed
             else
-                0.0F<wu>
+                0.0F<epx>
     }
 
 /// Returns true if the given point lies within any of the rectangles in a list.

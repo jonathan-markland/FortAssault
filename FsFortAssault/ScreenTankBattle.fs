@@ -23,25 +23,25 @@ let NumTilesVertically              = NumberOfRowsForTankMatrix
 let TileSquareSide                  =  16
 
 let ScrollingSectionTopY            = 196 - (NumTilesVertically * TileSquareSide)
-let TankTopLimitY                   =  60.0F<wu>
-let TankBottomLimitY                = 188.0F<wu>
+let TankTopLimitY                   =  60.0F<epx>
+let TankBottomLimitY                = 188.0F<epx>
 let TankStartY                      = (TankTopLimitY + TankBottomLimitY) / 2.0F
-let TankX                           = ScreenWidth - 16.0F<wu>  // TODO: dimension related to tank width.
-let TankGunOffsetFromCentreX        = 12.0F<wu>  // TODO: Need a metadata file so artist could alter these.
-let TankGunOffsetFromCentreY        =  3.0F<wu>  // TODO: Need a metadata file so artist could alter these.
-let EnemyTankGunOffsetFromCentreX   = 12.0F<wu>  // TODO: Need a metadata file so artist could alter these.
-let EnemyTankGunOffsetFromCentreY   =  1.0F<wu>  // TODO: Need a metadata file so artist could alter these.
+let TankX                           = ScreenWidth - 16.0F<epx>  // TODO: dimension related to tank width.
+let TankGunOffsetFromCentreX        = 12.0F<epx>  // TODO: Need a metadata file so artist could alter these.
+let TankGunOffsetFromCentreY        =  3.0F<epx>  // TODO: Need a metadata file so artist could alter these.
+let EnemyTankGunOffsetFromCentreX   = 12.0F<epx>  // TODO: Need a metadata file so artist could alter these.
+let EnemyTankGunOffsetFromCentreY   =  1.0F<epx>  // TODO: Need a metadata file so artist could alter these.
 let EnemyTankFiringInterval         =  3.0F<seconds>
 
 let PauseTimeWhenEnded              =   4.0F<seconds>
 let WholeScreenTime                 = 120.0F<seconds>
-let TankMovementPerSecond           = 15.0F<wu/seconds>
+let TankMovementPerSecond           = 15.0F<epx/seconds>
 let TankReFireInterval              =  2.5F<seconds>
 let TankTracksAnimDuration          =  0.2F<seconds>
 let ExplosionDuration               =  0.75F<seconds>
 
 let ScoreForHittingEnemyTank        = 1000u
-let MissileCollisionTriggerDistance =  7.0F<wu>
+let MissileCollisionTriggerDistance =  7.0F<epx>
 let ReachedFortTileCount            = 4   // Count includes the extra lead-in/lead-out spaces that are automatically added.  (try 45 tto truncate the screen)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -66,15 +66,15 @@ let NewExplosion centreLocation gameTime =
 type TankDirection = TankFacingUpLeft | TankFacingLeft | TankFacingDownLeft
 
 type AlliedState =
-    | AlliedTankInPlay     of tankY:float32<wu> * TankDirection
+    | AlliedTankInPlay     of tankY:float32<epx> * TankDirection
     | AlliedTankExploding  of startTime:float32<seconds>
     | AlliedTankReachedFort
     | AlliedTankDestroyed
 
 type EnemyTankMatrixLocation =
     {
-        etmx : float32<wu>
-        etmy : float32<wu>
+        etmx : float32<epx>
+        etmy : float32<epx>
         // TODO: have a tank kind?
     }
 
@@ -166,34 +166,34 @@ let NewEnemyMissile centreLocation gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
    
-let TankCollisionRectangle (tankX:float32<wu>) (tankY:float32<wu>) tankDirection =
+let TankCollisionRectangle (tankX:float32<epx>) (tankY:float32<epx>) tankDirection =
     match tankDirection with
-        | TankFacingLeft     -> { Left = tankX - 8.0F<wu> ; Top = tankY - 4.0F<wu> ; Right = tankX + 8.0F<wu> ; Bottom = tankY + 4.0F<wu> }
+        | TankFacingLeft     -> { Left = tankX - 8.0F<epx> ; Top = tankY - 4.0F<epx> ; Right = tankX + 8.0F<epx> ; Bottom = tankY + 4.0F<epx> }
         | TankFacingDownLeft
-        | TankFacingUpLeft   -> { Left = tankX - 8.0F<wu> ; Top = tankY - 6.0F<wu> ; Right = tankX + 8.0F<wu> ; Bottom = tankY + 6.0F<wu> }
+        | TankFacingUpLeft   -> { Left = tankX - 8.0F<epx> ; Top = tankY - 6.0F<epx> ; Right = tankX + 8.0F<epx> ; Bottom = tankY + 6.0F<epx> }
 
 /// Offset of the LEFT edge of the whole matrix, measured from the view rectangle.
 let TileMatrixOffsetXAtTimeOffset numTilesHorizontally (timeOffsetIntoLevel:float32<seconds>) =
     let s = int (timeOffsetIntoLevel * 5.0F) 
     (-numTilesHorizontally * TileSquareSide) + 320 + s  // TODO: Constants
 
-let ScreenXtoMatrixPixelX numTilesHorizontally (timeOffsetIntoLevel:float32<seconds>) (x:float32<wu>) =
+let ScreenXtoMatrixPixelX numTilesHorizontally (timeOffsetIntoLevel:float32<seconds>) (x:float32<epx>) =
     let amountOfMatrixOffLeftOfScreen = -(TileMatrixOffsetXAtTimeOffset numTilesHorizontally timeOffsetIntoLevel)
-    amountOfMatrixOffLeftOfScreen + (x |> FloatWuToInt)
+    amountOfMatrixOffLeftOfScreen + (x |> FloatEpxToInt)
 
-let ScreenYtoMatrixPixelY (tankY:float32<wu>) =
-    tankY - LanguagePrimitives.Float32WithMeasure<wu>(float32 ScrollingSectionTopY)
+let ScreenYtoMatrixPixelY (tankY:float32<epx>) =
+    tankY - LanguagePrimitives.Float32WithMeasure<epx>(float32 ScrollingSectionTopY)
 
 let EnemyTankMatrixLocationToScreen numTilesHorizontally enemyLocation gameTime =
     let { etmx=ex ; etmy=ey } = enemyLocation
-    let ofsX = TileMatrixOffsetXAtTimeOffset numTilesHorizontally gameTime |> IntToFloatWu  // TODO: We repeat these calculations from elsewhere.
-    let ofsY = ScrollingSectionTopY |> IntToFloatWu
+    let ofsX = TileMatrixOffsetXAtTimeOffset numTilesHorizontally gameTime |> IntToFloatEpx  // TODO: We repeat these calculations from elsewhere.
+    let ofsY = ScrollingSectionTopY |> IntToFloatEpx
     { xwf=ofsX + ex ; ywf=ofsY + ey }
 
 let CanTankPassOverTile tileImageId =
     tileImageId = ImageTileSand.ImageID || tileImageId = ImageTileBridge.ImageID
 
-let HasTankCrashed (tankY:float32<wu>) tankDirection (timeOffsetIntoLevel:float32<seconds>) (constants:TankBattleScreenConstantsModel) =
+let HasTankCrashed (tankY:float32<epx>) tankDirection (timeOffsetIntoLevel:float32<seconds>) (constants:TankBattleScreenConstantsModel) =
 
     let tiles = constants.LevelMap.TilesArray
     let numTilesHorizontally = constants.LevelMap.TilesHorizontally
@@ -203,10 +203,10 @@ let HasTankCrashed (tankY:float32<wu>) tankDirection (timeOffsetIntoLevel:float3
 
     let tileMatrixViewportWindow =  // TODO: The following is not great
         {
-            WindowLeft   = tankScreenRectangle.Left |> FloatWuToInt
-            WindowTop    = tankScreenRectangle.Top  |> FloatWuToInt
-            WindowWidth  = tankScreenRectangle |> RectangleWidth |> FloatWuToInt
-            WindowHeight = tankScreenRectangle |> RectangleHeight |> FloatWuToInt
+            WindowLeft   = tankScreenRectangle.Left |> FloatEpxToInt
+            WindowTop    = tankScreenRectangle.Top  |> FloatEpxToInt
+            WindowWidth  = tankScreenRectangle |> RectangleWidth |> FloatEpxToInt
+            WindowHeight = tankScreenRectangle |> RectangleHeight |> FloatEpxToInt
         }
 
     let tileMatrixOffset =  // Reminder - from the top left corner of the tileMatrixViewportWindow
@@ -214,7 +214,7 @@ let HasTankCrashed (tankY:float32<wu>) tankDirection (timeOffsetIntoLevel:float3
             OffsetX = (TileMatrixOffsetXAtTimeOffset numTilesHorizontally timeOffsetIntoLevel) 
                         - tileMatrixViewportWindow.WindowLeft
 
-            OffsetY = -(tankScreenRectangle.Top - LanguagePrimitives.Float32WithMeasure<wu>(float32 ScrollingSectionTopY)) |> FloatWuToInt
+            OffsetY = -(tankScreenRectangle.Top - LanguagePrimitives.Float32WithMeasure<epx>(float32 ScrollingSectionTopY)) |> FloatEpxToInt
         }
 
     let mutable tankCanPassOver = true
@@ -257,8 +257,8 @@ let DrawMatrix render (constants:TankBattleScreenConstantsModel) (timeOffset:flo
         tileMatrixViewportWindow 
         tileMatrixOffset 
         (fun x y ix iy -> 
-            let px n = LanguagePrimitives.Float32WithMeasure<wu>(float32 n)
-            Image1to1 render (x |> IntToIntWu) (y |> IntToIntWu) (tiles.[iy * numTilesHorizontally + ix])
+            let px n = LanguagePrimitives.Float32WithMeasure<epx>(float32 n)
+            Image1to1 render (x |> IntToIntEpx) (y |> IntToIntEpx) (tiles.[iy * numTilesHorizontally + ix])
         )
 
 
@@ -277,8 +277,8 @@ let TankImagesFor tankDirection =
 
 let ForEachEnemyTankScreenLocation numTilesHorizontally gameTime f enemyTanks =
 
-    let ofsX = TileMatrixOffsetXAtTimeOffset numTilesHorizontally gameTime |> IntToFloatWu
-    let ofsY = ScrollingSectionTopY |> IntToFloatWu
+    let ofsX = TileMatrixOffsetXAtTimeOffset numTilesHorizontally gameTime |> IntToFloatEpx
+    let ofsY = ScrollingSectionTopY |> IntToFloatEpx
 
     enemyTanks |> List.iter (fun {etmx=x ; etmy=y} -> f (x + ofsX) (y + ofsY))
 
@@ -309,7 +309,7 @@ let RenderTankBattleScreen render (model:TankBattleScreenModel) gameTime =
         let elapsed = gameTime - model.Constants.ScreenStartTime
         CycleImages render TankX tankY (TankImagesFor tankDirection) TankTracksAnimDuration elapsed
 
-    let h = 0.0F<wu>
+    let h = 0.0F<epx>
         
     // ScoreboardArea render h
 
@@ -330,7 +330,7 @@ let RenderTankBattleScreen render (model:TankBattleScreenModel) gameTime =
         | AlliedTankDestroyed ->
             ()  // Won't happen because the Storyboard switches.
 
-    DrawTankBattleScorePanel render (h |> FloatWuToIntWu) model.ScoreAndHiScore.Score model.TanksRemaining
+    DrawTankBattleScorePanel render (h |> FloatWuToIntEpx) model.ScoreAndHiScore.Score model.TanksRemaining
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -341,8 +341,8 @@ let ToEnemyTankLocationsOnMatrix enemyTankTileLocations =
     enemyTankTileLocations |> List.map (
         fun {etx=tileX ; ety=tileY} ->
             {
-                etmx = IntToFloatWu (tileX * TileSquareSide + half)
-                etmy = IntToFloatWu (tileY * TileSquareSide + half)
+                etmx = IntToFloatEpx (tileX * TileSquareSide + half)
+                etmy = IntToFloatEpx (tileY * TileSquareSide + half)
             }
     )
 
@@ -497,13 +497,13 @@ let EnemyMissilesWithAdditionalFirings numTilesHorizontally (enemyTanks:EnemyTan
         ChooseItemFromListByModulo gameTime
 
     let matrixLeftPixel  =
-        0.0F<wu> |> ScreenXtoMatrixPixelX numTilesHorizontally gameTime
+        0.0F<epx> |> ScreenXtoMatrixPixelX numTilesHorizontally gameTime
 
     let matrixRightPixel =
         ScreenWidth |> ScreenXtoMatrixPixelX numTilesHorizontally gameTime
 
     let whereEnemyTankIsVisible {etmx=x ; etmy=_} =
-        let x = x |> FloatWuToInt
+        let x = x |> FloatEpxToInt
         x >= matrixLeftPixel && x <= matrixRightPixel
 
     let thatAreVisible tanks =

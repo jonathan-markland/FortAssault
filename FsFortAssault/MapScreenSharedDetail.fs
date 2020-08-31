@@ -7,12 +7,12 @@ open Input
 open InputEventData
 
 /// When allied-enemy separation distance is this or less, we engage battle.
-let EnemyEngagementDistance = 20.0F<wu>
+let EnemyEngagementDistance = 20.0F<epx>
 
-let AlliedSpeed          = 0.3F<wu>
-let EnemySpeed           = 0.3F<wu>
+let AlliedSpeed          = 0.3F<epx>
+let EnemySpeed           = 0.3F<epx>
 
-let DefaultEnemyFleetLocation  = { xwf= 97.0F<wu> ; ywf=129.0F<wu> }
+let DefaultEnemyFleetLocation  = { xwf= 97.0F<epx> ; ywf=129.0F<epx> }
 
 let PauseTimeOnceEngaged = 2.0F<seconds>
 
@@ -21,39 +21,39 @@ let PauseTimeOnceEngaged = 2.0F<seconds>
 
 let SecretPassageTriggerRectangle =
     {
-        Left   = 134.0F<wu>
-        Top    =  35.0F<wu>
-        Right  = 147.0F<wu>
-        Bottom =  47.0F<wu>
+        Left   = 134.0F<epx>
+        Top    =  35.0F<epx>
+        Right  = 147.0F<epx>
+        Bottom =  47.0F<epx>
     }
 
 let EnemyGivesChaseTriggerRectangle =
     {
-        Left   =  86.0F<wu>
-        Top    =  75.0F<wu>
-        Right  = 238.0F<wu>
-        Bottom = 139.0F<wu>
+        Left   =  86.0F<epx>
+        Top    =  75.0F<epx>
+        Right  = 238.0F<epx>
+        Bottom = 139.0F<epx>
     }
 
 let BeachLandingTriggerRectangle =
     {
-        Left   =  68.0F<wu>
-        Top    = 130.0F<wu>
-        Right  =  91.0F<wu>
-        Bottom = 141.0F<wu>
+        Left   =  68.0F<epx>
+        Top    = 130.0F<epx>
+        Right  =  91.0F<epx>
+        Bottom = 141.0F<epx>
     }
 
 let MovementDeltaForInput speed input =
 
     let moveDelta leftKey rightKey =
         if leftKey.Held && rightKey.Held then
-            0.0F<wu>
+            0.0F<epx>
         elif leftKey.Held then
             -speed
         elif rightKey.Held then
             speed
         else
-            0.0F<wu>
+            0.0F<epx>
 
     {
         MovementDeltaX = moveDelta input.Left input.Right
@@ -84,7 +84,7 @@ let NewEnemyFleetLocation oldEnemyLocation alliesLocation =
 
     let attractionPoint = AttractionPointForEnemyFleet alliesLocation
 
-    if oldEnemyLocation |> IsWithinRegionOf attractionPoint 1.0F<wu> then
+    if oldEnemyLocation |> IsWithinRegionOf attractionPoint 1.0F<epx> then
         oldEnemyLocation
     else
         let delta = oldEnemyLocation |> SimpleMovementDeltaToGetTo attractionPoint EnemySpeed

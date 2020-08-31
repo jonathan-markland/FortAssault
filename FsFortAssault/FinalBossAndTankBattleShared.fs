@@ -26,16 +26,16 @@ let InitialTargetLocations =
     [
         // X coordinate is used as the IDENTITY of the record!
 
-        (169.0F<wu> ,  50.0F<wu>)
-        (134.0F<wu> ,  71.0F<wu>)
-        (194.0F<wu> ,  90.0F<wu>)
-        (123.0F<wu> , 111.0F<wu>)
-        (221.0F<wu> ,  68.0F<wu>)
-        ( 74.0F<wu> , 108.0F<wu>)
-        (249.0F<wu> , 116.0F<wu>)
-        (163.0F<wu> ,  83.0F<wu>)
-        (104.0F<wu> ,  70.0F<wu>)
-        (231.0F<wu> ,  96.0F<wu>)
+        (169.0F<epx> ,  50.0F<epx>)
+        (134.0F<epx> ,  71.0F<epx>)
+        (194.0F<epx> ,  90.0F<epx>)
+        (123.0F<epx> , 111.0F<epx>)
+        (221.0F<epx> ,  68.0F<epx>)
+        ( 74.0F<epx> , 108.0F<epx>)
+        (249.0F<epx> , 116.0F<epx>)
+        (163.0F<epx> ,  83.0F<epx>)
+        (104.0F<epx> ,  70.0F<epx>)
+        (231.0F<epx> ,  96.0F<epx>)
     ]
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

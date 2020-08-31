@@ -20,17 +20,17 @@ open StoryboardChapterChange
 
 
 let InitialGunElevation            =   30.0F<degrees>
-let InitialPlayerGunPositionX      =  160.0F<wu>
+let InitialPlayerGunPositionX      =  160.0F<epx>
 let PauseTimeWhenEnded             =    4.0F<seconds>
 let ExplosionDuration              =    0.75F<seconds>
 let IncomingOrdinanceDuration      =    6.0F<seconds>
 let ScoreForSinkingEnemyShip       = 2000u
-let MessageY                       =   15<wu>
+let MessageY                       =   15<epx>
 let SplashDuration                 =    0.2F<seconds>
 let TimeBetweenEnemyFirings        =    3.5F<seconds>  
 let TimeBetweenEnemyLaunchGoingOffTopOfScreenAndComingBackOn = 0.3F<seconds>
-let EnemyFireHittingShipY          =  155.0F<wu>
-let EnemyFireMissingShipY          =  140.0F<wu>
+let EnemyFireHittingShipY          =  155.0F<epx>
+let EnemyFireMissingShipY          =  140.0F<epx>
 let EnemyFireTriesCount            =    5
 let SinkingShipFiringPauseDuration =    4.0F<seconds>
 let GunStepRate                    =   10.0F<degrees/seconds>
@@ -39,7 +39,7 @@ let GunStepRate                    =   10.0F<degrees/seconds>
 
 type DamageChange = DamageChange of unit
 
-type HitsChange = { HitShipX : float32<wu> }  // identifies the enemy ship to be sunk
+type HitsChange = { HitShipX : float32<epx> }  // identifies the enemy ship to be sunk
 
 type IncomingChange = IncomingChange of unit
 
@@ -139,7 +139,7 @@ let FlickbooksForEnemyLaunchFrom (ship:EnemyShip) decoratives willHit gameTime =
                 MechanicsControlledMovingObject
                     SpeedingUpMotion
                     { xwf = x ; ywf = originY }
-                    { xwf = x ; ywf = -10.0F<wu> }
+                    { xwf = x ; ywf = -10.0F<epx> }
                     t1
                     EnemyLaunchPart1FlickbookType.FlickBookDuration
         }
@@ -151,7 +151,7 @@ let FlickbooksForEnemyLaunchFrom (ship:EnemyShip) decoratives willHit gameTime =
             FlickBookMechanicsObject = 
                 MechanicsControlledMovingObject
                     SpeedingUpMotion
-                    { xwf = x ; ywf = -100.0F<wu> }
+                    { xwf = x ; ywf = -100.0F<epx> }
                     { xwf = x ; ywf = targetY }
                     t3
                     EnemyLaunchPart2FlickbookType.FlickBookDuration
@@ -294,7 +294,7 @@ let DebugDrawShipHorizontalHitTestMessage render gunCentreX enemyShips =
 let RenderSeaBattleScreen render (model:SeaBattleScreenModel) gameTime =
 
     let DrawBackground () =
-        Image1to1 render 0<wu> 0<wu> ImageSeaBattleBackground0.ImageID
+        Image1to1 render 0<epx> 0<epx> ImageSeaBattleBackground0.ImageID
         DrawFlickbookInstanceList render model.SkyExplosion gameTime
 
     let backgroundHeight =
@@ -338,8 +338,8 @@ let RenderSeaBattleScreen render (model:SeaBattleScreenModel) gameTime =
         }
 
     Text render BlackFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) MessageY model.MessageText
-    ScoreboardArea render (backgroundHeight |> FloatWuToIntWu)
-    DrawScorePanel render (backgroundHeight |> FloatWuToIntWu) scorePanel
+    ScoreboardArea render (backgroundHeight |> FloatWuToIntEpx)
+    DrawScorePanel render (backgroundHeight |> FloatWuToIntEpx) scorePanel
 
     // DEBUG:  DebugDrawShipHorizontalHitTestMessage render model.GunAim.GunCentreX model.EnemyShips
 

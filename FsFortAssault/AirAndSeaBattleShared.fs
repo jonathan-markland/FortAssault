@@ -36,16 +36,16 @@ let ElevationToScreenY elevation =
     let angle                   = elevation |> ReflectedElevation
     let angleInReverseUnitSpace = angle |> RangeMap 0.0F<degrees> 45.0F<degrees> 1.0F 0.0F
     let asSquared               = angleInReverseUnitSpace |> Squared
-    let inScreenSpace           = asSquared |> RangeMap 0.0F 1.0F 100.0F<wu> 148.0F<wu>
-    let result                  = inScreenSpace + 0.5F<wu>
+    let inScreenSpace           = asSquared |> RangeMap 0.0F 1.0F 100.0F<epx> 148.0F<epx>
+    let result                  = inScreenSpace + 0.5F<epx>
     result
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 type EnemyShip =
     {
-        CentreX        : float32<wu>
-        BaseY          : float32<wu>
+        CentreX        : float32<epx>
+        BaseY          : float32<epx>
         ShipImage      : ImageWithDimensions
         SinkStartTime  : float32<seconds> option
         ElevationToHit : float32<degrees>
@@ -62,11 +62,11 @@ let NewEnemyShip centreX shipImage elevationToHit =
 
 let DefaultEnemyShipsArrangement =
     [
-        NewEnemyShip  29.0F<wu> ImageEnemyShip0 44.0F<degrees>
-        NewEnemyShip 143.0F<wu> ImageEnemyShip1 39.5F<degrees>
-        NewEnemyShip 198.0F<wu> ImageEnemyShip2 36.5F<degrees>
-        NewEnemyShip 248.0F<wu> ImageEnemyShip3 41.0F<degrees>
-        NewEnemyShip 288.0F<wu> ImageEnemyShip4 32.5F<degrees>
+        NewEnemyShip  29.0F<epx> ImageEnemyShip0 44.0F<degrees>
+        NewEnemyShip 143.0F<epx> ImageEnemyShip1 39.5F<degrees>
+        NewEnemyShip 198.0F<epx> ImageEnemyShip2 36.5F<degrees>
+        NewEnemyShip 248.0F<epx> ImageEnemyShip3 41.0F<degrees>
+        NewEnemyShip 288.0F<epx> ImageEnemyShip4 32.5F<degrees>
     ]
 
 let EnemyShipIsLive gameTime enemyShip =
@@ -87,7 +87,7 @@ let DrawEnemyShips render listOfShips gameTime =
 
         let sinkLevel =
             match ship.SinkStartTime with
-                | None -> 0.0F<wu>
+                | None -> 0.0F<epx>
                 | Some(sinkStartTime) ->
                     let elapsed = gameTime - sinkStartTime
                     let offset = min elapsed EnemyShipSinkDuration
@@ -101,7 +101,7 @@ let DrawEnemyShips render listOfShips gameTime =
         let dstLeft   = ship.CentreX - (ship.ShipImage.ImageWidth / 2.0F)
         let dstTop    = ship.BaseY - (ship.ShipImage.ImageHeight - sinkLevel)
         let dstWidth  = ship.ShipImage.ImageWidth
-        let dstHeight = srcHeight |> IntToFloatWu
+        let dstHeight = srcHeight |> IntToFloatEpx
         
         let img = ship.ShipImage.ImageID
 
@@ -145,8 +145,8 @@ let NewSkyExplosionFlickBook gameTime =
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let DrawStageCompleteMessage render =
-    Text render BlackFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) 75<wu> "STAGE COMPLETE"
+    Text render BlackFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) 75<epx> "STAGE COMPLETE"
 
 let DrawShipDestroyedMessage render =
-    Text render BlackFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) 75<wu> "SHIP DESTROYED"
+    Text render BlackFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) 75<epx> "SHIP DESTROYED"
 

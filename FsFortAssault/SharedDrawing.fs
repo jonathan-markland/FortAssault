@@ -14,10 +14,10 @@ type BarChartStat =
         CharSpacing:   uint32
     }
 
-let Bar render (x:int<wu>) (y:int<wu>) (chart:BarChartStat) =
+let Bar render (x:int<epx>) (y:int<epx>) (chart:BarChartStat) =
 
     let mutable x' = x
-    let spacing = (int chart.CharSpacing) |> IntToIntWu
+    let spacing = (int chart.CharSpacing) |> IntToIntEpx
 
     let appendRow numRepeats idx fontVisual = 
         let mutable count = numRepeats
@@ -30,5 +30,5 @@ let Bar render (x:int<wu>) (y:int<wu>) (chart:BarChartStat) =
     appendRow chart.RedCount  chart.RedCharIndex  SymbolFontID
 
 let ScoreboardArea render contentHeight =
-    Rectangle render 0<wu> contentHeight ScreenWidthInt (ScreenHeightInt - contentHeight) (SolidColour(0000000u))
+    Rectangle render 0<epx> contentHeight ScreenWidthInt (ScreenHeightInt - contentHeight) (SolidColour(0000000u))
 

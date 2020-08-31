@@ -108,63 +108,63 @@ let RenderAnimationStage render (currentStage:string) =
     let secondOfficerSalutes  = (currentStage.[1] = '2')
     let firstOfficerSalutes   = (currentStage.[0] = '1')
 
-    let cy = 100.F<wu>
-    let my =  80.0F<wu>
+    let cy = 100.F<epx>
+    let my =  80.0F<epx>
 
     // President
 
     if presidentSalutes then
-        CentreImage render 256.0F<wu> cy ImagePresidentSaluting
+        CentreImage render 256.0F<epx> cy ImagePresidentSaluting
     else if presidentHoldsOutHand then
-        CentreImage render 256.0F<wu> cy ImagePresidentPresentingMedal
+        CentreImage render 256.0F<epx> cy ImagePresidentPresentingMedal
     else 
-        CentreImage render 256.0F<wu> cy ImagePresidentStanding
+        CentreImage render 256.0F<epx> cy ImagePresidentStanding
 
     // Colonel
 
     if colonelSalutes then
-        CentreImage render 192.0F<wu> cy ImageColonelSaluting
+        CentreImage render 192.0F<epx> cy ImageColonelSaluting
     else if colonelHoldsOutHand then
-        CentreImage render 192.0F<wu> cy ImageColonelReceivingMedal
+        CentreImage render 192.0F<epx> cy ImageColonelReceivingMedal
     else
-        CentreImage render 192.0F<wu> cy ImageColonelStanding
+        CentreImage render 192.0F<epx> cy ImageColonelStanding
 
     // Medal
 
     if not medalTransferPhase then
-        CentreImage render 192.0F<wu> my ImageMedal
+        CentreImage render 192.0F<epx> my ImageMedal
     else if presidentHoldsOutHand || colonelHoldsOutHand then
-        CentreImage render 224.0F<wu> my ImageMedal
+        CentreImage render 224.0F<epx> my ImageMedal
     else
-        CentreImage render 256.0F<wu> my ImageMedal
+        CentreImage render 256.0F<epx> my ImageMedal
 
     // Second officer    
 
     if secondOfficerSalutes then
-        CentreImage render 128.0F<wu> cy ImageSoldierSaluting
+        CentreImage render 128.0F<epx> cy ImageSoldierSaluting
     else
-        CentreImage render 128.0F<wu> cy ImageSoldierStanding
+        CentreImage render 128.0F<epx> cy ImageSoldierStanding
 
     // First officer
 
     if firstOfficerSalutes then
-        CentreImage render 64.0F<wu> cy ImageSoldierSaluting
+        CentreImage render 64.0F<epx> cy ImageSoldierSaluting
     else
-        CentreImage render 64.0F<wu> cy ImageSoldierStanding
+        CentreImage render 64.0F<epx> cy ImageSoldierStanding
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let RenderVictoryScreen render (model:VictoryScreenModel) gameTime =
     
-    Image1to1 render 0<wu> 0<wu> VictoryScreenImageID
+    Image1to1 render 0<epx> 0<epx> VictoryScreenImageID
     
     match model.AnimationStage with
         
         | [] ->
-            Text render BlackFontID CentreAlign MiddleAlign (ScreenWidthInt / 2)  (75<wu>) "CONGRATULATIONS"
-            Text render RedFontID   CentreAlign MiddleAlign (ScreenWidthInt / 2) (100<wu>) "MISSION COMPLETE"
-            Text render BlueFontID  CentreAlign MiddleAlign (ScreenWidthInt / 2) (125<wu>) (model.ScoreText)
-            Text render BlueFontID  CentreAlign MiddleAlign (ScreenWidthInt / 2) (150<wu>) (model.HiScoreText)
+            Text render BlackFontID CentreAlign MiddleAlign (ScreenWidthInt / 2)  (75<epx>) "CONGRATULATIONS"
+            Text render RedFontID   CentreAlign MiddleAlign (ScreenWidthInt / 2) (100<epx>) "MISSION COMPLETE"
+            Text render BlueFontID  CentreAlign MiddleAlign (ScreenWidthInt / 2) (125<epx>) (model.ScoreText)
+            Text render BlueFontID  CentreAlign MiddleAlign (ScreenWidthInt / 2) (150<epx>) (model.HiScoreText)
 
         | currentStage::_ ->
             RenderAnimationStage render currentStage

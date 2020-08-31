@@ -18,10 +18,10 @@ open FlickBook
 open StoryboardChapterChange
 open ImagesAndFonts
 
-let TorpedoTriggerDistance      =    4.0F<wu>
-let MineTriggerDistance         =    4.0F<wu>
+let TorpedoTriggerDistance      =    4.0F<epx>
+let MineTriggerDistance         =    4.0F<epx>
 let ScoreForGettingAShipThrough = 3000u
-let PassageSuccessBarrierY      =   10.0F<wu>
+let PassageSuccessBarrierY      =   10.0F<epx>
 let PauseTime                   =    3.0F<seconds>
 let ExplosionDuration           =   0.75F<seconds>
 
@@ -150,10 +150,10 @@ let NewShipSpeedAccordingToInput oldShipSpeed input =
 let SpeedInWorldUnits shipSpeed =
 
     match shipSpeed with 
-        | ShipStationary -> 0.0F<wu>
-        | ShipSlow       -> 0.2F<wu>
-        | ShipMedium     -> 0.4F<wu>
-        | ShipFast       -> 0.6F<wu>
+        | ShipStationary -> 0.0F<epx>
+        | ShipSlow       -> 0.2F<epx>
+        | ShipMedium     -> 0.4F<epx>
+        | ShipFast       -> 0.6F<epx>
 
 let Cosine shipRotation =
 
@@ -323,12 +323,12 @@ let DefaultShipLocation =
 
 let FoldAllShipTriggerPoints shipCentre direction f state =
 
-    let length = 10.0F<wu>  // TODO: This will have to be a constant for now, but should be based on half the rough length of the ship
+    let length = 10.0F<epx>  // TODO: This will have to be a constant for now, but should be based on half the rough length of the ship
 
     let cos = Cosine direction
     let sin = Sine direction
 
-    let calcTriggerPoint p (factor:float32<wu>) = 
+    let calcTriggerPoint p (factor:float32<epx>) = 
         let {xwf=x ; ywf=y} = p
         { xwf = x+cos*factor ; ywf = y+sin*factor }
 
@@ -452,7 +452,7 @@ let RightCoast =
             (1.000F, 1.000F)
         ])
 
-let CoastXAt (defaultCoastX, coastLines) (y:float32<wu>) =
+let CoastXAt (defaultCoastX, coastLines) (y:float32<epx>) =
 
     let { ImageID=_ ; ImageWidth=w ; ImageHeight=h } = ImageSecretPassage   // TODO: Bit fed up of de-structuring this all over this listing.
 
@@ -471,7 +471,7 @@ let CoastXAt (defaultCoastX, coastLines) (y:float32<wu>) =
     let leftPos = {xwf=left * w  ; ywf=y}
     leftPos
 
-let CoastLeftAndRightAtY (y:float32<wu>) =
+let CoastLeftAndRightAtY (y:float32<epx>) =
 
     (CoastXAt LeftCoast y, CoastXAt RightCoast y)
 
@@ -594,8 +594,8 @@ let RenderSecretPassageScreen render gameTime secretPassageScreenModel =
 
     let h = ImageSecretPassage.ImageHeight
 
-    Image1to1 render 0<wu> 0<wu> ImageSecretPassage.ImageID
-    ScoreboardArea render (h |> FloatWuToIntWu)
+    Image1to1 render 0<epx> 0<epx> ImageSecretPassage.ImageID
+    ScoreboardArea render (h |> FloatWuToIntEpx)
     DrawMines      secretPassageScreenModel.Mines
     DrawTorpedos   secretPassageScreenModel.LiveTorpedos
     DrawShip       secretPassageScreenModel.Ship
@@ -613,7 +613,7 @@ let RenderSecretPassageScreen render gameTime secretPassageScreenModel =
             Elevation        = 0.0F<degrees>
         }
 
-    DrawScorePanel render (h |> FloatWuToIntWu) scorePanel
+    DrawScorePanel render (h |> FloatWuToIntEpx) scorePanel
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

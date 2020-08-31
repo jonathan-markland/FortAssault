@@ -21,9 +21,9 @@ type GameOverScreenModel =
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let RenderGameOverScreen render (model:GameOverScreenModel) gameTime =
-    Rectangle render 0<wu> 0<wu> ScreenWidthInt ScreenHeightInt (SolidColour(0x000000u))
+    Rectangle render 0<epx> 0<epx> ScreenWidthInt ScreenHeightInt (SolidColour(0x000000u))
     Text render YellowFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (ScreenHeightInt / 2) "GAME OVER"
-    Text render BlueFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (125<wu>) (model.HiScoreText)
+    Text render BlueFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (125<epx>) (model.HiScoreText)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

@@ -78,8 +78,8 @@ let RenderToSdl gameResources renderer drawingCommand =
 
     /// Convert engine units to our pixels.
     /// Currently this host is choosing to use 1:1 with the engine's coordinate scheme.
-    let px (n:float32<wu>) =
-        FloatWuToInt n
+    let px (n:float32<epx>) =
+        FloatEpxToInt n
 
     let numCapsFontImageDefinitionFor (FontID(fontIndex)) =
         let fontSet = gameResources.Fonts
@@ -113,13 +113,13 @@ let RenderToSdl gameResources renderer drawingCommand =
             let cwid = fontDefinition.CharWidth
             let chei = fontDefinition.CharHeight
             let chx = (int charIndex) * cwid // TODO: constant: assuming char with for fonts.
-            DrawSubImage renderer (fontDefinition.FontImage.TextureHandle) chx 0 cwid chei (left |> IntWuToInt) (top |> IntWuToInt) cwid chei
+            DrawSubImage renderer (fontDefinition.FontImage.TextureHandle) chx 0 cwid chei (left |> IntEpxToInt) (top |> IntEpxToInt) cwid chei
 
         | DrawFilledRectangle(left, top, width, height, SolidColour(colour)) ->
-            let right  = (left + width) |> IntWuToInt
-            let bottom = (top + height) |> IntWuToInt
-            let left   = left |> IntWuToInt
-            let top    = top  |> IntWuToInt
+            let right  = (left + width) |> IntEpxToInt
+            let bottom = (top + height) |> IntEpxToInt
+            let left   = left |> IntEpxToInt
+            let top    = top  |> IntEpxToInt
             SDLCover.DrawFilledRectangle renderer left top right bottom colour
 
 
