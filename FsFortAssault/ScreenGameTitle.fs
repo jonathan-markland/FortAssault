@@ -13,7 +13,9 @@ open ScoreboardModel
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let TimeBeforeResponding = 5.0F<seconds>
+/// Intended to form a barrier against pressing FIRE 
+/// repeatedly at the end of the Enter Your Name screen.
+let TimeBeforeResponding = 2.0F<seconds>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

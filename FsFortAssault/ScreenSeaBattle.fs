@@ -186,19 +186,19 @@ let rec PossiblyLaunchEnemyFire currentState _changeRequired gameTime =
                         FlickbooksForEnemyLaunchFrom ship decoratives willHit gameTime
 
                     let futureDamage =
-                        if willHit then [DamageChange () |> ToBeDoneAtTimeII t4] else []  // We don't care about completely resetting the futureDamage list.
+                        if willHit then [DamageChange () |> ToBeDoneAtTime t4] else []  // We don't care about completely resetting the futureDamage list.
 
                     let alliedCountToSink = alliedCountToSink - 1
                             
                     FutureDoneWithAdditionalToDos (
                         (enemyShips , decoratives , futureDamage , alliedCountToSink),
-                        [IncomingChange () |> ToBeDoneAtTimeII t5]
+                        [IncomingChange () |> ToBeDoneAtTime t5]
                     )
 
                 | Some(_) ->  // The head enemy ship is sinking.
                     FutureDoneWithAdditionalToDos (
                         currentState,
-                        [IncomingChange () |> ToBeDoneAtTimeII (gameTime + SinkingShipFiringPauseDuration)]
+                        [IncomingChange () |> ToBeDoneAtTime (gameTime + SinkingShipFiringPauseDuration)]
                     )
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -253,18 +253,18 @@ let ConsiderStateChangesForWhenPlayerFiresGun input gun enemyShips gameTime =
                     match playerShellResult with
     
                         | DirectHit ->
-                            Some ({HitShipX = ship.CentreX} |> ToBeDoneAtTimeII hitTime),
-                            Some ("DIRECT HIT" |> ToBeDoneAtTimeII hitTime), 
-                            Some (ScoreForSinkingEnemyShip |> ToBeDoneAtTimeII hitTime)
+                            Some ({HitShipX = ship.CentreX} |> ToBeDoneAtTime hitTime),
+                            Some ("DIRECT HIT" |> ToBeDoneAtTime hitTime), 
+                            Some (ScoreForSinkingEnemyShip |> ToBeDoneAtTime hitTime)
         
                         | TooNearBy diff ->
                             None, 
-                            Some ((sprintf "%dM SHORT" (diff |> diffToMetres)) |> ToBeDoneAtTimeII hitTime), 
+                            Some ((sprintf "%dM SHORT" (diff |> diffToMetres)) |> ToBeDoneAtTime hitTime), 
                             None
 
                         | TooFarBy diff ->
                             None, 
-                            Some ((sprintf "%dM LONG" (diff |> diffToMetres)) |> ToBeDoneAtTimeII hitTime), 
+                            Some ((sprintf "%dM LONG" (diff |> diffToMetres)) |> ToBeDoneAtTime hitTime), 
                             None
 
                 let decorative =
@@ -355,7 +355,7 @@ let NewSeaBattleScreen scoreAndHiScore shipsRemaining gameTime =
         EnemyShips          = DefaultEnemyShipsArrangement
         Decoratives         = []
         SkyExplosion        = []
-        PendingIncoming     = [ToBeDoneAtTimeII gameTime (IncomingChange ())]
+        PendingIncoming     = [ToBeDoneAtTime gameTime (IncomingChange ())]
         PendingDamage       = []
         PendingHits         = []
         PendingMessageTexts = []

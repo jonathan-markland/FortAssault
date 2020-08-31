@@ -17,7 +17,7 @@ type Pending<'changeData> =
 
 
 
-let ToBeDoneAtTimeII t data =
+let ToBeDoneAtTime t data =
     {
         ToDoTime = t
         ToDoData = data
