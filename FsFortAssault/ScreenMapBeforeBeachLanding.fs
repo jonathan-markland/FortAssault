@@ -68,7 +68,7 @@ let RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenM
 
     let mapHeight = ImageMap.ImageHeight
 
-    ScoreboardArea render (mapHeight |> FloatWuToIntEpx)
+    ScoreboardArea render (mapHeight |> FloatEpxToIntEpx)
 
     let scorePanel =
         {
@@ -81,7 +81,7 @@ let RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenM
             Elevation        = 0.0F<degrees>
         }
 
-    DrawScorePanel render (mapHeight  |> FloatWuToIntEpx)scorePanel
+    DrawScorePanel render (mapHeight  |> FloatEpxToIntEpx)scorePanel
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

@@ -106,7 +106,7 @@ let RenderInitialMapScreen render (model:InitialMapScreenModel) =
 
     let mapHeight = ImageMap.ImageHeight
 
-    ScoreboardArea render (mapHeight |> FloatWuToIntEpx)
+    ScoreboardArea render (mapHeight |> FloatEpxToIntEpx)
 
     let scorePanel =
         {
@@ -119,7 +119,7 @@ let RenderInitialMapScreen render (model:InitialMapScreenModel) =
             Elevation        = 0.0F<degrees> // TODO:  Should this be optional?
         }
 
-    DrawScorePanel render (mapHeight |> FloatWuToIntEpx) scorePanel
+    DrawScorePanel render (mapHeight |> FloatEpxToIntEpx) scorePanel
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

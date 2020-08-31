@@ -330,7 +330,7 @@ let RenderTankBattleScreen render (model:TankBattleScreenModel) gameTime =
         | AlliedTankDestroyed ->
             ()  // Won't happen because the Storyboard switches.
 
-    DrawTankBattleScorePanel render (h |> FloatWuToIntEpx) model.ScoreAndHiScore.Score model.TanksRemaining
+    DrawTankBattleScorePanel render (h |> FloatEpxToIntEpx) model.ScoreAndHiScore.Score model.TanksRemaining
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

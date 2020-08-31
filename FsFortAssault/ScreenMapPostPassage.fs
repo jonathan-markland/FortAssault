@@ -67,7 +67,7 @@ let RenderMapPostPassageScreen render (model:MapPostPassageScreenModel) =
         | PostPassageScreenOver ->
             ()
 
-    let h = ImageMap.ImageHeight |> FloatWuToIntEpx
+    let h = ImageMap.ImageHeight |> FloatEpxToIntEpx
 
     ScoreboardArea render h
 

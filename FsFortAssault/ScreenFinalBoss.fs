@@ -179,8 +179,8 @@ let RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
             Elevation        = model.GunAim.GunElevation      
         }
 
-    ScoreboardArea render (h |> FloatWuToIntEpx)
-    DrawScorePanel render (h |> FloatWuToIntEpx) scorePanel
+    ScoreboardArea render (h |> FloatEpxToIntEpx)
+    DrawScorePanel render (h |> FloatEpxToIntEpx) scorePanel
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

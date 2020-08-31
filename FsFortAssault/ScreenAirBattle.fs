@@ -159,8 +159,8 @@ let DrawDebugPlaneHitTestRectangle render planes gameTime =
 
     planes |> List.iter (fun plane ->
         let {ptx=x;pty=y} = plane.PlaneFlickBookInstance |> FlickBookPositionAtTime gameTime
-        let x,y = x |> FloatWuToIntEpx , y |> FloatWuToIntEpx
-        let dist = PlaneTriggerDistance |> FloatWuToIntEpx
+        let x,y = x |> FloatEpxToIntEpx , y |> FloatEpxToIntEpx
+        let dist = PlaneTriggerDistance |> FloatEpxToIntEpx
         SquareAroundPoint render x y (dist * 2) (SolidColour(0xFF0000u))
     )
 
@@ -216,8 +216,8 @@ let RenderAirBattleScreen render (model:AirBattleScreenModel) gameTime =
             Elevation        = model.GunAim.GunElevation      
         }
 
-    ScoreboardArea render (backgroundHeight |> FloatWuToIntEpx)
-    DrawScorePanel render (backgroundHeight |> FloatWuToIntEpx) scorePanel
+    ScoreboardArea render (backgroundHeight |> FloatEpxToIntEpx)
+    DrawScorePanel render (backgroundHeight |> FloatEpxToIntEpx) scorePanel
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

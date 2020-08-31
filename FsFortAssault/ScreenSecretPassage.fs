@@ -595,7 +595,7 @@ let RenderSecretPassageScreen render gameTime secretPassageScreenModel =
     let h = ImageSecretPassage.ImageHeight
 
     Image1to1 render 0<epx> 0<epx> ImageSecretPassage.ImageID
-    ScoreboardArea render (h |> FloatWuToIntEpx)
+    ScoreboardArea render (h |> FloatEpxToIntEpx)
     DrawMines      secretPassageScreenModel.Mines
     DrawTorpedos   secretPassageScreenModel.LiveTorpedos
     DrawShip       secretPassageScreenModel.Ship
@@ -613,7 +613,7 @@ let RenderSecretPassageScreen render gameTime secretPassageScreenModel =
             Elevation        = 0.0F<degrees>
         }
 
-    DrawScorePanel render (h |> FloatWuToIntEpx) scorePanel
+    DrawScorePanel render (h |> FloatEpxToIntEpx) scorePanel
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

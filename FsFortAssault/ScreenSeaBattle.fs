@@ -338,8 +338,8 @@ let RenderSeaBattleScreen render (model:SeaBattleScreenModel) gameTime =
         }
 
     Text render BlackFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) MessageY model.MessageText
-    ScoreboardArea render (backgroundHeight |> FloatWuToIntEpx)
-    DrawScorePanel render (backgroundHeight |> FloatWuToIntEpx) scorePanel
+    ScoreboardArea render (backgroundHeight |> FloatEpxToIntEpx)
+    DrawScorePanel render (backgroundHeight |> FloatEpxToIntEpx) scorePanel
 
     // DEBUG:  DebugDrawShipHorizontalHitTestMessage render model.GunAim.GunCentreX model.EnemyShips
 
