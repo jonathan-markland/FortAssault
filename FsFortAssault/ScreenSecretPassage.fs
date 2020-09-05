@@ -318,7 +318,7 @@ let NewFutureTorpedoBasedOn (oldTorpedo:Torpedo) gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let DefaultShipLocation =
+let DefaultShipLocation () =
 
     let (w,h) = ImageSecretPassage |> ImageFromID |> ImageDimensionsF
 
@@ -643,7 +643,7 @@ let NewSecretPassageScreen score initialShipCount screenStartGameTime =
                 Score = score
             }
         LiveTorpedos  = DefaultTorpedos screenStartGameTime
-        Ship          = ShipInPlay(DefaultShipLocation)
+        Ship          = ShipInPlay(DefaultShipLocation ())
         Animations    = []
         Mines         = DefaultMines ()
     }
@@ -674,7 +674,7 @@ let CheckIfRoundComplete stats ship gameTime =
             }
 
         let ship = 
-            if stats.ShipsStillToNavigate = 0u then SecretPassageScreenOver else ShipInPlay(DefaultShipLocation)
+            if stats.ShipsStillToNavigate = 0u then SecretPassageScreenOver else ShipInPlay(DefaultShipLocation ())
 
         (stats, ship)
 
