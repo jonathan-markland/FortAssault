@@ -11,6 +11,8 @@ open EnterYourName
 open BeachBackgroundRenderer
 open ScoreHiScore
 open ScoreboardModel
+open ResourceFileMetadata
+open StaticResourceAccess
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

@@ -17,6 +17,8 @@ open ScorePanel
 open FlickBook
 open Collisions
 open FinalBossAndTankBattleShared
+open ResourceFileMetadata
+open StaticResourceAccess
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -33,10 +35,12 @@ let InitialGunElevation       =   30.0F<degrees>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let Imgs = Array.map ImageFromID
+
 let BossFlickBookType = 
     {
         FlickBookDuration       = BossAnimationDuration
-        FlickBookImages         = [|ImageFinalBoss0 ; ImageFinalBoss1 ; ImageFinalBoss2 ; ImageFinalBoss3 ; ImageFinalBoss4 ; ImageFinalBoss5 |]
+        FlickBookImages         = Imgs [|ImageFinalBoss0 ; ImageFinalBoss1 ; ImageFinalBoss2 ; ImageFinalBoss3 ; ImageFinalBoss4 ; ImageFinalBoss5 |]
         VisibilityBeforeStart   = Visible
         VisibilityAfterEnd      = Visible
     }
@@ -44,7 +48,7 @@ let BossFlickBookType =
 let ExplosionFlickBookType = 
     {
         FlickBookDuration       = ExplosionDuration
-        FlickBookImages         = [| ImageShipExplode0 ; ImageShipExplode1 ; ImageShipExplode2 ; ImageShipExplode3 |]
+        FlickBookImages         = Imgs [| ImageShipExplode0 ; ImageShipExplode1 ; ImageShipExplode2 ; ImageShipExplode3 |]
         VisibilityBeforeStart   = Visible
         VisibilityAfterEnd      = Visible
     }
@@ -69,7 +73,7 @@ type FinalBossScreenModel =
         BossGunFlickBook           : FlickBookInstance
     }
 
-let SurrenderImages = [| ImageFinalBossSurrender0 ; ImageFinalBossSurrender1 |]
+let SurrenderImages = Imgs [| ImageFinalBossSurrender0 ; ImageFinalBossSurrender1 |]
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -116,8 +120,10 @@ let ResultOfWhateverShellsHitTheFort shells (targets:Target list) explosions sco
 
 let RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
 
+    let imgBack = ImageFinalBossBackground |> ImageFromID
+
     let DrawBackground () =
-        Image1to1 render 0<epx> 0<epx> ImageFinalBossBackground.ImageID
+        Image1to1 render 0<epx> 0<epx> imgBack
 
     let DrawTargets targetList =
         let rec drawTargets isActiveTarget targetList =
@@ -125,7 +131,7 @@ let RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
                 | [] -> ()
                 | {TargetLocation=pos}::tail ->
                     let targetImage = if isActiveTarget then ImageFinalBossActiveTarget else ImageFinalBossTarget
-                    CentreImage render pos.ptx pos.pty targetImage
+                    CentreImage render pos.ptx pos.pty (targetImage |> ImageFromID)
                     drawTargets false tail
         drawTargets true targetList
 
@@ -141,10 +147,10 @@ let RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
         let elapsed = gameTime - model.ScreenStartTime
         CycleImages render pos.ptx pos.pty SurrenderImages FlagFlutterAnimDuration elapsed
 
-    let h = ImageFinalBossBackground.ImageHeight
+    let h = imgBack.EngineImageMetadata.ImageHeight
 
     let DrawGun gameTime =
-        Gun.DrawGun render h model.GunAim gameTime
+        Gun.DrawGun render (h |> IntToFloatEpx) model.GunAim gameTime
 
     match model.AlliedState with
 
@@ -179,8 +185,8 @@ let RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
             Elevation        = model.GunAim.GunElevation      
         }
 
-    ScoreboardArea render (h |> FloatEpxToIntEpx)
-    DrawScorePanel render (h |> FloatEpxToIntEpx) scorePanel
+    ScoreboardArea render h
+    DrawScorePanel render h scorePanel
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -238,7 +244,7 @@ let NextFinalBossScreenState oldState input gameTime frameElapsedTime =
                         explosions |> WithCompletedFlickbooksRemoved gameTime
 
                     let gunBaseY =
-                        ImageFinalBossBackground.ImageHeight
+                        (ImageFinalBossBackground |> ImageFromID).EngineImageMetadata.ImageHeight |> IntToFloatEpx
                 
                     let gun =
                         UpdatedGunAimAccordingToInput input gameTime frameElapsedTime gunBaseY gun

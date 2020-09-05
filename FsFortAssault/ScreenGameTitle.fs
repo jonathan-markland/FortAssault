@@ -10,6 +10,7 @@ open BeachBackgroundRenderer
 open Time
 open GameGlobalState
 open ScoreboardModel
+open StaticResourceAccess
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -36,7 +37,7 @@ type GameTitleScreenModel =
 let RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 
     RenderBeachBackground render (gameTime / 4.0F)
-    CentreImage render 160.0F<epx> 68.0F<epx> ImageTitle
+    CentreImage render 160.0F<epx> 68.0F<epx> (ImageTitle |> ImageFromID)
 
     let scoreboardText = ScoreboardText 30 model.GameGlobalState.GameScoreBoard  // TODO: memoize in the model?
     Paragraph render BlackFontID CentreAlign MiddleAlign 160<epx> 94<epx> 20<epx> scoreboardText
@@ -48,9 +49,9 @@ let RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 let NewGameTitleScreen hiScore gameGlobalState gameTime =
     {
         GameGlobalState = gameGlobalState
-        HiScore              = hiScore
-        State                = GameTitleAwaitingFireButton
-        ScreenStartTime      = gameTime
+        HiScore         = hiScore
+        State           = GameTitleAwaitingFireButton
+        ScreenStartTime = gameTime
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

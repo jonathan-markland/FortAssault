@@ -17,7 +17,10 @@ open FontAlignment
 open PendingEvents
 open InputEventData
 open StoryboardChapterChange
+open ResourceFileMetadata
+open StaticResourceAccess
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let InitialGunElevation            =   30.0F<degrees>
 let InitialPlayerGunPositionX      =  160.0F<epx>
@@ -63,10 +66,12 @@ type SeaBattleScreenModel =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let Imgs = Array.map ImageFromID
+
 let SplashFlickBookType = 
     {
         FlickBookDuration       = SplashDuration
-        FlickBookImages         = [| ImageSplash0 |]
+        FlickBookImages         = Imgs [| ImageSplash0 |]
         VisibilityBeforeStart   = Hidden
         VisibilityAfterEnd      = Hidden
     }
@@ -84,7 +89,7 @@ let MappedToUnsinkingEnemyShipIn enemyShips gunX =
 
     enemyShips
         |> List.tryFind (fun ship -> 
-            let halfShipWidth = ship.ShipImage.ImageWidth / 2.0F
+            let halfShipWidth = (ship.ShipImage.EngineImageMetadata.ImageWidth |> IntToFloatEpx) / 2.0F
             (Option.isNone ship.SinkStartTime)
                 && (gunX |> IsWithinRangeOf ship.CentreX halfShipWidth))
 
@@ -104,7 +109,7 @@ let WithEnemyShipSinking gameTime enemyShipX enemyShips =
 let EnemyLaunchPart1FlickbookType =
     {
         FlickBookDuration     = 0.7F<seconds>
-        FlickBookImages       = [| ImagePlaneBomb0 ; ImagePlaneBomb1 |]
+        FlickBookImages       = Imgs [| ImagePlaneBomb0 ; ImagePlaneBomb1 |]
         VisibilityBeforeStart = Hidden
         VisibilityAfterEnd    = Hidden
     }
@@ -112,7 +117,7 @@ let EnemyLaunchPart1FlickbookType =
 let EnemyLaunchPart2FlickbookType =
     {
         FlickBookDuration     = 0.7F<seconds>
-        FlickBookImages       = [| ImagePlaneBomb3 ; ImagePlaneBomb4 |]
+        FlickBookImages       = Imgs [| ImagePlaneBomb3 ; ImagePlaneBomb4 |]
         VisibilityBeforeStart = Hidden
         VisibilityAfterEnd    = Hidden
     }
@@ -122,7 +127,7 @@ let EnemyLaunchPart2FlickbookType =
 let FlickbooksForEnemyLaunchFrom (ship:EnemyShip) decoratives willHit gameTime =
 
     let x       = ship.CentreX
-    let originY = ship.BaseY - ship.ShipImage.ImageHeight
+    let originY = ship.BaseY - (ship.ShipImage.EngineImageMetadata.ImageHeight |> IntToFloatEpx)
     let targetY = if willHit then EnemyFireHittingShipY else EnemyFireMissingShipY
 
     let t1 = gameTime
@@ -205,8 +210,11 @@ let rec PossiblyLaunchEnemyFire currentState _changeRequired gameTime =
 
 let NewSplashFlickbookForFiredGun gun hitTime = 
     
+    let splashHeight =
+        (ImageSplash0 |> ImageFromID).EngineImageMetadata.ImageHeight |> IntToFloatEpx
+
     let splashCentreY = 
-        (gun.GunElevation |> ElevationToScreenY) - (ImageSplash0.ImageHeight / 2.0F) // TODO:  Here a fudge is needed, because the splash Flickbooks are drawn with centered sprites.
+        (gun.GunElevation |> ElevationToScreenY) - (splashHeight / 2.0F) // TODO:  Here a fudge is needed, because the splash Flickbooks are drawn with centered sprites.
     
     let newSplashFlickbook = 
         NewSplashFlickBook hitTime gun.GunCentreX splashCentreY
@@ -293,15 +301,17 @@ let DebugDrawShipHorizontalHitTestMessage render gunCentreX enemyShips =
 
 let RenderSeaBattleScreen render (model:SeaBattleScreenModel) gameTime =
 
+    let imgBack = (ImageSeaBattleBackground0 |> ImageFromID)
+
     let DrawBackground () =
-        Image1to1 render 0<epx> 0<epx> ImageSeaBattleBackground0.ImageID
+        Image1to1 render 0<epx> 0<epx> imgBack
         DrawFlickbookInstanceList render model.SkyExplosion gameTime
 
     let backgroundHeight =
-        ImageSeaBattleBackground0.ImageHeight  // They are all the same
+        imgBack.EngineImageMetadata.ImageHeight  // They are all the same
 
     let DrawGun gameTime =
-        Gun.DrawGun render backgroundHeight model.GunAim gameTime
+        Gun.DrawGun render (backgroundHeight |> IntToFloatEpx) model.GunAim gameTime
 
     let DrawBasicStuff () =
         DrawBackground ()
@@ -338,8 +348,8 @@ let RenderSeaBattleScreen render (model:SeaBattleScreenModel) gameTime =
         }
 
     Text render BlackFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) MessageY model.MessageText
-    ScoreboardArea render (backgroundHeight |> FloatEpxToIntEpx)
-    DrawScorePanel render (backgroundHeight |> FloatEpxToIntEpx) scorePanel
+    ScoreboardArea render backgroundHeight
+    DrawScorePanel render backgroundHeight scorePanel
 
     // DEBUG:  DebugDrawShipHorizontalHitTestMessage render model.GunAim.GunCentreX model.EnemyShips
 
@@ -400,7 +410,7 @@ let NextSeaBattleScreenState oldState input gameTime frameElapsedTime =
                         enemyShips |> WithSunkenEnemyShipsRemoved gameTime
 
                     let gunBaseY =
-                        ImageSeaBattleBackground0.ImageHeight
+                        (ImageSeaBattleBackground0 |> ImageFromID).EngineImageMetadata.ImageHeight |> IntToFloatEpx  // TODO: This need crops up in a lot of places:  search for EngineImageMetadata and consider cases
                 
                     let gun =
                         UpdatedGunAimAccordingToInput input gameTime frameElapsedTime gunBaseY gun

@@ -13,6 +13,7 @@ open StoryboardChapterChange
 open TankMapFileLoader
 open ResourceFileMetadata
 open ResourceFiles
+open StaticResourceSetup
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -26,7 +27,7 @@ let HostRetroScreenHeightPixels = 200
 
 type GameResourcesRecord =
     {
-        GameBMPs    : ImageFileMetadata[]
+        GameBMPs    : ImageWithHostObject[]
         Fonts       : NumCapsFontDefinition[]
     }
 
@@ -52,15 +53,28 @@ let LoadGameImagesAndFonts (renderer:RendererNativeInt) rootPath =
     
     let imagesArray =
         GameResourceImages 
-            |> List.map (fun (key, fileName) -> 
-                let key = match key with NoColourKey -> None | MagentaColourKey -> magenta
-                fromFile key fileName)
+            |> List.map (fun metadata -> 
+                
+                let key = 
+                    match metadata.ImageColourKey with 
+                        | NoColourKey -> None 
+                        | MagentaColourKey -> magenta
+                
+                let fileName = metadata.ImageFileName
+                
+                let hostImageObject = fromFile key fileName
+
+                {
+                    EngineImageMetadata = metadata
+                    HostImageObject     = HostImageObject(hostImageObject)
+                })
+
             |> List.toArray
 
     let fontsArray =
         GameFontResourceImages 
-            |> List.map (fun fileName -> 
-                fromFile magenta fileName
+            |> List.map (fun metadata -> 
+                fromFile magenta metadata.ImageFileName
                     |> MakeNumCapsFontFromBMP 
                     |> unwrapFont) 
                         |> List.toArray
@@ -90,32 +104,44 @@ let RenderToSdl gameResources renderer drawingCommand =
         else
             failwith "invalid font resource index"
 
-    let bmpSourceImageFor (ImageID(imageIndex)) =
-        let imageSet = gameResources.GameBMPs
-        if imageIndex >= 0 && imageIndex < imageSet.Length then
-            imageSet.[imageIndex]
-        else
-            failwith "invalid image resource index"
-
     match drawingCommand with
 
         | DrawImageWithTopLeftAtInt(left, top, imageVisual) ->
-            DrawImage renderer (bmpSourceImageFor imageVisual) ((int) left) ((int) top) // NB: not truncations, just removing the units of measure
+            let (HostImageObject(hostImageObject)) = imageVisual.HostImageObject
+            DrawImage 
+                renderer 
+                (hostImageObject :?> ImageFileMetadata)
+                ((int) left) 
+                ((int) top) // NB: not truncations, just removing the units of measure
 
         | DrawStretchedImageWithTopLeftAt(left, top, imageVisual, width, height) ->
-            let bmp = bmpSourceImageFor imageVisual
-            DrawSubImage renderer bmp.TextureHandle 0 0 bmp.SourceRect.w bmp.SourceRect.h (px left) (px top) (px width) (px height)
+            let (HostImageObject(hostImageObject)) = imageVisual.HostImageObject
+            DrawSubImage 
+                renderer 
+                (hostImageObject :?> ImageFileMetadata).TextureHandle
+                0 0 
+                ((int) imageVisual.EngineImageMetadata.ImageWidth)
+                ((int) imageVisual.EngineImageMetadata.ImageHeight)
+                (px left) (px top) (px width) (px height)
 
         | DrawSubImageStretchedToTarget(srcleft, srctop, srcwidth, srcheight, dstleft, dsttop, dstwidth, dstheight, imageVisual) ->
-            let bmp = bmpSourceImageFor imageVisual
-            DrawSubImage renderer bmp.TextureHandle srcleft srctop srcwidth srcheight (px dstleft) (px dsttop) (px dstwidth) (px dstheight)
+            let (HostImageObject(hostImageObject)) = imageVisual.HostImageObject
+            DrawSubImage 
+                renderer 
+                (hostImageObject :?> ImageFileMetadata).TextureHandle
+                srcleft srctop srcwidth srcheight
+                (px dstleft) (px dsttop) (px dstwidth) (px dstheight)
 
         | DrawCharImageWithTopLeftAt(left, top, charIndex, fontVisual) ->
             let fontDefinition = numCapsFontImageDefinitionFor fontVisual
             let cwid = fontDefinition.CharWidth
             let chei = fontDefinition.CharHeight
-            let chx = (int charIndex) * cwid // TODO: constant: assuming char with for fonts.
-            DrawSubImage renderer (fontDefinition.FontImage.TextureHandle) chx 0 cwid chei (left |> IntEpxToInt) (top |> IntEpxToInt) cwid chei
+            let chx  = (int charIndex) * cwid // TODO: constant: assuming char with for fonts.
+            DrawSubImage 
+                renderer 
+                fontDefinition.FontImage.TextureHandle
+                chx 0 cwid chei 
+                (left |> IntEpxToInt) (top |> IntEpxToInt) cwid chei
 
         | DrawFilledRectangle(left, top, width, height, SolidColour(colour)) ->
             let right  = (left + width) |> IntEpxToInt
@@ -145,6 +171,8 @@ let TimerCallback (interval:uint32) (param:nativeint) : uint32 =  // TODO: Can t
 
 let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
 
+    SetStaticImageResourceArray gameResources.GameBMPs
+
     let mutable tickCount = 1u
     
     let GetGameTime () = 
@@ -166,7 +194,7 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
         failwith "Failed to install the gameplay timer."
 
     let renderFunction = 
-        RenderToSdl gameResources renderer
+        RenderToSdl gameResources renderer   // TODO: We only pass gameResources in to get the fonts now.  Soon we won't need to pass gameResources at all.
 
     let keyLeft  = NewMutableKey SDL.SDL_Scancode.SDL_SCANCODE_LEFT 
     let keyRight = NewMutableKey SDL.SDL_Scancode.SDL_SCANCODE_RIGHT

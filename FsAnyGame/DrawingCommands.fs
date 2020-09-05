@@ -1,10 +1,7 @@
 ﻿module DrawingCommands
 
 open Geometry
-
-/// Opaque type for referring to an image resource.
-[<Struct>]
-type ImageID = ImageID of int
+open ResourceFileMetadata
 
 /// Opaque type for referring to a font resource.
 [<Struct>]
@@ -14,6 +11,12 @@ type FontID = FontID of int
 [<Struct>]
 type SolidColour = SolidColour of uint32
 
+(* TODO: remove :   type ImageWithDimensions =
+    {
+        ImageID     : ImageID
+        ImageWidth  : float32<epx>  // TODO: make int?
+        ImageHeight : float32<epx>
+    }*)
 
 /// Drawing commands are communicated from the engine to the concrete renderer.
 /// These use engine 'epx' coordinates for positions and sizes, and the renderer is at 
@@ -25,7 +28,7 @@ type DrawingCommand =
     | DrawImageWithTopLeftAtInt      
         of leftX_1     : int<epx> 
         *  topY_1      : int<epx> 
-        *  img_1       : ImageID
+        *  img_1       : ImageWithHostObject
 
     | DrawFilledRectangle             
         of leftX_2     : int<epx> 
@@ -37,7 +40,7 @@ type DrawingCommand =
     | DrawStretchedImageWithTopLeftAt 
         of leftX_3     : float32<epx> 
         *  topY_3      : float32<epx> 
-        *  img_3       : ImageID 
+        *  img_3       : ImageWithHostObject 
         *  width_3     : float32<epx> 
         *  height_3    : float32<epx>
 
@@ -50,7 +53,7 @@ type DrawingCommand =
         *  dsttop_4    : float32<epx> 
         *  dstwidth_4  : float32<epx> 
         *  dstheight_4 : float32<epx> 
-        *  img_4       : ImageID
+        *  img_4       : ImageWithHostObject
 
     | DrawCharImageWithTopLeftAt      
         of textX_5     : int<epx>

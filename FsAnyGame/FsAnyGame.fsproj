@@ -5,7 +5,6 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="ResourceFileMetadata.fs" />
     <Compile Include="EnterYourName.fs" />
     <Compile Include="ScoreboardModel.fs" />
     <Compile Include="ListSplicer.fs" />
@@ -13,6 +12,9 @@
     <Compile Include="Time.fs" />
     <Compile Include="Keyboard.fs" />
     <Compile Include="Geometry.fs" />
+    <Compile Include="ResourceFileMetadata.fs" />
+    <Compile Include="StaticResourceSetup.fs" />
+    <Compile Include="StaticResourceAccess.fs" />
     <Compile Include="Tiles.fs" />
     <Compile Include="StoryboardChapterChange.fs" />
     <Compile Include="Algorithm.fs" />

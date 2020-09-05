@@ -10,6 +10,8 @@ open InputEventData
 open DrawingCommandsEx
 open ImagesAndFonts
 open Mechanics
+open ResourceFileMetadata
+open StaticResourceAccess
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -106,7 +108,7 @@ let DrawGun render gunBaseY gunAim gameTime =
                 let h = v * 5.0F<epx> + 1.0F<epx>
                 let x = x - (w / 2.0F)
                 let y = y - (h / 2.0F)
-                ImageStretched render x y ShipGunBulletImageID w h
+                ImageStretched render x y (ShipGunBulletImageID |> ImageFromID) w h
 
             | _ -> ()
 
@@ -114,8 +116,18 @@ let DrawGun render gunBaseY gunAim gameTime =
         let struct (stemHeight, nozzleHeight, stemTopY, nozzleTopY) = GetGunImageLocation gunBaseY gunAim
         let stemLeftX   = centreX - (ShipGunStemImageWidth / 2.0F)
         let nozzleLeftX = centreX - (ShipGunNozzleImageWidth / 2.0F)
-        ImageStretched render stemLeftX stemTopY ShipGunStemImageID ShipGunStemImageWidth stemHeight
-        ImageStretched render nozzleLeftX nozzleTopY ShipGunNozzleImageID ShipGunNozzleImageWidth nozzleHeight
+
+        ImageStretched 
+            render 
+            stemLeftX stemTopY 
+            (ShipGunStemImageID |> ImageFromID) 
+            ShipGunStemImageWidth stemHeight
+
+        ImageStretched 
+            render 
+            nozzleLeftX nozzleTopY 
+            (ShipGunNozzleImageID |> ImageFromID) 
+            ShipGunNozzleImageWidth nozzleHeight
 
     match gunAim.GunTraits.GunType with
 

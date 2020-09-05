@@ -2,9 +2,9 @@
 
 open Algorithm
 open Time
-open Geometry
 open Mechanics
 open DrawingCommandsEx
+open ResourceFileMetadata
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -16,7 +16,7 @@ type FlickBookVisibility = Visible | Hidden
 type FlickBookType =
     {
         FlickBookDuration      : float32<seconds>
-        FlickBookImages        : ImageWithDimensions[]   // Array used so we can calculate an index from a time offset in O(1).
+        FlickBookImages        : ImageWithHostObject[]   // Array used so we can calculate an index from a time offset in O(1).
         VisibilityBeforeStart  : FlickBookVisibility
         VisibilityAfterEnd     : FlickBookVisibility
     }

@@ -9,5 +9,5 @@ type GameGlobalState =
 
 let InitialGameGlobals () =
     {
-        GameScoreBoard = InitialScoreboard [ "Norman" ; "Scott" ; "Lara" ; "Mr J" ] 5000u 1000u
+        GameScoreBoard = InitialScoreboard [ "Bob" ; "Scott" ; "Lara" ; "J" ] 5000u 1000u
     }

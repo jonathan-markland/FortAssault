@@ -4,37 +4,30 @@ open DrawingCommands
 open FontCharacterPositioning
 open Geometry
 open Time
+open ResourceFileMetadata
 
 // ---------------------------------------------------------------------------------------------------------
 //  Drawing bitmap images
 // ---------------------------------------------------------------------------------------------------------
 
-/// Image collection specification, for use with the CycleImages drawing function.
-type ImageWithDimensions =
-    {
-        ImageID     : ImageID
-        ImageWidth  : float32<epx>  // TODO: make int?
-        ImageHeight : float32<epx>
-    }
-
 /// Draw image without stretching.
-let Image1to1 render left top imageResource =
-    render (DrawImageWithTopLeftAtInt(left, top, imageResource))
+let Image1to1 render left top imageWithHostObject =
+    render (DrawImageWithTopLeftAtInt(left, top, imageWithHostObject))
 
 /// Draw image, stretched to fit target rectangle.
-let ImageStretched render left top imageResource destWidth destHeight =
-    render (DrawStretchedImageWithTopLeftAt(left, top, imageResource, destWidth, destHeight))
+let ImageStretched render left top imageWithHostObject destWidth destHeight =
+    render (DrawStretchedImageWithTopLeftAt(left, top, imageWithHostObject, destWidth, destHeight))
 
 /// Draw image centered about a point, without stretching.
-let CentreImage render cx cy imageWithDimensions =
-    let {ImageID=imageResource ; ImageWidth=w ; ImageHeight=h} = imageWithDimensions
+let CentreImage render cx cy (imageWithHostObject:ImageWithHostObject) =
+    let (w,h) = imageWithHostObject |> ImageDimensionsF
     let left  = cx - (w / 2.0F)
     let top   = cy - (h / 2.0F)
-    render (DrawStretchedImageWithTopLeftAt(left, top, imageResource, w, h))
+    render (DrawStretchedImageWithTopLeftAt(left, top, imageWithHostObject, w, h))
 
 /// Draw image centered about a point, without stretching.
 /// The image is one of a repeating animation collection.
-let CycleImages render cx cy (imageArray:ImageWithDimensions array) (fullCycleDuration:float32<seconds>) (elapsed:float32<seconds>) =
+let CycleImages render cx cy (imageArray:ImageWithHostObject array) (fullCycleDuration:float32<seconds>) (elapsed:float32<seconds>) =
     let numImages    = imageArray.Length
     let timePerImage = fullCycleDuration / (float32 numImages)
     let index        = (abs (int (elapsed / timePerImage))) % numImages

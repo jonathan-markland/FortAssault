@@ -8,6 +8,8 @@ open Geometry
 open InputEventData
 open StoryboardChapterChange
 open ImagesAndFonts
+open ResourceFileMetadata
+open StaticResourceAccess
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -100,6 +102,8 @@ let AnimationSequence gameTime =
 
 let RenderAnimationStage render (currentStage:string) =
 
+    let CentreImage render cx cy img = CentreImage render cx cy (img |> ImageFromID)
+
     let medalTransferPhase    = (currentStage.[7] = 'x')
     let colonelHoldsOutHand   = (currentStage.[6] = 'C')
     let presidentHoldsOutHand = (currentStage.[5] = 'P')
@@ -156,7 +160,7 @@ let RenderAnimationStage render (currentStage:string) =
 
 let RenderVictoryScreen render (model:VictoryScreenModel) gameTime =
     
-    Image1to1 render 0<epx> 0<epx> VictoryScreenImageID
+    Image1to1 render 0<epx> 0<epx> (VictoryScreenImageID |> ImageFromID)
     
     match model.AnimationStage with
         

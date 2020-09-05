@@ -8,6 +8,8 @@ open FontAlignment
 open Geometry
 open Mechanics
 open ImagesAndFonts
+open ResourceFileMetadata
+open StaticResourceAccess
 
 let AnimDurationSeconds = 3.0F<seconds>
 let AnimRepeatPeriod    = 5.0F<seconds>
@@ -16,8 +18,8 @@ let AnimRepeatPeriod    = 5.0F<seconds>
 
 type MechanicsTestPageScreenModel =
     {
-        Functions:    (float32<seconds> -> MOMReason) list
-        RepeatAtTime:  float32<seconds>
+        Functions     :  (float32<seconds> -> MOMReason) list
+        RepeatAtTime  :   float32<seconds>
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -25,11 +27,14 @@ type MechanicsTestPageScreenModel =
 let RenderMechanicsTestPageScreen render (model:MechanicsTestPageScreenModel) gameTime =
 
     Rectangle render 0<epx> 0<epx> ScreenWidthInt ScreenHeightInt (SolidColour(0x000000u))
+    
     Text render YellowFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (15<epx>) "MECHANICS TEST SCREEN"
+    
     Rectangle render 25<epx> 25<epx> 270<epx> 150<epx> (SolidColour(0x000050u))
+    
     model.Functions |> List.iter (fun positionGetter ->
         match positionGetter gameTime with
-            | MOMVisibleAtPosition( {ptx=x;pty=y} ) -> CentreImage render x y ImageAlliedFleetSymbol
+            | MOMVisibleAtPosition( {ptx=x;pty=y} ) -> CentreImage render x y (ImageAlliedFleetSymbol |> ImageFromID)
             | _ -> ()
     )
 

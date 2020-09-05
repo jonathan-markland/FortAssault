@@ -11,6 +11,8 @@ open ImagesAndFonts
 open ScorePanel
 open MapScreenSharedDetail
 open StoryboardChapterChange
+open ResourceFileMetadata
+open StaticResourceAccess
 
 
 let DefaultAlliedFleetLocation = { ptx=124.0F<epx> ; pty=75.0F<epx> }
@@ -54,7 +56,9 @@ let AlliesVersusEnemy alliesLocation enemyLocation gameTime =
 
 let RenderMapPostPassageScreen render (model:MapPostPassageScreenModel) =
 
-    Image1to1 render 0<epx> 0<epx> ImageMap.ImageID
+    let imgMap = (ImageMap |> ImageFromID)
+
+    Image1to1 render 0<epx> 0<epx> imgMap
 
     // PermissableTravelLocationRectangles |> List.iteri (fun i r ->
     //     render (DrawFilledRectangle(r.Left, r.Top, r |> RectangleWidth, r |> RectangleHeight, i |> AlternateOf 0xEE0000u 0x00FF00u)))
@@ -62,12 +66,12 @@ let RenderMapPostPassageScreen render (model:MapPostPassageScreenModel) =
     match model.AlliedState with
         | AlliedFleetInPlay(location)
         | Paused(location, _) ->
-            CentreImage render location.ptx location.pty ImageAlliedFleetSymbol
-            CentreImage render model.EnemyFleetCentre.ptx model.EnemyFleetCentre.pty ImageEnemyFleetSymbol
+            CentreImage render location.ptx location.pty (ImageAlliedFleetSymbol |> ImageFromID)
+            CentreImage render model.EnemyFleetCentre.ptx model.EnemyFleetCentre.pty (ImageEnemyFleetSymbol |> ImageFromID)
         | PostPassageScreenOver ->
             ()
 
-    let h = ImageMap.ImageHeight |> FloatEpxToIntEpx
+    let h = imgMap.EngineImageMetadata.ImageHeight
 
     ScoreboardArea render h
 

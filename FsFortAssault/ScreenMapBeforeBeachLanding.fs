@@ -11,7 +11,10 @@ open ImagesAndFonts
 open ScorePanel
 open MapScreenSharedDetail
 open StoryboardChapterChange
+open ResourceFileMetadata
+open StaticResourceAccess
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let DefaultAlliedFleetLocation = { ptx=120.0F<epx> ; pty=97.0F<epx> }
 
@@ -54,7 +57,9 @@ let AlliesVersusBeach alliesLocation gameTime =
 
 let RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenModel) =
 
-    Image1to1 render 0<epx> 0<epx> ImageMap.ImageID
+    let imgMap = ImageMap |> ImageFromID
+
+    Image1to1 render 0<epx> 0<epx> imgMap
 
     // PermissableTravelLocationRectangles |> List.iteri (fun i r ->
     //     render (DrawFilledRectangle(r.Left, r.Top, r |> RectangleWidth, r |> RectangleHeight, i |> AlternateOf 0xEE0000u 0x00FF00u)))
@@ -62,13 +67,13 @@ let RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenM
     match model.AlliedState with
         | FleetBeforeBeachLandingInPlay(location)
         | EngagedBeachLanding(location, _) ->
-            CentreImage render location.ptx location.pty ImageAlliedFleetSymbol
+            CentreImage render location.ptx location.pty (ImageAlliedFleetSymbol |> ImageFromID)
         | ScreenOver ->
             ()
 
-    let mapHeight = ImageMap.ImageHeight
+    let mapHeight = imgMap.EngineImageMetadata.ImageHeight
 
-    ScoreboardArea render (mapHeight |> FloatEpxToIntEpx)
+    ScoreboardArea render mapHeight
 
     let scorePanel =
         {
@@ -81,7 +86,7 @@ let RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenM
             Elevation        = 0.0F<degrees>
         }
 
-    DrawScorePanel render (mapHeight  |> FloatEpxToIntEpx)scorePanel
+    DrawScorePanel render mapHeight scorePanel
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

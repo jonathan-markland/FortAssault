@@ -3,6 +3,7 @@
 open DrawingCommands
 open ImagesAndFonts
 open ListSplicer
+open ResourceFileMetadata
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -86,13 +87,13 @@ type TankBattleMapMatrix =
 
 let private CharacterToTile ch =
     match ch with
-        | '-' -> Some(ImageTileSand.ImageID)
-        | '=' -> Some(ImageTileBridge.ImageID)
-        | 'X' -> Some(ImageTileBarricade.ImageID)
-        | 'W' -> Some(ImageTileWater.ImageID)
-        | 'M' -> Some(ImageTileMine.ImageID)
-        | 'T' -> Some(ImageTileTower.ImageID)
-        | '>' -> Some(ImageTileSand.ImageID)       // Because tanks are not tile sprites.
+        | '-' -> Some(ImageTileSand)
+        | '=' -> Some(ImageTileBridge)
+        | 'X' -> Some(ImageTileBarricade)
+        | 'W' -> Some(ImageTileWater)
+        | 'M' -> Some(ImageTileMine)
+        | 'T' -> Some(ImageTileTower)
+        | '>' -> Some(ImageTileSand)       // Because tanks are not tile sprites.
         | _   -> None
 
 
@@ -116,7 +117,7 @@ let private TranslateToTileArray (strings:string[]) =
     seq {
             for i in 0..(NumberOfRowsForTankMatrix - 1) do
                 yield strings.[i] 
-                    |> Seq.map (CharacterToTile >> (Option.defaultValue ImageTileSand.ImageID)) 
+                    |> Seq.map (CharacterToTile >> (Option.defaultValue ImageTileSand)) 
                     |> Seq.toArray
         }
         |> Array.concat

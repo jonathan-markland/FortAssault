@@ -17,6 +17,10 @@ open ScorePanel
 open FlickBook
 open StoryboardChapterChange
 open ImagesAndFonts
+open ResourceFileMetadata
+open StaticResourceAccess
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let TorpedoTriggerDistance      =    4.0F<epx>
 let MineTriggerDistance         =    4.0F<epx>
@@ -25,10 +29,14 @@ let PassageSuccessBarrierY      =   10.0F<epx>
 let PauseTime                   =    3.0F<seconds>
 let ExplosionDuration           =   0.75F<seconds>
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let Imgs = Array.map ImageFromID
+
 let ExplosionFlickBookType = 
     {
         FlickBookDuration       = ExplosionDuration
-        FlickBookImages         = [| ImageShipExplode0 ; ImageShipExplode1 ; ImageShipExplode2 ; ImageShipExplode3 |]
+        FlickBookImages         = Imgs [| ImageShipExplode0 ; ImageShipExplode1 ; ImageShipExplode2 ; ImageShipExplode3 |]
         VisibilityBeforeStart   = Hidden
         VisibilityAfterEnd      = Hidden
     }
@@ -227,7 +235,8 @@ let MinePositionPercentages =
 
 let ToMineLocation (xpc,ypc) =
 
-    let { ImageID=_ ; ImageWidth=w ; ImageHeight=h } = ImageSecretPassage
+    let (w,h) = ImageSecretPassage |> ImageFromID |> ImageDimensionsF
+
     {
         MineLocation = 
             {
@@ -275,7 +284,7 @@ let NewTorpedoForFiringPosition launchDetail gameTime =
 
     let ((sx,sy), (ex,ey), duration, refirePause) = launchDetail
 
-    let { ImageID=_ ; ImageWidth=w ; ImageHeight=h } = ImageSecretPassage
+    let (w,h) = ImageSecretPassage |> ImageFromID |> ImageDimensionsF
 
     let sx' = float32 sx * w
     let ex' = float32 ex * w
@@ -311,7 +320,7 @@ let NewFutureTorpedoBasedOn (oldTorpedo:Torpedo) gameTime =
 
 let DefaultShipLocation =
 
-    let { ImageID=_ ; ImageWidth=w ; ImageHeight=h } = ImageSecretPassage
+    let (w,h) = ImageSecretPassage |> ImageFromID |> ImageDimensionsF
 
     {
         ShipRotation = FacingLeft
@@ -454,7 +463,7 @@ let RightCoast =
 
 let CoastXAt (defaultCoastX, coastLines) (y:float32<epx>) =
 
-    let { ImageID=_ ; ImageWidth=w ; ImageHeight=h } = ImageSecretPassage   // TODO: Bit fed up of de-structuring this all over this listing.
+    let (w,h) = ImageSecretPassage |> ImageFromID |> ImageDimensionsF // TODO: Bit fed up of de-structuring this all over this listing.
 
     let ypc = y / h
 
@@ -546,21 +555,27 @@ let WithCompletedTorpedosRemovedAndReplaced gameTime torpedos =
 
 let ShipImageFor direction =
 
-    match direction with 
+    (match direction with 
         | FacingLeft -> ImageShip0
         | Facing1    -> ImageShip1
         | Facing2    -> ImageShip2
         | Facing3    -> ImageShip3
-        | FacingUp   -> ImageShip4
+        | FacingUp   -> ImageShip4)    
+            |> ImageFromID
 
 let RenderSecretPassageScreen render gameTime secretPassageScreenModel =
 
+    let imgMine = ImageMine |> ImageFromID
+
     let DrawMines mines =
         mines |> List.iter (fun {MineLocation=loc} ->
-            CentreImage render loc.ptx loc.pty ImageMine
+            CentreImage render loc.ptx loc.pty imgMine
             // SquareAroundPoint render loc.xwf loc.ywf (MineTriggerDistance * 2.0F) 0xFF0000u
             )
     
+    let imgTorp0  = ImageTorpedo0 |> ImageFromID
+    let imgTorp22 = ImageTorpedo22Degrees |> ImageFromID
+
     let DrawTorpedos torpedos =
         torpedos |> List.iter (fun {TorpedoPositionGetter=getTorpedoPosition ; TorpedoIsHorizontal=isHoriz} ->
             let posToDrawAt = getTorpedoPosition gameTime
@@ -568,7 +583,7 @@ let RenderSecretPassageScreen render gameTime secretPassageScreenModel =
                 | MOMYetToAppear(_) -> ()
                 | MOMDisappeared(_) -> ()
                 | MOMVisibleAtPosition({ptx=x ; pty=y}) ->
-                    let img = if isHoriz then ImageTorpedo0 else ImageTorpedo22Degrees
+                    let img = if isHoriz then imgTorp0 else imgTorp22
                     CentreImage render x y img
                     // Debug:  SquareAroundPoint render x y (TorpedoTriggerDistance * 2.0F) 0xFFFF00u
                     )
@@ -592,10 +607,12 @@ let RenderSecretPassageScreen render gameTime secretPassageScreenModel =
     // Debug:          SquareAroundPoint render leftPos.xwf leftPos.ywf 1.0F<wu> 0x000000u
     // Debug:          SquareAroundPoint render rightPos.xwf rightPos.ywf 1.0F<wu> 0x000000u
 
-    let h = ImageSecretPassage.ImageHeight
+    let backImg = (ImageSecretPassage |> ImageFromID)
 
-    Image1to1 render 0<epx> 0<epx> ImageSecretPassage.ImageID
-    ScoreboardArea render (h |> FloatEpxToIntEpx)
+    let h = backImg.EngineImageMetadata.ImageHeight
+
+    Image1to1 render 0<epx> 0<epx> backImg
+    ScoreboardArea render h
     DrawMines      secretPassageScreenModel.Mines
     DrawTorpedos   secretPassageScreenModel.LiveTorpedos
     DrawShip       secretPassageScreenModel.Ship
@@ -613,7 +630,7 @@ let RenderSecretPassageScreen render gameTime secretPassageScreenModel =
             Elevation        = 0.0F<degrees>
         }
 
-    DrawScorePanel render (h |> FloatEpxToIntEpx) scorePanel
+    DrawScorePanel render h scorePanel
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

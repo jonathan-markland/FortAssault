@@ -8,6 +8,8 @@ open FontAlignment
 open Geometry
 open InputEventData
 open StoryboardChapterChange
+open ResourceFileMetadata
+open StaticResourceAccess
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

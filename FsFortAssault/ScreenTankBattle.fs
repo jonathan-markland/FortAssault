@@ -15,6 +15,8 @@ open Mechanics
 open Collisions
 open Algorithm
 open FinalBossAndTankBattleShared
+open ResourceFileMetadata
+open StaticResourceAccess
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -45,10 +47,12 @@ let ReachedFortTileCount            = 4   // Count includes the extra lead-in/le
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let Imgs = Array.map ImageFromID
+
 let ExplosionFlickBookType = 
     {
         FlickBookDuration       = ExplosionDuration
-        FlickBookImages         = [| ImageShipExplode0 ; ImageShipExplode1 ; ImageShipExplode2 ; ImageShipExplode3 |]
+        FlickBookImages         = Imgs [| ImageShipExplode0 ; ImageShipExplode1 ; ImageShipExplode2 ; ImageShipExplode3 |]
         VisibilityBeforeStart   = Hidden
         VisibilityAfterEnd      = Hidden
     }
@@ -129,7 +133,7 @@ let WithIncrementedMapNumber tankBattleScreenModel =
 let MissileFlickbookType =
     {
         FlickBookDuration     = 3.0F<seconds>
-        FlickBookImages       = [| ImageTorpedo0 |]
+        FlickBookImages       = [| ImageTorpedo0 |> ImageFromID |]
         VisibilityBeforeStart = Hidden
         VisibilityAfterEnd    = Hidden
     }
@@ -195,7 +199,7 @@ let EnemyTankMatrixLocationToScreen numTilesHorizontally enemyLocation gameTime 
 
 let CanTankPassOverTile tileImageId =
 
-    tileImageId = ImageTileSand.ImageID || tileImageId = ImageTileBridge.ImageID
+    tileImageId = ImageTileSand || tileImageId = ImageTileBridge
 
 let HasTankCrashed (tankY:float32<epx>) tankDirection (timeOffsetIntoLevel:float32<seconds>) (constants:TankBattleScreenConstantsModel) =
 
@@ -260,13 +264,15 @@ let DrawMatrix render (constants:TankBattleScreenConstantsModel) (timeOffset:flo
         constants.TileMatrixTraits
         tileMatrixViewportWindow 
         tileMatrixOffset 
-        (fun x y ix iy -> Image1to1 render x y (tiles.[iy * numTilesHorizontally + ix]))
+        (fun x y ix iy -> 
+            let tileImage = (tiles.[iy * numTilesHorizontally + ix]) |> ImageFromID
+            Image1to1 render x y tileImage)
 
 
 
-let ImagesTankFacingLeft      = [| ImageTankFacingLeft0     ; ImageTankFacingLeft1     |]
-let ImagesTankFacingUpLeft    = [| ImageTankFacingUpLeft0   ; ImageTankFacingUpLeft1   |]
-let ImagesTankFacingDownLeft  = [| ImageTankFacingDownLeft0 ; ImageTankFacingDownLeft1 |]
+let ImagesTankFacingLeft      = Imgs [| ImageTankFacingLeft0     ; ImageTankFacingLeft1     |]
+let ImagesTankFacingUpLeft    = Imgs [| ImageTankFacingUpLeft0   ; ImageTankFacingUpLeft1   |]
+let ImagesTankFacingDownLeft  = Imgs [| ImageTankFacingDownLeft0 ; ImageTankFacingDownLeft1 |]
 
 
 let TankImagesFor tankDirection =
@@ -274,6 +280,7 @@ let TankImagesFor tankDirection =
         | TankFacingLeft     -> ImagesTankFacingLeft
         | TankFacingUpLeft   -> ImagesTankFacingUpLeft
         | TankFacingDownLeft -> ImagesTankFacingDownLeft
+
 
 
 let ForEachEnemyTankScreenLocation numTilesHorizontally gameTime f enemyTanks =
@@ -292,9 +299,12 @@ let RenderTankBattleScreen render (model:TankBattleScreenModel) gameTime =
 
     let numTilesHorizontally = model.Constants.LevelMap.TilesHorizontally
 
+    let imgTankGun1 = (ImageEnemyTankGun1 |> ImageFromID)
+
     let DrawEnemyTanks render enemyTanks gameTime =
         enemyTanks 
-            |> ForEachEnemyTankScreenLocation numTilesHorizontally gameTime (fun x y -> CentreImage render x y ImageEnemyTankGun1)
+            |> ForEachEnemyTankScreenLocation numTilesHorizontally gameTime (fun x y -> 
+                CentreImage render x y imgTankGun1)
 
     let DrawBasicStuff () =
         RenderBeachBackground render gameTime
@@ -454,16 +464,18 @@ let DoesPlayerCollideWithEnemyTank numTilesHorizontally gameTime enemyTanks play
     
     let r = TankCollisionRectangle TankX playerTankY playerTankDirection
     
+    let imgGun1 = (ImageEnemyTankGun1 |> ImageFromID).EngineImageMetadata
+
     let EnemyTankRectangleFor x y =
 
-        let x' = x - (ImageEnemyTankGun1.ImageWidth / 2.0F)
-        let y' = y - (ImageEnemyTankGun1.ImageHeight / 2.0F)
+        let x' = x - ((imgGun1.ImageWidth |> IntToFloatEpx) / 2.0F)
+        let y' = y - ((imgGun1.ImageHeight |> IntToFloatEpx) / 2.0F)
 
         {
             Left   = x'
             Top    = y'
-            Right  = x' + ImageEnemyTankGun1.ImageWidth
-            Bottom = y' + ImageEnemyTankGun1.ImageHeight
+            Right  = x' + (imgGun1.ImageWidth  |> IntToFloatEpx)
+            Bottom = y' + (imgGun1.ImageHeight |> IntToFloatEpx)
         }
 
     let mutable collides = false

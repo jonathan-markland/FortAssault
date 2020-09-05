@@ -11,6 +11,8 @@ open DrawingCommandsEx
 open ImagesAndFonts
 open Algorithm
 open FontAlignment
+open ResourceFileMetadata
+open StaticResourceAccess
 
 let SkyExplosionDuration  = 3.0F<seconds>
 let EnemyShipSinkDuration = 6.0F<seconds>
@@ -46,7 +48,7 @@ type EnemyShip =
     {
         CentreX        : float32<epx>
         BaseY          : float32<epx>
-        ShipImage      : ImageWithDimensions
+        ShipImage      : ImageWithHostObject
         SinkStartTime  : float32<seconds> option
         ElevationToHit : float32<degrees>
     }
@@ -62,11 +64,11 @@ let NewEnemyShip centreX shipImage elevationToHit =
 
 let DefaultEnemyShipsArrangement =
     [
-        NewEnemyShip  29.0F<epx> ImageEnemyShip0 44.0F<degrees>
-        NewEnemyShip 143.0F<epx> ImageEnemyShip1 39.5F<degrees>
-        NewEnemyShip 198.0F<epx> ImageEnemyShip2 36.5F<degrees>
-        NewEnemyShip 248.0F<epx> ImageEnemyShip3 41.0F<degrees>
-        NewEnemyShip 288.0F<epx> ImageEnemyShip4 32.5F<degrees>
+        NewEnemyShip  29.0F<epx> (ImageEnemyShip0 |> ImageFromID) 44.0F<degrees>
+        NewEnemyShip 143.0F<epx> (ImageEnemyShip1 |> ImageFromID) 39.5F<degrees>
+        NewEnemyShip 198.0F<epx> (ImageEnemyShip2 |> ImageFromID) 36.5F<degrees>
+        NewEnemyShip 248.0F<epx> (ImageEnemyShip3 |> ImageFromID) 41.0F<degrees>
+        NewEnemyShip 288.0F<epx> (ImageEnemyShip4 |> ImageFromID) 32.5F<degrees>
     ]
 
 let EnemyShipIsLive gameTime enemyShip =
@@ -85,31 +87,32 @@ let DrawEnemyShips render listOfShips gameTime =
 
     listOfShips |> List.iter (fun ship -> 
 
+        let shipHeight = ship.ShipImage.EngineImageMetadata.ImageHeight
+        let shipWidth  = ship.ShipImage.EngineImageMetadata.ImageWidth
+
         let sinkLevel =
             match ship.SinkStartTime with
                 | None -> 0.0F<epx>
                 | Some(sinkStartTime) ->
                     let elapsed = gameTime - sinkStartTime
                     let offset = min elapsed EnemyShipSinkDuration
-                    (offset / EnemyShipSinkDuration) * ship.ShipImage.ImageHeight
+                    (offset / EnemyShipSinkDuration) * (shipHeight |> IntToFloatEpx)
 
         let srcLeft   = 0
         let srcTop    = 0
-        let srcWidth  = int ship.ShipImage.ImageWidth
-        let srcHeight = int ship.ShipImage.ImageHeight - int sinkLevel
+        let srcWidth  = shipWidth |> IntEpxToInt
+        let srcHeight = (shipHeight |> IntEpxToInt) - (sinkLevel |> FloatEpxToInt)
 
-        let dstLeft   = ship.CentreX - (ship.ShipImage.ImageWidth / 2.0F)
-        let dstTop    = ship.BaseY - (ship.ShipImage.ImageHeight - sinkLevel)
-        let dstWidth  = ship.ShipImage.ImageWidth
+        let dstLeft   = ship.CentreX - ((shipWidth |> IntToFloatEpx) / 2.0F)
+        let dstTop    = ship.BaseY - ((shipHeight  |> IntToFloatEpx) - sinkLevel)
+        let dstWidth  = shipWidth |> IntToFloatEpx
         let dstHeight = srcHeight |> IntToFloatEpx
         
-        let img = ship.ShipImage.ImageID
-
         let cmd = 
             DrawSubImageStretchedToTarget(  // TODO: This broke the system with a struct-DU
                 srcLeft, srcTop, srcWidth, srcHeight, 
                 dstLeft, dstTop, dstWidth, dstHeight, 
-                img)
+                ship.ShipImage)
 
         render cmd
     )
@@ -121,11 +124,11 @@ let SkyExplosionFlickBookType =
         FlickBookDuration   = SkyExplosionDuration
         FlickBookImages     = 
             [| 
-                ImageSeaBattleBackground1
-                ImageSeaBattleBackground2
-                ImageSeaBattleBackground2
-                ImageSeaBattleBackground3
-                ImageSeaBattleBackground3
+                ImageSeaBattleBackground1 |> ImageFromID
+                ImageSeaBattleBackground2 |> ImageFromID
+                ImageSeaBattleBackground2 |> ImageFromID
+                ImageSeaBattleBackground3 |> ImageFromID
+                ImageSeaBattleBackground3 |> ImageFromID
             |]
         VisibilityBeforeStart   = Hidden
         VisibilityAfterEnd      = Hidden
@@ -133,8 +136,10 @@ let SkyExplosionFlickBookType =
 
 let NewSkyExplosionFlickBook gameTime =
 
-    let w = ImageSeaBattleBackground0.ImageWidth   // They are all the same
-    let h = ImageSeaBattleBackground0.ImageHeight  // They are all the same
+    let imgBack = ImageSeaBattleBackground0 |> ImageFromID
+
+    let w = imgBack.EngineImageMetadata.ImageWidth  |> IntToFloatEpx // They are all the same
+    let h = imgBack.EngineImageMetadata.ImageHeight |> IntToFloatEpx // They are all the same
 
     {
         FlickBookType            = SkyExplosionFlickBookType

@@ -17,6 +17,10 @@ open Collisions
 open Rules
 open StoryboardChapterChange
 open ImagesAndFonts
+open ResourceFileMetadata
+open StaticResourceAccess
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let InitialGunElevation       =   30.0F<degrees>
 let NumberOfRaidersWhenStrong =  NumShipsAtInitialEngagement * 4u
@@ -34,6 +38,8 @@ let PlaneBombTargetY          =  150.0F<epx>  // TODO: Calculate somehow?
 let MaxPlanesActiveAtOnce     =    3
 let GunStepRate               =   30.0F<degrees/seconds>
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 let ToNumberOfRaiders enemyStrength =
 
     match enemyStrength with
@@ -42,10 +48,12 @@ let ToNumberOfRaiders enemyStrength =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let Imgs arr = arr |> Array.map ImageFromID
+
 let PlaneStraightOnFlickBookType = 
     {
         FlickBookDuration       = PlaneDuration
-        FlickBookImages         = [| ImagePlane0 ; ImagePlane1 ; ImagePlane2 ; ImagePlane3 ; ImagePlane4 ; ImagePlane5 ; ImagePlane6 |]
+        FlickBookImages         = Imgs [| ImagePlane0 ; ImagePlane1 ; ImagePlane2 ; ImagePlane3 ; ImagePlane4 ; ImagePlane5 ; ImagePlane6 |]
         VisibilityBeforeStart   = Hidden
         VisibilityAfterEnd      = Visible
     }
@@ -53,7 +61,7 @@ let PlaneStraightOnFlickBookType =
 let PlaneBankingLeftFlickBookType = 
     {
         FlickBookDuration       = PlaneDuration
-        FlickBookImages         = [| ImagePlane0 ; ImagePlane1 ; ImagePlane2 ; ImagePlane3 ; ImagePlane4BankingLeft ; ImagePlane5BankingLeft ; ImagePlane6BankingLeft |]
+        FlickBookImages         = Imgs [| ImagePlane0 ; ImagePlane1 ; ImagePlane2 ; ImagePlane3 ; ImagePlane4BankingLeft ; ImagePlane5BankingLeft ; ImagePlane6BankingLeft |]
         VisibilityBeforeStart   = Hidden
         VisibilityAfterEnd      = Visible
     }
@@ -61,7 +69,7 @@ let PlaneBankingLeftFlickBookType =
 let PlaneBankingRightFlickBookType = 
     {
         FlickBookDuration       = PlaneDuration
-        FlickBookImages         = [| ImagePlane0 ; ImagePlane1 ; ImagePlane2 ; ImagePlane3 ; ImagePlane4BankingRight ; ImagePlane5BankingRight ; ImagePlane6BankingRight |]
+        FlickBookImages         = Imgs [| ImagePlane0 ; ImagePlane1 ; ImagePlane2 ; ImagePlane3 ; ImagePlane4BankingRight ; ImagePlane5BankingRight ; ImagePlane6BankingRight |]
         VisibilityBeforeStart   = Hidden
         VisibilityAfterEnd      = Visible
     }
@@ -69,7 +77,7 @@ let PlaneBankingRightFlickBookType =
 let PlaneExplosionFlickBookType = 
     {
         FlickBookDuration       = ExplosionDuration
-        FlickBookImages         = [| ImagePlaneExplode0 ; ImagePlaneExplode1 ; ImagePlaneExplode2 |]
+        FlickBookImages         = Imgs [| ImagePlaneExplode0 ; ImagePlaneExplode1 ; ImagePlaneExplode2 |]
         VisibilityBeforeStart   = Hidden
         VisibilityAfterEnd      = Visible
     }
@@ -77,7 +85,7 @@ let PlaneExplosionFlickBookType =
 let PlaneBombsFlickBookType = 
     {
         FlickBookDuration       = BombsDuration
-        FlickBookImages         = [| ImagePlaneBomb0 ; ImagePlaneBomb1 ; ImagePlaneBomb2 ; ImagePlaneBomb3 ; ImagePlaneBomb4 |]
+        FlickBookImages         = Imgs [| ImagePlaneBomb0 ; ImagePlaneBomb1 ; ImagePlaneBomb2 ; ImagePlaneBomb3 ; ImagePlaneBomb4 |]
         VisibilityBeforeStart   = Hidden
         VisibilityAfterEnd      = Visible
     }
@@ -169,14 +177,14 @@ let DrawDebugPlaneHitTestRectangle render planes gameTime =
 let RenderAirBattleScreen render (model:AirBattleScreenModel) gameTime =
 
     let DrawBackground () =
-        Image1to1 render 0<epx> 0<epx> ImageSeaBattleBackground0.ImageID
+        Image1to1 render 0<epx> 0<epx> (ImageSeaBattleBackground0 |> ImageFromID)
         DrawFlickbookInstanceList render model.SkyExplosion gameTime
 
     let backgroundHeight = 
-        ImageSeaBattleBackground0.ImageHeight  // They are all the same
+        (ImageSeaBattleBackground0 |> ImageFromID).EngineImageMetadata.ImageHeight  // They are all the same
 
     let DrawGun gameTime =
-        Gun.DrawGun render backgroundHeight model.GunAim gameTime
+        Gun.DrawGun render (backgroundHeight |> IntToFloatEpx) model.GunAim gameTime
 
     let DrawBasicStuff () =
         DrawBackground ()
@@ -216,8 +224,8 @@ let RenderAirBattleScreen render (model:AirBattleScreenModel) gameTime =
             Elevation        = model.GunAim.GunElevation      
         }
 
-    ScoreboardArea render (backgroundHeight |> FloatEpxToIntEpx)
-    DrawScorePanel render (backgroundHeight |> FloatEpxToIntEpx) scorePanel
+    ScoreboardArea render backgroundHeight
+    DrawScorePanel render backgroundHeight scorePanel
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -327,7 +335,7 @@ let NextAirBattleScreenState oldState input gameTime frameElapsedTime =
             
                 else
                     let gunBaseY =
-                        ImageSeaBattleBackground0.ImageHeight
+                        (ImageSeaBattleBackground0 |> ImageFromID).EngineImageMetadata.ImageHeight |> IntToFloatEpx
 
                     let alliedState  = oldState.AlliedState
                     let gun          = oldState.GunAim

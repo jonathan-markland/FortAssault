@@ -10,6 +10,7 @@ open ImagesAndFonts
 open ScorePanel
 open MapScreenSharedDetail
 open Rules
+open StaticResourceAccess
 
 
 let DefaultAlliedFleetLocation = { ptx=290.0F<epx> ; pty=15.0F<epx> }
@@ -90,7 +91,9 @@ let AlliesVersusSecretPassageOrEnemy alliesLocation enemyLocation gameTime =
 
 let RenderInitialMapScreen render (model:InitialMapScreenModel) =
 
-    Image1to1 render 0<epx> 0<epx> ImageMap.ImageID
+    let imgMap = ImageMap |> ImageFromID
+
+    Image1to1 render 0<epx> 0<epx> imgMap
 
     // PermissableTravelLocationRectangles |> List.iteri (fun i r ->
     //     render (DrawFilledRectangle(r.Left, r.Top, r |> RectangleWidth, r |> RectangleHeight, i |> AlternateOf 0xEE0000u 0x00FF00u)))
@@ -98,15 +101,15 @@ let RenderInitialMapScreen render (model:InitialMapScreenModel) =
     match model.AlliedState with
         | MapInPlay(location)
         | FleetEngagedOnMap(location, _, _) ->
-            CentreImage render location.ptx location.pty ImageAlliedFleetSymbol
-            CentreImage render model.EnemyFleetCentre.ptx model.EnemyFleetCentre.pty ImageEnemyFleetSymbol
+            CentreImage render location.ptx location.pty (ImageAlliedFleetSymbol |> ImageFromID)
+            CentreImage render model.EnemyFleetCentre.ptx model.EnemyFleetCentre.pty (ImageEnemyFleetSymbol |> ImageFromID)
         | ScreenOverEngagedEnemyAtSea
         | ScreenOverEngagedSecretPassage ->
             ()
 
-    let mapHeight = ImageMap.ImageHeight
+    let mapHeight = imgMap.EngineImageMetadata.ImageHeight
 
-    ScoreboardArea render (mapHeight |> FloatEpxToIntEpx)
+    ScoreboardArea render mapHeight
 
     let scorePanel =
         {
@@ -119,7 +122,7 @@ let RenderInitialMapScreen render (model:InitialMapScreenModel) =
             Elevation        = 0.0F<degrees> // TODO:  Should this be optional?
         }
 
-    DrawScorePanel render (mapHeight |> FloatEpxToIntEpx) scorePanel
+    DrawScorePanel render mapHeight scorePanel
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

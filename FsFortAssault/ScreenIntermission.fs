@@ -6,6 +6,9 @@ open DrawingCommandsEx
 open FontAlignment
 open Geometry
 open StoryboardChapterChange
+open ResourceFileMetadata
+open StaticResourceAccess
+
 
 let IntermissionDuration = 4.0F<seconds>
 
@@ -20,7 +23,7 @@ type IntermissionScreenModel<'nextChapterType> =
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let RenderIntermissionScreen render model gameTime =
-    Image1to1 render 0<epx> 0<epx> ImageIntermissionBackground.ImageID
+    Image1to1 render 0<epx> 0<epx> (ImageIntermissionBackground |> ImageFromID)
     Text render YellowFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (ScreenHeightInt / 2) "GET READY"
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
