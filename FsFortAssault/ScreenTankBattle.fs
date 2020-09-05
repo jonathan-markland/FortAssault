@@ -11,7 +11,6 @@ open DrawingCommandsEx
 open FlickBook
 open BeachBackgroundRenderer
 open InputEventData
-open ImagesAndFonts
 open Mechanics
 open Collisions
 open Algorithm

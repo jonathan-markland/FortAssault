@@ -78,11 +78,11 @@ let ImageSeaBattleBackground0   = { ImageID = ImageID(40) ; ImageWidth = 320.0F<
 let ImageSeaBattleBackground1   = { ImageID = ImageID(41) ; ImageWidth = 320.0F<epx>  ; ImageHeight = 160.0F<epx> }
 let ImageSeaBattleBackground2   = { ImageID = ImageID(42) ; ImageWidth = 320.0F<epx>  ; ImageHeight = 160.0F<epx> }
 let ImageSeaBattleBackground3   = { ImageID = ImageID(43) ; ImageWidth = 320.0F<epx>  ; ImageHeight = 160.0F<epx> }
-let ImageEnemyShip0             = { ImageID = ImageID(44) ; ImageWidth = 12.0F<epx>  ; ImageHeight = 15.0F<epx> }
-let ImageEnemyShip1             = { ImageID = ImageID(45) ; ImageWidth = 32.0F<epx>  ; ImageHeight = 16.0F<epx> }
-let ImageEnemyShip2             = { ImageID = ImageID(46) ; ImageWidth = 67.0F<epx>  ; ImageHeight = 16.0F<epx> }
-let ImageEnemyShip3             = { ImageID = ImageID(47) ; ImageWidth = 12.0F<epx>  ; ImageHeight = 15.0F<epx> }
-let ImageEnemyShip4             = { ImageID = ImageID(48) ; ImageWidth = 34.0F<epx>  ; ImageHeight = 16.0F<epx> }
+let ImageEnemyShip0             = { ImageID = ImageID(44) ; ImageWidth =  12.0F<epx>  ; ImageHeight =  15.0F<epx> }
+let ImageEnemyShip1             = { ImageID = ImageID(45) ; ImageWidth =  32.0F<epx>  ; ImageHeight =  16.0F<epx> }
+let ImageEnemyShip2             = { ImageID = ImageID(46) ; ImageWidth =  67.0F<epx>  ; ImageHeight =  16.0F<epx> }
+let ImageEnemyShip3             = { ImageID = ImageID(47) ; ImageWidth =  12.0F<epx>  ; ImageHeight =  15.0F<epx> }
+let ImageEnemyShip4             = { ImageID = ImageID(48) ; ImageWidth =  34.0F<epx>  ; ImageHeight =  16.0F<epx> }
 
 // Tank battle screen:
 
@@ -104,16 +104,16 @@ let ImageTankFacingDownLeft1    = { ImageID = ImageID(62) ; ImageWidth = 24.0F<e
 // Final boss screen:
 
 let ImageFinalBossBackground    = { ImageID = ImageID(63) ; ImageWidth = 320.0F<epx>  ; ImageHeight = 160.0F<epx> }
-let ImageFinalBoss0             = { ImageID = ImageID(64) ; ImageWidth = 207.0F<epx>  ; ImageHeight = 43.0F<epx>  }
-let ImageFinalBoss1             = { ImageID = ImageID(65) ; ImageWidth = 152.0F<epx>  ; ImageHeight = 42.0F<epx>  }
-let ImageFinalBoss2             = { ImageID = ImageID(66) ; ImageWidth =  94.0F<epx>  ; ImageHeight = 42.0F<epx>  }
-let ImageFinalBoss3             = { ImageID = ImageID(67) ; ImageWidth =  94.0F<epx>  ; ImageHeight = 42.0F<epx>  }
-let ImageFinalBoss4             = { ImageID = ImageID(68) ; ImageWidth =  94.0F<epx>  ; ImageHeight = 42.0F<epx>  }
-let ImageFinalBoss5             = { ImageID = ImageID(69) ; ImageWidth =  94.0F<epx>  ; ImageHeight = 42.0F<epx>  }
-let ImageFinalBossSurrender0    = { ImageID = ImageID(70) ; ImageWidth =  16.0F<epx>  ; ImageHeight = 35.0F<epx>  }
-let ImageFinalBossSurrender1    = { ImageID = ImageID(71) ; ImageWidth =  16.0F<epx>  ; ImageHeight = 35.0F<epx>  }
-let ImageFinalBossActiveTarget  = { ImageID = ImageID(72) ; ImageWidth = 4.0F<epx>    ; ImageHeight = 4.0F<epx>   }
-let ImageFinalBossTarget        = { ImageID = ImageID(73) ; ImageWidth = 4.0F<epx>    ; ImageHeight = 4.0F<epx>   }
+let ImageFinalBoss0             = { ImageID = ImageID(64) ; ImageWidth = 207.0F<epx>  ; ImageHeight =  43.0F<epx> }
+let ImageFinalBoss1             = { ImageID = ImageID(65) ; ImageWidth = 152.0F<epx>  ; ImageHeight =  42.0F<epx> }
+let ImageFinalBoss2             = { ImageID = ImageID(66) ; ImageWidth =  94.0F<epx>  ; ImageHeight =  42.0F<epx> }
+let ImageFinalBoss3             = { ImageID = ImageID(67) ; ImageWidth =  94.0F<epx>  ; ImageHeight =  42.0F<epx> }
+let ImageFinalBoss4             = { ImageID = ImageID(68) ; ImageWidth =  94.0F<epx>  ; ImageHeight =  42.0F<epx> }
+let ImageFinalBoss5             = { ImageID = ImageID(69) ; ImageWidth =  94.0F<epx>  ; ImageHeight =  42.0F<epx> }
+let ImageFinalBossSurrender0    = { ImageID = ImageID(70) ; ImageWidth =  16.0F<epx>  ; ImageHeight =  35.0F<epx> }
+let ImageFinalBossSurrender1    = { ImageID = ImageID(71) ; ImageWidth =  16.0F<epx>  ; ImageHeight =  35.0F<epx> }
+let ImageFinalBossActiveTarget  = { ImageID = ImageID(72) ; ImageWidth =   4.0F<epx>  ; ImageHeight =   4.0F<epx> }
+let ImageFinalBossTarget        = { ImageID = ImageID(73) ; ImageWidth =   4.0F<epx>  ; ImageHeight =   4.0F<epx> }
 
 // Shared images
 

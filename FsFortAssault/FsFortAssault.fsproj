@@ -13,7 +13,6 @@
     <Compile Include="InputEventData.fs" />
     <Compile Include="ImagesAndFonts.fs" />
     <Compile Include="SharedDrawing.fs" />
-    <Compile Include="FlickBook.fs" />
     <Compile Include="MapScreenSharedDetail.fs" />
     <Compile Include="Gun.fs" />
     <Compile Include="ScorePanel.fs" />

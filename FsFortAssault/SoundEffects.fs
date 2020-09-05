@@ -1,6 +1,6 @@
 ﻿module SoundEffects
 
-type SoundEffect =
+type SoundEffect =  // TODO: Sound was not implemented, but in any case needs to move into ResourceFiles.fs and be done in the same way (ie: file names)
     | EchoSound
     | EngagementSirenSound
     | EnemyTorpedoLaunchSound

@@ -25,6 +25,7 @@
     <Compile Include="PendingEvents.fs" />
     <Compile Include="DrawingCommands.fs" />
     <Compile Include="DrawingCommandsEx.fs" />
+    <Compile Include="FlickBook.fs" />
   </ItemGroup>
 
 </Project>

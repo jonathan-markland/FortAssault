@@ -4,25 +4,35 @@ open Algorithm
 open Time
 open Geometry
 open Mechanics
-open SharedDrawing
 open DrawingCommandsEx
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Flickbook Types
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 type FlickBookVisibility = Visible | Hidden
 
 type FlickBookType =
     {
-        FlickBookDuration:       float32<seconds>
-        FlickBookImages:         ImageWithDimensions[]   // Array used so we can calculate an index from a time offset in O(1).
-        VisibilityBeforeStart:   FlickBookVisibility
-        VisibilityAfterEnd:      FlickBookVisibility
+        FlickBookDuration      : float32<seconds>
+        FlickBookImages        : ImageWithDimensions[]   // Array used so we can calculate an index from a time offset in O(1).
+        VisibilityBeforeStart  : FlickBookVisibility
+        VisibilityAfterEnd     : FlickBookVisibility
     }
 
 type FlickBookInstance =
     {
-        FlickBookType:             FlickBookType
-        FlickBookStartTime:        float32<seconds>
-        FlickBookMechanicsObject:  MechanicsObjectModel
+        FlickBookType            : FlickBookType
+        FlickBookStartTime       : float32<seconds>
+        FlickBookMechanicsObject : MechanicsObjectModel
     }
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Flickbook functions
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let FlickBookStartTimeOf flickBook =
     flickBook.FlickBookStartTime
@@ -50,6 +60,12 @@ let WithCompletedBuriedFlickbooksRemoved gameTime innerFlickBook genericList =
 let WithCompletedFlickbooksRemoved gameTime flickBookList =
     WithCompletedBuriedFlickbooksRemoved gameTime id flickBookList
 
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Flickbook drawing functions
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 /// Draw a flick book instance for the given game time.
 let DrawFlickbookInstance render flickBookInstance gameTime =
 
@@ -69,7 +85,7 @@ let DrawFlickbookInstance render flickBookInstance gameTime =
         } = flickBookType
     
 
-    let elapsed = gameTime - animStartTime
+    let elapsed   = gameTime - animStartTime
     let numImages = imageArray.Length
 
     match mom.PositionGetter gameTime with
@@ -94,11 +110,16 @@ let DrawFlickbookInstance render flickBookInstance gameTime =
                 CentreImage render pos.ptx pos.pty (imageArray.[imageArray.Length - 1])
 
 
+
 /// For each generic record in a list, obtain a flickbook from a field, and draw it.
 /// The innerFlickBook function must dig the flickbook out of the record.
 let DrawBuriedFlickbookInstanceList render innerFlickBook genericList gameTime =
     genericList |> List.iter (fun userObject -> DrawFlickbookInstance render (userObject |> innerFlickBook) gameTime)
 
+
+
 /// Draw a list of FlickbookInstance objects.
 let DrawFlickbookInstanceList render flickBookList gameTime =
     DrawBuriedFlickbookInstanceList render id flickBookList gameTime
+
+
