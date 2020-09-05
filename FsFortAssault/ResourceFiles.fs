@@ -12,7 +12,7 @@ let GameFontResourceImages =
     ]
 
 let GameResourceImages =
-    [|
+    [
         NoColourKey,      "CliffsTile.png"
         MagentaColourKey, "Title.png"
 
@@ -109,6 +109,6 @@ let GameResourceImages =
         MagentaColourKey, "PresidentPresentingMedal.png"
         MagentaColourKey, "PresidentSaluting.png"
         MagentaColourKey, "PresidentStanding.png"
-    |]
+    ]
 
 

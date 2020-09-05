@@ -51,9 +51,11 @@ let LoadGameImagesAndFonts (renderer:RendererNativeInt) rootPath =
         Some({ Red=255uy ; Green=0uy ; Blue=255uy })
     
     let imagesArray =
-        GameResourceImages |> Array.map (fun (key, fileName) -> 
-            let key = match key with NoColourKey -> None | MagentaColourKey -> magenta
-            fromFile key fileName)
+        GameResourceImages 
+            |> List.map (fun (key, fileName) -> 
+                let key = match key with NoColourKey -> None | MagentaColourKey -> magenta
+                fromFile key fileName)
+            |> List.toArray
 
     let fontsArray =
         GameFontResourceImages 
