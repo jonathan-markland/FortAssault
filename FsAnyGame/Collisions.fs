@@ -74,7 +74,7 @@ type PlayerSurvival =
     | PlayerSurvives
 
 
-let ResultOfProjectileCollisionsWithSingleTarget
+let ResultOfProjectileCollisionsWithSingleTarget  // TODO:  Hmmm.. Ideology:  It isn't really a generic "target" if we return a "Player"-related status type!
     (projectiles     : 'projectile list)
     (target          : 'target)
     collides
