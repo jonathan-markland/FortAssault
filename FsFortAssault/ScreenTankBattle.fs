@@ -269,17 +269,17 @@ let DrawMatrix render (constants:TankBattleScreenConstantsModel) (timeOffset:flo
             Image1to1 render x y tileImage)
 
 
-
-let ImagesTankFacingLeft      = Imgs [| ImageTankFacingLeft0     ; ImageTankFacingLeft1     |]
-let ImagesTankFacingUpLeft    = Imgs [| ImageTankFacingUpLeft0   ; ImageTankFacingUpLeft1   |]
-let ImagesTankFacingDownLeft  = Imgs [| ImageTankFacingDownLeft0 ; ImageTankFacingDownLeft1 |]
+ // TODO: Made into functions because of Fable static-initializer-order problem:
+let ImagesTankFacingLeft     () = Imgs [| ImageTankFacingLeft0     ; ImageTankFacingLeft1     |]
+let ImagesTankFacingUpLeft   () = Imgs [| ImageTankFacingUpLeft0   ; ImageTankFacingUpLeft1   |]
+let ImagesTankFacingDownLeft () = Imgs [| ImageTankFacingDownLeft0 ; ImageTankFacingDownLeft1 |]
 
 
 let TankImagesFor tankDirection =
     match tankDirection with
-        | TankFacingLeft     -> ImagesTankFacingLeft
-        | TankFacingUpLeft   -> ImagesTankFacingUpLeft
-        | TankFacingDownLeft -> ImagesTankFacingDownLeft
+        | TankFacingLeft     -> ImagesTankFacingLeft ()
+        | TankFacingUpLeft   -> ImagesTankFacingUpLeft ()
+        | TankFacingDownLeft -> ImagesTankFacingDownLeft ()
 
 
 

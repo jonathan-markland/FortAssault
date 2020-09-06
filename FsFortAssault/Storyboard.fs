@@ -96,6 +96,7 @@ let RenderStoryboard render storyboard gameTime =
             
 type DevelopmentShortcutMode =
     | RunGameNormally
+    | SkipToInitialMap
     | SkipToIntermissionTest
     | SkipToSecretPassage
     | SkipToMapPostPassage
@@ -115,12 +116,15 @@ let Shortcut gameResources gameTime mode =
     match mode with
 
         | RunGameNormally ->
-
             // -- THIS CASE EXECUTES FOR THE RELEASE VERSION --
-
             GameTitleChapter(NewGameTitleScreen DefaultHiScore (InitialGameGlobals ()) gameTime)
 
         // -- NONE OF THE FOLLOWING CASES EXECUTE FOR THE RELEASE VERSION --
+
+        | SkipToInitialMap ->
+            // Shortcut to the initial map chapter
+            let initialMapModel = NewInitialMapScreen NumShipsAtInitialEngagement {Score=0u ; HiScore=12345u}
+            InitialMapChapter (initialMapModel)
 
         | SkipToIntermissionTest ->
             // Test intermission then go to secret passage
