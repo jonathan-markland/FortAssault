@@ -49,7 +49,7 @@ let ReachedFortTileCount            = 4   // Count includes the extra lead-in/le
 
 let Imgs = Array.map ImageFromID
 
-let ExplosionFlickBookType = 
+let ExplosionFlickBookType () =  // TODO: Made into a function because of Fable static-initializer-order problem
     {
         FlickBookDuration       = ExplosionDuration
         FlickBookImages         = Imgs [| ImageShipExplode0 ; ImageShipExplode1 ; ImageShipExplode2 ; ImageShipExplode3 |]
@@ -59,7 +59,7 @@ let ExplosionFlickBookType =
 
 let NewExplosion centreLocation gameTime =
     {
-        FlickBookType            = ExplosionFlickBookType
+        FlickBookType            = ExplosionFlickBookType ()
         FlickBookStartTime       = gameTime
         FlickBookMechanicsObject = MechanicsControlledStationaryObject centreLocation gameTime ExplosionDuration
     }
@@ -130,7 +130,7 @@ let WithIncrementedMapNumber tankBattleScreenModel =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let MissileFlickbookType =
+let MissileFlickbookType () = // TODO: Made into a function because of Fable static-initializer-order problem
     {
         FlickBookDuration     = 3.0F<seconds>
         FlickBookImages       = [| ImageTorpedo0 |> ImageFromID |]
@@ -140,7 +140,7 @@ let MissileFlickbookType =
 
 let NewMissile originX originY gameTime =
     {
-        FlickBookType            = MissileFlickbookType
+        FlickBookType            = MissileFlickbookType ()
         FlickBookStartTime       = gameTime
         FlickBookMechanicsObject = 
             MechanicsControlledMovingObject
@@ -156,7 +156,7 @@ let NewEnemyMissile centreLocation gameTime =
     let originX = originX + EnemyTankGunOffsetFromCentreX
     let originY = originY - EnemyTankGunOffsetFromCentreY
     {
-        FlickBookType            = MissileFlickbookType
+        FlickBookType            = MissileFlickbookType ()
         FlickBookStartTime       = gameTime
         FlickBookMechanicsObject = 
             MechanicsControlledMovingObject

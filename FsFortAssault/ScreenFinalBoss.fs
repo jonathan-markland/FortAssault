@@ -37,7 +37,7 @@ let InitialGunElevation       =   30.0F<degrees>
 
 let Imgs = Array.map ImageFromID
 
-let BossFlickBookType = 
+let BossFlickBookType () =  // TODO: Made into a function because of Fable static-initializer-order problem
     {
         FlickBookDuration       = BossAnimationDuration
         FlickBookImages         = Imgs [|ImageFinalBoss0 ; ImageFinalBoss1 ; ImageFinalBoss2 ; ImageFinalBoss3 ; ImageFinalBoss4 ; ImageFinalBoss5 |]
@@ -45,7 +45,7 @@ let BossFlickBookType =
         VisibilityAfterEnd      = Visible
     }
 
-let ExplosionFlickBookType = 
+let ExplosionFlickBookType () =  // TODO: Made into a function because of Fable static-initializer-order problem
     {
         FlickBookDuration       = ExplosionDuration
         FlickBookImages         = Imgs [| ImageShipExplode0 ; ImageShipExplode1 ; ImageShipExplode2 ; ImageShipExplode3 |]
@@ -73,7 +73,8 @@ type FinalBossScreenModel =
         BossGunFlickBook           : FlickBookInstance
     }
 
-let SurrenderImages = Imgs [| ImageFinalBossSurrender0 ; ImageFinalBossSurrender1 |]
+let SurrenderImages () =   // TODO: Made into a function because of Fable static-initializer-order problem
+    Imgs [| ImageFinalBossSurrender0 ; ImageFinalBossSurrender1 |]
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -86,7 +87,7 @@ let BossHasFired model gameTime =
 
 let NewExplosion centreLocation gameTime =
     {
-        FlickBookType            = ExplosionFlickBookType
+        FlickBookType            = ExplosionFlickBookType ()
         FlickBookMechanicsObject = MechanicsControlledStationaryObject centreLocation gameTime ExplosionDuration
         FlickBookStartTime       = gameTime
     }
@@ -145,7 +146,7 @@ let RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
     let DrawSurrender gameTime =
         let pos     = BossGunCentrePosition
         let elapsed = gameTime - model.ScreenStartTime
-        CycleImages render pos.ptx pos.pty SurrenderImages FlagFlutterAnimDuration elapsed
+        CycleImages render pos.ptx pos.pty (SurrenderImages ()) FlagFlutterAnimDuration elapsed
 
     let h = imgBack.EngineImageMetadata.ImageHeight
 
@@ -203,7 +204,7 @@ let NewFinalBossScreen scoreAndHiScore tanksRemaining finalBossAndTankBattleData
         Explosions        = []
         BossGunFlickBook  =
             {
-                FlickBookType            = BossFlickBookType
+                FlickBookType            = BossFlickBookType ()
                 FlickBookStartTime       = gameTime
                 FlickBookMechanicsObject = MechanicsControlledStationaryObject BossGunCentrePosition gameTime BossAnimationDuration
             }

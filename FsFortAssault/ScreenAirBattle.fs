@@ -50,7 +50,7 @@ let ToNumberOfRaiders enemyStrength =
 
 let Imgs arr = arr |> Array.map ImageFromID
 
-let PlaneStraightOnFlickBookType = 
+let PlaneStraightOnFlickBookType () = // TODO: Made into a function because of Fable static-initializer-order problem
     {
         FlickBookDuration       = PlaneDuration
         FlickBookImages         = Imgs [| ImagePlane0 ; ImagePlane1 ; ImagePlane2 ; ImagePlane3 ; ImagePlane4 ; ImagePlane5 ; ImagePlane6 |]
@@ -58,7 +58,7 @@ let PlaneStraightOnFlickBookType =
         VisibilityAfterEnd      = Visible
     }
 
-let PlaneBankingLeftFlickBookType = 
+let PlaneBankingLeftFlickBookType () =  // TODO: Made into a function because of Fable static-initializer-order problem
     {
         FlickBookDuration       = PlaneDuration
         FlickBookImages         = Imgs [| ImagePlane0 ; ImagePlane1 ; ImagePlane2 ; ImagePlane3 ; ImagePlane4BankingLeft ; ImagePlane5BankingLeft ; ImagePlane6BankingLeft |]
@@ -66,7 +66,7 @@ let PlaneBankingLeftFlickBookType =
         VisibilityAfterEnd      = Visible
     }
 
-let PlaneBankingRightFlickBookType = 
+let PlaneBankingRightFlickBookType () =  // TODO: Made into a function because of Fable static-initializer-order problem
     {
         FlickBookDuration       = PlaneDuration
         FlickBookImages         = Imgs [| ImagePlane0 ; ImagePlane1 ; ImagePlane2 ; ImagePlane3 ; ImagePlane4BankingRight ; ImagePlane5BankingRight ; ImagePlane6BankingRight |]
@@ -74,7 +74,7 @@ let PlaneBankingRightFlickBookType =
         VisibilityAfterEnd      = Visible
     }
 
-let PlaneExplosionFlickBookType = 
+let PlaneExplosionFlickBookType () =  // TODO: Made into a function because of Fable static-initializer-order problem
     {
         FlickBookDuration       = ExplosionDuration
         FlickBookImages         = Imgs [| ImagePlaneExplode0 ; ImagePlaneExplode1 ; ImagePlaneExplode2 |]
@@ -82,7 +82,7 @@ let PlaneExplosionFlickBookType =
         VisibilityAfterEnd      = Visible
     }
 
-let PlaneBombsFlickBookType = 
+let PlaneBombsFlickBookType () =  // TODO: Made into a function because of Fable static-initializer-order problem
     {
         FlickBookDuration       = BombsDuration
         FlickBookImages         = Imgs [| ImagePlaneBomb0 ; ImagePlaneBomb1 ; ImagePlaneBomb2 ; ImagePlaneBomb3 ; ImagePlaneBomb4 |]
@@ -131,7 +131,7 @@ let IsAtOrAfterBombReleaseStage gameTime plane =
 
 let NewExplosion centreLocation gameTime =
     {
-        FlickBookType            = PlaneExplosionFlickBookType
+        FlickBookType            = PlaneExplosionFlickBookType ()
         FlickBookMechanicsObject = MechanicsControlledStationaryObject centreLocation gameTime ExplosionDuration
         FlickBookStartTime       = gameTime
     }
@@ -247,7 +247,7 @@ let NewPlane gameTime =
     {
         PlaneFlickBookInstance = 
             {
-                FlickBookType            = planeFlickBook
+                FlickBookType            = planeFlickBook ()
                 FlickBookStartTime       = gameTime
                 FlickBookMechanicsObject = 
                     MechanicsControlledMovingObject 
@@ -269,7 +269,7 @@ let NewPlaneBombFor planeThatIsFiring gameTime =
     let bombEndPos = {ptx=x ; pty=PlaneBombTargetY}
 
     {
-        FlickBookType            = PlaneBombsFlickBookType
+        FlickBookType            = PlaneBombsFlickBookType ()
         FlickBookStartTime       = gameTime
         FlickBookMechanicsObject = MechanicsControlledMovingObject SpeedingUpMotion bombStartPos bombEndPos gameTime BombsDuration
     }
@@ -314,7 +314,7 @@ let NewAirBattleScreen enemyStrength scoreAndHiScore shipsRemaining gameTime =
         AlliedState      = AlliedShipInPlay
         Explosions       = []
         SkyExplosion     = []
-        EnemyShips       = DefaultEnemyShipsArrangement
+        EnemyShips       = DefaultEnemyShipsArrangement ()
         Planes           = []
         PlaneBombs       = []
         Damage           = 0u

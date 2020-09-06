@@ -62,7 +62,7 @@ let NewEnemyShip centreX shipImage elevationToHit =
         ElevationToHit = elevationToHit
     }
 
-let DefaultEnemyShipsArrangement =
+let DefaultEnemyShipsArrangement () =
     [
         NewEnemyShip  29.0F<epx> (ImageEnemyShip0 |> ImageFromID) 44.0F<degrees>
         NewEnemyShip 143.0F<epx> (ImageEnemyShip1 |> ImageFromID) 39.5F<degrees>
@@ -119,7 +119,7 @@ let DrawEnemyShips render listOfShips gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let SkyExplosionFlickBookType = 
+let SkyExplosionFlickBookType () =   // TODO: Made into a function to avoid framework static-initialize-order problems in Fable
     {
         FlickBookDuration   = SkyExplosionDuration
         FlickBookImages     = 
@@ -142,7 +142,7 @@ let NewSkyExplosionFlickBook gameTime =
     let h = imgBack.EngineImageMetadata.ImageHeight |> IntToFloatEpx // They are all the same
 
     {
-        FlickBookType            = SkyExplosionFlickBookType
+        FlickBookType            = SkyExplosionFlickBookType ()
         FlickBookMechanicsObject = MechanicsControlledStationaryObject { ptx = w / 2.0F ; pty = h / 2.0F } gameTime SkyExplosionDuration
         FlickBookStartTime       = gameTime
     }

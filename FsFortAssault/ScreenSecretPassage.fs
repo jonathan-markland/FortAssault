@@ -33,7 +33,7 @@ let ExplosionDuration           =   0.75F<seconds>
 
 let Imgs = Array.map ImageFromID
 
-let ExplosionFlickBookType = 
+let ExplosionFlickBookType () =  // TODO: Made into a function because of Fable static-initializer-order problem
     {
         FlickBookDuration       = ExplosionDuration
         FlickBookImages         = Imgs [| ImageShipExplode0 ; ImageShipExplode1 ; ImageShipExplode2 ; ImageShipExplode3 |]
@@ -357,7 +357,7 @@ let ShipIsWithinRegionOf ship adversaryPosition triggerDistance =
 
 let NewExplosion centreLocation gameTime =
     {
-        FlickBookType            = ExplosionFlickBookType
+        FlickBookType            = ExplosionFlickBookType ()
         FlickBookStartTime       = gameTime
         FlickBookMechanicsObject = MechanicsControlledStationaryObject centreLocation gameTime ExplosionDuration
     }

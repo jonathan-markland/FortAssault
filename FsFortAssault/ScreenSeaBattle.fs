@@ -68,7 +68,7 @@ type SeaBattleScreenModel =
 
 let Imgs = Array.map ImageFromID
 
-let SplashFlickBookType = 
+let SplashFlickBookType () =  // TODO: Made into a function because of Fable static-initializer-order problem
     {
         FlickBookDuration       = SplashDuration
         FlickBookImages         = Imgs [| ImageSplash0 |]
@@ -78,7 +78,7 @@ let SplashFlickBookType =
 
 let NewSplashFlickBook gameTime x y =
     {
-        FlickBookType            = SplashFlickBookType
+        FlickBookType            = SplashFlickBookType ()
         FlickBookMechanicsObject = MechanicsControlledStationaryObject { ptx = x ; pty = y } gameTime SplashDuration
         FlickBookStartTime       = gameTime
     }
@@ -362,7 +362,7 @@ let NewSeaBattleScreen scoreAndHiScore shipsRemaining gameTime =
         GunAim              = NewGunWithDefaultTraits DoubleBarrelGun InitialPlayerGunPositionX InitialGunElevation GunStepRate gameTime
         AlliedState         = AlliedShipInPlay
         AlliedCountToSink   = EnemyFireTriesCount
-        EnemyShips          = DefaultEnemyShipsArrangement
+        EnemyShips          = DefaultEnemyShipsArrangement ()
         Decoratives         = []
         SkyExplosion        = []
         PendingIncoming     = [ToBeDoneAtTime gameTime (IncomingChange ())]
