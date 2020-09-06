@@ -34,6 +34,15 @@ Screenshots
 
 ![Game screenshot](/WebImages/Image5.jpg)
 
+06/09/2020 - In browser (static) screenshot
+-------------------------------------------
+
+I've gotten the screens displaying in the browser via F# + Fable + Web canvas,
+and a tiny amount of supplementary Javascript.  These are static for now.  The
+next step will be to wire up a 1/50th second timer event, and see some animation.
+Finally, I'll need to wire the keyboard input through.
+
+![Game screenshot](/WebImages/Image6.jpg)
 
 Functional Programming
 ----------------------
