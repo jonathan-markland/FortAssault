@@ -260,6 +260,9 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
             registerKeyHandler "keydown" HandleKeyDownEvent
             registerKeyHandler "keyup"   HandleKeyUpEvent
 
+            document.getElementById("loaderScreen").classList.add("hidden")
+            document.getElementById("gameScreen").classList.remove("hidden")
+
             let rec mainLoop gameGlobals storyboard tickCount () =
 
                 let tickCount = tickCount + 1u
