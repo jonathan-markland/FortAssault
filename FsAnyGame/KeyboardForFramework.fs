@@ -127,7 +127,6 @@ let private HandlePossibleKeyStateChange mutableKeyStateStore keyOperationResult
 
 
 
-
 /// Mark all of the keys in the list as 'not just pressed', and return
 /// an indicator as to whether any of the 'just pressed' states changed
 /// as a result of this reset.
@@ -173,6 +172,7 @@ let HandleKeyDownEvent mutableKeyStateStore (hostKeyCode: 'hostKeyCodeType) =
             | Some(mutableKey) -> processKey mutableKey
 
     HandlePossibleKeyStateChange mutableKeyStateStore wasChanged
+    wasChanged
 
 
 /// Handler for the host environment's 'key up' event.
@@ -192,4 +192,5 @@ let HandleKeyUpEvent mutableKeyStateStore (hostKeyCode: 'hostKeyCodeType) =
                 KeyStateChanged
 
     HandlePossibleKeyStateChange mutableKeyStateStore wasChanged
+    wasChanged
 
