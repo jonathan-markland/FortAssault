@@ -626,6 +626,7 @@ let RenderSecretPassageScreen render gameTime secretPassageScreenModel =
             ShipsThrough     = secretPassageScreenModel.FleetStats.ShipsSuccess
             Tanks            = secretPassageScreenModel.FleetStats.ShipsSuccess |> ToTankCountFromShipCount
             Damage           = 0u
+            MaxDamage        = 0u
             Ammunition       = 10u
             Elevation        = 0.0F<degrees>
         }

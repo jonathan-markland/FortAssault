@@ -16,6 +16,7 @@ type ScorePanel =
         ShipsThrough:     uint32
         Tanks:            uint32
         Damage:           uint32
+        MaxDamage:        uint32
         Ammunition:       uint32
         Elevation:        float32<degrees>
     }
@@ -47,6 +48,16 @@ let AmmoBarChart panel =
         CharSpacing   = 2u * 8u  // TODO: constant 8
     }
 
+let DamageBarChart panel =
+    let d = panel.Damage
+    {
+        BlueCount     = d
+        RedCount      = panel.MaxDamage - d
+        RedCharIndex  = 6u
+        BlueCharIndex = 5u
+        CharSpacing   = 8u  // TODO: constant
+    }
+
 let DrawScorePanel render y (panel:ScorePanel) =
 
     let c1x = 4<epx>
@@ -61,9 +72,10 @@ let DrawScorePanel render y (panel:ScorePanel) =
     Text render YellowFontID LeftAlign TopAlign c1x shy "SHIPS"
     Bar  render c2x shy (panel |> ShipBarChart)
 
-    let dmy = y + 24<epx>
-    Text render YellowFontID LeftAlign TopAlign c1x dmy "DAMAGE"
-    Num  render BlueFontID LeftAlign TopAlign c2x dmy (panel.Damage)
+    if panel.MaxDamage > 0u then
+        let dmy = y + 24<epx>
+        Text render YellowFontID LeftAlign TopAlign c1x dmy "DAMAGE"
+        Bar  render c2x dmy (panel |> DamageBarChart)
 
     // TODO: The ammunition concept was limiting firing repeats, but it's not
     //       used, in favour of having to wait.  Need to introduce a use for

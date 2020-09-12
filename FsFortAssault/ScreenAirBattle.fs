@@ -220,6 +220,7 @@ let RenderAirBattleScreen render (model:AirBattleScreenModel) gameTime =
             ShipsThrough     = 0u
             Tanks            = model.ShipsRemaining |> ToTankCountFromShipCount
             Damage           = model.Damage
+            MaxDamage        = MaxDamagePerShip
             Ammunition       = 10u
             Elevation        = model.GunAim.GunElevation      
         }

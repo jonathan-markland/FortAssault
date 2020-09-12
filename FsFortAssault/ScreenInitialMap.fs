@@ -118,6 +118,7 @@ let RenderInitialMapScreen render (model:InitialMapScreenModel) =
             ShipsThrough     = model.NumShips
             Tanks            = model.NumShips |> ToTankCountFromShipCount
             Damage           = 0u
+            MaxDamage        = 0u
             Ammunition       = 10u
             Elevation        = 0.0F<degrees> // TODO:  Should this be optional?
         }

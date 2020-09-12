@@ -82,6 +82,7 @@ let RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenM
             ShipsThrough     = model.ShipsThrough
             Tanks            = model.ShipsThrough |> ToTankCountFromShipCount
             Damage           = 0u
+            MaxDamage        = 0u
             Ammunition       = 10u
             Elevation        = 0.0F<degrees>
         }

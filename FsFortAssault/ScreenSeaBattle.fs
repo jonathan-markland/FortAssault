@@ -34,7 +34,7 @@ let TimeBetweenEnemyFirings        =    3.5F<seconds>
 let TimeBetweenEnemyLaunchGoingOffTopOfScreenAndComingBackOn = 0.3F<seconds>
 let EnemyFireHittingShipY          =  155.0F<epx>
 let EnemyFireMissingShipY          =  140.0F<epx>
-let EnemyFireTriesCount            =    5
+let DamageToSinkAllies             =    5u
 let SinkingShipFiringPauseDuration =    4.0F<seconds>
 let GunStepRate                    =   10.0F<degrees/seconds>
 
@@ -345,7 +345,8 @@ let RenderSeaBattleScreen render (model:SeaBattleScreenModel) gameTime =
             ShipsPending     = 0u
             ShipsThrough     = model.ShipsRemaining
             Tanks            = model.ShipsRemaining |> ToTankCountFromShipCount
-            Damage           = 0u
+            Damage           = DamageToSinkAllies - (uint32) (model.AlliedCountToSink)
+            MaxDamage        = DamageToSinkAllies
             Ammunition       = 10u
             Elevation        = model.GunAim.GunElevation      
         }
@@ -364,7 +365,7 @@ let NewSeaBattleScreen scoreAndHiScore shipsRemaining gameTime =
         ShipsRemaining      = shipsRemaining
         GunAim              = NewGunWithDefaultTraits DoubleBarrelGun InitialPlayerGunPositionX InitialGunElevation GunStepRate gameTime
         AlliedState         = AlliedShipInPlay
-        AlliedCountToSink   = EnemyFireTriesCount
+        AlliedCountToSink   = (int) DamageToSinkAllies
         EnemyShips          = DefaultEnemyShipsArrangement ()
         Decoratives         = []
         SkyExplosion        = []
@@ -428,7 +429,7 @@ let NextSeaBattleScreenState oldState input gameTime frameElapsedTime =
                                 PendingDone (
                                     ShipSinking(gameTime),
                                     [NewSkyExplosionFlickBook gameTime],
-                                    EnemyFireTriesCount))
+                                    (int) DamageToSinkAllies))
 
                     let struct(enemyShips, futureHits) =
                         struct(enemyShips, futureHits)
