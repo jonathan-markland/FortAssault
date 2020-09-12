@@ -16,10 +16,11 @@ This is a Jonathan-kills-many-birds exercise, involving many technologies.
 Technology:
 
     - Windows desktop (F# / .Net Core / SDL2-CS / SDL2)
-    - Linux desktop (F# / .Net Core / SDL2-CS / SDL2)
-    - [Forthcoming!] In the browser (F# / Fable / Web Canvas / HTML)  (if not also Bolero)
+    - [Untested] Linux desktop (F# / .Net Core / SDL2-CS / SDL2) 
+    - In the browser (F# / Fable / Web Canvas / HTML)
+	- TODO:  F#-Bolero in-browser solution
 
-In other words, one game, one language, its goes three places.
+In other words, one game, one language, its goes many places.
 
 I also have distilled a re-usable game algorithm library out of this.
 
@@ -34,15 +35,22 @@ Screenshots
 
 ![Game screenshot](/WebImages/Image5.jpg)
 
-06/09/2020 - In browser (static) screenshot
--------------------------------------------
+Browser version
+---------------
+This is in the FortAssaultWeb folder. It shares the FsAnyGame and 
+FsFortAssault assemblies by relative path inclusion of the projects.
 
-I've gotten the screens displaying in the browser via F# + Fable + Web canvas,
-and a tiny amount of supplementary Javascript.  These are static for now.  The
-next step will be to wire up a 1/50th second timer event, and see some animation.
-Finally, I'll need to wire the keyboard input through.
+It's all node.js / npm stack, so you need these.
 
-![Game screenshot](/WebImages/Image6.jpg)
+To start the server:
+
+	cd FortAssaultWeb
+	npm start
+
+Then navigate to http://localhost:8080
+
+TODO: I must find a better solution to copying the 
+Desktop version's image files manually!
 
 Functional Programming
 ----------------------
