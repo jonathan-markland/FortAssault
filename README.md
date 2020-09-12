@@ -54,7 +54,7 @@ Desktop version's image files manually!
 
 To obtain the production web site file set:
 
-	cd FortAssaultWeb\public
+	cd FortAssaultWeb
 	npx webpack --mode production
 
 Functional Programming
