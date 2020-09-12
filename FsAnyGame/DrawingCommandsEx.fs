@@ -73,7 +73,7 @@ let Num render fontResource hAlign vAlign x y (value:uint32) =
 /// Draw a float32 in a given font, aligned in a given way with respect to a point.
 let Flo render fontResource hAlign vAlign x y (value:float32) =
     // TODO: the format string should be parameterized:
-    Text render fontResource hAlign vAlign x y (value.ToString("#.##"))  
+    Text render fontResource hAlign vAlign x y (sprintf "%.1f" value)
 
 
 // ---------------------------------------------------------------------------------------------------------
