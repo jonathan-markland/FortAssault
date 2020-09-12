@@ -256,11 +256,11 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
 
             else if msg = SDL.SDL_EventType.SDL_KEYDOWN then
                 let code = event.key.keysym.scancode
-                HandleKeyDownEvent mutableKeyStateStore code
+                HandleKeyDownEvent mutableKeyStateStore code |> ignore
 
             else if msg = SDL.SDL_EventType.SDL_KEYUP then
                 let code = event.key.keysym.scancode
-                HandleKeyUpEvent mutableKeyStateStore code
+                HandleKeyUpEvent mutableKeyStateStore code |> ignore
 
             else if msg = SDL.SDL_EventType.SDL_USEREVENT then
                 let gameTime = GetGameTime ()
