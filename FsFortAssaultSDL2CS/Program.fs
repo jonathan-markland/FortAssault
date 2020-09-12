@@ -258,7 +258,6 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
     let mutable event            = new SDL.SDL_Event ()
     let mutable lastGameTime     = 0.0F<seconds>
     let mutable terminateProgram = false
-    let mutable gamePaused       = false
 
     while terminateProgram = false do
         while (SDL.SDL_WaitEvent (&event)) <> 0 && not terminateProgram do
@@ -270,10 +269,7 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
 
             else if msg = SDL.SDL_EventType.SDL_KEYDOWN then
                 let code = event.key.keysym.scancode
-                if code = SDL.SDL_Scancode.SDL_SCANCODE_P then
-                    gamePaused <- not gamePaused
-                else
-                    HandlePossibleKeyStateChange (HandleKeyDownEvent mutableKeyStateStore code)
+                HandlePossibleKeyStateChange (HandleKeyDownEvent mutableKeyStateStore code)
 
             else if msg = SDL.SDL_EventType.SDL_KEYUP then
                 let code = event.key.keysym.scancode
@@ -281,7 +277,7 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
 
             else if msg = SDL.SDL_EventType.SDL_USEREVENT then
                 let gameTime = GetGameTime ()
-                if not gamePaused then
+                if not (mutableKeyStateStore |> IsGamePaused) then
                     HandleFrameAdvanceEvent gameTime lastGameTime
                 lastGameTime <- gameTime
 
