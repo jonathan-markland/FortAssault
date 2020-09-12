@@ -106,7 +106,7 @@ let WithEnemyShipSinking gameTime enemyShipX enemyShips =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let EnemyLaunchPart1FlickbookType =
+let EnemyLaunchPart1FlickbookType () =
     {
         FlickBookDuration     = 0.7F<seconds>
         FlickBookImages       = Imgs [| ImagePlaneBomb0 ; ImagePlaneBomb1 |]
@@ -114,7 +114,7 @@ let EnemyLaunchPart1FlickbookType =
         VisibilityAfterEnd    = Hidden
     }
 
-let EnemyLaunchPart2FlickbookType =
+let EnemyLaunchPart2FlickbookType () =
     {
         FlickBookDuration     = 0.7F<seconds>
         FlickBookImages       = Imgs [| ImagePlaneBomb3 ; ImagePlaneBomb4 |]
@@ -130,15 +130,18 @@ let FlickbooksForEnemyLaunchFrom (ship:EnemyShip) decoratives willHit gameTime =
     let originY = ship.BaseY - (ship.ShipImage.EngineImageMetadata.ImageHeight |> IntToFloatEpx)
     let targetY = if willHit then EnemyFireHittingShipY else EnemyFireMissingShipY
 
+    let fb1 = EnemyLaunchPart1FlickbookType ()
+    let fb2 = EnemyLaunchPart2FlickbookType ()
+
     let t1 = gameTime
-    let t2 = t1 + EnemyLaunchPart1FlickbookType.FlickBookDuration
+    let t2 = t1 + fb1.FlickBookDuration
     let t3 = t2 + TimeBetweenEnemyLaunchGoingOffTopOfScreenAndComingBackOn
-    let t4 = t3 + EnemyLaunchPart2FlickbookType.FlickBookDuration
+    let t4 = t3 + fb2.FlickBookDuration
     let t5 = t4 + TimeBetweenEnemyFirings
 
     let launchFlickBookInstance =
         {
-            FlickBookType            = EnemyLaunchPart1FlickbookType
+            FlickBookType            = fb1
             FlickBookStartTime       = t1
             FlickBookMechanicsObject = 
                 MechanicsControlledMovingObject
@@ -146,12 +149,12 @@ let FlickbooksForEnemyLaunchFrom (ship:EnemyShip) decoratives willHit gameTime =
                     { ptx = x ; pty = originY }
                     { ptx = x ; pty = -10.0F<epx> }
                     t1
-                    EnemyLaunchPart1FlickbookType.FlickBookDuration
+                    fb1.FlickBookDuration
         }
 
     let descentFlickBookInstance =
         {
-            FlickBookType            = EnemyLaunchPart2FlickbookType
+            FlickBookType            = fb2
             FlickBookStartTime       = t3
             FlickBookMechanicsObject = 
                 MechanicsControlledMovingObject
@@ -159,7 +162,7 @@ let FlickbooksForEnemyLaunchFrom (ship:EnemyShip) decoratives willHit gameTime =
                     { ptx = x ; pty = -100.0F<epx> }
                     { ptx = x ; pty = targetY }
                     t3
-                    EnemyLaunchPart2FlickbookType.FlickBookDuration
+                    fb2.FlickBookDuration
         }
 
     let decoratives =
