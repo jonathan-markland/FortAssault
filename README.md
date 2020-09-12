@@ -52,6 +52,11 @@ Then navigate to http://localhost:8080
 TODO: I must find a better solution to copying the 
 Desktop version's image files manually!
 
+To obtain the production web site file set:
+
+	cd FortAssaultWeb\public
+	npx webpack --mode production
+
 Functional Programming
 ----------------------
 In Functional Programming, the data model is READ ONLY, for which F# has 100% support.  
