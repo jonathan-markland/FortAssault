@@ -195,6 +195,7 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
     let renderFunction = 
         RenderToSdl gameResources renderer   // TODO: We only pass gameResources in to get the fonts now.  Soon we won't need to pass gameResources at all.
 
+
     let mutableKeyStateStore =
         NewMutableKeyStateStore
             ObtainFortAssaultKeyStatesAsImmutableRecordFrom
@@ -207,6 +208,7 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
                 SDL.SDL_Scancode.SDL_SCANCODE_Z    
             ]
     
+
     let HandleFrameAdvanceEvent gameTime lastGameTime =
 
         SetRenderTargetToTexture renderer backingTexture
