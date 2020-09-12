@@ -197,6 +197,7 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
 
     let mutableKeyStateStore =
         NewMutableKeyStateStore
+            ObtainFortAssaultKeyStatesAsImmutableRecordFrom
             SDL.SDL_Scancode.SDL_SCANCODE_P
             [
                 SDL.SDL_Scancode.SDL_SCANCODE_LEFT 
@@ -206,22 +207,6 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
                 SDL.SDL_Scancode.SDL_SCANCODE_Z    
             ]
     
-    let mutable mostRecentImmutableInputEventData = 
-        ObtainFortAssaultKeyStatesAsImmutableRecordFrom mutableKeyStateStore
-
-    let HandlePossibleKeyStateChange keyOperationResult =
-
-        // Garbage avoidance scheme.
-
-        match keyOperationResult with
-
-            | KeyStateChanged   -> 
-                mostRecentImmutableInputEventData 
-                    <- ObtainFortAssaultKeyStatesAsImmutableRecordFrom mutableKeyStateStore
-
-            | NoKeyStateChanged -> 
-                ()
-
     let HandleFrameAdvanceEvent gameTime lastGameTime =
 
         SetRenderTargetToTexture renderer backingTexture
@@ -242,7 +227,7 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
                     staticGameResources 
                     gameGlobals 
                     screenState 
-                    mostRecentImmutableInputEventData 
+                    (mutableKeyStateStore |> ImmutableKeyStatesSnapshot)
                     gameTime 
                     frameElapsedTime with
                 | NextStoryboard nextState -> gameGlobals,nextState
@@ -252,7 +237,7 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
         gameGlobals <- nextGlobals
         screenState <- nextState
 
-        HandlePossibleKeyStateChange (mutableKeyStateStore |> ClearKeyJustPressedFlags)
+        mutableKeyStateStore |> ClearKeyJustPressedFlags
 
 
     let mutable event            = new SDL.SDL_Event ()
@@ -269,11 +254,11 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
 
             else if msg = SDL.SDL_EventType.SDL_KEYDOWN then
                 let code = event.key.keysym.scancode
-                HandlePossibleKeyStateChange (HandleKeyDownEvent mutableKeyStateStore code)
+                HandleKeyDownEvent mutableKeyStateStore code
 
             else if msg = SDL.SDL_EventType.SDL_KEYUP then
                 let code = event.key.keysym.scancode
-                HandlePossibleKeyStateChange (HandleKeyUpEvent mutableKeyStateStore code)
+                HandleKeyUpEvent mutableKeyStateStore code
 
             else if msg = SDL.SDL_EventType.SDL_USEREVENT then
                 let gameTime = GetGameTime ()

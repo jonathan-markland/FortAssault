@@ -34,24 +34,38 @@ let NewMutableKey hostKeyCode =
 //  Mutable Key State Store for all the keys needed by the game
 // ------------------------------------------------------------------------------------------------------
 
-type MutableKeyStateStore<'hostKeyCodeType> =
+type MutableKeyStateStoreInner<'hostKeyCodeType> =
     {
         MutableKeyStatesList     : MutableKeyState<'hostKeyCodeType> list
         PauseKey                 : MutableKeyState<'hostKeyCodeType>
         mutable GameIsPaused     : bool
     }
 
+type MutableKeyStateStore<'hostKeyCodeType, 'userDefinedImmutableKeysRecord> =
+    {
+        SystemKeyStateStore            : MutableKeyStateStoreInner<'hostKeyCodeType>
+        mutable UserKeyStatesSnapshot  : 'userDefinedImmutableKeysRecord
+        SnapshotObtainer               : MutableKeyStateStoreInner<'hostKeyCodeType> -> 'userDefinedImmutableKeysRecord
+    }
+
+
+
+/// Obtain an immutable record of the key states specific to the client game.
+let ImmutableKeyStatesSnapshot mutableKeyStateStore =
+    mutableKeyStateStore.UserKeyStatesSnapshot  // To reduce garbage we re-build this ONLY on-change.
+
 
 
 /// Query whether the pause flag is set.
 let IsGamePaused mutableKeyStateStore =
-    mutableKeyStateStore.GameIsPaused
+    mutableKeyStateStore.SystemKeyStateStore.GameIsPaused
 
 
 
 /// Toggle the state of the game-pause flag.
 let private TogglePauseMode mutableKeyStateStore =
-    mutableKeyStateStore.GameIsPaused <- not mutableKeyStateStore.GameIsPaused
+    mutableKeyStateStore.SystemKeyStateStore.GameIsPaused 
+        <- not mutableKeyStateStore.SystemKeyStateStore.GameIsPaused
 
 
 
@@ -81,12 +95,36 @@ let private LookupRecordForKey mutableKeyStateStore (hostKeyCode: 'hostKeyCodeTy
 /// key codes, and the return list is MutableKeyState records initialised with 
 /// those codes, where the keys are 'not pressed'.  The input list should NOT contain
 /// the PAUSE key.
-let NewMutableKeyStateStore (pauseKeyHostCode: 'hostKeyCodeType) (hostKeyCodeList: 'hostKeyCodeType list) =
-    {
-        MutableKeyStatesList = hostKeyCodeList |> List.map NewMutableKey
-        PauseKey             = NewMutableKey pauseKeyHostCode
-        GameIsPaused         = false
-    }
+let NewMutableKeyStateStore userKeyStatesSnaphotObtainer (pauseKeyHostCode: 'hostKeyCodeType) (hostKeyCodeList: 'hostKeyCodeType list) =
+    let mutableKeyStateStoreInner =
+        {
+            MutableKeyStatesList  = hostKeyCodeList |> List.map NewMutableKey
+            PauseKey              = NewMutableKey pauseKeyHostCode
+            GameIsPaused          = false
+        }
+    let outer =
+        {
+            SystemKeyStateStore   = mutableKeyStateStoreInner
+            UserKeyStatesSnapshot = mutableKeyStateStoreInner |> userKeyStatesSnaphotObtainer
+            SnapshotObtainer      = userKeyStatesSnaphotObtainer
+        }
+    outer
+
+
+
+let private HandlePossibleKeyStateChange mutableKeyStateStore keyOperationResult =
+
+    // Garbage avoidance scheme.
+
+    match keyOperationResult with
+
+        | KeyStateChanged   -> 
+            mutableKeyStateStore.UserKeyStatesSnapshot
+                <- mutableKeyStateStore.SnapshotObtainer mutableKeyStateStore.SystemKeyStateStore
+
+        | NoKeyStateChanged -> 
+            ()
+
 
 
 
@@ -94,13 +132,19 @@ let NewMutableKeyStateStore (pauseKeyHostCode: 'hostKeyCodeType) (hostKeyCodeLis
 /// an indicator as to whether any of the 'just pressed' states changed
 /// as a result of this reset.
 let ClearKeyJustPressedFlags mutableKeyStateStore =
-    let keyListReference = mutableKeyStateStore.MutableKeyStatesList
-    if keyListReference |> List.exists (fun mutableKey -> mutableKey.MutJustPressed) then
-        keyListReference |> List.iter (fun mutableKey -> mutableKey.MutJustPressed <- false)
-        KeyStateChanged
 
-    else
-        NoKeyStateChanged
+    let wasChanged = 
+
+        let keyListReference = mutableKeyStateStore.SystemKeyStateStore.MutableKeyStatesList
+
+        if keyListReference |> List.exists (fun mutableKey -> mutableKey.MutJustPressed) then
+            keyListReference |> List.iter (fun mutableKey -> mutableKey.MutJustPressed <- false)
+            KeyStateChanged
+
+        else
+            NoKeyStateChanged
+
+    HandlePossibleKeyStateChange mutableKeyStateStore wasChanged
 
 
 
@@ -109,34 +153,43 @@ let ClearKeyJustPressedFlags mutableKeyStateStore =
 /// This function supports being called on key-repeats for the key in question.
 let HandleKeyDownEvent mutableKeyStateStore (hostKeyCode: 'hostKeyCodeType) =
 
+    let inner = mutableKeyStateStore.SystemKeyStateStore
+
     let processKey mutableKey =
         if mutableKey.MutWaitingRelease then
             NoKeyStateChanged  // <-- key repeat detected, we must not 'reset' JustPressed or KeyDownSince!
 
         else 
-            if mutableKey.ThisKeyScanCode = mutableKeyStateStore.PauseKey.ThisKeyScanCode then
+            if mutableKey.ThisKeyScanCode = inner.PauseKey.ThisKeyScanCode then
                 TogglePauseMode mutableKeyStateStore
             mutableKey.MutHeld <- true
             mutableKey.MutJustPressed    <- true
             mutableKey.MutWaitingRelease <- true
             KeyStateChanged
 
-    match LookupRecordForKey mutableKeyStateStore hostKeyCode with
-        | None             -> NoKeyStateChanged // because we didn't recognise the key!
-        | Some(mutableKey) -> processKey mutableKey
+    let wasChanged =
+        match LookupRecordForKey inner hostKeyCode with
+            | None             -> NoKeyStateChanged // because we didn't recognise the key!
+            | Some(mutableKey) -> processKey mutableKey
 
+    HandlePossibleKeyStateChange mutableKeyStateStore wasChanged
 
 
 /// Handler for the host environment's 'key up' event.
 let HandleKeyUpEvent mutableKeyStateStore (hostKeyCode: 'hostKeyCodeType) =
 
-    match LookupRecordForKey mutableKeyStateStore hostKeyCode with
+    let inner = mutableKeyStateStore.SystemKeyStateStore
+
+    let wasChanged =
+        match LookupRecordForKey inner hostKeyCode with
         
-        | None -> 
-            NoKeyStateChanged // because we didn't recognise the key, which would include PAUSE, but there's no key-up action for PAUSE.
+            | None -> 
+                NoKeyStateChanged // because we didn't recognise the key, which would include PAUSE, but there's no key-up action for PAUSE.
         
-        | Some mutableKey ->
-            mutableKey.MutHeld           <- false
-            mutableKey.MutWaitingRelease <- false
-            KeyStateChanged
+            | Some mutableKey ->
+                mutableKey.MutHeld           <- false
+                mutableKey.MutWaitingRelease <- false
+                KeyStateChanged
+
+    HandlePossibleKeyStateChange mutableKeyStateStore wasChanged
 
