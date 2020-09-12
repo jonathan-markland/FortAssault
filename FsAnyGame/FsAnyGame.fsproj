@@ -10,7 +10,7 @@
     <Compile Include="ListSplicer.fs" />
     <Compile Include="Angle.fs" />
     <Compile Include="Time.fs" />
-    <Compile Include="Keyboard.fs" />
+    <Compile Include="KeyboardForFramework.fs" />
     <Compile Include="Geometry.fs" />
     <Compile Include="ResourceFileMetadata.fs" />
     <Compile Include="StaticResourceSetup.fs" />
@@ -27,6 +27,7 @@
     <Compile Include="PendingEvents.fs" />
     <Compile Include="DrawingCommands.fs" />
     <Compile Include="DrawingCommandsEx.fs" />
+    <Compile Include="CaptureRendering.fs" />
     <Compile Include="FlickBook.fs" />
   </ItemGroup>
 

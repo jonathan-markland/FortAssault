@@ -1,13 +1,12 @@
 ﻿open SDL2  // TODO: It would be nicer if SDLCover could provide everything.
 open System.IO
 open SDLCover
-open Input
-open InputEventData
 open Time
 open Geometry
 open DrawingCommands
 open GameGlobalState
-open Keyboard
+open KeyboardForFramework
+open InputForFramework
 open Storyboard
 open StoryboardChapterChange
 open TankMapFileLoader
@@ -196,64 +195,34 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
     let renderFunction = 
         RenderToSdl gameResources renderer   // TODO: We only pass gameResources in to get the fonts now.  Soon we won't need to pass gameResources at all.
 
-    let keyLeft  = NewMutableKey SDL.SDL_Scancode.SDL_SCANCODE_LEFT 
-    let keyRight = NewMutableKey SDL.SDL_Scancode.SDL_SCANCODE_RIGHT
-    let keyUp    = NewMutableKey SDL.SDL_Scancode.SDL_SCANCODE_UP   
-    let keyDown  = NewMutableKey SDL.SDL_Scancode.SDL_SCANCODE_DOWN 
-    let keyFire  = NewMutableKey SDL.SDL_Scancode.SDL_SCANCODE_Z    
-    let keyPause = NewMutableKey SDL.SDL_Scancode.SDL_SCANCODE_P
-
-    let keysList =
-        [ keyLeft ; keyRight ; keyUp ; keyDown ; keyFire ; keyPause ]
-
-    let ObtainKeyStatesAsImmutableRecord () =
-        {
-            Left =
-                {
-                    JustDown  = keyLeft.MutJustPressed
-                    Held      = keyLeft.MutHeld
-                }
-            Right =
-                {
-                    JustDown = keyRight.MutJustPressed
-                    Held     = keyRight.MutHeld
-                }
-            Up =
-                {
-                    JustDown = keyUp.MutJustPressed
-                    Held     = keyUp.MutHeld
-                }
-            Down =
-                {
-                    JustDown = keyDown.MutJustPressed
-                    Held     = keyDown.MutHeld
-                }
-            Fire =
-                {
-                    JustDown = keyFire.MutJustPressed
-                    Held     = keyFire.MutHeld
-                }
-        }
-
+    let mutableKeyStateStore =
+        NewMutableKeyStateStore
+            SDL.SDL_Scancode.SDL_SCANCODE_P
+            [
+                SDL.SDL_Scancode.SDL_SCANCODE_LEFT 
+                SDL.SDL_Scancode.SDL_SCANCODE_RIGHT
+                SDL.SDL_Scancode.SDL_SCANCODE_UP   
+                SDL.SDL_Scancode.SDL_SCANCODE_DOWN 
+                SDL.SDL_Scancode.SDL_SCANCODE_Z    
+            ]
+    
     let mutable mostRecentImmutableInputEventData = 
-        ObtainKeyStatesAsImmutableRecord()
+        ObtainFortAssaultKeyStatesAsImmutableRecordFrom mutableKeyStateStore
 
     let HandlePossibleKeyStateChange keyOperationResult =
 
         // Garbage avoidance scheme.
 
         match keyOperationResult with
-            | KeyStateChanged   -> mostRecentImmutableInputEventData <- ObtainKeyStatesAsImmutableRecord ()
-            | NoKeyStateChanged -> ()
 
-    let mutable gamePaused = false
+            | KeyStateChanged   -> 
+                mostRecentImmutableInputEventData 
+                    <- ObtainFortAssaultKeyStatesAsImmutableRecordFrom mutableKeyStateStore
 
-    let HandleFrameAdvanceEvent lastGameTime =
+            | NoKeyStateChanged -> 
+                ()
 
-        let gameTime = GetGameTime ()
-
-        if keyPause.MutJustPressed then
-            gamePaused <- not gamePaused
+    let HandleFrameAdvanceEvent gameTime lastGameTime =
 
         SetRenderTargetToTexture renderer backingTexture
 
@@ -265,33 +234,31 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
         RenderCopyToFullTarget renderer backingTexture
         Present renderer
 
-        if not gamePaused then
+        let frameElapsedTime =
+            gameTime - lastGameTime
 
-            let frameElapsedTime =
-                gameTime - lastGameTime
+        let nextGlobals, nextState = 
+            match NextStoryboardState 
+                    staticGameResources 
+                    gameGlobals 
+                    screenState 
+                    mostRecentImmutableInputEventData 
+                    gameTime 
+                    frameElapsedTime with
+                | NextStoryboard nextState -> gameGlobals,nextState
+                | NextStoryboardAndGlobals (nextGlobals,nextState) -> nextGlobals,nextState
 
-            let nextGlobals, nextState = 
-                match NextStoryboardState 
-                        staticGameResources 
-                        gameGlobals 
-                        screenState 
-                        mostRecentImmutableInputEventData 
-                        gameTime 
-                        frameElapsedTime with
-                    | NextStoryboard nextState -> gameGlobals,nextState
-                    | NextStoryboardAndGlobals (nextGlobals,nextState) -> nextGlobals,nextState
+        tickCount <- tickCount + 1u
+        gameGlobals <- nextGlobals
+        screenState <- nextState
 
-            tickCount <- tickCount + 1u
-            gameGlobals <- nextGlobals
-            screenState <- nextState
-
-        HandlePossibleKeyStateChange (keysList |> ClearKeyJustPressedFlags)
-        gameTime
+        HandlePossibleKeyStateChange (mutableKeyStateStore |> ClearKeyJustPressedFlags)
 
 
     let mutable event            = new SDL.SDL_Event ()
     let mutable lastGameTime     = 0.0F<seconds>
     let mutable terminateProgram = false
+    let mutable gamePaused       = false
 
     while terminateProgram = false do
         while (SDL.SDL_WaitEvent (&event)) <> 0 && not terminateProgram do
@@ -302,13 +269,20 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
                 terminateProgram <- true
 
             else if msg = SDL.SDL_EventType.SDL_KEYDOWN then
-                HandlePossibleKeyStateChange (HandleKeyDownEvent keysList event.key.keysym.scancode)
+                let code = event.key.keysym.scancode
+                if code = SDL.SDL_Scancode.SDL_SCANCODE_P then
+                    gamePaused <- not gamePaused
+                else
+                    HandlePossibleKeyStateChange (HandleKeyDownEvent mutableKeyStateStore code)
 
             else if msg = SDL.SDL_EventType.SDL_KEYUP then
-                HandlePossibleKeyStateChange (HandleKeyUpEvent keysList event.key.keysym.scancode)
+                let code = event.key.keysym.scancode
+                HandlePossibleKeyStateChange (HandleKeyUpEvent mutableKeyStateStore code)
 
             else if msg = SDL.SDL_EventType.SDL_USEREVENT then
-                let gameTime = HandleFrameAdvanceEvent lastGameTime
+                let gameTime = GetGameTime ()
+                if not gamePaused then
+                    HandleFrameAdvanceEvent gameTime lastGameTime
                 lastGameTime <- gameTime
 
 

@@ -20,6 +20,11 @@ open StoryboardChapterChange
 open TankMapFileLoader
 open GameGlobalState
 
+open CaptureRendering
+open DrawingCommands
+open Geometry
+open Time
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 type Storyboard =
@@ -52,7 +57,27 @@ let RenderStoryboard render storyboard gameTime =
     match storyboard with 
 
         | GameTitleChapter(model) ->
-            RenderGameTitleScreen render model gameTime
+
+            let x = CaptureRenderingToList (fun render -> RenderGameTitleScreen render model gameTime)
+            //printfn "%A" x
+
+            // RenderGameTitleScreen render model gameTime
+
+            let offset = (int (gameTime * 2.0F)) % 2
+
+            let messyRender i item =
+                match item with
+                    | DrawCharImageWithTopLeftAt(x,y,ch,font) ->
+                        if ch <> 36u then
+                            let n = ((i + offset) % 2) |> IntToIntEpx
+                            let newCommand = DrawCharImageWithTopLeftAt(x,y-n,ch,font)
+                            render newCommand
+                        else
+                            render item
+                    | _ ->
+                        render item
+
+            x |> List.iteri messyRender
 
         | InitialMapChapter(model) ->
             RenderInitialMapScreen render model

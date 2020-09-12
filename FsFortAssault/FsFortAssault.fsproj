@@ -11,6 +11,7 @@
     <Compile Include="EffectRequest.fs" />
     <Compile Include="Rules.fs" />
     <Compile Include="InputEventData.fs" />
+    <Compile Include="InputForFramework.fs" />
     <Compile Include="ImagesAndFonts.fs" />
     <Compile Include="SharedDrawing.fs" />
     <Compile Include="MapScreenSharedDetail.fs" />
