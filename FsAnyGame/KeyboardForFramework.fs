@@ -37,6 +37,8 @@ let ToReadOnlyKeyStateRecord mutableKeyState =
     }
 
 
+
+
 // ------------------------------------------------------------------------------------------------------
 //  Mutable Key State Store for all the keys needed by the game
 // ------------------------------------------------------------------------------------------------------
@@ -63,7 +65,7 @@ let private TogglePauseMode mutableKeyStateStore =
 
 
 
-let private LookupRecordForKey mutableKeyStateStore (hostKeyCode: 'hostKeyCodeType) =
+let private LookupHostKey mutableKeyStateStore (hostKeyCode: 'hostKeyCodeType) =
 
     match mutableKeyStateStore.MutableKeyStatesList 
             |> List.tryFind (fun mutableKey -> mutableKey.ThisKeyScanCode = hostKeyCode) with
@@ -144,17 +146,17 @@ let HandleKeyDownEvent mutableKeyStateStore (hostKeyCode: 'hostKeyCodeType) =
 
     let store = mutableKeyStateStore
 
-    let processKey mutableKey =
-        if not mutableKey.MutWaitingRelease then
-            if mutableKey.ThisKeyScanCode = store.PauseKey.ThisKeyScanCode then
+    let processKey key =
+        if not key.MutWaitingRelease then
+            if key.ThisKeyScanCode = store.PauseKey.ThisKeyScanCode then
                 TogglePauseMode mutableKeyStateStore
-            mutableKey.MutHeld <- true
-            mutableKey.MutJustPressed    <- true
-            mutableKey.MutWaitingRelease <- true
+            key.MutHeld <- true
+            key.MutJustPressed    <- true
+            key.MutWaitingRelease <- true
 
-    match LookupRecordForKey store hostKeyCode with
-        | None             -> () // because we didn't recognise the key!
-        | Some(mutableKey) -> processKey mutableKey
+    match LookupHostKey store hostKeyCode with
+        | None      -> false // because we didn't recognise the key!
+        | Some key  -> processKey key ; true
 
 
 
@@ -163,12 +165,13 @@ let HandleKeyUpEvent mutableKeyStateStore (hostKeyCode: 'hostKeyCodeType) =
 
     let store = mutableKeyStateStore
 
-    match LookupRecordForKey store hostKeyCode with
+    match LookupHostKey store hostKeyCode with
         
         | None -> 
-            () // because we didn't recognise the key, which would include PAUSE, but there's no key-up action for PAUSE.
+            false // because we didn't recognise the key, which would include PAUSE, but there's no key-up action for PAUSE.
         
-        | Some mutableKey ->
-            mutableKey.MutHeld           <- false
-            mutableKey.MutWaitingRelease <- false
+        | Some key ->
+            key.MutHeld           <- false
+            key.MutWaitingRelease <- false
+            true
 

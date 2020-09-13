@@ -12,7 +12,8 @@ open Geometry
 open DrawingCommands
 open GameGlobalState
 open KeyboardForFramework
-open InputForFramework
+open Input
+open EngineEntryPoint
 
 
 
@@ -238,14 +239,13 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
             
             let mutableKeyStateStore =
                 NewMutableKeyStateStore
-                    ObtainFortAssaultKeyStatesAsImmutableRecordFrom
                     80 // P
                     [
-                        37 // LEFT
-                        39 // RIGHT
-                        38 // UP   
-                        40 // DOWN 
-                        90 // Z    (FIRE)
+                        (37 , WebBrowserKeyCode 37) // LEFT
+                        (39 , WebBrowserKeyCode 39) // RIGHT
+                        (38 , WebBrowserKeyCode 38) // UP   
+                        (40 , WebBrowserKeyCode 40) // DOWN 
+                        (90 , WebBrowserKeyCode 90) // Z    (FIRE)
                     ]
 
             let registerKeyHandler eventName handlerFunc =
@@ -253,15 +253,15 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
                     eventName, 
                     fun e -> 
                         let ke: Browser.Types.KeyboardEvent = downcast e
-                        match handlerFunc mutableKeyStateStore ((int) ke.keyCode) with
-                            | KeyStateChanged -> e.preventDefault()
-                            | NoKeyStateChanged -> ())
+                        if handlerFunc mutableKeyStateStore ((int) ke.keyCode) then e.preventDefault())
 
             registerKeyHandler "keydown" HandleKeyDownEvent
             registerKeyHandler "keyup"   HandleKeyUpEvent
 
             document.getElementById("loaderScreen").classList.add("hidden")
             document.getElementById("gameScreen").classList.remove("hidden")
+
+            let keyStateGetter = LiveKeyStateFrom mutableKeyStateStore
 
             let rec mainLoop gameGlobals storyboard tickCount () =
 
@@ -273,7 +273,7 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
                 RenderStoryboard renderFunction storyboard gameTime
 
                 let gameGlobals, storyboard = 
-                    match NextStoryboardState gameResources gameGlobals storyboard (mutableKeyStateStore |> ImmutableKeyStatesSnapshot) gameTime frameElapsedTime with
+                    match NextGameState gameResources gameGlobals storyboard keyStateGetter gameTime frameElapsedTime with
                         | NextStoryboard nextState -> gameGlobals,nextState
                         | NextStoryboardAndGlobals (nextGlobals,nextState) -> nextGlobals,nextState
 
