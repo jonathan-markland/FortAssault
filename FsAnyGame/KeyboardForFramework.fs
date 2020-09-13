@@ -41,30 +41,25 @@ let ToReadOnlyKeyStateRecord mutableKeyState =
 //  Mutable Key State Store for all the keys needed by the game
 // ------------------------------------------------------------------------------------------------------
 
-type MutableKeyStateStoreInner<'hostKeyCodeType> =
+type MutableKeyStateStore<'hostKeyCodeType> =
     {
         MutableKeyStatesList     : MutableKeyState<'hostKeyCodeType> list
         PauseKey                 : MutableKeyState<'hostKeyCodeType>
         mutable GameIsPaused     : bool
     }
 
-type MutableKeyStateStore<'hostKeyCodeType> =
-    {
-        SystemKeyStateStore : MutableKeyStateStoreInner<'hostKeyCodeType>
-    }
-
 
 
 /// Query whether the pause flag is set.
 let IsGamePaused mutableKeyStateStore =
-    mutableKeyStateStore.SystemKeyStateStore.GameIsPaused
+    mutableKeyStateStore.GameIsPaused
 
 
 
 /// Toggle the state of the game-pause flag.
 let private TogglePauseMode mutableKeyStateStore =
-    mutableKeyStateStore.SystemKeyStateStore.GameIsPaused 
-        <- not mutableKeyStateStore.SystemKeyStateStore.GameIsPaused
+    mutableKeyStateStore.GameIsPaused 
+        <- not mutableKeyStateStore.GameIsPaused
 
 
 
@@ -95,23 +90,17 @@ let private LookupRecordForKey mutableKeyStateStore (hostKeyCode: 'hostKeyCodeTy
 /// those codes, where the keys are 'not pressed'.  The input list should NOT contain
 /// the PAUSE key.
 let NewMutableKeyStateStore (pauseKeyHostCode: 'hostKeyCodeType) (hostKeyCodeList: ('hostKeyCodeType * WebBrowserKeyCode) list) =
-    let mutableKeyStateStoreInner =
-        {
-            MutableKeyStatesList  = hostKeyCodeList |> List.map (fun (host,web) -> NewMutableKey web host)
-            PauseKey              = NewMutableKey BrowserPauseKey pauseKeyHostCode
-            GameIsPaused          = false
-        }
-    let outer =
-        {
-            SystemKeyStateStore   = mutableKeyStateStoreInner
-        }
-    outer
+    {
+        MutableKeyStatesList  = hostKeyCodeList |> List.map (fun (host,web) -> NewMutableKey web host)
+        PauseKey              = NewMutableKey BrowserPauseKey pauseKeyHostCode
+        GameIsPaused          = false
+    }
 
 
 
 let LiveKeyStateFrom mutableKeyStateStore (keyCode:WebBrowserKeyCode) =
 
-    let inner = mutableKeyStateStore.SystemKeyStateStore
+    let inner = mutableKeyStateStore
 
     match inner.MutableKeyStatesList
             |> List.tryFind (fun mutableKey -> mutableKey.WebBrowserKeyCode = keyCode) with
@@ -140,10 +129,10 @@ let LiveKeyStateFrom mutableKeyStateStore (keyCode:WebBrowserKeyCode) =
 /// as a result of this reset.
 let ClearKeyJustPressedFlags mutableKeyStateStore =
 
-    let keyListReference = mutableKeyStateStore.SystemKeyStateStore.MutableKeyStatesList
+    let lst = mutableKeyStateStore.MutableKeyStatesList
 
-    if keyListReference |> List.exists (fun mutableKey -> mutableKey.MutJustPressed) then
-        keyListReference |> List.iter (fun mutableKey -> mutableKey.MutJustPressed <- false)
+    if lst |> List.exists (fun key -> key.MutJustPressed) then
+        lst |> List.iter (fun key -> key.MutJustPressed <- false)
 
 
 
@@ -153,17 +142,17 @@ let ClearKeyJustPressedFlags mutableKeyStateStore =
 /// This function supports being called on key-repeats for the key in question.
 let HandleKeyDownEvent mutableKeyStateStore (hostKeyCode: 'hostKeyCodeType) =
 
-    let inner = mutableKeyStateStore.SystemKeyStateStore
+    let store = mutableKeyStateStore
 
     let processKey mutableKey =
         if not mutableKey.MutWaitingRelease then
-            if mutableKey.ThisKeyScanCode = inner.PauseKey.ThisKeyScanCode then
+            if mutableKey.ThisKeyScanCode = store.PauseKey.ThisKeyScanCode then
                 TogglePauseMode mutableKeyStateStore
             mutableKey.MutHeld <- true
             mutableKey.MutJustPressed    <- true
             mutableKey.MutWaitingRelease <- true
 
-    match LookupRecordForKey inner hostKeyCode with
+    match LookupRecordForKey store hostKeyCode with
         | None             -> () // because we didn't recognise the key!
         | Some(mutableKey) -> processKey mutableKey
 
@@ -172,9 +161,9 @@ let HandleKeyDownEvent mutableKeyStateStore (hostKeyCode: 'hostKeyCodeType) =
 /// Handler for the host environment's 'key up' event.
 let HandleKeyUpEvent mutableKeyStateStore (hostKeyCode: 'hostKeyCodeType) =
 
-    let inner = mutableKeyStateStore.SystemKeyStateStore
+    let store = mutableKeyStateStore
 
-    match LookupRecordForKey inner hostKeyCode with
+    match LookupRecordForKey store hostKeyCode with
         
         | None -> 
             () // because we didn't recognise the key, which would include PAUSE, but there's no key-up action for PAUSE.
