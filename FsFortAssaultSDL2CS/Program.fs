@@ -6,13 +6,14 @@ open Geometry
 open DrawingCommands
 open GameGlobalState
 open KeyboardForFramework
-open InputForFramework
 open Storyboard
+open EngineEntryPoint
 open StoryboardChapterChange
 open TankMapFileLoader
 open ResourceFileMetadata
 open ResourceFiles
 open StaticResourceSetup
+open Input
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -198,16 +199,16 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
 
     let mutableKeyStateStore =
         NewMutableKeyStateStore
-            ObtainFortAssaultKeyStatesAsImmutableRecordFrom
             SDL.SDL_Scancode.SDL_SCANCODE_P
             [
-                SDL.SDL_Scancode.SDL_SCANCODE_LEFT 
-                SDL.SDL_Scancode.SDL_SCANCODE_RIGHT
-                SDL.SDL_Scancode.SDL_SCANCODE_UP   
-                SDL.SDL_Scancode.SDL_SCANCODE_DOWN 
-                SDL.SDL_Scancode.SDL_SCANCODE_Z    
+                (SDL.SDL_Scancode.SDL_SCANCODE_LEFT  , WebBrowserKeyCode 37)
+                (SDL.SDL_Scancode.SDL_SCANCODE_RIGHT , WebBrowserKeyCode 39)
+                (SDL.SDL_Scancode.SDL_SCANCODE_UP    , WebBrowserKeyCode 38)
+                (SDL.SDL_Scancode.SDL_SCANCODE_DOWN  , WebBrowserKeyCode 40)
+                (SDL.SDL_Scancode.SDL_SCANCODE_Z     , WebBrowserKeyCode 90)
             ]
     
+    let keyStateGetter = LiveKeyStateFrom mutableKeyStateStore
 
     let HandleFrameAdvanceEvent gameTime lastGameTime =
 
@@ -225,11 +226,11 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
             gameTime - lastGameTime
 
         let nextGlobals, nextState = 
-            match NextStoryboardState 
+            match NextGameState 
                     staticGameResources 
                     gameGlobals 
                     screenState 
-                    (mutableKeyStateStore |> ImmutableKeyStatesSnapshot)
+                    keyStateGetter
                     gameTime 
                     frameElapsedTime with
                 | NextStoryboard nextState -> gameGlobals,nextState

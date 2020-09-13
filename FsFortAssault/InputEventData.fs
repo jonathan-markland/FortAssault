@@ -4,11 +4,11 @@ open Input
 
 type InputEventData =
     {
-        Left:  InputEventKeyState
-        Right: InputEventKeyState
-        Up:    InputEventKeyState
-        Down:  InputEventKeyState
-        Fire:  InputEventKeyState
+        Left  : InputEventKeyState
+        Right : InputEventKeyState
+        Up    : InputEventKeyState
+        Down  : InputEventKeyState
+        Fire  : InputEventKeyState
     }
 
 let InputEventDataWhereNothingIsPressed =

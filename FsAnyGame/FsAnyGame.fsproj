@@ -10,7 +10,6 @@
     <Compile Include="ListSplicer.fs" />
     <Compile Include="Angle.fs" />
     <Compile Include="Time.fs" />
-    <Compile Include="KeyboardForFramework.fs" />
     <Compile Include="Geometry.fs" />
     <Compile Include="ResourceFileMetadata.fs" />
     <Compile Include="StaticResourceSetup.fs" />
@@ -20,6 +19,7 @@
     <Compile Include="Algorithm.fs" />
     <Compile Include="Mechanics.fs" />
     <Compile Include="Input.fs" />
+    <Compile Include="KeyboardForFramework.fs" />
     <Compile Include="FontAlignment.fs" />
     <Compile Include="FontCharacterPositioning.fs" />
     <Compile Include="ScoreHiScore.fs" />
