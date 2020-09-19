@@ -183,8 +183,9 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
             TankMapsList = tankMapsList
         }
 
-    let mutable gameGlobals = InitialGameGlobals ()
-    let mutable screenState = NewStoryboard staticGameResources (GetGameTime ()) // TODO: Ideally don't pass gameResources -- only needed for hacking access to a particular screen.
+    let initGameGlobals = InitialGameGlobals ()
+    let initScreenState = NewStoryboard staticGameResources (GetGameTime ()) // TODO: Ideally don't pass gameResources -- only needed for hacking access to a particular screen.
+    let mutable screenState = (struct (initScreenState , initGameGlobals))
 
     // 20ms timer installed so that the main event loop receives 'SDL.SDL_EventType.SDL_USEREVENT' every 20ms (1/50th second)
     let timerID =   // TODO: Push into library?
@@ -225,20 +226,16 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
         let frameElapsedTime =
             gameTime - lastGameTime
 
-        let nextGlobals, nextState = 
-            match NextGameState 
-                    staticGameResources 
-                    gameGlobals 
-                    screenState 
-                    keyStateGetter
-                    gameTime 
-                    frameElapsedTime with
-                | NextStoryboard nextState -> gameGlobals,nextState
-                | NextStoryboardAndGlobals (nextGlobals,nextState) -> nextGlobals,nextState
+        let nextScreenState = 
+            NextGameState 
+                staticGameResources 
+                screenState 
+                keyStateGetter
+                gameTime 
+                frameElapsedTime
 
         tickCount <- tickCount + 1u
-        gameGlobals <- nextGlobals
-        screenState <- nextState
+        screenState <- nextScreenState
 
         mutableKeyStateStore |> ClearKeyJustPressedFlags
 

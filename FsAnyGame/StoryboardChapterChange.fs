@@ -1,11 +1,6 @@
 ﻿module StoryboardChapterChange
 
 [<Struct>]
-type NextStoryboardStateType<'storyboardType,'gameGlobalsType> =
-    | NextStoryboard of 'storyboardType
-    | NextStoryboardAndGlobals of 'gameGlobalsType * 'storyboardType
-
-[<Struct>]
 type SimpleChapterTransition<'model> =
     | StayOnThisChapter1 of newModel_1a:'model
     | GoToNextChapter1   of newModel_1b:'model

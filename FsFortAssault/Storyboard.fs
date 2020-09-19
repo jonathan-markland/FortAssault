@@ -47,8 +47,10 @@ type GameResources =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let RenderStoryboard render storyboard gameTime =
+let RenderStoryboard render gameState gameTime =
     
+    let (struct (storyboard , _gameGlobals)) = gameState
+
     match storyboard with 
 
         | GameTitleChapter(model) ->
@@ -199,8 +201,19 @@ let NewStoryboard gameResources gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextStoryboardState staticGameResources (gameGlobals:GameGlobalState) storyboard input gameTime frameElapsedTime =
+let NextStoryboardState staticGameResources gameState input gameTime frameElapsedTime =
 
+    let (struct (storyboard , gameGlobals)) = gameState
+
+    /// Where the existing GameGlobalState has NOT changed this frame.
+    let inline Advance storyboard =
+        struct ((storyboard:Storyboard), gameGlobals)
+
+    /// Where the GameGlobalState has been replaced this frame.
+    let inline AdvanceAndReplaceGlobals (gameGlobals , storyboard) =
+        struct ((storyboard:Storyboard), (gameGlobals:GameGlobalState))
+
+    /// Wrap a 'GET READY' intermission around the transition to a new state.
     let withIntermission desiredNextChapter =
         IntermissionChapter(
             NewIntermissionScreenState gameTime desiredNextChapter)
@@ -211,7 +224,7 @@ let NextStoryboardState staticGameResources (gameGlobals:GameGlobalState) storyb
         // Rule:  Enemy strength reduction from using the secret passage only affects air battle.
 
         | GameTitleChapter(model) ->
-            NextStoryboard
+            Advance
                 (match NextGameTitleScreenState model input gameTime with
 
                     | StayOnThisChapter1(newModel) -> 
@@ -222,7 +235,7 @@ let NextStoryboardState staticGameResources (gameGlobals:GameGlobalState) storyb
                             NewInitialMapScreen NumShipsAtInitialEngagement {Score=0u ; HiScore=newModel.HiScore}))
                         
         | InitialMapChapter(model) ->
-            NextStoryboard
+            Advance
                 (match NextInitialMapScreenState model input gameTime with
 
                     | StayOnInitialMap(newModel) ->
@@ -245,7 +258,7 @@ let NextStoryboardState staticGameResources (gameGlobals:GameGlobalState) storyb
                             ))
 
         | SecretPassageChapter(model) ->
-            NextStoryboard
+            Advance
                 (match NextSecretPassageScreenState model input gameTime with
 
                     | StayOnThisChapter2(newModel) -> 
@@ -265,7 +278,7 @@ let NextStoryboardState staticGameResources (gameGlobals:GameGlobalState) storyb
                         GameOverChapter(gameOverModel))
 
         | MapPostPassageChapter(model) ->
-            NextStoryboard
+            Advance
                 (match NextMapPostPassageScreenState model input gameTime with
 
                     | StayOnThisChapter1(newModel) ->
@@ -277,7 +290,7 @@ let NextStoryboardState staticGameResources (gameGlobals:GameGlobalState) storyb
                         AirBattleChapter(airBattleModel))
 
         | AirBattleChapter(model) ->
-            NextStoryboard
+            Advance
                 (match NextAirBattleScreenState model input gameTime frameElapsedTime with
 
                     | StayOnThisChapter2(newModel) -> 
@@ -294,7 +307,7 @@ let NextStoryboardState staticGameResources (gameGlobals:GameGlobalState) storyb
                         GameOverChapter(gameOverModel))
 
         | SeaBattleChapter(model) ->
-            NextStoryboard
+            Advance
                 (match NextSeaBattleScreenState model input gameTime frameElapsedTime with
 
                     | StayOnThisChapter2(newModel) ->
@@ -311,7 +324,7 @@ let NextStoryboardState staticGameResources (gameGlobals:GameGlobalState) storyb
                         GameOverChapter(gameOverModel))
 
         | MapBeforeBeachLandingChapter(model) ->
-            NextStoryboard
+            Advance
                 (match NextMapBeforeBeachLandingScreenState model input gameTime with
 
                     | StayOnThisChapter1(newModel) ->
@@ -332,7 +345,7 @@ let NextStoryboardState staticGameResources (gameGlobals:GameGlobalState) storyb
                                 TankBattleChapter(tankBattleModel)))
 
         | TankBattleChapter(model) ->
-            NextStoryboard
+            Advance
                 (match NextTankBattleScreenState model input gameTime frameElapsedTime with
 
                     | StayOnTankBattleScreen newModel ->
@@ -366,7 +379,7 @@ let NextStoryboardState staticGameResources (gameGlobals:GameGlobalState) storyb
                                 TankBattleChapter tankBattleModel))
 
         | FinalBossChapter(model) ->
-            NextStoryboard
+            Advance
                 (match NextFinalBossScreenState model input gameTime frameElapsedTime with
 
                     | StayOnFinalBossScreen(newModel) ->
@@ -391,7 +404,7 @@ let NextStoryboardState staticGameResources (gameGlobals:GameGlobalState) storyb
                         GameOverChapter(gameOverModel))
 
         | IntermissionChapter(model) ->
-            NextStoryboard
+            Advance
                 (match NextIntermissionScreenState model input gameTime with
 
                     | StayOnThisChapter1(newModel) ->
@@ -401,7 +414,7 @@ let NextStoryboardState staticGameResources (gameGlobals:GameGlobalState) storyb
                         (newModel.NextChapterConstructor gameTime))
 
         | GameOverChapter(model) ->
-            NextStoryboard
+            Advance
                 (match NextGameOverScreenState model input gameTime with
 
                     | StayOnThisChapter1(newModel) ->
@@ -411,7 +424,7 @@ let NextStoryboardState staticGameResources (gameGlobals:GameGlobalState) storyb
                         PotentialEnterYourNameChapter(NewPotentialEnterYourNameScreen newModel.ScoreAndHiScore))
                 
         | VictoryChapter(model) ->
-            NextStoryboard
+            Advance
                 (match NextVictoryScreenState model input gameTime with
 
                     | StayOnThisChapter1(newModel) ->
@@ -421,7 +434,7 @@ let NextStoryboardState staticGameResources (gameGlobals:GameGlobalState) storyb
                         PotentialEnterYourNameChapter(NewPotentialEnterYourNameScreen newModel.ScoreAndHiScore))
 
         | PotentialEnterYourNameChapter(model) ->
-            NextStoryboardAndGlobals
+            AdvanceAndReplaceGlobals
                 (match NextPotentialEnterYourNameScreenState gameGlobals.GameScoreBoard model input gameTime with
 
                     | StayOnThisChapter1(newScoreboard, newModel) ->

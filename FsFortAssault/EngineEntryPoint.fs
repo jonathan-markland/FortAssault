@@ -5,7 +5,7 @@ open Input
 open InputEventData
 open Storyboard
 
-let NextGameState staticGameResources (gameGlobals:GameGlobalState) storyboard keyStateGetter gameTime frameElapsedTime =
+let NextGameState staticGameResources gameState keyStateGetter gameTime frameElapsedTime =
 
     // We wish to disguise the keyStateGetter by NOT passing it along.
     // Let's always use browser keys in the game engine, and the host can re-map them as needed.
@@ -26,5 +26,5 @@ let NextGameState staticGameResources (gameGlobals:GameGlobalState) storyboard k
             Fire  = f
         }
 
-    NextStoryboardState staticGameResources gameGlobals storyboard input gameTime frameElapsedTime
+    NextStoryboardState staticGameResources gameState input gameTime frameElapsedTime
 
