@@ -1,4 +1,6 @@
-﻿open SDL2  // TODO: It would be nicer if SDLCover could provide everything.
+﻿module DesktopMain
+
+open SDL2  // TODO: It would be nicer if SDLCover could provide everything.
 open System.IO
 open SDLCover
 open Time
@@ -8,7 +10,6 @@ open GameGlobalState
 open KeyboardForFramework
 open Storyboard
 open EngineEntryPoint
-open StoryboardChapterChange
 open TankMapFileLoader
 open ResourceFileMetadata
 open ResourceFiles
@@ -299,8 +300,7 @@ let GameMain () =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-[<EntryPoint>]
-let main argv =
+let DesktopMain () =
 
     match WithSdl2Do GameMain with
 
