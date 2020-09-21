@@ -19,7 +19,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsFortAssaultDesktopWindows
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsFortAssaultDesktopLinux", "FsFortAssaultDesktopLinux\FsFortAssaultDesktopLinux.fsproj", "{A99B87B1-B7BC-4CF8-8C67-0B64E38C3310}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FortAssaultWeb", "FortAssaultWeb\FortAssaultWeb.fsproj", "{66F6B2FA-F3D4-4EE8-8DA3-BC698A28BBD2}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsFortAssaultWeb", "FsFortAssaultWeb\FsFortAssaultWeb.fsproj", "{66F6B2FA-F3D4-4EE8-8DA3-BC698A28BBD2}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
