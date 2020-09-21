@@ -38,7 +38,7 @@ let LoadGameImagesAndFonts (renderer:RendererNativeInt) rootPath =
     let fromFile transparencyColour name = 
 
         let fullPath =
-            Path.Combine(Path.Combine(rootPath, "Images"), name)
+            Path.Combine(rootPath, name)
         
         match LoadFromFileAndPrepareForRenderer renderer fullPath transparencyColour with
             | Some(imageRecord) -> imageRecord

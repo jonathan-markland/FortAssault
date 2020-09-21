@@ -6,283 +6,283 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="Images\CliffsTile.png">
+    <Content Include="..\wwwroot\Images\CliffsTile.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\ColonelReceivingMedal.png">
+    <Content Include="..\wwwroot\Images\ColonelReceivingMedal.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\ColonelSaluting.png">
+    <Content Include="..\wwwroot\Images\ColonelSaluting.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\ColonelStanding.png">
+    <Content Include="..\wwwroot\Images\ColonelStanding.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Medal.png">
+    <Content Include="..\wwwroot\Images\Medal.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\PresidentPresentingMedal.png">
+    <Content Include="..\wwwroot\Images\PresidentPresentingMedal.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\PresidentSaluting.png">
+    <Content Include="..\wwwroot\Images\PresidentSaluting.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\PresidentStanding.png">
+    <Content Include="..\wwwroot\Images\PresidentStanding.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\SoldierSaluting.png">
+    <Content Include="..\wwwroot\Images\SoldierSaluting.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\SoldierStanding.png">
+    <Content Include="..\wwwroot\Images\SoldierStanding.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\FinalBossSurrender0.png">
+    <Content Include="..\wwwroot\Images\FinalBossSurrender0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\FinalBossSurrender1.png">
+    <Content Include="..\wwwroot\Images\FinalBossSurrender1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\TankFacingDownLeft1.png">
+    <Content Include="..\wwwroot\Images\TankFacingDownLeft1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\TankFacingLeft1.png">
+    <Content Include="..\wwwroot\Images\TankFacingLeft1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\TankFacingUpLeft0.png">
+    <Content Include="..\wwwroot\Images\TankFacingUpLeft0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\TankFacingUpLeft1.png">
+    <Content Include="..\wwwroot\Images\TankFacingUpLeft1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\VictoryScreen.png">
+    <Content Include="..\wwwroot\Images\VictoryScreen.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\IntermissionBackground.png">
+    <Content Include="..\wwwroot\Images\IntermissionBackground.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\TankFacingDownLeft0.png">
+    <Content Include="..\wwwroot\Images\TankFacingDownLeft0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\TankFacingLeft0.png">
+    <Content Include="..\wwwroot\Images\TankFacingLeft0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\EnemyTankGun1.png">
+    <Content Include="..\wwwroot\Images\EnemyTankGun1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\TankBattleMissile.png">
+    <Content Include="..\wwwroot\Images\TankBattleMissile.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\TileBarricade.png">
+    <Content Include="..\wwwroot\Images\TileBarricade.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\TileBridge.png">
+    <Content Include="..\wwwroot\Images\TileBridge.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\TileMine.png">
+    <Content Include="..\wwwroot\Images\TileMine.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\TileSand.png">
+    <Content Include="..\wwwroot\Images\TileSand.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\TileTower.png">
+    <Content Include="..\wwwroot\Images\TileTower.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\TileWater.png">
+    <Content Include="..\wwwroot\Images\TileWater.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\PlaneBomb0.png">
+    <Content Include="..\wwwroot\Images\PlaneBomb0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\PlaneBomb1.png">
+    <Content Include="..\wwwroot\Images\PlaneBomb1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\PlaneBomb2.png">
+    <Content Include="..\wwwroot\Images\PlaneBomb2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\PlaneBomb3.png">
+    <Content Include="..\wwwroot\Images\PlaneBomb3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\PlaneBomb4.png">
+    <Content Include="..\wwwroot\Images\PlaneBomb4.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Plane0.png">
+    <Content Include="..\wwwroot\Images\Plane0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Plane1.png">
+    <Content Include="..\wwwroot\Images\Plane1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Plane2.png">
+    <Content Include="..\wwwroot\Images\Plane2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Plane3.png">
+    <Content Include="..\wwwroot\Images\Plane3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Plane4.png">
+    <Content Include="..\wwwroot\Images\Plane4.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Plane4BankingLeft.png">
+    <Content Include="..\wwwroot\Images\Plane4BankingLeft.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Plane4BankingRight.png">
+    <Content Include="..\wwwroot\Images\Plane4BankingRight.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Plane5.png">
+    <Content Include="..\wwwroot\Images\Plane5.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Plane5BankingLeft.png">
+    <Content Include="..\wwwroot\Images\Plane5BankingLeft.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Plane5BankingRight.png">
+    <Content Include="..\wwwroot\Images\Plane5BankingRight.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Plane6.png">
+    <Content Include="..\wwwroot\Images\Plane6.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Plane6BankingLeft.png">
+    <Content Include="..\wwwroot\Images\Plane6BankingLeft.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Plane6BankingRight.png">
+    <Content Include="..\wwwroot\Images\Plane6BankingRight.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\PlaneExplode0.png">
+    <Content Include="..\wwwroot\Images\PlaneExplode0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\PlaneExplode1.png">
+    <Content Include="..\wwwroot\Images\PlaneExplode1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\PlaneExplode2.png">
+    <Content Include="..\wwwroot\Images\PlaneExplode2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Splash0.png">
+    <Content Include="..\wwwroot\Images\Splash0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\EnemyShip0.png">
+    <Content Include="..\wwwroot\Images\EnemyShip0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\EnemyShip1.png">
+    <Content Include="..\wwwroot\Images\EnemyShip1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\EnemyShip2.png">
+    <Content Include="..\wwwroot\Images\EnemyShip2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\EnemyShip3.png">
+    <Content Include="..\wwwroot\Images\EnemyShip3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\EnemyShip4.png">
+    <Content Include="..\wwwroot\Images\EnemyShip4.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\SeaBattleBackground0.png">
+    <Content Include="..\wwwroot\Images\SeaBattleBackground0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\SeaBattleBackground1.png">
+    <Content Include="..\wwwroot\Images\SeaBattleBackground1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\SeaBattleBackground2.png">
+    <Content Include="..\wwwroot\Images\SeaBattleBackground2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\SeaBattleBackground3.png">
+    <Content Include="..\wwwroot\Images\SeaBattleBackground3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\ShipGunBullet.png">
+    <Content Include="..\wwwroot\Images\ShipGunBullet.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\ShipGunNozzle.png">
+    <Content Include="..\wwwroot\Images\ShipGunNozzle.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\ShipGunStem.png">
+    <Content Include="..\wwwroot\Images\ShipGunStem.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\FinalBossActiveTarget.png">
+    <Content Include="..\wwwroot\Images\FinalBossActiveTarget.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\FinalBossTarget.png">
+    <Content Include="..\wwwroot\Images\FinalBossTarget.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\FinalBoss0.png">
+    <Content Include="..\wwwroot\Images\FinalBoss0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\FinalBoss1.png">
+    <Content Include="..\wwwroot\Images\FinalBoss1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\FinalBoss2.png">
+    <Content Include="..\wwwroot\Images\FinalBoss2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\FinalBoss3.png">
+    <Content Include="..\wwwroot\Images\FinalBoss3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\FinalBoss4.png">
+    <Content Include="..\wwwroot\Images\FinalBoss4.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\FinalBoss5.png">
+    <Content Include="..\wwwroot\Images\FinalBoss5.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\FinalBossBackground.png">
+    <Content Include="..\wwwroot\Images\FinalBossBackground.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\ShipExplode0.png">
+    <Content Include="..\wwwroot\Images\ShipExplode0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\ShipExplode1.png">
+    <Content Include="..\wwwroot\Images\ShipExplode1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\ShipExplode2.png">
+    <Content Include="..\wwwroot\Images\ShipExplode2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\ShipExplode3.png">
+    <Content Include="..\wwwroot\Images\ShipExplode3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Mine.png">
+    <Content Include="..\wwwroot\Images\Mine.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Ship0.png">
+    <Content Include="..\wwwroot\Images\Ship0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Ship1.png">
+    <Content Include="..\wwwroot\Images\Ship1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Ship2.png">
+    <Content Include="..\wwwroot\Images\Ship2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Ship3.png">
+    <Content Include="..\wwwroot\Images\Ship3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Ship4.png">
+    <Content Include="..\wwwroot\Images\Ship4.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Torpedo0.png">
+    <Content Include="..\wwwroot\Images\Torpedo0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Torpedo22degrees.png">
+    <Content Include="..\wwwroot\Images\Torpedo22degrees.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\SecretPassage.png">
+    <Content Include="..\wwwroot\Images\SecretPassage.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Title.png">
+    <Content Include="..\wwwroot\Images\Title.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\AlliedFleetSymbol.png">
+    <Content Include="..\wwwroot\Images\AlliedFleetSymbol.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\EnemyFleetSymbol.png">
+    <Content Include="..\wwwroot\Images\EnemyFleetSymbol.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\Map.png">
+    <Content Include="..\wwwroot\Images\Map.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\MilitaryFontBlack.png">
+    <Content Include="..\wwwroot\Images\MilitaryFontBlack.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\MilitaryFontBlue.png">
+    <Content Include="..\wwwroot\Images\MilitaryFontBlue.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\MilitaryFontRed.png">
+    <Content Include="..\wwwroot\Images\MilitaryFontRed.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\MilitaryFontSymbols.png">
+    <Content Include="..\wwwroot\Images\MilitaryFontSymbols.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\MilitaryFontYellow.png">
+    <Content Include="..\wwwroot\Images\MilitaryFontYellow.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Compile Include="DesktopMain.fs" />
