@@ -1,4 +1,4 @@
-module App
+module FortAssaultWeb
 
 open Fable.Core
 open Browser.Dom

@@ -6,14 +6,14 @@ var path = require("path");
 
 module.exports = {
     mode: "development",
-    entry: "./src/App.fsproj",
+    entry: "./FortAssaultWeb/FortAssaultWeb.fsproj",
     output: {
-        path: path.join(__dirname, "./public"),
+        path: path.join(__dirname, "./wwwroot"),
         filename: "bundle.js",
     },
     devServer: {
         publicPath: "/",
-        contentBase: "./public",
+        contentBase: "./wwwroot",
         port: 8080,
     },
     module: {
