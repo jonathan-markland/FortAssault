@@ -76,6 +76,26 @@ let Flo render fontResource hAlign vAlign x y (value:float32) =
     Text render fontResource hAlign vAlign x y (sprintf "%.1f" value)
 
 
+
+// Draw a repeated character starting from a given position extending for a given count.
+// The direction is specified as integer pixel deltas.
+let DrawRepeatedChar render fontID (dx:int<epx>) (dy:int<epx>) (charIndex:uint32) (startLeft:int<epx>) (startTop:int<epx>) numRepeats =
+
+    let mutable x'    = startLeft
+    let mutable y'    = startTop
+    let mutable count = numRepeats
+
+    while count > 0u do
+        render (DrawCharImageWithTopLeftAt(x', y', charIndex, fontID))
+        count <- count - 1u
+        x' <- x' + dx
+        y' <- y' + dy
+
+    (x', y')
+
+
+
+
 // ---------------------------------------------------------------------------------------------------------
 //  Drawing paragraph
 // ---------------------------------------------------------------------------------------------------------

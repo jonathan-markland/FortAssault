@@ -1,17 +1,10 @@
 Fort Assault to do
 ------------------
 
-MVP must do
------------
-
-[ ] Fable + browser version (no sound)
-[ ] Investigate why elapsed time was observed as negative?  Every time we calculate elapsed time, assert it.
-[ ] The final boss gun looks terrible
-[ ] Cartoonify the characters on the victory screen
-
-
 Post MVP
 --------
+[ ] Cartoonify the characters on the victory screen
+[ ] The final boss gun looks terrible
 [ ] Sound
 [ ] Final boss must explode.
 [ ] Easy | Med | Hard  -- and decide how this affects things!
@@ -24,17 +17,13 @@ Post MVP
 [ ] ResultOfProjectileCollisions - There was an intention that we could score according to type of thing hit, but the target isn't passed to this function yet, so we could only return a constant score, in which case there's no point in having a lambda return it!
 [ ] ResultOfProjectileCollisionsWithSingleTarget - There was an intention that we could score according to type of thing hit, but the target isn't passed to this function yet, so we could only return a constant score, in which case there's no point in having a lambda return it!
 [ ] Sea battle screen:  Ammunition not modelled yet.
-[ ] Sea battle screen:  Don't show elevation angle on this screen.
 [ ] Sea battle screen:  Reconnaisance planes
 [ ] Sea battle screen:  Damage shown as percentage
 [ ] Fort screen:  I may not wish to continue using the ship's explosion on the fort screen!!
 [ ] Air battle screen:  The hit test region for the planes is constant throughout.  We could do 
-    with getting the sprite extents from the Flickbook module, and basing the region on that.
-
+    with calculating the region from the sprite extents, retrieved via the Flickbook module.
 [ ] Sea battle screen: Should we model "enemy strength" as a factor passed between screens?
 [ ] Sea battle screen: What will be the implication of letting the big ship escape?  Increase enemy strength.
-[ ] Sea battle screen: Clear the advistory text after a little while.
-[ ] Sea battle screen: Damage shown (as percentage)
 
 Done
 ----
@@ -77,3 +66,6 @@ Done
 [X] Shortcut mode to somehow skip stages for test purposes.
 [X] Investigate what coordinates should be returned to integers rather than floating point.
     Suspect only CentreImage should be floating point?
+[X] Sea battle screen:  NO - Don't show elevation angle on this screen.
+[X] Sea battle screen: Clear the advistory text after a little while.
+[X] Sea battle screen: Damage shown (as percentage)

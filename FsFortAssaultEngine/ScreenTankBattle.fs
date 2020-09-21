@@ -322,8 +322,6 @@ let RenderTankBattleScreen render (model:TankBattleScreenModel) gameTime =
 
     let h = 0.0F<epx>
         
-    // ScoreboardArea render h
-
     match model.AlliedState with
 
         | AlliedTankInPlay(tankY, tankDirection) ->

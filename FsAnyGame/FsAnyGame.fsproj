@@ -27,6 +27,7 @@
     <Compile Include="PendingEvents.fs" />
     <Compile Include="DrawingCommands.fs" />
     <Compile Include="DrawingCommandsEx.fs" />
+    <Compile Include="DrawingBarChart.fs" />
     <Compile Include="CaptureRendering.fs" />
     <Compile Include="FlickBook.fs" />
   </ItemGroup>

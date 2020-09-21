@@ -2,11 +2,59 @@
 
 open Angle
 open ScoreHiScore
-open SharedDrawing
+open DrawingBarChart
 open ImagesAndFonts
 open DrawingCommandsEx
 open FontAlignment
 open Geometry
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//   Style definitions
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let ShipBarChartStyle =
+    {
+        BackgroundFont      = SymbolFontID
+        BackgroundCharIndex = 4u
+        ForegroundFont      = SymbolFontID
+        ForegroundCharIndex = 2u
+        SpacingX            = 8<epx>
+        SpacingY            = 0<epx>
+    }
+
+let TanksBarChartStyle =
+    {
+        BackgroundFont      = SymbolFontID
+        BackgroundCharIndex = 3u
+        ForegroundFont      = SymbolFontID
+        ForegroundCharIndex = 1u
+        SpacingX            = 8<epx>
+        SpacingY            = 0<epx>
+    }
+
+let AmmoBarChartStyle =
+    {
+        BackgroundFont      = SymbolFontID
+        BackgroundCharIndex = 0u
+        ForegroundFont      = SymbolFontID
+        ForegroundCharIndex = 0u
+        SpacingX            = 16<epx>
+        SpacingY            = 0<epx>
+    }
+
+let DamageBarChartStyle =
+    {
+        BackgroundFont      = SymbolFontID
+        BackgroundCharIndex = 5u
+        ForegroundFont      = SymbolFontID
+        ForegroundCharIndex = 6u
+        SpacingX            = 8<epx>
+        SpacingY            = 0<epx>
+    }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//   Score panel
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 [<Struct>]
 type ScorePanel =
@@ -23,40 +71,29 @@ type ScorePanel =
 
 let ShipBarChart panel =
     {
-        BlueCount     = panel.ShipsThrough
-        RedCount      = panel.ShipsPending
-        RedCharIndex  = 2u
-        BlueCharIndex = 4u
-        CharSpacing   = 8u  // TODO: constant
+        BarTotal = panel.ShipsThrough + panel.ShipsPending
+        BarValue = panel.ShipsPending
     }
 
 let TanksBarChart panel =
     {
-        BlueCount     = panel.Tanks
-        RedCount      = 0u
-        RedCharIndex  = 1u
-        BlueCharIndex = 3u
-        CharSpacing   = 8u  // TODO: constant
+        BarTotal = panel.Tanks
+        BarValue = panel.Tanks
     }
 
 let AmmoBarChart panel =
     {
-        BlueCount     = panel.Ammunition
-        RedCount      = 0u
-        RedCharIndex  = 0u
-        BlueCharIndex = 0u
-        CharSpacing   = 2u * 8u  // TODO: constant 8
+        BarTotal = panel.Ammunition
+        BarValue = panel.Ammunition
     }
 
 let DamageBarChart panel =
-    let d = panel.Damage
     {
-        BlueCount     = d
-        RedCount      = panel.MaxDamage - d
-        RedCharIndex  = 6u
-        BlueCharIndex = 5u
-        CharSpacing   = 8u  // TODO: constant
+        BarTotal = panel.MaxDamage
+        BarValue = panel.Damage
     }
+
+
 
 let DrawScorePanel render y (panel:ScorePanel) =
 
@@ -70,12 +107,12 @@ let DrawScorePanel render y (panel:ScorePanel) =
 
     let shy = y + 12<epx>
     Text render YellowFontID LeftAlign TopAlign c1x shy "SHIPS"
-    Bar  render c2x shy (panel |> ShipBarChart)
+    Bar  render c2x shy ShipBarChartStyle (panel |> ShipBarChart)
 
     if panel.MaxDamage > 0u then
         let dmy = y + 24<epx>
         Text render YellowFontID LeftAlign TopAlign c1x dmy "DAMAGE"
-        Bar  render c2x dmy (panel |> DamageBarChart)
+        Bar  render c2x dmy DamageBarChartStyle (panel |> DamageBarChart)
 
     // TODO: The ammunition concept was limiting firing repeats, but it's not
     //       used, in favour of having to wait.  Need to introduce a use for
@@ -86,11 +123,12 @@ let DrawScorePanel render y (panel:ScorePanel) =
 
     let tay = y + 16<epx>
     Text render YellowFontID LeftAlign TopAlign c3x tay "TANKS"
-    Bar  render (c3x + 48<epx>) tay (panel |> TanksBarChart)
+    Bar  render (c3x + 48<epx>) tay TanksBarChartStyle (panel |> TanksBarChart)
 
     let ely = y + 24<epx>
     Text render YellowFontID LeftAlign TopAlign c3x ely "ELEVATION"
     Flo  render BlueFontID LeftAlign TopAlign (c3x + 96<epx>) ely (float32 panel.Elevation)
+
 
 
 let DrawTankBattleScorePanel render y (score:uint32) (numTanks:uint32) =
