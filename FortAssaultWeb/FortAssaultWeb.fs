@@ -263,25 +263,23 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
 
             let keyStateGetter = LiveKeyStateFrom mutableKeyStateStore
 
-            let rec mainLoop gameGlobals storyboard tickCount () =
+            let rec mainLoop screenState tickCount () =
 
                 let tickCount = tickCount + 1u
                 
                 let gameTime = 
                     LanguagePrimitives.Float32WithMeasure<seconds> ((float32 tickCount) / 50.0F)
                 
-                RenderStoryboard renderFunction storyboard gameTime
+                RenderStoryboard renderFunction screenState gameTime
 
-                let gameGlobals, storyboard = 
-                    match NextGameState gameResources gameGlobals storyboard keyStateGetter gameTime frameElapsedTime with
-                        | NextStoryboard nextState -> gameGlobals,nextState
-                        | NextStoryboardAndGlobals (nextGlobals,nextState) -> nextGlobals,nextState
+                let screenState = 
+                    NextGameState gameResources screenState keyStateGetter gameTime frameElapsedTime 
 
                 ClearKeyJustPressedFlags mutableKeyStateStore
 
-                window.setTimeout((mainLoop gameGlobals storyboard tickCount), 20) |> ignore
+                window.setTimeout((mainLoop screenState tickCount), 20) |> ignore
 
-            mainLoop gameGlobals storyboard 0u ()
+            mainLoop (struct (storyboard, gameGlobals)) 0u ()
 
    
         | Error msg -> 

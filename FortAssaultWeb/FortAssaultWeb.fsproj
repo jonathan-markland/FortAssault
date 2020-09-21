@@ -11,6 +11,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\FsAnyGame\FsAnyGame.fsproj" />
-    <ProjectReference Include="..\FsFortAssault\FsFortAssault.fsproj" />
+    <ProjectReference Include="..\FsFortAssaultEngine\FsFortAssaultEngine.fsproj" />
   </ItemGroup>
 </Project>
