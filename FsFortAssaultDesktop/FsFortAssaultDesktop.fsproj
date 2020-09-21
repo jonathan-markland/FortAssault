@@ -296,8 +296,8 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FsAnyGame\FsAnyGame.fsproj" />
-    <ProjectReference Include="..\FsFortAssault\FsFortAssault.fsproj" />
-    <ProjectReference Include="..\FsSDL2\FsSDL2.fsproj" />
+    <ProjectReference Include="..\FsFortAssaultEngine\FsFortAssaultEngine.fsproj" />
+    <ProjectReference Include="..\FsSDL2Cover\FsSDL2Cover.fsproj" />
   </ItemGroup>
 
   <ItemGroup>

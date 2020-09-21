@@ -5,13 +5,13 @@ VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsAnyGame", "FsAnyGame\FsAnyGame.fsproj", "{F98CA334-C050-421A-AFE6-A1C23C818346}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsSDL2", "FsSDL2\FsSDL2.fsproj", "{8B83A3F9-74DA-400B-AFCC-EA80C1748FEA}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsSDL2Cover", "FsSDL2Cover\FsSDL2Cover.fsproj", "{8B83A3F9-74DA-400B-AFCC-EA80C1748FEA}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsFortAssault", "FsFortAssault\FsFortAssault.fsproj", "{70B9D5FF-7A10-43A7-BC6C-7A38FE08FF25}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsFortAssaultEngine", "FsFortAssaultEngine\FsFortAssaultEngine.fsproj", "{70B9D5FF-7A10-43A7-BC6C-7A38FE08FF25}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsFortAssaultSDL2CS", "FsFortAssaultSDL2CS\FsFortAssaultSDL2CS.fsproj", "{8B7E2923-9C25-4A24-B3F4-5323C88EDB4A}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsFortAssaultDesktop", "FsFortAssaultDesktop\FsFortAssaultDesktop.fsproj", "{8B7E2923-9C25-4A24-B3F4-5323C88EDB4A}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsAnyGameTests", "FsAnyGameTests\FsAnyGameTests.fsproj", "{F4D216BC-A2D8-47EB-972C-D3030F6BB081}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsAnyGameTests", "FsAnyGameTests\FsAnyGameTests.fsproj", "{F4D216BC-A2D8-47EB-972C-D3030F6BB081}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsXunitExtensions", "FsXunitExtensions\FsXunitExtensions.fsproj", "{AEA3530F-9C15-41FA-B8CA-C00F59C284CE}"
 EndProject
