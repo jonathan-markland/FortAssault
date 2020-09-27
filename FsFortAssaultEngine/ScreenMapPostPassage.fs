@@ -83,7 +83,7 @@ let RenderMapPostPassageScreen render (model:MapPostPassageScreenModel) =
             Tanks            = model.ShipsThrough |> ToTankCountFromShipCount
             Damage           = 0u
             MaxDamage        = 0u
-            Ammunition       = 10u
+            PlaneIntel       = None
             Elevation        = 0.0F<degrees>
         }
 

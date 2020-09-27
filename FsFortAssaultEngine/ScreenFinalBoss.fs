@@ -183,7 +183,7 @@ let RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
             Tanks            = model.TanksRemaining
             Damage           = 0u
             MaxDamage        = 0u
-            Ammunition       = 10u
+            PlaneIntel       = None
             Elevation        = model.GunAim.GunElevation      
         }
 

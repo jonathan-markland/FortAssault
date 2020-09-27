@@ -16,7 +16,6 @@ open AirAndSeaBattleShared
 open Collisions
 open Rules
 open StoryboardChapterChange
-open ImagesAndFonts
 open ResourceFileMetadata
 open StaticResourceAccess
 
@@ -41,10 +40,12 @@ let GunStepRate               =   30.0F<degrees/seconds>
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let ToNumberOfRaiders enemyStrength =
-
     match enemyStrength with
         | StrongEnemy -> NumberOfRaidersWhenStrong
         | WeakerEnemy -> NumberOfRaidersWhenStrong / 2u
+
+let ToPlaneIntelligenceBarCount n =
+    (n + 3u) / 4u
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -221,7 +222,8 @@ let RenderAirBattleScreen render (model:AirBattleScreenModel) gameTime =
             Tanks            = model.ShipsRemaining |> ToTankCountFromShipCount
             Damage           = model.Damage
             MaxDamage        = MaxDamagePerShip
-            Ammunition       = 10u
+            PlaneIntel       = Some (model.PlanesRemaining |> ToPlaneIntelligenceBarCount)
+
             Elevation        = model.GunAim.GunElevation      
         }
 

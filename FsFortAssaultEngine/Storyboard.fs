@@ -197,7 +197,7 @@ let Shortcut gameResources gameTime mode =
 /// Called only once when the game boots
 let NewStoryboard gameResources gameTime =
 
-    Shortcut gameResources gameTime RunGameNormally
+    Shortcut gameResources gameTime SkipToMapPostPassage // RunGameNormally
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

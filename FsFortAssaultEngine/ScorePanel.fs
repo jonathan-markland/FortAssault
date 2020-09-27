@@ -32,22 +32,22 @@ let TanksBarChartStyle =
         SpacingY            = 0<epx>
     }
 
-let AmmoBarChartStyle =
-    {
-        BackgroundFont      = SymbolFontID
-        BackgroundCharIndex = 0u
-        ForegroundFont      = SymbolFontID
-        ForegroundCharIndex = 0u
-        SpacingX            = 16<epx>
-        SpacingY            = 0<epx>
-    }
-
 let DamageBarChartStyle =
     {
         BackgroundFont      = SymbolFontID
         BackgroundCharIndex = 5u
         ForegroundFont      = SymbolFontID
         ForegroundCharIndex = 6u
+        SpacingX            = 8<epx>
+        SpacingY            = 0<epx>
+    }
+
+let IntelligenceBarChartStyle =
+    {
+        BackgroundFont      = SymbolFontID
+        BackgroundCharIndex = 7u
+        ForegroundFont      = SymbolFontID
+        ForegroundCharIndex = 7u
         SpacingX            = 8<epx>
         SpacingY            = 0<epx>
     }
@@ -65,14 +65,14 @@ type ScorePanel =
         Tanks:            uint32
         Damage:           uint32
         MaxDamage:        uint32
-        Ammunition:       uint32
+        PlaneIntel:       uint32 option
         Elevation:        float32<degrees>
     }
 
 let ShipBarChart panel =
     {
         BarTotal = panel.ShipsThrough + panel.ShipsPending
-        BarValue = panel.ShipsPending
+        BarValue = panel.ShipsThrough
     }
 
 let TanksBarChart panel =
@@ -81,16 +81,16 @@ let TanksBarChart panel =
         BarValue = panel.Tanks
     }
 
-let AmmoBarChart panel =
-    {
-        BarTotal = panel.Ammunition
-        BarValue = panel.Ammunition
-    }
-
 let DamageBarChart panel =
     {
         BarTotal = panel.MaxDamage
         BarValue = panel.Damage
+    }
+
+let IntelligenceBarChart panel v =
+    {
+        BarTotal = v
+        BarValue = v
     }
 
 
@@ -114,12 +114,12 @@ let DrawScorePanel render y (panel:ScorePanel) =
         Text render YellowFontID LeftAlign TopAlign c1x dmy "DAMAGE"
         Bar  render c2x dmy DamageBarChartStyle (panel |> DamageBarChart)
 
-    // TODO: The ammunition concept was limiting firing repeats, but it's not
-    //       used, in favour of having to wait.  Need to introduce a use for
-    //       this perhaps in future.
-    //
-    // Text render YellowFontVisual LeftAlign TopAlign c3x y "AMMUNITION"
-    // Bar  render c3x (y + 8<wu>) (panel |> AmmoBarChart)
+    match panel.PlaneIntel with
+        | Some planeCount ->
+            Text render YellowFontID LeftAlign TopAlign c3x y "INTEL"
+            Bar  render (c3x + 48<epx>) y IntelligenceBarChartStyle (IntelligenceBarChart panel planeCount)
+        | None ->
+            ()
 
     let tay = y + 16<epx>
     Text render YellowFontID LeftAlign TopAlign c3x tay "TANKS"

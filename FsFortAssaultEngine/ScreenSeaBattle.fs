@@ -347,7 +347,7 @@ let RenderSeaBattleScreen render (model:SeaBattleScreenModel) gameTime =
             Tanks            = model.ShipsRemaining |> ToTankCountFromShipCount
             Damage           = DamageToSinkAllies - (uint32) (model.AlliedCountToSink)
             MaxDamage        = DamageToSinkAllies
-            Ammunition       = 10u
+            PlaneIntel       = None
             Elevation        = model.GunAim.GunElevation      
         }
 
