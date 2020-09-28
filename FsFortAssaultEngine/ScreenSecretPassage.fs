@@ -211,8 +211,15 @@ let NewShipState oldShipState input =
         | ShipExploding(_) -> 
             oldShipState
 
-        | ShipGotThrough(_) -> 
-            oldShipState
+        | ShipGotThrough(finishTime, ship) -> 
+            ShipGotThrough (
+                finishTime, 
+                    {
+                        ShipCentre   = NewShipLocation ship.ShipCentre ship.ShipRotation ship.ShipSpeed  // Keep the animation going automatically
+                        ShipSpeed    = ship.ShipSpeed
+                        ShipRotation = ship.ShipRotation
+                    }
+            )
 
         | SecretPassageScreenOver -> 
             oldShipState
