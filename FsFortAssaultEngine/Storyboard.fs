@@ -14,6 +14,7 @@ open ScreenIntermission
 open ScreenGameOver
 open ScreenVictory
 open ScreenPotentialEnterYourName
+open MechanicsTestPage
 open FinalBossAndTankBattleShared
 open Rules
 open StoryboardChapterChange
@@ -39,6 +40,10 @@ type Storyboard =
     | IntermissionChapter           of IntermissionScreenModel<Storyboard>
     | VictoryChapter                of VictoryScreenModel
     | PotentialEnterYourNameChapter of PotentialEnterYourNameScreenModel
+
+    // Test page:
+
+    | MechanicsTestPageChapter      of MechanicsTestPageScreenModel
 
 type GameResources =
     {
@@ -92,6 +97,9 @@ let RenderStoryboard render gameState gameTime =
         | PotentialEnterYourNameChapter model ->
             RenderPotentialEnterYourNameScreen render model gameTime
 
+        | MechanicsTestPageChapter model ->
+            RenderMechanicsTestPageScreen render model gameTime
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //   Shortcuts to levels for development purposes
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -110,6 +118,7 @@ type DevelopmentShortcutMode =
     | SkipToVictoryScreen
     | SkipToEnterYourName
     | SkipToGameOverScreen
+    | SkipToMechanicsTestPage
 
 /// Provide access to developer shortcuts to various screens.
 /// Use RunGameNormally to start the game normally.
@@ -189,6 +198,12 @@ let Shortcut gameResources gameTime mode =
             // Shortcut to game over screen
             let screen = NewGameOverScreen {Score=25000u ; HiScore=25000u}  // ie: you got the new hi score compared to InitialGameGlobals()
             GameOverChapter screen
+
+        | SkipToMechanicsTestPage ->
+            // Shortcut to the mechanics test page
+            let screen = NewMechanicsTestPageScreen gameTime
+            MechanicsTestPageChapter screen
+         
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //   Creation of new storyboard
@@ -442,3 +457,7 @@ let NextStoryboardState staticGameResources gameState input gameTime frameElapse
                         let gameGlobals = { gameGlobals with GameScoreBoard=newScoreboard }
                         gameGlobals , GameTitleChapter (NewGameTitleScreen newModel.ScoreAndHiScore.HiScore gameGlobals gameTime))
              
+        | MechanicsTestPageChapter model ->
+            Advance
+                (MechanicsTestPageChapter (NextMechanicsTestPageScreenState model input gameTime))
+

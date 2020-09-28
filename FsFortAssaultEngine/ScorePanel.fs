@@ -121,7 +121,7 @@ let DrawScorePanel render y (panel:ScorePanel) =
         | None ->
             ()
 
-    let tay = y + 16<epx>
+    let tay = y + 12<epx>
     Text render YellowFontID LeftAlign TopAlign c3x tay "TANKS"
     Bar  render (c3x + 48<epx>) tay TanksBarChartStyle (panel |> TanksBarChart)
 

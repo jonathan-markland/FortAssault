@@ -33,8 +33,8 @@
     <Compile Include="ScreenPotentialEnterYourName.fs" />
     <Compile Include="ScreenVictory.fs" />
     <Compile Include="ScreenIntermission.fs" />
-    <Compile Include="Storyboard.fs" />
     <Compile Include="MechanicsTestPage.fs" />
+    <Compile Include="Storyboard.fs" />
     <Compile Include="EngineEntryPoint.fs" />
   </ItemGroup>
 

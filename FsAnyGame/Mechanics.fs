@@ -70,38 +70,49 @@ let FunctionThatGetsPositionOfMovingObject
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Unit-space Motion functions
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let inline InReverse (i:float32) =
+    1.0F - i
+
+let inline SpeedingUp (i:float32) =
+    i * i
+
+let inline SlowingDown (i:float32) =
+    i |> InReverse |> SpeedingUp |> InReverse
+
+let inline HalfAndHalf f1 f2 (i:float32) =
+    if i < 0.5F then
+        i |> (*) 2.0F |> f1
+    else 
+        i |> (-) 0.5F |> (*) 2.0F |> f2 |> InReverse
+
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Motion functions
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let LinearMotion (t:float32<seconds>) (_:float32<seconds>) = 
+let inline DoneOverDuration (t:float32<seconds>) (duration:float32<seconds>) f =
+    let t = t / duration
+    LanguagePrimitives.Float32WithMeasure<seconds>( (f t) * float32 duration )
+
+
+/// Time 't' is the offset into the duration.
+let inline LinearMotion (t:float32<seconds>) (_duration:float32<seconds>) = 
     t
 
 
-
-let SpeedingUpMotion (t:float32<seconds>) (duration:float32<seconds>) =
-
-    let t = t / duration
-    LanguagePrimitives.Float32WithMeasure<seconds>( t * t * float32 duration )
+/// Time 't' is the offset into the duration.
+let inline SpeedingUpMotion (t:float32<seconds>) (duration:float32<seconds>) =
+    SpeedingUp |> DoneOverDuration t duration
 
 
-
-let SlowingDownMotion (t:float32<seconds>) (duration:float32<seconds>) =
-
-    let t = t / duration
-    let t' = 1.0F - t
-    LanguagePrimitives.Float32WithMeasure<seconds>( (1.0F - (t' * t')) * float32 duration )
-
-
-
-let ArcMotion (t:float32<seconds>) (duration:float32<seconds>) =
-
-    let halfDuration = duration
-
-    if t < halfDuration then
-        SlowingDownMotion (t * 2.0F) duration
-    else 
-        (SpeedingUpMotion ((t - halfDuration) * 2.0F) duration) + halfDuration
-
+/// Time 't' is the offset into the duration.
+let inline SlowingDownMotion (t:float32<seconds>) (duration:float32<seconds>) =
+    SlowingDown |> DoneOverDuration t duration
 
 
 

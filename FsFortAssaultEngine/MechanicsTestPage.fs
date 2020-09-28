@@ -30,7 +30,9 @@ let RenderMechanicsTestPageScreen render (model:MechanicsTestPageScreenModel) ga
     
     Text render YellowFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (15<epx>) "MECHANICS TEST SCREEN"
     
-    Rectangle render 25<epx> 25<epx> 270<epx> 150<epx> (SolidColour(0x000050u))
+    Rectangle render 25<epx> 25<epx> 270<epx> 150<epx> (SolidColour 0x000050u)
+    Rectangle render 25<epx>  50<epx> 270<epx> 1<epx> (SolidColour 0xFF8000u)
+    Rectangle render 25<epx> 150<epx> 270<epx> 1<epx> (SolidColour 0xFF8000u)
     
     model.Functions |> List.iter (fun positionGetter ->
         match positionGetter gameTime with
@@ -50,6 +52,8 @@ let NewMechanicsTestPageScreen gameTime =
             gameTime
             AnimDurationSeconds
 
+    let arcMotion t duration = HalfAndHalf SlowingDown SpeedingUp |> DoneOverDuration t duration
+
     {
         RepeatAtTime = gameTime + AnimRepeatPeriod
         Functions = 
@@ -57,7 +61,7 @@ let NewMechanicsTestPageScreen gameTime =
                 test LinearMotion        50.0F<epx>
                 test SpeedingUpMotion   100.0F<epx>
                 test SlowingDownMotion  150.0F<epx>
-                test ArcMotion          200.0F<epx>
+                test arcMotion          200.0F<epx>
             ]
     }
 
