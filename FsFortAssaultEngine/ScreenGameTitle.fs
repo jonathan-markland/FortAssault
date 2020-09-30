@@ -76,7 +76,7 @@ let NextGameTitleScreenState oldState input gameTime =
 
 let StayOnTitleScreen state =
     match state.State with
-        | GameTitleScreenOver -> true
-        | GameTitleAwaitingFireButton -> false
+        | GameTitleAwaitingFireButton -> true
+        | GameTitleScreenOver -> false
 
     

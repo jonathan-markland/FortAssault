@@ -48,4 +48,4 @@ let NextIntermissionScreenState model _input gameTime =
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         
 let StayOnIntermission state =
-    state.EndNow
+    not (state.EndNow)
