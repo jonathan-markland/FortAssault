@@ -73,20 +73,29 @@ let FunctionThatGetsPositionOfMovingObject
 //  Unit-space Motion functions
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let inline InReverse (i:float32) =
-    1.0F - i
+/// Unit-Space is where some external range has been 
+/// normalized to a floating point value between 0.0F and 1.0F
+[<Measure>]
+type unitspace
 
-let inline SpeedingUp (i:float32) =
-    i * i
+let inline InUnitSpace n = LanguagePrimitives.Float32WithMeasure<unitspace> (n)
 
-let inline SlowingDown (i:float32) =
-    i |> InReverse |> SpeedingUp |> InReverse
+let inline InReverse (tu:float32<unitspace>) =
+    1.0F<unitspace> - tu
 
-let inline HalfAndHalf f1 f2 (i:float32) =
-    if i < 0.5F then
-        i |> (*) 2.0F |> f1
+let inline SpeedingUp (tu:float32<unitspace>) =
+    LanguagePrimitives.Float32WithMeasure<unitspace>( (float32) (tu * tu) )
+
+let inline SlowingDown (tu:float32<unitspace>) =
+    tu |> InReverse |> SpeedingUp |> InReverse
+
+/// Use f1 for the first half of the animation period, then use f2.
+/// But, lie to f1 and f2 so they thinks they are being used for a full period.
+let inline HalfAndHalf f1 f2 (tu:float32<unitspace>) =
+    if tu < 0.5F<unitspace> then
+        tu |> (*) 2.0F |> f1
     else 
-        i |> (-) 0.5F |> (*) 2.0F |> f2 |> InReverse
+        tu |> (-) 0.5F<unitspace> |> (*) 2.0F |> f2 |> InReverse
 
 
 
@@ -95,9 +104,12 @@ let inline HalfAndHalf f1 f2 (i:float32) =
 //  Motion functions
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let inline DoneOverDuration (t:float32<seconds>) (duration:float32<seconds>) f =
-    let t = t / duration
-    LanguagePrimitives.Float32WithMeasure<seconds>( (f t) * float32 duration )
+/// Parmeter 'duration' defines a time period over which an animation will happen.
+/// Parameter 't' is the current time offset, within that period.
+let inline DoneOverDuration (t:float32<seconds>) (duration:float32<seconds>) (unitSpaceMotionFunction:float32<unitspace> -> float32<unitspace>) =
+    let tu = (t / duration) |> InUnitSpace
+    let t' = tu |> unitSpaceMotionFunction |> float32 |> ((*) (float32 duration)) |> InSeconds
+    t'
 
 
 /// Time 't' is the offset into the duration.
