@@ -239,7 +239,7 @@ let NextStoryboardState staticGameResources gameState input gameTime frameElapse
         // Rule:  Enemy strength reduction from using the secret passage only affects air battle.
 
         | GameTitleChapter model ->  // TODO: Am I calling this "state" or "model" throughout this program?
-            Advance(
+            Advance (
                 let model = NextGameTitleScreenState model input gameTime
                 if model |> StayOnTitleScreen then
                     GameTitleChapter model
@@ -249,7 +249,7 @@ let NextStoryboardState staticGameResources gameState input gameTime frameElapse
             )
                         
         | InitialMapChapter model ->
-            Advance(
+            Advance (
                 let model = NextInitialMapScreenState model input gameTime
                 
                 match model |> InitialMapTransition with
@@ -259,20 +259,18 @@ let NextStoryboardState staticGameResources gameState input gameTime frameElapse
                     | FromInitialMapGoToSecretPassage ->
                         withIntermission
                             (fun gameTime ->
-                                let secretPassageModel = 
-                                    NewSecretPassageScreen model.ScoreAndHiScore model.NumShips gameTime
-                                SecretPassageChapter secretPassageModel)
+                                SecretPassageChapter 
+                                    (NewSecretPassageScreen model.ScoreAndHiScore model.NumShips gameTime))
 
                     | FromInitialMapGoToSeaBattle ->
                         withIntermission
                             (fun gameTime ->
-                                let airBattleModel = 
-                                    NewAirBattleScreen StrongEnemy model.ScoreAndHiScore model.NumShips gameTime
-                                AirBattleChapter airBattleModel)
+                                AirBattleChapter 
+                                    (NewAirBattleScreen StrongEnemy model.ScoreAndHiScore model.NumShips gameTime))
             )
 
         | SecretPassageChapter model ->
-            Advance(
+            Advance (
                 let model = NextSecretPassageScreenState model input gameTime
 
                 match model |> SecretPassageTransition with
@@ -282,29 +280,25 @@ let NextStoryboardState staticGameResources gameState input gameTime frameElapse
                     | FromSecretPassageGoToNextScreen ->
                         withIntermission
                             (fun gameTime ->
-                                let postPassageModel = 
-                                    NewMapPostPassageScreen model.FleetStats.Score model.FleetStats.ShipsSuccess
-                                MapPostPassageChapter postPassageModel)
+                                MapPostPassageChapter 
+                                    (NewMapPostPassageScreen model.FleetStats.Score model.FleetStats.ShipsSuccess))
                     
                     | SecretPassageGameOver ->
-                        let gameOverModel = 
-                            NewGameOverScreen model.FleetStats.Score
-                        GameOverChapter gameOverModel
+                        GameOverChapter (NewGameOverScreen model.FleetStats.Score)
             )
 
         | MapPostPassageChapter model ->
-            Advance(
+            Advance (
                 let model = NextMapPostPassageScreenState model input gameTime
                 if model |> StayOnMapPostPassage then
                     MapPostPassageChapter model
                 else
-                    let airBattleModel =
-                        NewAirBattleScreen WeakerEnemy model.ScoreAndHiScore model.ShipsThrough gameTime
-                    AirBattleChapter airBattleModel
+                    AirBattleChapter 
+                        (NewAirBattleScreen WeakerEnemy model.ScoreAndHiScore model.ShipsThrough gameTime)
             )
 
         | AirBattleChapter model ->
-            Advance(
+            Advance (
                 let model = NextAirBattleScreenState model input gameTime frameElapsedTime
 
                 match model |> AirBattleTransition with
@@ -313,18 +307,16 @@ let NextStoryboardState staticGameResources gameState input gameTime frameElapse
                         AirBattleChapter model
 
                     | GoToScreenAfterAirBattle ->
-                        let seaBattleModel = 
-                            NewSeaBattleScreen model.ScoreAndHiScore model.ShipsRemaining gameTime
-                        SeaBattleChapter seaBattleModel
+                        SeaBattleChapter 
+                            (NewSeaBattleScreen model.ScoreAndHiScore model.ShipsRemaining gameTime)
 
                     | AirBattleGameOver ->
-                        let gameOverModel = 
-                            NewGameOverScreen model.ScoreAndHiScore
-                        GameOverChapter gameOverModel
+                        GameOverChapter 
+                            (NewGameOverScreen model.ScoreAndHiScore)
             )
 
         | SeaBattleChapter model ->
-            Advance(
+            Advance (
                 let model = NextSeaBattleScreenState model input gameTime frameElapsedTime
 
                 match model |> SeaBattleTransition with
@@ -333,18 +325,16 @@ let NextStoryboardState staticGameResources gameState input gameTime frameElapse
                         SeaBattleChapter model
 
                     | GoToScreenAfterSeaBattle ->
-                        let beachLandingModel = 
-                            NewMapBeforeBeachLandingScreen model.ScoreAndHiScore model.ShipsRemaining
-                        MapBeforeBeachLandingChapter beachLandingModel
+                        MapBeforeBeachLandingChapter 
+                            (NewMapBeforeBeachLandingScreen model.ScoreAndHiScore model.ShipsRemaining)
 
                     | SeaBattleGameOver ->
-                        let gameOverModel = 
-                            NewGameOverScreen model.ScoreAndHiScore
-                        GameOverChapter gameOverModel
+                        GameOverChapter 
+                            (NewGameOverScreen model.ScoreAndHiScore)
             )
 
         | MapBeforeBeachLandingChapter model ->
-            Advance(
+            Advance (
                 let model = NextMapBeforeBeachLandingScreenState model input gameTime
 
                 if model |> StayOnMapBeforeBeachLanding then
@@ -353,20 +343,17 @@ let NextStoryboardState staticGameResources gameState input gameTime frameElapse
                 else
                     withIntermission
                         (fun gameTime ->
-                            let finalBossAndTankBattleData = 
-                                NewFinalBossAndTankBattleData ()
-                            let tankBattleModel = 
-                                NewTankBattleScreen 
+                            TankBattleChapter 
+                                (NewTankBattleScreen 
                                     model.ScoreAndHiScore
                                     (model.ShipsThrough |> ToTankCountFromShipCount)
-                                    finalBossAndTankBattleData 
+                                    (NewFinalBossAndTankBattleData ())
                                     staticGameResources.TankMapsList 
-                                    gameTime
-                            TankBattleChapter tankBattleModel)
+                                    gameTime))
             )
 
         | TankBattleChapter model ->
-            Advance(
+            Advance (
                 let model = NextTankBattleScreenState model input gameTime frameElapsedTime
 
                 match model |> TankBattleTransition with
@@ -377,33 +364,31 @@ let NextStoryboardState staticGameResources gameState input gameTime frameElapse
                     | TankCompletedCourseSuccessfully ->
                         withIntermission
                             (fun gameTime ->
-                                let finalBossModel = 
-                                    NewFinalBossScreen 
+                                FinalBossChapter 
+                                    (NewFinalBossScreen 
                                         model.ScoreAndHiScore
                                         model.TanksRemaining
                                         model.Constants.FinalBossAndTankBattleData
-                                        gameTime
-                                FinalBossChapter finalBossModel)
+                                        gameTime))
 
                     | TankBattleGameOver ->
-                        let gameOverModel = NewGameOverScreen model.ScoreAndHiScore
-                        GameOverChapter gameOverModel
+                        GameOverChapter 
+                            (NewGameOverScreen model.ScoreAndHiScore)
 
                     | RestartTankBattle ->
                         withIntermission
                             (fun gameTime ->
-                                let tankBattleModel = 
-                                    NewTankBattleScreen 
+                                TankBattleChapter 
+                                    (NewTankBattleScreen 
                                         model.ScoreAndHiScore
                                         model.TanksRemaining
                                         model.Constants.FinalBossAndTankBattleData
                                         staticGameResources.TankMapsList
-                                        gameTime
-                                TankBattleChapter tankBattleModel)
+                                        gameTime))
             )
 
         | FinalBossChapter model ->
-            Advance(
+            Advance (
                 let model = NextFinalBossScreenState model input gameTime frameElapsedTime
 
                 match model |> FinalBossTransition with
@@ -412,26 +397,25 @@ let NextStoryboardState staticGameResources gameState input gameTime frameElapse
                         FinalBossChapter model
 
                     | VictoryOverFinalBoss ->
-                        let victoryModel = NewVictoryScreen model.ScoreAndHiScore gameTime
-                        VictoryChapter victoryModel
+                        VictoryChapter 
+                            (NewVictoryScreen model.ScoreAndHiScore gameTime)
 
                     | FinalBossDestroyedTheTank ->
-                        let tankBattleModel = 
-                            NewTankBattleScreen 
+                        TankBattleChapter 
+                            (NewTankBattleScreen 
                                 model.ScoreAndHiScore
                                 model.TanksRemaining
                                 model.FinalBossAndTankBattleData
                                 staticGameResources.TankMapsList
-                                gameTime
-                        TankBattleChapter tankBattleModel
+                                gameTime)
 
                     | FinalBossGameOver ->
-                        let gameOverModel = NewGameOverScreen model.ScoreAndHiScore
-                        GameOverChapter gameOverModel
+                        GameOverChapter
+                            (NewGameOverScreen model.ScoreAndHiScore)
             )
 
         | IntermissionChapter model ->
-            Advance(
+            Advance (
                 let model = NextIntermissionScreenState model input gameTime
 
                 if model |> StayOnIntermission then
@@ -441,26 +425,28 @@ let NextStoryboardState staticGameResources gameState input gameTime frameElapse
             )
 
         | GameOverChapter model ->
-            Advance(
+            Advance (
                 let model = NextGameOverScreenState model input gameTime
                 if model |> StayOnGameOverScreen then
                     GameOverChapter model
                 else
-                    PotentialEnterYourNameChapter (NewPotentialEnterYourNameScreen model.ScoreAndHiScore gameGlobals.GameScoreBoard)
+                    PotentialEnterYourNameChapter 
+                        (NewPotentialEnterYourNameScreen model.ScoreAndHiScore gameGlobals.GameScoreBoard)
             )
                 
         | VictoryChapter model ->
-            Advance(
+            Advance (
                 let model = NextVictoryScreenState model input gameTime
 
                 if model |> StayOnVictoryScreen then
                     VictoryChapter model
                 else
-                    PotentialEnterYourNameChapter (NewPotentialEnterYourNameScreen model.ScoreAndHiScore gameGlobals.GameScoreBoard)
+                    PotentialEnterYourNameChapter 
+                        (NewPotentialEnterYourNameScreen model.ScoreAndHiScore gameGlobals.GameScoreBoard)
             )
 
         | PotentialEnterYourNameChapter model ->
-            AdvanceAndReplaceGlobals(
+            AdvanceAndReplaceGlobals (
                 let model = NextPotentialEnterYourNameScreenState model input gameTime
 
                 if model |> StayOnPotentialEnterYourNameScreen then
@@ -473,6 +459,7 @@ let NextStoryboardState staticGameResources gameState input gameTime frameElapse
             )
              
         | MechanicsTestPageChapter model ->
-            Advance
-                (MechanicsTestPageChapter (NextMechanicsTestPageScreenState model input gameTime))
+            Advance (
+                MechanicsTestPageChapter 
+                    (NextMechanicsTestPageScreenState model input gameTime))
 
