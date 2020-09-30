@@ -6,7 +6,6 @@ open ScoreHiScore
 open FontAlignment
 open Geometry
 open InputEventData
-open StoryboardChapterChange
 open ImagesAndFonts
 open ResourceFileMetadata
 open StaticResourceAccess
@@ -189,38 +188,37 @@ let NewVictoryScreen scoreAndHiScore gameTime =
 
 let NextVictoryScreenState oldState input gameTime =
 
-    let newModel =
-        if input.Fire.JustDown then
-            { oldState with RestartNow = true }
-        else
-            let nextAnimStageTime = oldState.NextAnimStageTime
-            let animationStage    = oldState.AnimationStage   
+    if input.Fire.JustDown then
+        { oldState with RestartNow = true }
+    else
+        let nextAnimStageTime = oldState.NextAnimStageTime
+        let animationStage    = oldState.AnimationStage   
 
             
-            let nextAnimStageTime , animationStage =
-                match animationStage with
-                    | [] -> 
+        let nextAnimStageTime , animationStage =
+            match animationStage with
+                | [] -> 
+                    nextAnimStageTime , animationStage
+
+                | _::animationListTail -> 
+                    if gameTime > nextAnimStageTime then
+                        (gameTime + TimePerAnimStage) , animationListTail
+                    else
                         nextAnimStageTime , animationStage
 
-                    | _::animationListTail -> 
-                        if gameTime > nextAnimStageTime then
-                            (gameTime + TimePerAnimStage) , animationListTail
-                        else
-                            nextAnimStageTime , animationStage
 
-
-            {
-                ScoreAndHiScore     = oldState.ScoreAndHiScore   // never changes
-                ScoreText           = oldState.ScoreText         // never changes
-                HiScoreText         = oldState.HiScoreText       // never changes
-                NextAnimStageTime   = nextAnimStageTime
-                AnimationStage      = animationStage
-                RestartNow          = oldState.RestartNow        // never changes
-            }
-
-
-    if newModel.RestartNow then
-        GoToNextChapter1(newModel)
-    else
-        StayOnThisChapter1(newModel)
+        {
+            ScoreAndHiScore     = oldState.ScoreAndHiScore   // never changes
+            ScoreText           = oldState.ScoreText         // never changes
+            HiScoreText         = oldState.HiScoreText       // never changes
+            NextAnimStageTime   = nextAnimStageTime
+            AnimationStage      = animationStage
+            RestartNow          = oldState.RestartNow        // never changes
+        }
         
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Query functions for Storyboard
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let StayOnVictoryScreen state =
+    not (state.RestartNow)

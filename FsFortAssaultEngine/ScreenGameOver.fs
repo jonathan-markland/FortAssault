@@ -7,7 +7,6 @@ open ScoreHiScore
 open FontAlignment
 open Geometry
 open InputEventData
-open StoryboardChapterChange
 open ResourceFileMetadata
 open StaticResourceAccess
 
@@ -38,16 +37,16 @@ let NewGameOverScreen scoreAndHiScore =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextGameOverScreenState oldState input gameTime =
+let NextGameOverScreenState oldState input _gameTime =
 
-    let newModel =
-        if input.Fire.JustDown then
-            { oldState with RestartNow = true }
-        else
-            oldState
-
-    if newModel.RestartNow then
-        GoToNextChapter1(newModel)
+    if input.Fire.JustDown then
+        { oldState with RestartNow = true }
     else
-        StayOnThisChapter1(newModel)
+        oldState
         
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Query functions for Storyboard
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let StayOnGameOverScreen state =
+    not (state.RestartNow)

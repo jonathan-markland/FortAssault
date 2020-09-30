@@ -137,51 +137,50 @@ let NewInitialMapScreen numShips scoreAndHiScore =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-[<Struct>]
-type ChapterTransitionFromInitialMap =
-    | StayOnInitialMap  of f1:InitialMapScreenModel
-    | GoToSecretPassage of f2:InitialMapScreenModel
-    | GoToBattleAtSea   of f3:InitialMapScreenModel
-
 let NextInitialMapScreenState oldState input gameTime =
 
-    let newState = 
-        match oldState.AlliedState with
+    match oldState.AlliedState with
 
-            | MapInPlay(alliedLocation) ->
+        | MapInPlay(alliedLocation) ->
     
-                let alliedLocation =
-                    NewAlliedFleetLocation alliedLocation input PermissableTravelLocationRectangles
+            let alliedLocation =
+                NewAlliedFleetLocation alliedLocation input PermissableTravelLocationRectangles
 
-                let enemyLocation =
-                    NewEnemyFleetLocation oldState.EnemyFleetCentre alliedLocation
+            let enemyLocation =
+                NewEnemyFleetLocation oldState.EnemyFleetCentre alliedLocation
 
-                let allies =
-                    AlliesVersusSecretPassageOrEnemy alliedLocation enemyLocation gameTime
+            let allies =
+                AlliesVersusSecretPassageOrEnemy alliedLocation enemyLocation gameTime
 
-                {
-                    ScoreAndHiScore  = oldState.ScoreAndHiScore
-                    AlliedState      = allies
-                    EnemyFleetCentre = enemyLocation
-                    NumShips         = oldState.NumShips
-                }
+            {
+                ScoreAndHiScore  = oldState.ScoreAndHiScore
+                AlliedState      = allies
+                EnemyFleetCentre = enemyLocation
+                NumShips         = oldState.NumShips
+            }
 
-            | FleetEngagedOnMap(_, pauseStartTime, stateAfterPause) ->
+        | FleetEngagedOnMap(_, pauseStartTime, stateAfterPause) ->
 
-                let elapsed = gameTime - pauseStartTime
-                if elapsed > PauseTimeOnceEngaged then
-                    { oldState with AlliedState = stateAfterPause }
-                else
-                    oldState
+            let elapsed = gameTime - pauseStartTime
+            if elapsed > PauseTimeOnceEngaged then
+                { oldState with AlliedState = stateAfterPause }
+            else
+                oldState
 
-            | ScreenOverEngagedEnemyAtSea
-            | ScreenOverEngagedSecretPassage ->
+        | ScreenOverEngagedEnemyAtSea
+        | ScreenOverEngagedSecretPassage ->
         
-                oldState   // Ideology:  Never risk the logic rest of the logic when the screen is over.
+            oldState   // Ideology:  Never risk the logic rest of the logic when the screen is over.
 
-    match newState.AlliedState with
-        | MapInPlay(_)
-        | FleetEngagedOnMap(_)           -> StayOnInitialMap(newState)
-        | ScreenOverEngagedSecretPassage -> GoToSecretPassage(newState)
-        | ScreenOverEngagedEnemyAtSea    -> GoToBattleAtSea(newState)
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Query functions for Storyboard
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+type InitialMapAfterFrameCase = StayOnInitialMapScreen | FromInitialMapGoToSecretPassage | FromInitialMapGoToSeaBattle
+
+let InitialMapTransition state =
+    match state.AlliedState with
+        | MapInPlay _
+        | FleetEngagedOnMap _            -> StayOnInitialMapScreen
+        | ScreenOverEngagedSecretPassage -> FromInitialMapGoToSecretPassage
+        | ScreenOverEngagedEnemyAtSea    -> FromInitialMapGoToSeaBattle

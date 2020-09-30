@@ -5,7 +5,6 @@ open ImagesAndFonts
 open DrawingCommandsEx
 open FontAlignment
 open Geometry
-open StoryboardChapterChange
 open ResourceFileMetadata
 open StaticResourceAccess
 
@@ -16,6 +15,7 @@ let IntermissionDuration = 4.0F<seconds>
 
 type IntermissionScreenModel<'nextChapterType> =
     {
+        EndNow                 : bool
         EndTime                : float32<seconds>
         NextChapterConstructor : (float32<seconds> -> 'nextChapterType)
     }
@@ -30,17 +30,22 @@ let RenderIntermissionScreen render model gameTime =
 
 let NewIntermissionScreenState gameTime chapterConstructor =
     {
+        EndNow                 = false
         EndTime                = gameTime + IntermissionDuration
         NextChapterConstructor = chapterConstructor
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextIntermissionScreenState model input gameTime =
+let NextIntermissionScreenState model _input gameTime =
+    if gameTime >= model.EndTime then 
+        { model with EndNow = true } 
+    else 
+        model
 
-    if gameTime >= model.EndTime then
-        GoToNextChapter1(model)
-    else
-        StayOnThisChapter1(model)
-
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Query functions for Storyboard
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
         
+let StayOnIntermission state =
+    state.EndNow

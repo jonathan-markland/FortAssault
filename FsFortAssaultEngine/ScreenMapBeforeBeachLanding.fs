@@ -10,7 +10,6 @@ open Geometry
 open ImagesAndFonts
 open ScorePanel
 open MapScreenSharedDetail
-open StoryboardChapterChange
 open ResourceFileMetadata
 open StaticResourceAccess
 
@@ -102,37 +101,38 @@ let NewMapBeforeBeachLandingScreen scoreAndHiScore shipsThrough =
 
 let NextMapBeforeBeachLandingScreenState oldState input gameTime =
 
-    let newModel =
-        match oldState.AlliedState with
+    match oldState.AlliedState with
 
-            | FleetBeforeBeachLandingInPlay(alliedLocation) ->
+        | FleetBeforeBeachLandingInPlay(alliedLocation) ->
     
-                let alliedLocation = NewAlliedFleetLocation alliedLocation input PermissableTravelLocationRectangles
-                let allies = AlliesVersusBeach alliedLocation gameTime
+            let alliedLocation = NewAlliedFleetLocation alliedLocation input PermissableTravelLocationRectangles
+            let allies = AlliesVersusBeach alliedLocation gameTime
 
-                {
-                    ScoreAndHiScore = oldState.ScoreAndHiScore
-                    ShipsThrough    = oldState.ShipsThrough
-                    AlliedState     = allies
-                }
+            {
+                ScoreAndHiScore = oldState.ScoreAndHiScore
+                ShipsThrough    = oldState.ShipsThrough
+                AlliedState     = allies
+            }
 
-            | EngagedBeachLanding(_,engagementTime) ->
+        | EngagedBeachLanding(_,engagementTime) ->
 
-                let elapsedSinceEngagement = gameTime - engagementTime
-                if elapsedSinceEngagement > PauseTimeOnceEngaged then
-                    { oldState with AlliedState = ScreenOver }
-                else
-                    oldState
+            let elapsedSinceEngagement = gameTime - engagementTime
+            if elapsedSinceEngagement > PauseTimeOnceEngaged then
+                { oldState with AlliedState = ScreenOver }
+            else
+                oldState
 
-            | ScreenOver ->
+        | ScreenOver ->
         
-                oldState   // Ideology:  Never risk the logic rest of the logic when the screen is over.
+            oldState   // Ideology:  Never risk the logic rest of the logic when the screen is over.
 
-    match newModel.AlliedState with
 
-        | FleetBeforeBeachLandingInPlay(_) ->
-            StayOnThisChapter1(newModel)
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Query functions for Storyboard
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-        | _ ->
-            GoToNextChapter1(newModel)
-
+let StayOnMapBeforeBeachLanding state =
+    match state.AlliedState with
+        | FleetBeforeBeachLandingInPlay _ -> true
+        | EngagedBeachLanding _
+        | ScreenOver                      -> false

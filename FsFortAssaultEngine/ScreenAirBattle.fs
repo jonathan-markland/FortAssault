@@ -15,7 +15,6 @@ open FlickBook
 open AirAndSeaBattleShared
 open Collisions
 open Rules
-open StoryboardChapterChange
 open ResourceFileMetadata
 open StaticResourceAccess
 
@@ -328,127 +327,131 @@ let NewAirBattleScreen enemyStrength scoreAndHiScore shipsRemaining gameTime =
 
 let NextAirBattleScreenState oldState input gameTime frameElapsedTime =
 
-    let newModel =
-        match oldState.AlliedState with
+    match oldState.AlliedState with
 
-            | AlliedShipInPlay ->
+        | AlliedShipInPlay ->
 
-                if oldState.PlanesRemaining = 0u && oldState.Planes.IsEmpty then
-                    { oldState with AlliedState = WonScreen(gameTime) }
+            if oldState.PlanesRemaining = 0u && oldState.Planes.IsEmpty then
+                { oldState with AlliedState = WonScreen(gameTime) }
             
-                else
-                    let gunBaseY =
-                        (ImageSeaBattleBackground0 |> ImageFromID).EngineImageMetadata.ImageHeight |> IntToFloatEpx
+            else
+                let gunBaseY =
+                    (ImageSeaBattleBackground0 |> ImageFromID).EngineImageMetadata.ImageHeight |> IntToFloatEpx
 
-                    let alliedState  = oldState.AlliedState
-                    let gun          = oldState.GunAim
-                    let explosions   = oldState.Explosions
-                    let skyExplosion = oldState.SkyExplosion
-                    let score        = oldState.ScoreAndHiScore
-                    let planes       = oldState.Planes
-                    let planeBombs   = oldState.PlaneBombs
-                    let damage       = oldState.Damage
-                    let lastSortieAt = oldState.LastSortieAt
-                    let raidersLeft  = oldState.PlanesRemaining
+                let alliedState  = oldState.AlliedState
+                let gun          = oldState.GunAim
+                let explosions   = oldState.Explosions
+                let skyExplosion = oldState.SkyExplosion
+                let score        = oldState.ScoreAndHiScore
+                let planes       = oldState.Planes
+                let planeBombs   = oldState.PlaneBombs
+                let damage       = oldState.Damage
+                let lastSortieAt = oldState.LastSortieAt
+                let raidersLeft  = oldState.PlanesRemaining
 
-                    let explosions =
-                        explosions |> WithCompletedFlickbooksRemoved gameTime
+                let explosions =
+                    explosions |> WithCompletedFlickbooksRemoved gameTime
 
-                    let skyExplosion =
-                        skyExplosion |> WithCompletedFlickbooksRemoved gameTime
+                let skyExplosion =
+                    skyExplosion |> WithCompletedFlickbooksRemoved gameTime
 
-                    let planes =
-                        planes |> WithCompletedBuriedFlickbooksRemoved gameTime FlickbookFromPlane
+                let planes =
+                    planes |> WithCompletedBuriedFlickbooksRemoved gameTime FlickbookFromPlane
 
-                    let bombCountBefore = planeBombs.Length
+                let bombCountBefore = planeBombs.Length
 
-                    let planeBombs =
-                        planeBombs |> WithCompletedFlickbooksRemoved gameTime
+                let planeBombs =
+                    planeBombs |> WithCompletedFlickbooksRemoved gameTime
 
-                    let bombCountAfter = planeBombs.Length
+                let bombCountAfter = planeBombs.Length
 
-                    let damage =
-                        damage + uint32 (bombCountBefore - bombCountAfter)
+                let damage =
+                    damage + uint32 (bombCountBefore - bombCountAfter)
 
-                    let gun =
-                        UpdatedGunAimAccordingToInput input gameTime frameElapsedTime gunBaseY gun
+                let gun =
+                    UpdatedGunAimAccordingToInput input gameTime frameElapsedTime gunBaseY gun
                 
-                    let planeBombs, planes =
-                        ConsiderReleasingNewBombsFromPlanes gameTime planeBombs planes
+                let planeBombs, planes =
+                    ConsiderReleasingNewBombsFromPlanes gameTime planeBombs planes
 
-                    let raidersLeft, lastSortieAt, planes =
-                        ConsiderLaunchingMorePlanes gameTime raidersLeft lastSortieAt planes
+                let raidersLeft, lastSortieAt, planes =
+                    ConsiderLaunchingMorePlanes gameTime raidersLeft lastSortieAt planes
 
-                    let alliedState, skyExplosion =
-                        if damage >= MaxDamagePerShip then
-                            ShipSinking(gameTime), [NewSkyExplosionFlickBook gameTime] // we don't want more than one SkyExplosion at once!
-                        else
-                            alliedState, skyExplosion
+                let alliedState, skyExplosion =
+                    if damage >= MaxDamagePerShip then
+                        ShipSinking(gameTime), [NewSkyExplosionFlickBook gameTime] // we don't want more than one SkyExplosion at once!
+                    else
+                        alliedState, skyExplosion
 
-                    let shells, planes, explosions, score =
-                        ResultOfWhateverShellsHitThePlanes gun.Shells planes explosions score gameTime
+                let shells, planes, explosions, score =
+                    ResultOfWhateverShellsHitThePlanes gun.Shells planes explosions score gameTime
 
-                    let gun =
-                        { gun with Shells = shells }
+                let gun =
+                    { gun with Shells = shells }
 
-                    let gun =
-                        gun |> UpdatedGunAimWithCompletedShellsRemoved gameTime 
+                let gun =
+                    gun |> UpdatedGunAimWithCompletedShellsRemoved gameTime 
 
+                {
+                    oldState with
+                        AlliedState      = alliedState
+                        GunAim           = gun
+                        Explosions       = explosions
+                        SkyExplosion     = skyExplosion
+                        Planes           = planes
+                        PlaneBombs       = planeBombs
+                        ScoreAndHiScore  = score
+                        Damage           = damage
+                        LastSortieAt     = lastSortieAt
+                        PlanesRemaining  = raidersLeft
+                }
+
+        | WonScreen(timeEnded) -> 
+
+            let elapsedSinceEngagement = gameTime - timeEnded
+            if elapsedSinceEngagement > PauseTimeWhenEnded then
+                { oldState with AlliedState = AirOrSeaBattleScreenOver }
+            else
+                oldState
+
+        | ShipSinking(timeEnded) ->
+
+            let elapsedSinceEngagement = gameTime - timeEnded
+            if elapsedSinceEngagement > PauseTimeWhenEnded then
+                let numShips = oldState.ShipsRemaining
+                if numShips > 1u then
+                    { 
+                        oldState with 
+                            AlliedState = AlliedShipInPlay
+                            ShipsRemaining = numShips - 1u
+                            SkyExplosion = []
+                            Damage = 0u 
+                    }
+                else
                     {
                         oldState with
-                            AlliedState      = alliedState
-                            GunAim           = gun
-                            Explosions       = explosions
-                            SkyExplosion     = skyExplosion
-                            Planes           = planes
-                            PlaneBombs       = planeBombs
-                            ScoreAndHiScore  = score
-                            Damage           = damage
-                            LastSortieAt     = lastSortieAt
-                            PlanesRemaining  = raidersLeft
+                            AlliedState    = AirOrSeaBattleScreenOver
+                            ShipsRemaining = 0u
+                            SkyExplosion   = []
                     }
-
-            | WonScreen(timeEnded) -> 
-
-                let elapsedSinceEngagement = gameTime - timeEnded
-                if elapsedSinceEngagement > PauseTimeWhenEnded then
-                    { oldState with AlliedState = AirOrSeaBattleScreenOver }
-                else
-                    oldState
-
-            | ShipSinking(timeEnded) ->
-
-                let elapsedSinceEngagement = gameTime - timeEnded
-                if elapsedSinceEngagement > PauseTimeWhenEnded then
-                    let numShips = oldState.ShipsRemaining
-                    if numShips > 1u then
-                        { 
-                            oldState with 
-                                AlliedState = AlliedShipInPlay
-                                ShipsRemaining = numShips - 1u
-                                SkyExplosion = []
-                                Damage = 0u 
-                        }
-                    else
-                        {
-                            oldState with
-                                AlliedState    = AirOrSeaBattleScreenOver
-                                ShipsRemaining = 0u
-                                SkyExplosion   = []
-                        }
-                else
-                    oldState
-
-            | AirOrSeaBattleScreenOver ->
-                oldState   // Ideology:  Never risk the logic rest of the logic when the screen is over.
-
-    match newModel.AlliedState with
+            else
+                oldState
 
         | AirOrSeaBattleScreenOver ->
-            if newModel.ShipsRemaining > 0u then
-                GoToNextChapter2(newModel)
-            else
-                GameOver2(newModel)
-        | _ ->
-            StayOnThisChapter2(newModel)
+            oldState   // Ideology:  Never risk the logic rest of the logic when the screen is over.
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Query functions for Storyboard
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+type AirBattleAfterFrameCase = StayOnAirBattleScreen | GoToScreenAfterAirBattle | AirBattleGameOver
+
+let AirBattleTransition state =
+    match state.AlliedState with
+        | AlliedShipInPlay
+        | ShipSinking _
+        | WonScreen _              -> StayOnAirBattleScreen
+        | AirOrSeaBattleScreenOver ->
+            if state.ShipsRemaining > 0u then GoToScreenAfterAirBattle else AirBattleGameOver
 

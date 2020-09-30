@@ -15,7 +15,6 @@ open ImagesAndFonts
 open InputEventData
 open ScorePanel
 open FlickBook
-open StoryboardChapterChange
 open ImagesAndFonts
 open ResourceFileMetadata
 open StaticResourceAccess
@@ -710,58 +709,60 @@ let NextSecretPassageScreenState oldState input gameTime =
 
     let ship = oldState.Ship
 
-    let newModel =
-        match ship with
-            | SecretPassageScreenOver ->
-                oldState   // Ideology:  Never risk the logic below if level is supposed to be over already.
+    match ship with
+        | SecretPassageScreenOver ->
+            oldState   // Ideology:  Never risk the logic below if level is supposed to be over already.
 
-            | _ ->
+        | _ ->
 
-                let stats      = oldState.FleetStats
-                let torpedos   = oldState.LiveTorpedos
-                let animations = oldState.Animations
-                let mines      = oldState.Mines
+            let stats      = oldState.FleetStats
+            let torpedos   = oldState.LiveTorpedos
+            let animations = oldState.Animations
+            let mines      = oldState.Mines
 
-                let ship =
-                    NewShipState ship input
+            let ship =
+                NewShipState ship input
 
-                let torpedos =
-                    torpedos |> WithCompletedTorpedosRemovedAndReplaced gameTime
+            let torpedos =
+                torpedos |> WithCompletedTorpedosRemovedAndReplaced gameTime
 
-                let animations =
-                    animations |> WithCompletedFlickbooksRemoved gameTime
+            let animations =
+                animations |> WithCompletedFlickbooksRemoved gameTime
 
-                let torpedos, animations, ship =
-                    ShipVersusTorpedos torpedos animations ship gameTime
+            let torpedos, animations, ship =
+                ShipVersusTorpedos torpedos animations ship gameTime
     
-                let animations, ship =
-                    ShipVersusMines mines animations ship gameTime
+            let animations, ship =
+                ShipVersusMines mines animations ship gameTime
 
-                let animations, ship =
-                    ShipVersusCoastline animations ship gameTime
+            let animations, ship =
+                ShipVersusCoastline animations ship gameTime
 
-                let ship =
-                    HasShipCompletedSuccessfully ship gameTime
+            let ship =
+                HasShipCompletedSuccessfully ship gameTime
 
-                let stats, ship =
-                    CheckIfRoundComplete stats ship gameTime
+            let stats, ship =
+                CheckIfRoundComplete stats ship gameTime
 
-                {
-                    FleetStats   = stats
-                    LiveTorpedos = torpedos
-                    Ship         = ship
-                    Animations   = animations
-                    Mines        = mines
-                }
+            {
+                FleetStats   = stats
+                LiveTorpedos = torpedos
+                Ship         = ship
+                Animations   = animations
+                Mines        = mines
+            }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Query functions for Storyboard
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+type SecretPassageAfterFrameCase = StayOnSecretPassageScreen | FromSecretPassageGoToNextScreen | SecretPassageGameOver
+
+let SecretPassageTransition state =
+    match state.Ship with
+        | ShipInPlay _
+        | ShipGotThrough _ 
+        | ShipExploding _  -> StayOnSecretPassageScreen
+        | SecretPassageScreenOver ->
+            if state.FleetStats.ShipsSuccess > 0u then FromSecretPassageGoToNextScreen else SecretPassageGameOver
     
-    match newModel.Ship with
-
-        | SecretPassageScreenOver -> 
-            if newModel.FleetStats.ShipsSuccess > 0u then
-                GoToNextChapter2(newModel)
-            else
-                GameOver2(newModel)
-
-        | _ -> 
-            StayOnThisChapter2(newModel)
-

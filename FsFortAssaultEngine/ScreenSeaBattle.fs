@@ -16,7 +16,6 @@ open Rules
 open FontAlignment
 open PendingEvents
 open InputEventData
-open StoryboardChapterChange
 open ResourceFileMetadata
 open StaticResourceAccess
 
@@ -381,144 +380,146 @@ let NewSeaBattleScreen scoreAndHiScore shipsRemaining gameTime =
 
 let NextSeaBattleScreenState oldState input gameTime frameElapsedTime =
 
-    let newModel =
-        match oldState.AlliedState with
+    match oldState.AlliedState with
 
-            | AlliedShipInPlay ->
+        | AlliedShipInPlay ->
 
-                if oldState.EnemyShips.IsEmpty then
-                    { oldState with AlliedState = WonScreen(gameTime) }
+            if oldState.EnemyShips.IsEmpty then
+                { oldState with AlliedState = WonScreen(gameTime) }
             
-                else
-                    let gun                = oldState.GunAim
-                    let skyExplosion       = oldState.SkyExplosion
-                    let scoreAndHiScore    = oldState.ScoreAndHiScore
-                    let alliedState        = oldState.AlliedState
-                    let alliedCountToSink  = oldState.AlliedCountToSink
-                    let enemyShips         = oldState.EnemyShips
-                    let futureIncoming     = oldState.PendingIncoming
-                    let futureDamage       = oldState.PendingDamage
-                    let futureHits         = oldState.PendingHits
-                    let futureMessageTexts = oldState.PendingMessageTexts
-                    let futureScoreChanges = oldState.PendingScoreChanges
-                    let decoratives        = oldState.Decoratives
-                    let messageText        = oldState.MessageText
-
-                    let skyExplosion =
-                        skyExplosion |> WithCompletedFlickbooksRemoved gameTime
-
-                    let decoratives =
-                        decoratives |> WithCompletedFlickbooksRemoved gameTime
-
-                    let enemyShips =
-                        enemyShips |> WithSunkenEnemyShipsRemoved gameTime
-
-                    let gunBaseY =
-                        (ImageSeaBattleBackground0 |> ImageFromID).EngineImageMetadata.ImageHeight |> IntToFloatEpx  // TODO: This need crops up in a lot of places:  search for EngineImageMetadata and consider cases
-                
-                    let gun =
-                        UpdatedGunAimAccordingToInput input gameTime frameElapsedTime gunBaseY gun
-
-                    let struct((enemyShips , decoratives , futureDamage , alliedCountToSink), futureIncoming) =
-                        struct((enemyShips , decoratives , futureDamage , alliedCountToSink), futureIncoming)
-                            |> AppliedForTime gameTime PossiblyLaunchEnemyFire
-
-                    let struct((alliedState , skyExplosion , alliedCountToSink), futureDamage) =
-                        struct((alliedState , skyExplosion , alliedCountToSink), futureDamage)
-                            |> AppliedForTime gameTime (fun _ _ gameTime -> 
-                                PendingDone (
-                                    ShipSinking(gameTime),
-                                    [NewSkyExplosionFlickBook gameTime],
-                                    (int) DamageToSinkAllies))
-
-                    let struct(enemyShips, futureHits) =
-                        struct(enemyShips, futureHits)
-                            |> AppliedForTime gameTime (fun oldEnemyShips {HitShipX=enemyShipX} gameTime -> 
-                                PendingDone (oldEnemyShips |> WithEnemyShipSinking gameTime enemyShipX))
-
-                    let struct(messageText, futureMessageTexts) =
-                        struct(messageText, futureMessageTexts)
-                            |> AppliedForTime gameTime (fun _ messageText _ -> 
-                                PendingDone messageText)
-
-                    let struct(scoreAndHiScore, futureScoreChanges) =
-                        struct(scoreAndHiScore, futureScoreChanges) 
-                            |> AppliedForTime gameTime (fun oldScore scoreDelta _ -> 
-                                PendingDone (oldScore |> ScoreIncrementedBy scoreDelta))
-
-                    let gun =
-                        gun |> UpdatedGunAimWithCompletedShellsRemoved gameTime 
-
-                    let newFutureHit, newFutureMessageText, newFutureScoreChange, newDecorative =
-                        ConsiderStateChangesForWhenPlayerFiresGun input gun enemyShips gameTime
-
-                    let consOption xo xs = // TODO: Do we have this anywhere?
-                        match xo with
-                            | None -> xs
-                            | Some x -> x::xs
-
-                    let futureHits         = futureHits         |> consOption newFutureHit
-                    let futureMessageTexts = futureMessageTexts |> consOption newFutureMessageText
-                    let futureScoreChanges = futureScoreChanges |> consOption newFutureScoreChange
-                    let decoratives        = decoratives        |> consOption newDecorative
-
-                    {
-                        ShipsRemaining      = oldState.ShipsRemaining  // we don't decrement until the screen is lost.
-                        GunAim              = gun
-                        SkyExplosion        = skyExplosion
-                        ScoreAndHiScore     = scoreAndHiScore
-                        AlliedState         = alliedState
-                        AlliedCountToSink   = alliedCountToSink
-                        EnemyShips          = enemyShips
-                        PendingIncoming     = futureIncoming
-                        PendingDamage       = futureDamage
-                        PendingHits         = futureHits
-                        PendingMessageTexts = futureMessageTexts
-                        PendingScoreChanges = futureScoreChanges
-                        Decoratives         = decoratives
-                        MessageText         = messageText
-                    }
-
-            | WonScreen(timeEnded) -> 
-
-                let elapsedSinceEngagement = gameTime - timeEnded
-                if elapsedSinceEngagement > PauseTimeWhenEnded then
-                    { oldState with AlliedState = AirOrSeaBattleScreenOver }
-                else
-                    oldState
-
-            | ShipSinking(timeEnded) ->   // TODO: This might be in the wrong place because it pauses animations
-
-                let elapsedSinceEngagement = gameTime - timeEnded
-                if elapsedSinceEngagement > PauseTimeWhenEnded then
-                    let numShips = oldState.ShipsRemaining
-                    if numShips > 1u then
-                        {
-                            oldState with 
-                                AlliedState = AlliedShipInPlay
-                                ShipsRemaining = numShips - 1u
-                        }
-                    else
-                        { 
-                            oldState with 
-                                AlliedState = AirOrSeaBattleScreenOver 
-                                ShipsRemaining = 0u
-                        }
-                else
-                    oldState
-
-            | AirOrSeaBattleScreenOver ->
-
-                oldState   // Ideology:  Never risk the logic rest of the logic when the screen is over.
-
-    match newModel.AlliedState with
-        
-        | AirOrSeaBattleScreenOver ->
-            if newModel.ShipsRemaining > 0u then
-                GoToNextChapter2(newModel)
             else
-                GameOver2(newModel)
-        
-        | _ ->
-            StayOnThisChapter2(newModel)
+                let gun                = oldState.GunAim
+                let skyExplosion       = oldState.SkyExplosion
+                let scoreAndHiScore    = oldState.ScoreAndHiScore
+                let alliedState        = oldState.AlliedState
+                let alliedCountToSink  = oldState.AlliedCountToSink
+                let enemyShips         = oldState.EnemyShips
+                let futureIncoming     = oldState.PendingIncoming
+                let futureDamage       = oldState.PendingDamage
+                let futureHits         = oldState.PendingHits
+                let futureMessageTexts = oldState.PendingMessageTexts
+                let futureScoreChanges = oldState.PendingScoreChanges
+                let decoratives        = oldState.Decoratives
+                let messageText        = oldState.MessageText
 
+                let skyExplosion =
+                    skyExplosion |> WithCompletedFlickbooksRemoved gameTime
+
+                let decoratives =
+                    decoratives |> WithCompletedFlickbooksRemoved gameTime
+
+                let enemyShips =
+                    enemyShips |> WithSunkenEnemyShipsRemoved gameTime
+
+                let gunBaseY =
+                    (ImageSeaBattleBackground0 |> ImageFromID).EngineImageMetadata.ImageHeight |> IntToFloatEpx  // TODO: This need crops up in a lot of places:  search for EngineImageMetadata and consider cases
+                
+                let gun =
+                    UpdatedGunAimAccordingToInput input gameTime frameElapsedTime gunBaseY gun
+
+                let struct((enemyShips , decoratives , futureDamage , alliedCountToSink), futureIncoming) =
+                    struct((enemyShips , decoratives , futureDamage , alliedCountToSink), futureIncoming)
+                        |> AppliedForTime gameTime PossiblyLaunchEnemyFire
+
+                let struct((alliedState , skyExplosion , alliedCountToSink), futureDamage) =
+                    struct((alliedState , skyExplosion , alliedCountToSink), futureDamage)
+                        |> AppliedForTime gameTime (fun _ _ gameTime -> 
+                            PendingDone (
+                                ShipSinking(gameTime),
+                                [NewSkyExplosionFlickBook gameTime],
+                                (int) DamageToSinkAllies))
+
+                let struct(enemyShips, futureHits) =
+                    struct(enemyShips, futureHits)
+                        |> AppliedForTime gameTime (fun oldEnemyShips {HitShipX=enemyShipX} gameTime -> 
+                            PendingDone (oldEnemyShips |> WithEnemyShipSinking gameTime enemyShipX))
+
+                let struct(messageText, futureMessageTexts) =
+                    struct(messageText, futureMessageTexts)
+                        |> AppliedForTime gameTime (fun _ messageText _ -> 
+                            PendingDone messageText)
+
+                let struct(scoreAndHiScore, futureScoreChanges) =
+                    struct(scoreAndHiScore, futureScoreChanges) 
+                        |> AppliedForTime gameTime (fun oldScore scoreDelta _ -> 
+                            PendingDone (oldScore |> ScoreIncrementedBy scoreDelta))
+
+                let gun =
+                    gun |> UpdatedGunAimWithCompletedShellsRemoved gameTime 
+
+                let newFutureHit, newFutureMessageText, newFutureScoreChange, newDecorative =
+                    ConsiderStateChangesForWhenPlayerFiresGun input gun enemyShips gameTime
+
+                let consOption xo xs = // TODO: Do we have this anywhere?
+                    match xo with
+                        | None -> xs
+                        | Some x -> x::xs
+
+                let futureHits         = futureHits         |> consOption newFutureHit
+                let futureMessageTexts = futureMessageTexts |> consOption newFutureMessageText
+                let futureScoreChanges = futureScoreChanges |> consOption newFutureScoreChange
+                let decoratives        = decoratives        |> consOption newDecorative
+
+                {
+                    ShipsRemaining      = oldState.ShipsRemaining  // we don't decrement until the screen is lost.
+                    GunAim              = gun
+                    SkyExplosion        = skyExplosion
+                    ScoreAndHiScore     = scoreAndHiScore
+                    AlliedState         = alliedState
+                    AlliedCountToSink   = alliedCountToSink
+                    EnemyShips          = enemyShips
+                    PendingIncoming     = futureIncoming
+                    PendingDamage       = futureDamage
+                    PendingHits         = futureHits
+                    PendingMessageTexts = futureMessageTexts
+                    PendingScoreChanges = futureScoreChanges
+                    Decoratives         = decoratives
+                    MessageText         = messageText
+                }
+
+        | WonScreen(timeEnded) -> 
+
+            let elapsedSinceEngagement = gameTime - timeEnded
+            if elapsedSinceEngagement > PauseTimeWhenEnded then
+                { oldState with AlliedState = AirOrSeaBattleScreenOver }
+            else
+                oldState
+
+        | ShipSinking(timeEnded) ->   // TODO: This might be in the wrong place because it pauses animations
+
+            let elapsedSinceEngagement = gameTime - timeEnded
+            if elapsedSinceEngagement > PauseTimeWhenEnded then
+                let numShips = oldState.ShipsRemaining
+                if numShips > 1u then
+                    {
+                        oldState with 
+                            AlliedState = AlliedShipInPlay
+                            ShipsRemaining = numShips - 1u
+                    }
+                else
+                    { 
+                        oldState with 
+                            AlliedState = AirOrSeaBattleScreenOver 
+                            ShipsRemaining = 0u
+                    }
+            else
+                oldState
+
+        | AirOrSeaBattleScreenOver ->
+
+            oldState   // Ideology:  Never risk the logic rest of the logic when the screen is over.
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Query functions for Storyboard
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+type SeaBattleAfterFrameCase = StayOnSeaBattleScreen | GoToScreenAfterSeaBattle | SeaBattleGameOver
+
+let SeaBattleTransition state =
+    match state.AlliedState with
+        | AlliedShipInPlay
+        | ShipSinking _
+        | WonScreen _              -> StayOnSeaBattleScreen
+        | AirOrSeaBattleScreenOver ->
+            if state.ShipsRemaining > 0u then GoToScreenAfterSeaBattle else SeaBattleGameOver

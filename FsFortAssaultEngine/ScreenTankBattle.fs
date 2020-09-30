@@ -736,16 +736,31 @@ let NextTankBattleScreenState oldState input gameTime frameElapsedTime =
     match newModel.AlliedState with
         
         | AlliedTankReachedFort ->
-            TankCompletedCourseSuccessfully(newModel |> WithIncrementedMapNumber)
+            newModel |> WithIncrementedMapNumber
+
+        | AlliedTankDestroyed
+        | AlliedTankInPlay _
+        | AlliedTankExploding _ ->
+            newModel
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Query functions for Storyboard
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+type TankBattleAfterFrameCase = StayOnTankBattleScreen | TankCompletedCourseSuccessfully | TankBattleGameOver | RestartTankBattle
+
+let TankBattleTransition state =
+
+    match state.AlliedState with
+    
+        | AlliedTankReachedFort ->
+            TankCompletedCourseSuccessfully
 
         | AlliedTankDestroyed ->
-            if newModel.TanksRemaining > 0u then
-                RestartTankBattle(newModel)
-            else
-                GameOverOnTankBattleScreen(newModel)
-        
-        | AlliedTankInPlay(_)
-        | AlliedTankExploding(_) ->
-            StayOnTankBattleScreen(newModel)
-
+            if state.TanksRemaining > 0u then RestartTankBattle else TankBattleGameOver
+    
+        | AlliedTankInPlay _
+        | AlliedTankExploding _ ->
+            StayOnTankBattleScreen
 

@@ -6,7 +6,6 @@ open ImagesAndFonts
 open FontAlignment
 open Geometry
 open InputEventData
-open StoryboardChapterChange
 open EnterYourName
 open BeachBackgroundRenderer
 open ScoreHiScore
@@ -18,9 +17,11 @@ open StaticResourceAccess
 
 type PotentialEnterYourNameScreenModel =
     {
+        Scoreboard      : ScoreAndName list
         ScoreAndHiScore : ScoreAndHiScore
         DataModel       : EnterYourNameModel
         MemoizedText    : string list
+        CanEnterBoard   : bool
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -32,14 +33,16 @@ let RenderPotentialEnterYourNameScreen render (model:PotentialEnterYourNameScree
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewPotentialEnterYourNameScreen scoreAndHiScore =
+let NewPotentialEnterYourNameScreen scoreAndHiScore oldScoreboard =
 
     let model = NewEnterYourNameModel MaxPlayerNameLength
 
     {
+        Scoreboard      = oldScoreboard
         ScoreAndHiScore = scoreAndHiScore
         DataModel       = model
         MemoizedText    = model |> EnterYourNameModelScreenText
+        CanEnterBoard   = scoreAndHiScore.Score |> ScoreCanEnterBoard oldScoreboard
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -72,11 +75,9 @@ let AddingIntoScoreboard (dataModel:EnterYourNameModel) score oldScoreBoard =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextPotentialEnterYourNameScreenState scoreBoard oldState input _gameTime =
+let NextPotentialEnterYourNameScreenState oldState input _gameTime =
 
-    let score = oldState.ScoreAndHiScore.Score
-
-    if score |> ScoreCanEnterBoard scoreBoard then  // TODO: Small issue with this design is we re-evaluate this every frame.
+    if oldState.CanEnterBoard then
 
         let newState =
 
@@ -85,24 +86,30 @@ let NextPotentialEnterYourNameScreenState scoreBoard oldState input _gameTime =
                 | Some model ->
                     let text = model |> EnterYourNameModelScreenText
                     {
+                        Scoreboard      = oldState.Scoreboard       // we only latch a new scoreboard at the very end
                         ScoreAndHiScore = oldState.ScoreAndHiScore  // never changes
                         DataModel       = model
                         MemoizedText    = text
+                        CanEnterBoard   = oldState.CanEnterBoard
                     }
 
-
         if newState.DataModel |> NameEntryComplete then
-            GoToNextChapter1(scoreBoard |> AddingIntoScoreboard newState.DataModel score, newState)
+            {
+                newState with 
+                    Scoreboard    = oldState.Scoreboard |> AddingIntoScoreboard newState.DataModel newState.ScoreAndHiScore.Score
+                    CanEnterBoard = false // just in case the caller keeps calling us!
+            }
         else
-            StayOnThisChapter1(scoreBoard, newState)
+            newState
         
     else
+        oldState  // You didn't make it to Enter Your Name!
 
-        // You didn't make it to Enter Your Name!
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Query functions for Storyboard
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-        GoToNextChapter1(scoreBoard, oldState)
-
-
-
+let StayOnPotentialEnterYourNameScreen state =
+    state.CanEnterBoard && not (state.DataModel |> NameEntryComplete)
 
 

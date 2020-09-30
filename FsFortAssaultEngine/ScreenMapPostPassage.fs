@@ -10,7 +10,6 @@ open Geometry
 open ImagesAndFonts
 open ScorePanel
 open MapScreenSharedDetail
-open StoryboardChapterChange
 open ResourceFileMetadata
 open StaticResourceAccess
 
@@ -103,38 +102,39 @@ let NewMapPostPassageScreen scoreAndHiScore shipsThrough =
 
 let NextMapPostPassageScreenState oldState input gameTime =
 
-    let newModel =
-        match oldState.AlliedState with
+    match oldState.AlliedState with
 
-            | AlliedFleetInPlay(alliedLocation) ->
+        | AlliedFleetInPlay(alliedLocation) ->
     
-                let alliedLocation = NewAlliedFleetLocation alliedLocation input PermissableTravelLocationRectangles
-                let enemyLocation = NewEnemyFleetLocation oldState.EnemyFleetCentre alliedLocation
-                let allies = AlliesVersusEnemy alliedLocation enemyLocation gameTime
+            let alliedLocation = NewAlliedFleetLocation alliedLocation input PermissableTravelLocationRectangles
+            let enemyLocation = NewEnemyFleetLocation oldState.EnemyFleetCentre alliedLocation
+            let allies = AlliesVersusEnemy alliedLocation enemyLocation gameTime
 
-                {
-                    ScoreAndHiScore  = oldState.ScoreAndHiScore
-                    ShipsThrough     = oldState.ShipsThrough
-                    AlliedState      = allies
-                    EnemyFleetCentre = enemyLocation
-                }
+            {
+                ScoreAndHiScore  = oldState.ScoreAndHiScore
+                ShipsThrough     = oldState.ShipsThrough
+                AlliedState      = allies
+                EnemyFleetCentre = enemyLocation
+            }
 
-            | Paused(_,engagementTime) ->
+        | Paused(_,engagementTime) ->
 
-                let elapsedSinceEngagement = gameTime - engagementTime
-                if elapsedSinceEngagement > PauseTimeOnceEngaged then
-                    { oldState with AlliedState = PostPassageScreenOver }
-                else
-                    oldState
+            let elapsedSinceEngagement = gameTime - engagementTime
+            if elapsedSinceEngagement > PauseTimeOnceEngaged then
+                { oldState with AlliedState = PostPassageScreenOver }
+            else
+                oldState
 
-            | PostPassageScreenOver ->
-        
-                oldState   // Ideology:  Never risk the logic rest of the logic when the screen is over.
-
-    match newModel.AlliedState with
-        
         | PostPassageScreenOver ->
-            GoToNextChapter1(newModel)
+        
+            oldState   // Ideology:  Never risk the rest of the logic when the screen is over.
 
-        | _ -> 
-            StayOnThisChapter1(newModel)
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Query functions for Storyboard
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let StayOnMapPostPassage state =
+    match state.AlliedState with
+        | AlliedFleetInPlay _
+        | Paused _              -> true
+        | PostPassageScreenOver -> false

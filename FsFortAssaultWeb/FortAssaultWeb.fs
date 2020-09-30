@@ -6,7 +6,6 @@ open ResourceFiles
 open ResourceFileMetadata
 open TankMapFileLoader
 open Storyboard
-open StoryboardChapterChange
 open Time
 open Geometry
 open DrawingCommands

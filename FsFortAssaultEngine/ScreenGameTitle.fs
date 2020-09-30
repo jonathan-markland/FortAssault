@@ -5,7 +5,6 @@ open ImagesAndFonts
 open Geometry
 open FontAlignment
 open InputEventData
-open StoryboardChapterChange
 open BeachBackgroundRenderer
 open Time
 open GameGlobalState
@@ -58,22 +57,26 @@ let NewGameTitleScreen hiScore gameGlobalState gameTime =
 
 let NextGameTitleScreenState oldState input gameTime =
 
-    match oldState.State with
-        
-        | GameTitleAwaitingFireButton ->
+    if input.Fire.JustDown then
 
-            if input.Fire.JustDown then
+        let respondTime = oldState.ScreenStartTime + TimeBeforeResponding
 
-                let respondTime = oldState.ScreenStartTime + TimeBeforeResponding
+        if gameTime > respondTime then
+            { oldState with State = GameTitleScreenOver }
 
-                if gameTime > respondTime then
-                    GoToNextChapter1({ oldState with State = GameTitleScreenOver })
+        else
+            oldState
 
-                else
-                    StayOnThisChapter1(oldState)
+    else
+        oldState
 
-            else
-                StayOnThisChapter1(oldState)
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Query functions for Storyboard
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-        | GameTitleScreenOver ->
-            StayOnThisChapter1(oldState)
+let StayOnTitleScreen state =
+    match state.State with
+        | GameTitleScreenOver -> true
+        | GameTitleAwaitingFireButton -> false
+
+    

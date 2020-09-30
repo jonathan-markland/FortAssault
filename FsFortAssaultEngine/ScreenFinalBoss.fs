@@ -213,89 +213,95 @@ let NewFinalBossScreen scoreAndHiScore tanksRemaining finalBossAndTankBattleData
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-[<Struct>]
-type FinalBossChapterTransition =
-    | StayOnFinalBossScreen      of newModel1:FinalBossScreenModel
-    | Victory                    of newModel2:FinalBossScreenModel
-    | FinalBossDestroyedTheTank  of newModel3:FinalBossScreenModel
-    | GameOverBecauseOfFinalBoss of newModel4:FinalBossScreenModel
-
 let NextFinalBossScreenState oldState input gameTime frameElapsedTime =
 
-    let newModel =
+    match oldState.AlliedState with
 
-        match oldState.AlliedState with
+        | AlliedTankInPlay ->   // TODO: I only got this logic right on the Tank Battle screen -- we don't clear flickbooks when the Tank is Shot.
 
-            | AlliedTankInPlay ->   // TODO: I only got this logic right on the Tank Battle screen -- we don't clear flickbooks when the Tank is Shot.
+            let elapsedSinceStart = gameTime - oldState.ScreenStartTime
 
-                let elapsedSinceStart = gameTime - oldState.ScreenStartTime
-
-                if oldState.FinalBossAndTankBattleData.TargetsOnFinalBoss.IsEmpty then
-                    { oldState with AlliedState = WonScreen(gameTime) }
+            if oldState.FinalBossAndTankBattleData.TargetsOnFinalBoss.IsEmpty then
+                { oldState with AlliedState = WonScreen(gameTime) }
             
-                elif elapsedSinceStart > BossAnimationDuration then
-                    { oldState with AlliedState = TankIsShot(gameTime) }
+            elif elapsedSinceStart > BossAnimationDuration then
+                { oldState with AlliedState = TankIsShot(gameTime) }
             
-                else
-                    let gun        = oldState.GunAim
-                    let explosions = oldState.Explosions
-                    let targets    = oldState.FinalBossAndTankBattleData.TargetsOnFinalBoss
-                    let score      = oldState.ScoreAndHiScore
+            else
+                let gun        = oldState.GunAim
+                let explosions = oldState.Explosions
+                let targets    = oldState.FinalBossAndTankBattleData.TargetsOnFinalBoss
+                let score      = oldState.ScoreAndHiScore
 
-                    let explosions =
-                        explosions |> WithCompletedFlickbooksRemoved gameTime
+                let explosions =
+                    explosions |> WithCompletedFlickbooksRemoved gameTime
 
-                    let gunBaseY =
-                        (ImageFinalBossBackground |> ImageFromID).EngineImageMetadata.ImageHeight |> IntToFloatEpx
+                let gunBaseY =
+                    (ImageFinalBossBackground |> ImageFromID).EngineImageMetadata.ImageHeight |> IntToFloatEpx
                 
-                    let gun =
-                        UpdatedGunAimAccordingToInput input gameTime frameElapsedTime gunBaseY gun
+                let gun =
+                    UpdatedGunAimAccordingToInput input gameTime frameElapsedTime gunBaseY gun
                 
-                    let shells, targets, explosions, score =
-                        ResultOfWhateverShellsHitTheFort gun.Shells targets explosions score gameTime  // TODO: Unlike the AirBattle screen this REMOVES finished shells.  Should the boss screen be using ListWithCVODisappearedObjectsRemoved?
+                let shells, targets, explosions, score =
+                    ResultOfWhateverShellsHitTheFort gun.Shells targets explosions score gameTime  // TODO: Unlike the AirBattle screen this REMOVES finished shells.  Should the boss screen be using ListWithCVODisappearedObjectsRemoved?
 
-                    let gun =
-                        { gun with Shells = shells }  // TODO:  A shame to assume to re-bind this, but it's because we don't easily know (here) if the shells got changed.
+                let gun =
+                    { gun with Shells = shells }  // TODO:  A shame to assume to re-bind this, but it's because we don't easily know (here) if the shells got changed.
 
-                    let gun =
-                        gun |> UpdatedGunAimWithCompletedShellsRemoved gameTime 
+                let gun =
+                    gun |> UpdatedGunAimWithCompletedShellsRemoved gameTime 
 
-                    {
-                        oldState with
-                            GunAim           = gun
-                            Explosions       = explosions
-                            ScoreAndHiScore  = score
-                            FinalBossAndTankBattleData =
-                                {
-                                    oldState.FinalBossAndTankBattleData with
-                                        TargetsOnFinalBoss = targets
-                                }
-                    }
+                {
+                    oldState with
+                        GunAim           = gun
+                        Explosions       = explosions
+                        ScoreAndHiScore  = score
+                        FinalBossAndTankBattleData =
+                            {
+                                oldState.FinalBossAndTankBattleData with
+                                    TargetsOnFinalBoss = targets
+                            }
+                }
 
-            | WonScreen(timeEnded)
-            | TankIsShot(timeEnded) ->
+        | WonScreen(timeEnded)
+        | TankIsShot(timeEnded) ->
 
-                let elapsedSinceEnded = gameTime - timeEnded
-                if elapsedSinceEnded > PauseTimeWhenEnded then
-                    { oldState with AlliedState = FinalBossScreenOver ; TanksRemaining = oldState.TanksRemaining - 1u }
-                else
-                    oldState
-
-            | FinalBossScreenOver ->
-                oldState   // Ideology:  Never risk the logic rest of the logic when the screen is over.
-
-    match newModel.AlliedState with
+            let elapsedSinceEnded = gameTime - timeEnded
+            if elapsedSinceEnded > PauseTimeWhenEnded then
+                { oldState with AlliedState = FinalBossScreenOver ; TanksRemaining = oldState.TanksRemaining - 1u }
+            else
+                oldState
 
         | FinalBossScreenOver ->
+            oldState   // Ideology:  Never risk the logic rest of the logic when the screen is over.
 
-            if newModel.FinalBossAndTankBattleData.TargetsOnFinalBoss.IsEmpty then
-                Victory(newModel)
 
-            elif newModel.TanksRemaining > 0u then
-                FinalBossDestroyedTheTank(newModel)
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Query functions for Storyboard
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+type FinalBossAfterFrameCase =  StayOnFinalBossScreen | VictoryOverFinalBoss | FinalBossDestroyedTheTank | FinalBossGameOver
+
+let FinalBossTransition state =
+
+    match state.AlliedState with
+
+        | AlliedTankInPlay
+        | WonScreen _
+        | TankIsShot _ -> 
+            StayOnFinalBossScreen
+
+        | FinalBossScreenOver ->
+            if state.FinalBossAndTankBattleData.TargetsOnFinalBoss.IsEmpty then
+                VictoryOverFinalBoss
+
+            elif state.TanksRemaining > 0u then
+                FinalBossDestroyedTheTank
 
             else
-                GameOverBecauseOfFinalBoss(newModel)
+                FinalBossGameOver
 
-        | _ ->
-            StayOnFinalBossScreen(newModel)
+
+
