@@ -30,6 +30,10 @@ let InitialScoreboard imaginaryNames lowestScore scoreIncrement =
     )
         |> List.sortByDescending ScoreField
 
+/// Returns the HiScore from the board
+let HiScoreFromScoreboard scoreboard =
+    scoreboard |> List.maxBy ScoreField |> ScoreField
+
 /// Returns true if the given score can enter the scoreboard
 /// based on whether it equals or beats the lowest score on
 /// the board.

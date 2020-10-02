@@ -19,6 +19,7 @@ open FinalBossAndTankBattleShared
 open Rules
 open TankMapFileLoader
 open GameGlobalState
+open ScoreboardModel
 
 #if SHORT_PLAYTHROUGH
 open ImagesAndFonts
@@ -139,7 +140,9 @@ let Shortcut gameResources gameTime mode =
 
         | RunGameNormally ->
             // -- THIS CASE EXECUTES FOR THE RELEASE VERSION --
-            GameTitleChapter(NewGameTitleScreen DefaultHiScore (InitialGameGlobals ()) gameTime)
+            let gameGlobals = InitialGameGlobals ()
+            let highestScoreInInitialBoard = HiScoreFromScoreboard gameGlobals.GameScoreBoard
+            GameTitleChapter(NewGameTitleScreen highestScoreInInitialBoard gameGlobals gameTime)
 
         // -- NONE OF THE FOLLOWING CASES EXECUTE FOR THE RELEASE VERSION --
 

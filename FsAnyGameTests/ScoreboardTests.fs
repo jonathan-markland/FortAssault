@@ -124,3 +124,12 @@ let ``Score board text`` () =
         |> List.forall (fun s -> s.Length = 30)
         |> ShouldBeTrueWhenDoing "checking the lengths of the scoreboard strings"
 
+
+
+[<Fact>]
+let ``We can obtain the highest score in the board`` () =
+
+    StartingScoreboard
+        |> HiScoreFromScoreboard
+        |> ShouldEqual 8000u
+
