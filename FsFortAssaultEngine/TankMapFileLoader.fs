@@ -21,13 +21,13 @@ let TankMapDefinitions =
     [|
         [|
             "WWWWWWWW--WW"
-            "WWWW-WW-WW--"
-            "==----W-----"
-            "------------"
+            "WWWW>WW-WW--"
+            "==----XX----"
+            "---T--------"
             "============"
             "->----------"
-            "W------W----"
-            "WWWWWWWWW---"
+            "W------M----"
+            "WWWMMMMWW---"
             "WWMMMMWWMWWW"
         |]
     |]
