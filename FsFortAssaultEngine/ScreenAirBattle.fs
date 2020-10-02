@@ -21,7 +21,13 @@ open StaticResourceAccess
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let InitialGunElevation       =   30.0F<degrees>
+
+#if SHORT_PLAYTHROUGH
+let NumberOfRaidersWhenStrong =  10u  // Because we don't want to wait for ages.  We can also commit suicide in this mode.
+#else
 let NumberOfRaidersWhenStrong =  NumShipsAtInitialEngagement * 4u
+#endif
+
 let InitialPlayerGunPositionX =  160.0F<epx>
 let PlaneTriggerDistance      =    6.0F<epx>   // TODO: This might need to be rectangular at the very least, certainly not square.  Also is a candidate for the game difficulty!
 let PauseTimeWhenEnded        =    4.0F<seconds>
@@ -309,7 +315,7 @@ let ConsiderLaunchingMorePlanes gameTime raidersLeft lastSortieAt (planes:Plane 
 
 #if SHORT_PLAYTHROUGH
 let CommitSuicideCheck damage (input:InputEventData.InputEventData) =
-    if input.Left.Held && input.Right.Held && input.Fire.JustDown then
+    if input.Left.Held && input.Right.Held && input.Down.Held && input.Fire.JustDown then
         (MaxDamagePerShip - 1u)  // So ONE plane at least must hit us
     else
         damage
@@ -320,15 +326,8 @@ let CommitSuicideCheck damage (input:InputEventData.InputEventData) =
 let NewAirBattleScreen enemyStrength scoreAndHiScore shipsRemaining gameTime =
     {
         ScoreAndHiScore  = scoreAndHiScore
-
-        #if SHORT_PLAYTHROUGH
-        ShipsRemaining   = 4u
-        PlanesRemaining  = 6u
-        #else
         ShipsRemaining   = shipsRemaining
         PlanesRemaining  = enemyStrength |> ToNumberOfRaiders
-        #endif
-
         GunAim           = NewGunWithDefaultTraits DoubleBarrelGun InitialPlayerGunPositionX InitialGunElevation GunStepRate gameTime
         AlliedState      = AlliedShipInPlay
         Explosions       = []
