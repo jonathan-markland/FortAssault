@@ -5,11 +5,11 @@ open ImagesAndFonts
 open ListSplicer
 open ResourceFileMetadata
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 //  X   Barricade
 //  W   Water
-//  M   Mines
+//  *   Mines
 //  >   Potential enemy tank location
 //  T   Tower
 //  =   Bridge
@@ -26,9 +26,9 @@ let TankMapDefinitions =
             "---T--------"
             "============"
             "->----------"
-            "W------M----"
-            "WWWMMMMWW---"
-            "WWMMMMWWMWWW"
+            "W------*----"
+            "WWW****WW---"
+            "WW****WW*WWW"
         |]
     |]
 
@@ -48,37 +48,37 @@ let TankMapDefinitions =
             "T------X-----------------XXXX-----------WWW"
         |]
         [|
-            "WW-------X-----WWWWW-M---X---WWWWWWWWW-X"
-            "W--XXXXXXXXXX---W-W-WM->-X----W-WWW-W--X"
+            "WW-------X-----WWWWW-*---X---WWWWWWWWW-X"
+            "W--XXXXXXXXXX---W-W-W*->-X----W-WWW-W--X"
             "W---------->-------=======----------T--X"
-            "WW---XXXXXXXX----X--MM>--X--X----X->X---"
-            "==--X--=====--->-X--M-------X-------X--X"
-            "WW-X-----X->-----X-----MMX>-X----X-----X"
-            "==------X>----------MMM--X-------X--T--X"
-            "W-T------X--->----WWM-->-X------XXX----X"
-            "W-XXXX---X------XXXXM----X-------X-----X"
+            "WW---XXXXXXXX----X--**>--X--X----X->X---"
+            "==--X--=====--->-X--*-------X-------X--X"
+            "WW-X-----X->-----X-----**X>-X----X-----X"
+            "==------X>----------***--X-------X--T--X"
+            "W-T------X--->----WW*-->-X------XXX----X"
+            "W-XXXX---X------XXXX*----X-------X-----X"
         |]
         [|
             "XXX--XX--XXXXXXXXXXXXX----X-WW---T-------WWWW"
-            "--X-X--XX--WWW--WWWW------X-W--T---M----WWWW-"
-            "---X--------WWWWW---------X-------MMM----W>W-"
-            "----->--------WWWWW-------X---XXXMMMMM---WWWW"
+            "--X-X--XX--WWW--WWWW------X-W--T---*----WWWW-"
+            "---X--------WWWWW---------X-------***----W>W-"
+            "----->--------WWWWW-------X---XXX*****---WWWW"
             "->-----------WWWWWW---X>--XT----->-------===="
-            "----->------>-W====---X-------XXXMMMMM---WWWW"
-            "---X------>-=====WWW--X>----------MMM--->===="
-            "--X-X--XX------WW-----X--------T---M-----WWW-"
+            "----->------>-W====---X-------XXX*****---WWWW"
+            "---X------>-=====WWW--X>----------***--->===="
+            "--X-X--XX------WW-----X--------T---*-----WWW-"
             "XXX--XX--XXXXXXXXXXXXXX---WWW----T-----WWWWW-"
         |]
         [|
-            "-WWWWW-X--XMMM--T-----X----WWWWWWWWWWWW--WW"
-            "W-WWW--X>-XMMM---WWT--X----WWWW-WWWWWW-WW--"
-            "----T--X--XMMM>-------X---===-----W--W-----"
+            "-WWWWW-X--X***--T-----X----WWWWWWWWWWWW--WW"
+            "W-WWW--X>-X***---WWT--X----WWWW-WWWWWW-WW--"
+            "----T--X--X***>-------X---===-----W--W-----"
             "-X->X-----=-------X---X>----WWW==----------"
             "----X--X--X>-->---X>--X----=========-------"
             "-X-----X-----------X>-------WWW==----------"
-            "-X--T--X--XMMM--T--X------WW>---------W----"
-            "XXX----X>-XMMM-T-T-X-------WWWWWWWWWWWWW---"
-            "-X-----X--XMMM-----X---M---WWMMMMWWWMWWMWWW"
+            "-X--T--X--X***--T--X------WW>---------W----"
+            "XXX----X>-X***-T-T-X-------WWWWWWWWWWWWW---"
+            "-X-----X--X***-----X---*---WW****WWW*WW*WWW"
         |]
     |]
 
@@ -112,9 +112,9 @@ let private CharacterToTile ch =
         | '=' -> Some(ImageTileBridge)
         | 'X' -> Some(ImageTileBarricade)
         | 'W' -> Some(ImageTileWater)
-        | 'M' -> Some(ImageTileMine)
+        | '*' -> Some(ImageTileMine)
         | 'T' -> Some(ImageTileTower)
-        | '>' -> Some(ImageTileSand)       // Because tanks are not tile sprites.
+        | '>' -> Some(ImageTileSand)       // Because enemy tanks are not tile sprites.
         | _   -> None
 
 
