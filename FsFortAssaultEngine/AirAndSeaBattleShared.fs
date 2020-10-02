@@ -62,6 +62,16 @@ let NewEnemyShip centreX shipImage elevationToHit =
         ElevationToHit = elevationToHit
     }
 
+#if SHORT_PLAYTHROUGH
+
+let DefaultEnemyShipsArrangement () =
+    [
+        NewEnemyShip 100.0F<epx> (ImageEnemyShip4 |> ImageFromID) 40.0F<degrees>
+        NewEnemyShip 220.0F<epx> (ImageEnemyShip3 |> ImageFromID) 40.0F<degrees>
+    ]
+
+#else
+
 let DefaultEnemyShipsArrangement () =
     [
         NewEnemyShip  29.0F<epx> (ImageEnemyShip0 |> ImageFromID) 44.0F<degrees>
@@ -70,6 +80,8 @@ let DefaultEnemyShipsArrangement () =
         NewEnemyShip 248.0F<epx> (ImageEnemyShip3 |> ImageFromID) 41.0F<degrees>
         NewEnemyShip 288.0F<epx> (ImageEnemyShip4 |> ImageFromID) 32.5F<degrees>
     ]
+
+#endif
 
 let EnemyShipIsLive gameTime enemyShip =
 

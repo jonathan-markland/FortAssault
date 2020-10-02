@@ -307,11 +307,28 @@ let ConsiderLaunchingMorePlanes gameTime raidersLeft lastSortieAt (planes:Plane 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+#if SHORT_PLAYTHROUGH
+let CommitSuicideCheck damage (input:InputEventData.InputEventData) =
+    if input.Left.Held && input.Right.Held && input.Fire.JustDown then
+        (MaxDamagePerShip - 1u)  // So ONE plane at least must hit us
+    else
+        damage
+#endif
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 let NewAirBattleScreen enemyStrength scoreAndHiScore shipsRemaining gameTime =
     {
         ScoreAndHiScore  = scoreAndHiScore
+
+        #if SHORT_PLAYTHROUGH
+        ShipsRemaining   = 4u
+        PlanesRemaining  = 6u
+        #else
         ShipsRemaining   = shipsRemaining
         PlanesRemaining  = enemyStrength |> ToNumberOfRaiders
+        #endif
+
         GunAim           = NewGunWithDefaultTraits DoubleBarrelGun InitialPlayerGunPositionX InitialGunElevation GunStepRate gameTime
         AlliedState      = AlliedShipInPlay
         Explosions       = []
@@ -367,6 +384,11 @@ let NextAirBattleScreenState oldState input gameTime frameElapsedTime =
 
                 let damage =
                     damage + uint32 (bombCountBefore - bombCountAfter)
+
+                #if SHORT_PLAYTHROUGH
+                let damage =
+                    CommitSuicideCheck damage input
+                #endif
 
                 let gun =
                     UpdatedGunAimAccordingToInput input gameTime frameElapsedTime gunBaseY gun

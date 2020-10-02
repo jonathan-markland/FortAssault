@@ -15,6 +15,25 @@ open ResourceFileMetadata
 //  =   Bridge
 //  -   Sand
 
+#if SHORT_PLAYTHROUGH
+
+let TankMapDefinitions =
+    [|
+        [|
+            "WWWWWWWW--WW"
+            "WWWW-WW-WW--"
+            "==----W-----"
+            "------------"
+            "============"
+            "->----------"
+            "W------W----"
+            "WWWWWWWWW---"
+            "WWMMMMWWMWWW"
+        |]
+    |]
+
+#else
+
 let TankMapDefinitions =
     [|
         [|
@@ -62,6 +81,8 @@ let TankMapDefinitions =
             "-X-----X--XMMM-----X---M---WWMMMMWWWMWWMWWW"
         |]
     |]
+
+#endif
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -189,7 +210,11 @@ let LoadTankBattleSequences () =
             | Ok tankMap -> FirstList tankMap
             | Error msg  -> SecondList msg
 
+    #if SHORT_PLAYTHROUGH
+    [0]
+    #else
     [0..3]
+    #endif
         |> List.map LoadTankBattleTileFileFromIndex
         |> ListSplicedBy whetherItLoadedOkOrNot
         |> (fun struct (tankMaps,failMessages) -> 

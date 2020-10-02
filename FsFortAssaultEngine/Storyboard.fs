@@ -20,6 +20,13 @@ open Rules
 open TankMapFileLoader
 open GameGlobalState
 
+#if SHORT_PLAYTHROUGH
+open ImagesAndFonts
+open FontAlignment
+open DrawingCommandsEx
+open Geometry
+#endif
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 type Storyboard =
@@ -98,6 +105,11 @@ let RenderStoryboard render gameState gameTime =
 
         | MechanicsTestPageChapter model ->
             RenderMechanicsTestPageScreen render model gameTime
+
+    #if SHORT_PLAYTHROUGH
+    Text render RedFontID CentreAlign MiddleAlign 160<epx> 10<epx> "WARNING  SHORT PLAY VERSION"
+    #endif
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //   Shortcuts to levels for development purposes
@@ -212,7 +224,12 @@ let Shortcut gameResources gameTime mode =
 /// Called only once when the game boots
 let NewStoryboard gameResources gameTime =
 
+    #if SHORT_PLAYTHROUGH
     Shortcut gameResources gameTime RunGameNormally
+    #else
+    Shortcut gameResources gameTime RunGameNormally  // ** DO NOT CHANGE THIS ONE! : Define SHORT_PLAYTHROUGH and set the one above **
+    #endif
+    
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

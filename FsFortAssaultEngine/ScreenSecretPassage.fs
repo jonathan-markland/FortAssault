@@ -257,6 +257,31 @@ let DefaultMines () =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+#if SHORT_PLAYTHROUGH
+
+let TorpedoFiringPositions = 
+    [
+        // If the Y coordinates are identical, these are 
+        // shown as horizontal torpedos, else diagonal.
+
+        // start pos          end pos          duration       re-fire pause
+        // -----------     --------------    -------------    ------------
+
+        // Firing origin positions left bank
+
+        (0.086, 0.214),    (0.318, 0.082),   5.0F<seconds>,   1.0F<seconds>
+        (0.170, 0.592),    (0.958, 0.592),   7.1F<seconds>,   2.0F<seconds>
+        (0.206, 0.790),    (0.846, 0.410),   7.2F<seconds>,   3.5F<seconds>
+    
+        // Firing origin positions right bank
+    
+        (0.382, 0.102),    (0.138, 0.336),   6.0F<seconds>,   1.0F<seconds>
+        (0.698, 0.204),    (0.078, 0.204),   6.4F<seconds>,   2.5F<seconds>
+        (0.962, 0.608),    (0.178, 0.608),   7.8F<seconds>,   1.0F<seconds>
+    ]
+
+#else
+
 let TorpedoFiringPositions = 
     [
         // If the Y coordinates are identical, these are 
@@ -285,6 +310,8 @@ let TorpedoFiringPositions =
         (0.962, 0.608),    (0.260, 0.914),   7.7F<seconds>,   3.0F<seconds>
         (0.962, 0.608),    (0.178, 0.608),   7.8F<seconds>,   1.0F<seconds>
     ]
+
+#endif
 
 let NewTorpedoForFiringPosition launchDetail gameTime = 
 
@@ -642,6 +669,11 @@ let RenderSecretPassageScreen render gameTime secretPassageScreenModel =
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let NewSecretPassageScreen score initialShipCount screenStartGameTime =
+
+    #if SHORT_PLAYTHROUGH
+    let initialShipCount = 2u
+    #endif
+
     {
         FleetStats = 
             {

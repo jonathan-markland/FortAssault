@@ -22,6 +22,18 @@ type FinalBossAndTankBattleData =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+#if SHORT_PLAYTHROUGH
+
+let InitialTargetLocations =
+    [
+        // X coordinate is used as the IDENTITY of the record!
+
+        (169.0F<epx> ,  50.0F<epx>)
+        (231.0F<epx> ,  96.0F<epx>)
+    ]
+
+#else
+
 let InitialTargetLocations =
     [
         // X coordinate is used as the IDENTITY of the record!
@@ -37,6 +49,8 @@ let InitialTargetLocations =
         (104.0F<epx> ,  70.0F<epx>)
         (231.0F<epx> ,  96.0F<epx>)
     ]
+
+#endif
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
