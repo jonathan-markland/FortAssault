@@ -162,6 +162,15 @@ In development, you can shortcut the game to a screen by altering the "NewStoryb
 This calls the "Shortcut" function, and you can choose various start-state cases for
 development purposes.  You must set this back to 'RunGameNormally' for release.
 
+SHORT_PLAYTHROUGH : A special mode for testing, enabled by inserting the following
+into FsFortAssaultEngine.fsproj:
+
+```
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;SHORT_PLAYTHROUGH</DefineConstants>
+  </PropertyGroup>
+```
+
 Functions a Screen module must provide
 --------------------------------------
 The screens have a constructor called "New...screen name...", and a frame-advance function
