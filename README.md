@@ -57,6 +57,23 @@ To obtain the production web site file set:
 	cd FortAssaultWeb
 	npx webpack --mode production
 
+Build Desktop Linux Version
+---------------------------
+Requires SDL2 libraries from distro provider, eg: Ubuntu:
+
+	sudo apt-get install libsdl2-dev
+	sudo apt-get install libsdl2-image-dev
+	sudo apt-get install libsdl2-ttf-dev
+	sudo apt-get install libsdl2-mixer-dev
+	cd FsFortAssaultDesktopLinux
+	dotnet run
+
+Build Desktop Windows Version
+-----------------------------
+I just use Visual Studio 2019, Community Edition.
+
+Set 'FsFortAssaultDesktopWindows' as the startup project.
+
 Functional Programming
 ----------------------
 In Functional Programming, the data model is READ ONLY, for which F# has 100% support.  
