@@ -15,6 +15,7 @@ open ResourceFileMetadata
 open ResourceFiles
 open StaticResourceSetup
 open Input
+open DesktopGameFramework
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -23,67 +24,6 @@ let HostWindowHeightPixels = 800
     
 let HostRetroScreenWidthPixels = 320 
 let HostRetroScreenHeightPixels = 200
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-type GameResourcesRecord =
-    {
-        GameBMPs    : ImageWithHostObject[]
-        Fonts       : NumCapsFontDefinition[]
-    }
-
-
-let LoadGameImagesAndFonts (renderer:RendererNativeInt) rootPath =
-
-    let fromFile transparencyColour name = 
-
-        let fullPath =
-            Path.Combine(rootPath, name)
-        
-        match LoadFromFileAndPrepareForRenderer renderer fullPath transparencyColour with
-            | Some(imageRecord) -> imageRecord
-            | None -> failwith (sprintf "Game could not start because file '%s' is missing or has invalid content." fullPath)
-
-    let unwrapFont opt =
-        match opt with
-            | Some(font) -> font
-            | None -> failwith "Game could not start because a font file has incorrect content."
-
-    let magenta =
-        Some({ Red=255uy ; Green=0uy ; Blue=255uy })
-    
-    let imagesArray =
-        GameResourceImages 
-            |> List.map (fun metadata -> 
-                
-                let key = 
-                    match metadata.ImageColourKey with 
-                        | NoColourKey -> None 
-                        | MagentaColourKey -> magenta
-                
-                let fileName = metadata.ImageFileName
-                
-                let hostImageObject = fromFile key fileName
-
-                {
-                    EngineImageMetadata = metadata
-                    HostImageObject     = HostImageObject(hostImageObject)
-                })
-
-            |> List.toArray
-
-    let fontsArray =
-        GameFontResourceImages 
-            |> List.map (fun metadata -> 
-                fromFile magenta metadata.ImageFileName
-                    |> MakeNumCapsFontFromBMP 
-                    |> unwrapFont) 
-                        |> List.toArray
-
-    {
-        GameBMPs = imagesArray
-        Fonts    = fontsArray
-    }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -271,19 +211,19 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let GameMain () =
+let GameMain gameWindowTitleString () =
 
-    match LoadTankBattleSequences () with
+    match LoadTankBattleSequences () with // TODO: These are static resources now.
         
         | Ok tankMapsList ->
-            match CreateWindowAndRenderer "Fort Assault" HostWindowWidthPixels HostWindowHeightPixels with   // TODO: Re-visit window initial size constants
+            match CreateWindowAndRenderer gameWindowTitleString HostWindowWidthPixels HostWindowHeightPixels with   // TODO: Re-visit window initial size constants
                 
                 | Some(_mainWindow, renderer) ->
                     match CreateRgb8888TextureForRenderer renderer HostRetroScreenWidthPixels HostRetroScreenHeightPixels with
 
                         | Some(backingTexture) ->
                             let path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
-                            let gameResources = LoadGameImagesAndFonts renderer path   // TODO:  Minor: We don't actually free the imageSet handles.
+                            let gameResources = LoadGameImagesAndFonts GameResourceImages GameFontResourceImages renderer path   // TODO:  Minor: We don't actually free the imageSet handles.
                             MainLoopProcessing renderer backingTexture tankMapsList gameResources
                             1
             
@@ -303,7 +243,7 @@ let GameMain () =
 
 let DesktopMain () =
 
-    match WithSdl2Do GameMain with
+    match WithSdl2Do (GameMain "Fort Assault") with
 
         | None -> 
             printfn "Failed to start SDL2 library."   // TODO: Let's not use the STDOUT.

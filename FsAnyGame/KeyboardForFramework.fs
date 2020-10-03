@@ -1,12 +1,9 @@
-﻿/// Intended for use by the Framework in the main event loop only.
+﻿/// For Web and Desktop.  Intended for use by the Framework in the main event "loop" only.
 module KeyboardForFramework
 
 open Input
 
-
 let BrowserPauseKey = WebBrowserKeyCode 80
-
-
 
 // ------------------------------------------------------------------------------------------------------
 //  Mutable Key State of an individual key

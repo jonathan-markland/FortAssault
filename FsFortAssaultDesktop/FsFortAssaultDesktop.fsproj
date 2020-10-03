@@ -6,6 +6,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="DesktopGameFramework.fs" />
     <Content Include="..\wwwroot\Images\CliffsTile.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
@@ -287,8 +288,6 @@
     </Content>
     <Compile Include="DesktopMain.fs" />
   </ItemGroup>
-
-  <ItemGroup />
 
   <ItemGroup>
     <ProjectReference Include="..\FsAnyGame\FsAnyGame.fsproj" />
