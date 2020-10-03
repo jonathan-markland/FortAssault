@@ -296,10 +296,4 @@
     <ProjectReference Include="..\FsSDL2Cover\FsSDL2Cover.fsproj" />
   </ItemGroup>
 
-  <ItemGroup>
-    <Reference Include="SDL2-CS">
-      <HintPath>..\..\SDL2-CS\bin\Debug\SDL2-CS.dll</HintPath>
-    </Reference>
-  </ItemGroup>
-
 </Project>
