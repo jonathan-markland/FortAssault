@@ -282,7 +282,8 @@ let GameMain () =
                     match CreateRgb8888TextureForRenderer renderer HostRetroScreenWidthPixels HostRetroScreenHeightPixels with
 
                         | Some(backingTexture) ->
-                            let gameResources = LoadGameImagesAndFonts renderer ""   // TODO:  Minor: We don't actually free the imageSet handles.
+                            let path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
+                            let gameResources = LoadGameImagesAndFonts renderer path   // TODO:  Minor: We don't actually free the imageSet handles.
                             MainLoopProcessing renderer backingTexture tankMapsList gameResources
                             1
             
