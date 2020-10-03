@@ -21,6 +21,8 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsFortAssaultDesktopLinux",
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsFortAssaultWeb", "FsFortAssaultWeb\FsFortAssaultWeb.fsproj", "{66F6B2FA-F3D4-4EE8-8DA3-BC698A28BBD2}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "SDL2-CS", "SDL2-CS\SDL2-CS.csproj", "{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -139,6 +141,18 @@ Global
 		{66F6B2FA-F3D4-4EE8-8DA3-BC698A28BBD2}.Release|x64.Build.0 = Release|Any CPU
 		{66F6B2FA-F3D4-4EE8-8DA3-BC698A28BBD2}.Release|x86.ActiveCfg = Release|Any CPU
 		{66F6B2FA-F3D4-4EE8-8DA3-BC698A28BBD2}.Release|x86.Build.0 = Release|Any CPU
+		{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}.Debug|x64.Build.0 = Debug|Any CPU
+		{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}.Debug|x86.Build.0 = Debug|Any CPU
+		{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}.Release|Any CPU.Build.0 = Release|Any CPU
+		{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}.Release|x64.ActiveCfg = Release|Any CPU
+		{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}.Release|x64.Build.0 = Release|Any CPU
+		{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}.Release|x86.ActiveCfg = Release|Any CPU
+		{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

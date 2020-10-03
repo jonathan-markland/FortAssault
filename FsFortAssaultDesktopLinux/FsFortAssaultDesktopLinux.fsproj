@@ -11,6 +11,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\FsFortAssaultDesktop\FsFortAssaultDesktop.fsproj" />
+    <ProjectReference Include="..\SDL2-CS\SDL2-CS.csproj" />
   </ItemGroup>
 
 </Project>
