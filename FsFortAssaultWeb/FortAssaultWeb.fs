@@ -267,7 +267,7 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
                 let tickCount = tickCount + 1u
                 
                 let gameTime = 
-                    LanguagePrimitives.Float32WithMeasure<seconds> ((float32 tickCount) / 50.0F)
+                    (float32 tickCount) / 50.0F |> InSeconds
                 
                 RenderStoryboard renderFunction screenState gameTime
 
