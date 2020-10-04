@@ -29,37 +29,37 @@ let WithSdl2Do f =
 
 /// SDL Window handle.
 [<Struct>]
-type WindowNativeInt =
+type SdlWindowNativeInt =
     {
-        WindowNativeInt: nativeint
+        SdlWindowNativeInt: nativeint
     }
 
 /// SDL Surface handle.
 [<Struct>]
-type SurfaceNativeInt =
+type SdlSurfaceNativeInt =
     {
-        SurfaceNativeInt: nativeint
+        SdlSurfaceNativeInt: nativeint
     }
 
 /// SDL image handle, can now be from BMP or PNG source image files.
 [<Struct>]
-type BitmapImageFileNativeInt = // TODO: rename because it can be any file format now.
+type SdlBitmapImageFileNativeInt =
     {
-        BMPNativeInt: SurfaceNativeInt
+        SdlBitmapImageNativeInt : SdlSurfaceNativeInt
     }
 
 /// SDL Texture handle.
 [<Struct>]
-type TextureNativeInt =
+type SdlTextureNativeInt =
     {
-        TextureNativeInt: nativeint
+        SdlTextureNativeInt: nativeint
     }
 
 /// SDL Renderer handle.
 [<Struct>]
-type RendererNativeInt =
+type SdlRendererNativeInt =
     {
-        RendererNativeInt: nativeint
+        SdlRendererNativeInt: nativeint
     }
 
 /// Red, Green, Blue triple.
@@ -71,15 +71,15 @@ type RGB =
     }
 
 /// Extended BMP type supports optional transparency colour.
-type ExtendedBitmapImage =
+type ExtendedSdlBitmapImage =
     {
-        ImageNativeInt      : BitmapImageFileNativeInt
+        SdlImageNativeInt   : SdlBitmapImageFileNativeInt
         TransparencyColour  : RGB option
     }
 
 
 
-let CreateWindowAndRenderer windowTitle width height =   // TODO: Should we drop back to WithNewMainWindowDo, and separate the creation of the renderer out?
+let CreateWindowAndSdlRenderer windowTitle width height =   // TODO: Should we drop back to WithNewMainWindowDo, and separate the creation of the renderer out?
 
     let windowFlags =
         SDL.SDL_WindowFlags.SDL_WINDOW_SHOWN + 
@@ -97,7 +97,7 @@ let CreateWindowAndRenderer windowTitle width height =   // TODO: Should we drop
             SDL.SDL_CreateRenderer(windowNativeInt, -1, renderFlags)
 
         if rendererNativeInt <> 0n then
-            Some({ WindowNativeInt=windowNativeInt } , { RendererNativeInt=rendererNativeInt })
+            Some({ SdlWindowNativeInt=windowNativeInt } , { SdlRendererNativeInt=rendererNativeInt })
         else
             SDL.SDL_DestroyWindow(windowNativeInt)
             None
@@ -120,26 +120,26 @@ let inline ToSdlRect x y w h =
 
 /// Load an image file, supporting BMP and PNG.
 /// Only returns a value if load was successful.
-let LoadImageFromFile filePath =
+let LoadSdlImageFromFile filePath =
     let handle = SDL2.SDL_image.IMG_Load(filePath)
     if handle = nativeint 0 then
         None
     else
-        Some({ BMPNativeInt = { SurfaceNativeInt = handle } })
+        Some({ SdlBitmapImageNativeInt = { SdlSurfaceNativeInt = handle } })
 
 
 
-type ImageFileMetadata =
+type SdlImageFileMetadata =
     {
-        ImageHandle   : BitmapImageFileNativeInt
-        TextureHandle : TextureNativeInt
+        ImageHandle   : SdlBitmapImageFileNativeInt
+        TextureHandle : SdlTextureNativeInt
         SourceRect    : SDL.SDL_Rect
     }
 
-let ImagePreparedForRenderer (renderer:RendererNativeInt) (exbmp:ExtendedBitmapImage) =
+let ImagePreparedForSdlRenderer (renderer:SdlRendererNativeInt) (exbmp:ExtendedSdlBitmapImage) =
 
-    let { RendererNativeInt = rendererNativeInt } = renderer
-    let { ImageNativeInt = { BMPNativeInt = { SurfaceNativeInt = surfaceNativeInt } } ; TransparencyColour = transp } = exbmp
+    let { SdlRendererNativeInt = rendererNativeInt } = renderer
+    let { SdlImageNativeInt = { SdlBitmapImageNativeInt = { SdlSurfaceNativeInt = surfaceNativeInt } } ; TransparencyColour = transp } = exbmp
 
     let t = typeof<SDL.SDL_Surface>
     let s = (System.Runtime.InteropServices.Marshal.PtrToStructure(surfaceNativeInt, t)) :?> SDL.SDL_Surface
@@ -155,8 +155,8 @@ let ImagePreparedForRenderer (renderer:RendererNativeInt) (exbmp:ExtendedBitmapI
     let texture = SDL.SDL_CreateTextureFromSurface(rendererNativeInt,surfaceNativeInt)
     if texture <> 0n then
         Some({
-            ImageHandle   = { BMPNativeInt = { SurfaceNativeInt = surfaceNativeInt } }
-            TextureHandle = { TextureNativeInt = texture }
+            ImageHandle   = { SdlBitmapImageNativeInt = { SdlSurfaceNativeInt = surfaceNativeInt } }
+            TextureHandle = { SdlTextureNativeInt = texture }
             SourceRect    = ToSdlRect 0 0 s.w s.h
         })
     else
@@ -164,64 +164,36 @@ let ImagePreparedForRenderer (renderer:RendererNativeInt) (exbmp:ExtendedBitmapI
 
 
 /// Load image file and prepare it for the renderer as a texture:
-let LoadFromFileAndPrepareForRenderer renderer fullPath transparencyColour =
+let LoadFromFileAndPrepareForSdlRenderer renderer fullPath transparencyColour =
 
-    match LoadImageFromFile fullPath with
+    match LoadSdlImageFromFile fullPath with
         | None -> None
         | Some(bmpNativeInt) -> 
             let exbmp =
                 {
-                    ImageNativeInt = bmpNativeInt
+                    SdlImageNativeInt = bmpNativeInt
                     TransparencyColour = transparencyColour
                 }
-            ImagePreparedForRenderer renderer exbmp
-
-
-/// A "NumCaps" font consists of digits 0..9 followed by capital letter A..Z then a full-stop,
-/// stored as bitmap image.
-type NumCapsFontDefinition =
-    {
-        FontImage:  ImageFileMetadata
-        CharWidth:  int
-        CharHeight: int
-    }
-
-/// Make a "Num Caps" font from a previously-loaded BMPSourceImage.
-let MakeNumCapsFontFromBMP (bmpSourceImage:ImageFileMetadata) =
-
-    let numGlyphs = 37
-
-    let { ImageHandle=_ ; TextureHandle=_ ; SourceRect=r } = bmpSourceImage
-
-    if r.w % numGlyphs = 0 then
-        Some(
-            {
-                FontImage  = bmpSourceImage
-                CharWidth  = r.w / numGlyphs
-                CharHeight = r.h
-            })
-    else
-        None
-
+            ImagePreparedForSdlRenderer renderer exbmp
 
 
 /// Draw bitmap image onto a surface at a given position.
-let DrawImage renderer image left top =
-    let {RendererNativeInt=renderer} = renderer
+let DrawSdlImage renderer image left top =
+    let {SdlRendererNativeInt=renderer} = renderer
     let mutable dstRect = ToSdlRect left top image.SourceRect.w image.SourceRect.h
     let mutable srcRect = image.SourceRect
-    SDL.SDL_RenderCopy(renderer, image.TextureHandle.TextureNativeInt, &srcRect, &dstRect) |> ignore
+    SDL.SDL_RenderCopy(renderer, image.TextureHandle.SdlTextureNativeInt, &srcRect, &dstRect) |> ignore
 
 /// Draw part of a bitmap image onto a surface at a given position.
-let DrawSubImage renderer texture srcleft srctop srcwidth srcheight dstleft dsttop dstwidth dstheight =
-    let {RendererNativeInt=renderer} = renderer
+let DrawSdlSubImage renderer texture srcleft srctop srcwidth srcheight dstleft dsttop dstwidth dstheight =
+    let {SdlRendererNativeInt=renderer} = renderer
     let mutable dstRect = ToSdlRect dstleft dsttop dstwidth dstheight
     let mutable srcRect = ToSdlRect srcleft srctop srcwidth srcheight
-    SDL.SDL_RenderCopy(renderer, texture.TextureNativeInt, &srcRect, &dstRect) |> ignore
+    SDL.SDL_RenderCopy(renderer, texture.SdlTextureNativeInt, &srcRect, &dstRect) |> ignore
 
 /// Draw a filled rectangle onto the surface at given position in given colour
-let DrawFilledRectangle renderer left top right bottom (colourRGB:uint32) =
-    let {RendererNativeInt=renderer} = renderer
+let DrawSdlFilledRectangle renderer left top right bottom (colourRGB:uint32) =
+    let {SdlRendererNativeInt=renderer} = renderer
     let mutable rect = ToSdlRect left top (right-left) (bottom-top)
     SDL.SDL_SetRenderDrawColor(
         renderer, 
@@ -233,44 +205,44 @@ let DrawFilledRectangle renderer left top right bottom (colourRGB:uint32) =
 
 
 
-let SetRenderTargetToScreen renderer =
-    let { RendererNativeInt=renderer } = renderer
+let SetSdlRenderTargetToScreen renderer =
+    let { SdlRendererNativeInt=renderer } = renderer
     SDL.SDL_SetRenderTarget(renderer, 0n) |> ignore
 
 
-let SetRenderTargetToTexture renderer texture =
-    let { RendererNativeInt=renderer } = renderer
-    let { TextureNativeInt=texture } = texture
+let SetSdlRenderTargetToTexture renderer texture =
+    let { SdlRendererNativeInt=renderer } = renderer
+    let { SdlTextureNativeInt=texture } = texture
     SDL.SDL_SetRenderTarget(renderer, texture) |> ignore
 
 
-let RenderCopyToFullTarget renderer texture =
-    let { RendererNativeInt=renderer } = renderer
-    let { TextureNativeInt=texture } = texture
+let RenderCopyToFullSdlTarget renderer texture =
+    let { SdlRendererNativeInt=renderer } = renderer
+    let { SdlTextureNativeInt=texture } = texture
     SDL.SDL_RenderCopy(renderer, texture, 0n, 0n) |> ignore
 
 
-let Present renderer =
-    let { RendererNativeInt=renderer } = renderer
+let SdlPresent renderer =
+    let { SdlRendererNativeInt=renderer } = renderer
     SDL.SDL_RenderPresent(renderer)
 
 
 /// Create an RGB 8888 texture for the given renderer.
 /// This implies requiring SDL_TEXTUREACCESS_TARGET.
-let CreateRgb8888TextureForRenderer renderer textureWidth textureHeight =
+let CreateRgb8888TextureForSdlRenderer renderer textureWidth textureHeight =
 
     let backingTexture = 
         { 
-            TextureNativeInt = 
+            SdlTextureNativeInt = 
                 SDL.SDL_CreateTexture(
-                    renderer.RendererNativeInt, 
+                    renderer.SdlRendererNativeInt, 
                     SDL.SDL_PIXELFORMAT_RGBA8888, 
                     int SDL.SDL_TextureAccess.SDL_TEXTUREACCESS_TARGET, 
                     textureWidth, 
                     textureHeight) 
         }
 
-    if backingTexture.TextureNativeInt = 0n then
+    if backingTexture.SdlTextureNativeInt = 0n then
         None
     else
         Some(backingTexture)

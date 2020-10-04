@@ -6,6 +6,7 @@
 
   <ItemGroup>
     <Compile Include="SDLCover.fs" />
+    <Compile Include="DesktopGameFramework.fs" />
   </ItemGroup>
   
   <ItemGroup>

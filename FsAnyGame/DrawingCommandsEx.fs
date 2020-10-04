@@ -6,6 +6,8 @@ open Geometry
 open Time
 open ResourceFileMetadata
 
+open StaticResourceAccess // TODO: needed for font solution because we pass IDs not objects -- may revisit!
+
 // ---------------------------------------------------------------------------------------------------------
 //  Drawing bitmap images
 // ---------------------------------------------------------------------------------------------------------
@@ -52,15 +54,33 @@ let SquareAroundPoint render left top (side:int<epx>) colour =
 //  Drawing text
 // ---------------------------------------------------------------------------------------------------------
 
-/// Draw text string in a given font, aligned in a given way with respect to a point.
-let Text render fontResource hAlign vAlign (x:int<epx>) (y:int<epx>) message =
-   
-    let drawCharImage (index:int) left top =
-        // TODO: Should algorithm use uint32 for the char index?
-        render (DrawCharImageWithTopLeftAt(IntToIntEpx left, IntToIntEpx top, uint32 index, fontResource))
+let private DrawCharImageWithTopLeftAt render (x:int) (y:int) charIndex (fontDefinition:FontWithHostObject) =
+
+    let cwid = fontDefinition.CharWidth
+    let chei = fontDefinition.CharHeight
+    let chx  = (int charIndex) * cwid // TODO: constant: assuming char with for fonts.
+
+    render (DrawSubImageStretchedToTarget(
+                chx, 0, cwid, chei,
+                (x |> IntToFloatEpx), (y |> IntToFloatEpx), (cwid |> IntToFloatEpx), (chei |> IntToFloatEpx),  // TODO: nice not to have conversions.
+                fontDefinition.FontImageWithHostObject
+            )) 
+        
     
-    // TODO: Constants?
-    LayOutMonospaceFontTextString drawCharImage 8 8 (IntEpxToInt x) (IntEpxToInt y) message hAlign vAlign  
+
+/// Draw text string in a given font, aligned in a given way with respect to a point.
+let Text render (fontResource:FontID) hAlign vAlign (x:int<epx>) (y:int<epx>) message =
+   
+    let fontDefinition = FontFromID fontResource
+    let cwid = fontDefinition.CharWidth
+    let chei = fontDefinition.CharHeight
+
+    let drawCharImage (index:int) (left:int) (top:int) =
+        // TODO: Should algorithm use uint32 for the char index?
+        DrawCharImageWithTopLeftAt render left top (uint32 index) fontDefinition
+    
+    // TODO: Constants? should be in the FontImageWithHostObject
+    LayOutMonospaceFontTextString drawCharImage cwid chei (IntEpxToInt x) (IntEpxToInt y) message hAlign vAlign  
 
 
 
@@ -79,14 +99,16 @@ let Flo render fontResource hAlign vAlign x y (value:float32) =
 
 // Draw a repeated character starting from a given position extending for a given count.
 // The direction is specified as integer pixel deltas.
-let DrawRepeatedChar render fontID (dx:int<epx>) (dy:int<epx>) (charIndex:uint32) (startLeft:int<epx>) (startTop:int<epx>) numRepeats =
+let DrawRepeatedChar render (fontID:FontID) (dx:int<epx>) (dy:int<epx>) (charIndex:uint32) (startLeft:int<epx>) (startTop:int<epx>) numRepeats =
+
+    let fontDefinition = FontFromID fontID
 
     let mutable x'    = startLeft
     let mutable y'    = startTop
     let mutable count = numRepeats
 
     while count > 0u do
-        render (DrawCharImageWithTopLeftAt(x', y', charIndex, fontID))
+        DrawCharImageWithTopLeftAt render (int x') (int y') charIndex fontDefinition  // TODO: We have inconsistent application of <epx> UOM because of LayOutMonospaceFontTextString
         count <- count - 1u
         x' <- x' + dx
         y' <- y' + dy
