@@ -104,15 +104,16 @@ let DesktopMain () =
     
         | Ok tankMapsList ->
 
-            let staticGameResources = 
+            let fortAssaultStaticResources = 
                 {
                     TankMapsList = tankMapsList
                 }
 
-            let initialGameStateConstructor = 
-                NewStoryboard staticGameResources
+            let fortAssaultGlobals = 
+                InitialFortAssaultGlobals ()
 
-            let fortAssaultGlobals = InitialFortAssaultGlobals ()
+            let fortAssaultStartStateConstructor = 
+                NewStoryboard fortAssaultStaticResources
 
             DesktopMain2 
                 "Fort Assault"
@@ -127,10 +128,10 @@ let DesktopMain () =
                     (SDL.SDL_Scancode.SDL_SCANCODE_DOWN  , WebBrowserKeyCode 40)
                     (SDL.SDL_Scancode.SDL_SCANCODE_Z     , WebBrowserKeyCode 90)
                 ]
-                staticGameResources
+                fortAssaultStaticResources
                 GameResourceImages 
                 GameFontResourceImages
-                initialGameStateConstructor
+                fortAssaultStartStateConstructor
                 fortAssaultGlobals
 
         | Error msg -> 

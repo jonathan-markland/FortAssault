@@ -15,7 +15,7 @@ open ResourceFileMetadata
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type GameResourcesRecord =
+type FrameworkGameResourcesRecord =
     {
         GameBMPs    : ImageWithHostObject[]
         Fonts       : NumCapsFontDefinition[]
