@@ -79,7 +79,7 @@ let JsDrawSubImage
     (dstheight:int) = jsNative                         // $9 
 
 let inline DrawSubImage context2d (HostImageObject(htmlImageObject)) srcleft srctop srcwidth srcheight dstleft dsttop dstwidth dstheight =
-    if srcwidth > 0 && srcheight > 0 && dstwidth > 0 && dstheight > 0 then
+    if srcwidth > 0 && srcheight > 0 && dstwidth > 0 && dstheight > 0 then // Avoid firefox exception
         JsDrawSubImage context2d htmlImageObject srcleft srctop srcwidth srcheight dstleft dsttop dstwidth dstheight
 
 
