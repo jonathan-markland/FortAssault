@@ -23,7 +23,7 @@ type FrameworkGameResourcesRecord =  // TODO: Unify with the javascript version!
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (renderer:SdlRendererNativeInt) rootPath =  // TODO: Result error string
+let private LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (renderer:SdlRendererNativeInt) rootPath =  // TODO: Result error string
 
     let fromFile transparencyColour name = 
 
@@ -125,7 +125,7 @@ let unwrapFont fileName opt =
 /// Here we are choosing to use a 1:1 mapping from engine 'epx' coordinates onto a 
 /// HostRetroScreenWidthPixels x HostRetroScreenHeightPixels pixel SDL surface, but 
 /// using Float32 allowing higher resolution positioning if this side supported it(!)
-let RenderToSdl gameResources renderer drawingCommand =
+let private RenderToSdl renderer drawingCommand =
 
     /// Convert engine units to our pixels.
     /// Currently this host is choosing to use 1:1 with the engine's coordinate scheme.
@@ -169,7 +169,7 @@ let RenderToSdl gameResources renderer drawingCommand =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let TimerCallback (interval:uint32) (param:nativeint) : uint32 =  // TODO: Can this go into the SDL library?
+let private TimerCallback (interval:uint32) (param:nativeint) : uint32 =  // TODO: Can this go into the SDL library?
 
     let mutable event = new SDL.SDL_Event()
 
@@ -183,7 +183,7 @@ let TimerCallback (interval:uint32) (param:nativeint) : uint32 =  // TODO: Can t
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let MainLoopProcessing 
+let private MainLoopProcessing 
     renderer 
     backingTexture 
     gameResources 
@@ -215,7 +215,7 @@ let MainLoopProcessing
         failwith "Failed to install the gameplay timer."
 
     let renderFunction = 
-        RenderToSdl gameResources renderer   // TODO: We only pass gameResources in to get the fonts now.  Soon we won't need to pass gameResources at all.
+        RenderToSdl renderer
 
     let mutableKeyStateStore =
         NewMutableKeyStateStore
