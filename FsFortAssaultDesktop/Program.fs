@@ -21,7 +21,8 @@ let ProcessExitFail    = 1
 let ProcessExitSuccess = 0
 
 
-let FortAssaultMain () =
+[<EntryPoint>]
+let main argv =
 
     let fortAssaultStaticDataConstructor () = 
         LoadTankBattleSequences () 
@@ -57,4 +58,3 @@ let FortAssaultMain () =
 
         | None ->
             ProcessExitSuccess
-
