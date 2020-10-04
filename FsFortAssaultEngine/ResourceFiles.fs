@@ -11,7 +11,7 @@ let private image colourKey fileName width height =
         ImageHeight    = height |> IntToIntEpx
     }
 
-let GameFontResourceImages =
+let FortAssaultFontResourceImages =
     [
         image MagentaColourKey "MilitaryFontRed.png"     296 8
         image MagentaColourKey "MilitaryFontYellow.png"  296 8
@@ -20,7 +20,7 @@ let GameFontResourceImages =
         image MagentaColourKey "MilitaryFontSymbols.png" 296 8
     ]
 
-let GameResourceImages =
+let FortAssaultResourceImages =
     [
         image NoColourKey      "CliffsTile.png"          89 200 
         image MagentaColourKey "Title.png"              297  20

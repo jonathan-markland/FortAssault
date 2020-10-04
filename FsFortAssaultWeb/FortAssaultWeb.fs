@@ -9,7 +9,7 @@ open Storyboard
 open Time
 open Geometry
 open DrawingCommands
-open GameGlobalState
+open FortAssaultGlobalState
 open KeyboardForFramework
 open Input
 open EngineEntryPoint
@@ -97,7 +97,7 @@ let inline DrawFilledRectangle context2d x y w h (colouru:uint32) =
 
 let LoadFileListThenDo fileNameObtainer needsMagentaObtainer widthGetter heightGetter continuation resourceList =
 
-    let htmlImageElementResizeArrayForFonts = new ResizeArray<ImageWithHostObject>(GameFontResourceImages.Length)
+    let htmlImageElementResizeArrayForFonts = new ResizeArray<ImageWithHostObject>(FortAssaultFontResourceImages.Length)
 
     let rec recurse resourceRecordList fileNameObtainer needsMagentaObtainer =
 
@@ -149,9 +149,9 @@ let LoadResourceFilesThenDo afterAllLoaded =
     let imageWidthGetter  metadata = metadata.ImageWidth
     let imageHeightGetter metadata = metadata.ImageHeight
 
-    GameFontResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
+    FortAssaultFontResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
         (fun arrayOfLoadedFonts ->
-            GameResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
+            FortAssaultResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
                 (fun arrayOfLoadedImages ->
                     afterAllLoaded arrayOfLoadedFonts arrayOfLoadedImages
                 )
@@ -231,10 +231,10 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
 
             let gameTime         = 0.0F<seconds>
             let gameResources    = { TankMapsList = tankMapsList }
-            let storyboard       = NewStoryboard gameResources gameTime
+            let storyboard       = NewFortAssaultStoryboard gameResources gameTime
             let renderFunction   = RenderToWebCanvas javascriptGameResources context2d
             let frameElapsedTime = 0.02F<seconds>
-            let gameGlobals      = InitialGameGlobals ()
+            let gameGlobals      = FortAssaultGlobalStateConstructor ()
             
             let mutableKeyStateStore =
                 NewMutableKeyStateStore
@@ -267,16 +267,21 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
                 let tickCount = tickCount + 1u
                 
                 let gameTime = 
-                    LanguagePrimitives.Float32WithMeasure<seconds> ((float32 tickCount) / 50.0F)
+                    (float32 tickCount) / 50.0F |> InSeconds
                 
-                RenderStoryboard renderFunction screenState gameTime
+                RenderFortAssaultStoryboard renderFunction screenState gameTime
 
                 let screenState = 
-                    NextGameState gameResources screenState keyStateGetter gameTime frameElapsedTime 
+                    NextFortAssaultStoryboardState gameResources screenState keyStateGetter gameTime frameElapsedTime 
 
                 ClearKeyJustPressedFlags mutableKeyStateStore
 
                 window.setTimeout((mainLoop screenState tickCount), 20) |> ignore
+
+            let gameGlobals =
+                match gameGlobals with
+                    | Error msg -> failwith msg
+                    | Ok globals -> globals
 
             mainLoop (struct (storyboard, gameGlobals)) 0u ()
 

@@ -18,7 +18,7 @@ open MechanicsTestPage
 open FinalBossAndTankBattleShared
 open Rules
 open TankMapFileLoader
-open GameGlobalState
+open FortAssaultGlobalState
 open ScoreboardModel
 
 #if SHORT_PLAYTHROUGH
@@ -52,14 +52,14 @@ type Storyboard =
 
     | MechanicsTestPageChapter      of MechanicsTestPageScreenModel
 
-type GameResources =
+type FortAssaultGameResources =
     {
         TankMapsList : TankBattleMapMatrix list  // TODO: We could remove this now the resources are integrated.
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let RenderStoryboard render gameState gameTime =
+let RenderFortAssaultStoryboard render gameState gameTime =
     
     let (struct (storyboard , _gameGlobals)) = gameState
 
@@ -140,9 +140,11 @@ let Shortcut gameResources gameTime mode =
 
         | RunGameNormally ->
             // -- THIS CASE EXECUTES FOR THE RELEASE VERSION --
-            let gameGlobals = InitialGameGlobals ()
-            let highestScoreInInitialBoard = HiScoreFromScoreboard gameGlobals.GameScoreBoard
-            GameTitleChapter(NewGameTitleScreen highestScoreInInitialBoard gameGlobals gameTime)
+            match FortAssaultGlobalStateConstructor () with
+                | Error msg -> failwith msg
+                | Ok gameGlobals ->
+                    let highestScoreInInitialBoard = HiScoreFromScoreboard gameGlobals.GameScoreBoard
+                    GameTitleChapter(NewGameTitleScreen highestScoreInInitialBoard gameGlobals gameTime)
 
         // -- NONE OF THE FOLLOWING CASES EXECUTE FOR THE RELEASE VERSION --
 
@@ -205,9 +207,11 @@ let Shortcut gameResources gameTime mode =
 
         | SkipToEnterYourName ->
             // Shortcut to Enter your name screen
-            let globals = InitialGameGlobals ()
-            let screen = NewPotentialEnterYourNameScreen {Score=25000u ; HiScore=25000u} globals.GameScoreBoard  // ie: you got the new hi score compared to InitialGameGlobals()
-            PotentialEnterYourNameChapter screen
+            match FortAssaultGlobalStateConstructor () with
+                | Error msg -> failwith msg
+                | Ok globals ->
+                    let screen = NewPotentialEnterYourNameScreen {Score=25000u ; HiScore=25000u} globals.GameScoreBoard  // ie: you got the new hi score compared to InitialGameGlobals()
+                    PotentialEnterYourNameChapter screen
 
         | SkipToGameOverScreen ->
             // Shortcut to game over screen
@@ -225,7 +229,7 @@ let Shortcut gameResources gameTime mode =
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 /// Called only once when the game boots
-let NewStoryboard gameResources gameTime =
+let NewFortAssaultStoryboard gameResources gameTime =
 
     #if SHORT_PLAYTHROUGH
     Shortcut gameResources gameTime RunGameNormally
@@ -246,7 +250,7 @@ let NextStoryboardState staticGameResources gameState input gameTime frameElapse
 
     /// Where the GameGlobalState has been replaced this frame.
     let inline AdvanceAndReplaceGlobals (gameGlobals , storyboard) =
-        struct ((storyboard:Storyboard), (gameGlobals:GameGlobalState))
+        struct ((storyboard:Storyboard), (gameGlobals:FortAssaultGlobalState))
 
     /// Wrap a 'GET READY' intermission around the transition to a new state.
     let withIntermission desiredNextChapter =

@@ -1,5 +1,5 @@
-﻿open DesktopMain
+﻿open FortAssaultMainModule
 
 [<EntryPoint>]
 let main argv =
-    DesktopMain ()
+    FortAssaultMain ()

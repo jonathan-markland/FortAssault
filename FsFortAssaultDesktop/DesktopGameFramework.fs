@@ -1,59 +1,52 @@
-﻿module DesktopMain
+﻿/// Framework for SDL2-Desktop games.
+module DesktopGameFramework
 
-open SDL2  // TODO: It would be nicer if SDLCover could provide everything.
 open System.IO
+open SDL2  // TODO: It would be nicer if SDLCover could provide everything.
 open SDLCover
+
+open StaticResourceSetup
+open KeyboardForFramework
+
 open Time
 open Geometry
 open DrawingCommands
-open GameGlobalState
-open KeyboardForFramework
-open Storyboard
-open EngineEntryPoint
-open TankMapFileLoader
 open ResourceFileMetadata
-open ResourceFiles
-open StaticResourceSetup
-open Input
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let HostWindowWidthPixels = 1280 
-let HostWindowHeightPixels = 800
-    
-let HostRetroScreenWidthPixels = 320 
-let HostRetroScreenHeightPixels = 200
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-type GameResourcesRecord =
+type FrameworkGameResourcesRecord =
     {
         GameBMPs    : ImageWithHostObject[]
         Fonts       : NumCapsFontDefinition[]
     }
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let LoadGameImagesAndFonts (renderer:RendererNativeInt) rootPath =
+let LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (renderer:RendererNativeInt) rootPath =  // TODO: Result error string
 
     let fromFile transparencyColour name = 
 
         let fullPath =
             Path.Combine(rootPath, name)
         
+        if not (File.Exists(fullPath)) then
+            failwith (sprintf "Game could not start because file '%s' is missing." fullPath)
+
         match LoadFromFileAndPrepareForRenderer renderer fullPath transparencyColour with
             | Some(imageRecord) -> imageRecord
-            | None -> failwith (sprintf "Game could not start because file '%s' is missing or has invalid content." fullPath)
+            | None -> failwith (sprintf "Game could not start because file '%s' has invalid content." fullPath)
 
-    let unwrapFont opt =
+    let unwrapFont fileName opt =
         match opt with
             | Some(font) -> font
-            | None -> failwith "Game could not start because a font file has incorrect content."
+            | None -> failwith (sprintf "Game could not start because font '%s' file has incorrect content." fileName)
 
     let magenta =
         Some({ Red=255uy ; Green=0uy ; Blue=255uy })
     
     let imagesArray =
-        GameResourceImages 
+        gameResourceImages
             |> List.map (fun metadata -> 
                 
                 let key = 
@@ -73,11 +66,11 @@ let LoadGameImagesAndFonts (renderer:RendererNativeInt) rootPath =
             |> List.toArray
 
     let fontsArray =
-        GameFontResourceImages 
+        gameFontResourceImages 
             |> List.map (fun metadata -> 
                 fromFile magenta metadata.ImageFileName
                     |> MakeNumCapsFontFromBMP 
-                    |> unwrapFont) 
+                    |> unwrapFont metadata.ImageFileName) 
                         |> List.toArray
 
     {
@@ -151,7 +144,6 @@ let RenderToSdl gameResources renderer drawingCommand =
             let top    = top  |> IntEpxToInt
             SDLCover.DrawFilledRectangle renderer left top right bottom colour
 
-
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let TimerCallback (interval:uint32) (param:nativeint) : uint32 =  // TODO: Can this go into the SDL library?
@@ -166,30 +158,34 @@ let TimerCallback (interval:uint32) (param:nativeint) : uint32 =  // TODO: Can t
     SDL.SDL_PushEvent(&event) |> ignore
     interval  // We can return 0u to cancel the timer here, or interval to keep it going.
 
-
-
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
+let MainLoopProcessing 
+    renderer 
+    backingTexture 
+    gameResources 
+    gameStaticData 
+    initialGameStateConstructor 
+    initGameGlobals 
+    gameRenderer 
+    gameFrameAdvanceFunction 
+    listOfKeysNeeded =
 
     SetStaticImageResourceArray gameResources.GameBMPs
 
     let mutable tickCount = 1u
     
     let GetGameTime () = 
-        LanguagePrimitives.Float32WithMeasure<seconds> ((float32 tickCount) / 50.0F)
+        (float32 tickCount) / 50.0F |> InSeconds
 
-    let staticGameResources = 
-        {
-            TankMapsList = tankMapsList
-        }
+    let initScreenState = 
+        initialGameStateConstructor (GetGameTime ())
 
-    let initGameGlobals = InitialGameGlobals ()
-    let initScreenState = NewStoryboard staticGameResources (GetGameTime ()) // TODO: Ideally don't pass gameResources -- only needed for hacking access to a particular screen.
-    let mutable screenState = (struct (initScreenState , initGameGlobals))
+    let mutable screenState = 
+        (struct (initScreenState , initGameGlobals))
 
     // 20ms timer installed so that the main event loop receives 'SDL.SDL_EventType.SDL_USEREVENT' every 20ms (1/50th second)
-    let timerID =   // TODO: Push into library?
+    let timerID =
         SDL.SDL_AddTimer(20u, new SDL.SDL_TimerCallback(TimerCallback), 0n)
             
     if timerID = 0 then
@@ -198,19 +194,13 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
     let renderFunction = 
         RenderToSdl gameResources renderer   // TODO: We only pass gameResources in to get the fonts now.  Soon we won't need to pass gameResources at all.
 
-
     let mutableKeyStateStore =
         NewMutableKeyStateStore
             SDL.SDL_Scancode.SDL_SCANCODE_P
-            [
-                (SDL.SDL_Scancode.SDL_SCANCODE_LEFT  , WebBrowserKeyCode 37)
-                (SDL.SDL_Scancode.SDL_SCANCODE_RIGHT , WebBrowserKeyCode 39)
-                (SDL.SDL_Scancode.SDL_SCANCODE_UP    , WebBrowserKeyCode 38)
-                (SDL.SDL_Scancode.SDL_SCANCODE_DOWN  , WebBrowserKeyCode 40)
-                (SDL.SDL_Scancode.SDL_SCANCODE_Z     , WebBrowserKeyCode 90)
-            ]
+            listOfKeysNeeded
     
-    let keyStateGetter = LiveKeyStateFrom mutableKeyStateStore
+    let keyStateGetter = 
+        LiveKeyStateFrom mutableKeyStateStore
 
     let HandleFrameAdvanceEvent gameTime lastGameTime =
 
@@ -219,27 +209,29 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
         // DEBUG: force clean the drawing texture.  This may help observe artefacts where tiles don't join.
         // renderFunction (DrawFilledRectangle(0.0F<wu>, 0.0F<wu>, 320.0F<wu>, 256.0F<wu>, SolidColour(0xFF00FFu)))
 
-        RenderStoryboard renderFunction screenState gameTime
+        gameRenderer renderFunction screenState gameTime
         SetRenderTargetToScreen renderer
         RenderCopyToFullTarget renderer backingTexture
         Present renderer
 
         let frameElapsedTime =
-            gameTime - lastGameTime
+            gameTime - lastGameTime  // TODO: Why calculate this.  Web version just passes constant.
 
         let nextScreenState = 
-            NextGameState 
-                staticGameResources 
+            gameFrameAdvanceFunction 
+                gameStaticData 
                 screenState 
                 keyStateGetter
                 gameTime 
-                frameElapsedTime
+                frameElapsedTime  // TODO: Didn't like passing this really.
 
         tickCount <- tickCount + 1u
         screenState <- nextScreenState
 
         mutableKeyStateStore |> ClearKeyJustPressedFlags
 
+
+    // Classic main event loop.
 
     let mutable event            = new SDL.SDL_Event ()
     let mutable lastGameTime     = 0.0F<seconds>
@@ -269,45 +261,94 @@ let MainLoopProcessing renderer backingTexture tankMapsList gameResources =
 
 
 
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let GameMain () =
+let FrameworkDesktopMain
+    gameWindowTitleString 
+    hostWindowWidthPixels 
+    hostWindowHeightPixels 
+    hostRetroScreenWidthPixels 
+    hostRetroScreenHeightPixels 
+    gameResourceImages 
+    gameFontResourceImages
+    listOfKeysNeeded 
+    (gameStaticDataConstructor  : unit -> Result<'gameStaticData,string>)
+    (gameGlobalStateConstructor : unit -> Result<'gameGlobalState,string>)
+    (gameplayStartConstructor   : 'gameStaticData -> float32<seconds> -> 'gameScreenModel)
+    gameRenderer 
+    gameFrameAdvanceFunction : string option =
 
-    match LoadTankBattleSequences () with
-        
-        | Ok tankMapsList ->
-            match CreateWindowAndRenderer "Fort Assault" HostWindowWidthPixels HostWindowHeightPixels with   // TODO: Re-visit window initial size constants
-                
-                | Some(_mainWindow, renderer) ->
-                    match CreateRgb8888TextureForRenderer renderer HostRetroScreenWidthPixels HostRetroScreenHeightPixels with
+        let runGame () =
 
-                        | Some(backingTexture) ->
-                            let path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
-                            let gameResources = LoadGameImagesAndFonts renderer path   // TODO:  Minor: We don't actually free the imageSet handles.
-                            MainLoopProcessing renderer backingTexture tankMapsList gameResources
-                            1
-            
-                        | None ->
-                            failwith "Cannot create backing texture."
+            match CreateWindowAndRenderer gameWindowTitleString hostWindowWidthPixels hostWindowHeightPixels with   // TODO: Re-visit window initial size constants
 
                 | None ->
-                    0
+                    Some "Main window and SDL2 renderer could not be created."
+        
+                | Some(_mainWindow, renderer) ->
 
-        | Error msg -> 
-            System.Console.WriteLine(msg) |> ignore
-            0
+                    match CreateRgb8888TextureForRenderer renderer hostRetroScreenWidthPixels hostRetroScreenHeightPixels with
+
+                        | None ->
+                            Some "Cannot create an SDL2 texture to store the game screen image."
+
+                        | Some(backingTexture) ->
+
+                            let path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
+                            
+                            let gameResources = 
+                                LoadGameImagesAndFonts gameResourceImages gameFontResourceImages renderer path   // TODO:  Minor: We don't actually free the imageSet handles.
+
+                            let gameStaticDataResult =
+                                gameStaticDataConstructor ()
+
+                            let gameGlobalStateResult = 
+                                gameGlobalStateConstructor ()
+
+                            let errorResultToOption result =
+                                match result with
+                                    | Ok _ -> None
+                                    | Error errorMessage -> Some errorMessage
+
+                            gameGlobalStateResult
+                                |> Result.map (fun gameGlobalState ->
+
+                                    gameStaticDataResult
+                                        |> Result.map (fun gameStaticData ->
+
+                                            MainLoopProcessing 
+                                                renderer 
+                                                backingTexture 
+                                                gameResources 
+                                                gameStaticData 
+                                                (gameplayStartConstructor gameStaticData)
+                                                gameGlobalState
+                                                gameRenderer 
+                                                gameFrameAdvanceFunction
+                                                listOfKeysNeeded
+
+                                            None
+                                        )
+                                        |> errorResultToOption
+                                )
+                                |> errorResultToOption
+
+        try
+
+            match WithSdl2Do runGame with
+
+                | None -> 
+                    Some "The SDL2 library failed to start."
+
+                | Some status -> 
+                    status
+
+        with 
+            | e ->
+                Some (sprintf "%s" (e.ToString()))
+                
 
 
+            
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let DesktopMain () =
-
-    match WithSdl2Do GameMain with
-
-        | None -> 
-            printfn "Failed to start SDL2 library."   // TODO: Let's not use the STDOUT.
-            0
-
-        | Some(n) -> 
-            n
