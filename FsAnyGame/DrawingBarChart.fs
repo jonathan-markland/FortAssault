@@ -1,6 +1,6 @@
 ﻿module DrawingBarChart
 
-open DrawingCommands
+open ResourceFileMetadata
 open Geometry
 open DrawingCommandsEx
 

@@ -3,20 +3,9 @@
 open Geometry
 open ResourceFileMetadata
 
-/// Opaque type for referring to a font resource.
-[<Struct>]
-type FontID = FontID of int
-
 /// Solid colour value.
 [<Struct>]
 type SolidColour = SolidColour of uint32
-
-(* TODO: remove :   type ImageWithDimensions =
-    {
-        ImageID     : ImageID
-        ImageWidth  : float32<epx>  // TODO: make int?
-        ImageHeight : float32<epx>
-    }*)
 
 /// Drawing commands are communicated from the engine to the concrete renderer.
 /// These use engine 'epx' coordinates for positions and sizes, and the renderer is at 
@@ -54,10 +43,4 @@ type DrawingCommand =
         *  dstwidth_4  : float32<epx> 
         *  dstheight_4 : float32<epx> 
         *  img_4       : ImageWithHostObject
-
-    | DrawCharImageWithTopLeftAt      
-        of textX_5     : int<epx>
-        *  textY_5     : int<epx> 
-        *  charIndex_5 : uint32 
-        *  font_5      : FontID
 

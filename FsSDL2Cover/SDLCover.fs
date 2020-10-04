@@ -177,34 +177,6 @@ let LoadFromFileAndPrepareForRenderer renderer fullPath transparencyColour =
             ImagePreparedForRenderer renderer exbmp
 
 
-/// A "NumCaps" font consists of digits 0..9 followed by capital letter A..Z then a full-stop,
-/// stored as bitmap image.
-type NumCapsFontDefinition =
-    {
-        FontImage:  ImageFileMetadata
-        CharWidth:  int
-        CharHeight: int
-    }
-
-/// Make a "Num Caps" font from a previously-loaded BMPSourceImage.
-let MakeNumCapsFontFromBMP (bmpSourceImage:ImageFileMetadata) =
-
-    let numGlyphs = 37
-
-    let { ImageHandle=_ ; TextureHandle=_ ; SourceRect=r } = bmpSourceImage
-
-    if r.w % numGlyphs = 0 then
-        Some(
-            {
-                FontImage  = bmpSourceImage
-                CharWidth  = r.w / numGlyphs
-                CharHeight = r.h
-            })
-    else
-        None
-
-
-
 /// Draw bitmap image onto a surface at a given position.
 let DrawImage renderer image left top =
     let {RendererNativeInt=renderer} = renderer

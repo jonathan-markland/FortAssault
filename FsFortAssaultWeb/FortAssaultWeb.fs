@@ -24,7 +24,7 @@ open EngineEntryPoint
 
 type JavascriptGraphicResources =
     {
-        Fonts  : ImageWithHostObject[]  // TODO: possibly revisit
+        Fonts  : FontWithHostObject[]
         Images : ImageWithHostObject[]
     }
 
@@ -150,7 +150,18 @@ let LoadResourceFilesThenDo afterAllLoaded =
     let imageHeightGetter metadata = metadata.ImageHeight
 
     FortAssaultFontResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
-        (fun arrayOfLoadedFonts ->
+        (fun arrayOfLoadedFontImages ->
+
+            let arrayOfLoadedFonts = 
+                arrayOfLoadedFontImages |> Array.map 
+                    (fun fontImg -> 
+                        let charSide = fontImg.EngineImageMetadata.ImageHeight // TODO: This may need revisiting.
+                        {
+                            FontImageWithHostObject = fontImg 
+                            CharWidth               = charSide |> IntEpxToInt
+                            CharHeight              = charSide |> IntEpxToInt
+                        })
+
             FortAssaultResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
                 (fun arrayOfLoadedImages ->
                     afterAllLoaded arrayOfLoadedFonts arrayOfLoadedImages
@@ -167,13 +178,6 @@ let RenderToWebCanvas (gameResources:JavascriptGraphicResources) (context2d:Brow
     /// Currently this host is choosing to use 1:1 with the engine's coordinate scheme.
     let px (n:float32<epx>) =
         FloatEpxToInt n
-
-    let numCapsFontImageDefinitionFor (FontID(fontIndex)) =
-        let fontSet = gameResources.Fonts
-        if fontIndex >= 0 && fontIndex < fontSet.Length then
-            fontSet.[fontIndex]
-        else
-            failwith "invalid font resource index"
 
     match drawingCommand with
 
@@ -194,15 +198,6 @@ let RenderToWebCanvas (gameResources:JavascriptGraphicResources) (context2d:Brow
             // DrawFilledRectangle context2d (px dstleft) (px dsttop) (px dstwidth) (px dstheight) 0x00CC00u
             DrawSubImage context2d bmp srcleft srctop srcwidth srcheight (px dstleft) (px dsttop) (px dstwidth) (px dstheight)
 
-        | DrawCharImageWithTopLeftAt(left, top, charIndex, fontVisual) ->
-            let fontDefinition = numCapsFontImageDefinitionFor fontVisual
-            let cwid = 8 // TODO: fontDefinition.CharWidth
-            let chei = 8 // TODO: fontDefinition.CharHeight
-            let chx = (int charIndex) * cwid // TODO: constant: assuming char with for fonts.
-            // DrawImage context2d (fontDefinition.HostImageObject) 0 0
-            // DrawFilledRectangle context2d (left |> IntEpxToInt) (top |> IntEpxToInt) 7 7 0x0000FFu
-            DrawSubImage context2d (fontDefinition.HostImageObject) chx 0 cwid chei (left |> IntEpxToInt) (top |> IntEpxToInt) cwid chei
-
         | DrawFilledRectangle(left, top, width, height, SolidColour(colour)) ->
             let width  = width  |> IntEpxToInt
             let height = height |> IntEpxToInt
@@ -220,7 +215,7 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
             Images   = arrayOfLoadedImages
         }
 
-    StaticResourceSetup.SetStaticImageResourceArray arrayOfLoadedImages
+    StaticResourceSetup.SetStaticImageAndFontResourceArrays arrayOfLoadedImages arrayOfLoadedFonts
 
     let canvas = document.getElementById("gameScreen") :?> Browser.Types.HTMLCanvasElement
     let context2d = canvas.getContext("2d") :?> Browser.Types.CanvasRenderingContext2D

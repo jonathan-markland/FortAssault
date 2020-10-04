@@ -15,10 +15,10 @@ open ResourceFileMetadata
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type FrameworkGameResourcesRecord =
+type FrameworkGameResourcesRecord =  // TODO: Unify with the javascript version!
     {
         GameBMPs    : ImageWithHostObject[]
-        Fonts       : NumCapsFontDefinition[]
+        Fonts       : FontWithHostObject[]
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -36,11 +36,6 @@ let LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (renderer:R
         match LoadFromFileAndPrepareForRenderer renderer fullPath transparencyColour with
             | Some(imageRecord) -> imageRecord
             | None -> failwith (sprintf "Game could not start because file '%s' has invalid content." fullPath)
-
-    let unwrapFont fileName opt =
-        match opt with
-            | Some(font) -> font
-            | None -> failwith (sprintf "Game could not start because font '%s' file has incorrect content." fileName)
 
     let magenta =
         Some({ Red=255uy ; Green=0uy ; Blue=255uy })
@@ -68,15 +63,61 @@ let LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (renderer:R
     let fontsArray =
         gameFontResourceImages 
             |> List.map (fun metadata -> 
-                fromFile magenta metadata.ImageFileName
-                    |> MakeNumCapsFontFromBMP 
-                    |> unwrapFont metadata.ImageFileName) 
-                        |> List.toArray
+                let hostImageObject = fromFile magenta metadata.ImageFileName
+
+                let imageWithHostObject =
+                    {
+                        EngineImageMetadata = metadata
+                        HostImageObject     = HostImageObject(hostImageObject)
+                    }
+
+                let charSide =
+                    int (imageWithHostObject.EngineImageMetadata.ImageHeight)
+
+                {
+                    FontImageWithHostObject = imageWithHostObject
+                    CharWidth               = charSide
+                    CharHeight              = charSide
+                }) 
+                    |> List.toArray
 
     {
         GameBMPs = imagesArray
         Fonts    = fontsArray
     }
+
+
+(* TODO: We are missing validation of fonts which must be done in the shared framework - OLD CODE:
+
+let MakeNumCapsFontFromBMP (bmpSourceImage:ImageFileMetadata) =
+
+    let numGlyphs = 37
+
+    let { ImageHandle=_ ; TextureHandle=_ ; SourceRect=r } = bmpSourceImage
+
+    if r.w % numGlyphs = 0 then
+        Some(
+            {
+                EngineImageMetadata : EngineImageMetadata
+                HostImageObject     : HostImageObject
+            }
+
+
+            {
+                FontImageWithHostObject  = bmpSourceImage
+                CharWidth  = r.w / numGlyphs
+                CharHeight = r.h
+            })
+    else
+        None
+
+let unwrapFont fileName opt =
+    match opt with
+        | Some(font) -> font
+        | None -> failwith (sprintf "Game could not start because font '%s' file has incorrect content." fileName)
+
+
+*)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -90,13 +131,6 @@ let RenderToSdl gameResources renderer drawingCommand =
     /// Currently this host is choosing to use 1:1 with the engine's coordinate scheme.
     let px (n:float32<epx>) =
         FloatEpxToInt n
-
-    let numCapsFontImageDefinitionFor (FontID(fontIndex)) =
-        let fontSet = gameResources.Fonts
-        if fontIndex >= 0 && fontIndex < fontSet.Length then
-            fontSet.[fontIndex]
-        else
-            failwith "invalid font resource index"
 
     match drawingCommand with
 
@@ -125,17 +159,6 @@ let RenderToSdl gameResources renderer drawingCommand =
                 (hostImageObject :?> ImageFileMetadata).TextureHandle
                 srcleft srctop srcwidth srcheight
                 (px dstleft) (px dsttop) (px dstwidth) (px dstheight)
-
-        | DrawCharImageWithTopLeftAt(left, top, charIndex, fontVisual) ->
-            let fontDefinition = numCapsFontImageDefinitionFor fontVisual
-            let cwid = fontDefinition.CharWidth
-            let chei = fontDefinition.CharHeight
-            let chx  = (int charIndex) * cwid // TODO: constant: assuming char with for fonts.
-            DrawSubImage 
-                renderer 
-                fontDefinition.FontImage.TextureHandle
-                chx 0 cwid chei 
-                (left |> IntEpxToInt) (top |> IntEpxToInt) cwid chei
 
         | DrawFilledRectangle(left, top, width, height, SolidColour(colour)) ->
             let right  = (left + width) |> IntEpxToInt
@@ -171,7 +194,7 @@ let MainLoopProcessing
     gameFrameAdvanceFunction 
     listOfKeysNeeded =
 
-    SetStaticImageResourceArray gameResources.GameBMPs
+    SetStaticImageAndFontResourceArrays gameResources.GameBMPs gameResources.Fonts
 
     let mutable tickCount = 1u
     
