@@ -137,8 +137,9 @@ let ImagePresidentStanding        = ImageID(87)
 
 // Shared gun sizing:
 
-let ShipGunStemImageWidth    = 12.0F<epx>
-let ShipGunStemImageHeight   =  1.0F<epx>
-let ShipGunNozzleImageWidth  = 16.0F<epx>
-let ShipGunNozzleImageHeight =  8.0F<epx>
-let ShipGunBulletImageWidth  = 16.0F<epx>
+let ShipGunStemImageWidth     = 12<epx>
+let ShipGunStemImageHeight    =  1<epx>
+let ShipGunNozzleImageWidth   = 16<epx>
+let ShipGunNozzleImageWidthF  = 16.0F<epx>
+let ShipGunNozzleImageHeight  =  8<epx>
+let ShipGunBulletImageWidth   = 16<epx>

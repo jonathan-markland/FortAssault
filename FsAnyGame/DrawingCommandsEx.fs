@@ -22,9 +22,9 @@ let ImageStretched render left top imageWithHostObject destWidth destHeight =
 
 /// Draw image centered about a point, without stretching.
 let CentreImage render cx cy (imageWithHostObject:ImageWithHostObject) =
-    let (w,h) = imageWithHostObject |> ImageDimensionsF
-    let left  = cx - (w / 2.0F)
-    let top   = cy - (h / 2.0F)
+    let (w,h) = imageWithHostObject |> ImageDimensions
+    let left  = cx - ((w / 2) |> IntToFloatEpx)
+    let top   = cy - ((h / 2) |> IntToFloatEpx)
     render (DrawStretchedImageWithTopLeftAt(left, top, imageWithHostObject, w, h))
 
 /// Draw image centered about a point, without stretching.
@@ -60,11 +60,11 @@ let private DrawCharImageWithTopLeftAt render (x:int) (y:int) charIndex (fontDef
     let chei = fontDefinition.CharHeight
     let chx  = (int charIndex) * cwid // TODO: constant: assuming char with for fonts.
 
-    render (DrawSubImageStretchedToTarget(
-                chx, 0, cwid, chei,
-                (x |> IntToFloatEpx), (y |> IntToFloatEpx), (cwid |> IntToFloatEpx), (chei |> IntToFloatEpx),  // TODO: nice not to have conversions.
-                fontDefinition.FontImageWithHostObject
-            )) 
+    render (
+        DrawSubImageStretchedToTarget (
+            chx, 0, cwid, chei,
+            (x |> IntToFloatEpx), (y |> IntToFloatEpx), (cwid |> IntToIntEpx), (chei |> IntToIntEpx),
+            fontDefinition.FontImageWithHostObject)) 
         
     
 
@@ -99,7 +99,8 @@ let Flo render fontResource hAlign vAlign x y (value:float32) =
 
 // Draw a repeated character starting from a given position extending for a given count.
 // The direction is specified as integer pixel deltas.
-let DrawRepeatedChar render (fontID:FontID) (dx:int<epx>) (dy:int<epx>) (charIndex:uint32) (startLeft:int<epx>) (startTop:int<epx>) numRepeats =
+let DrawRepeatedChar 
+    render (fontID:FontID) (dx:int<epx>) (dy:int<epx>) (charIndex:uint32) (startLeft:int<epx>) (startTop:int<epx>) numRepeats =
 
     let fontDefinition = FontFromID fontID
 
