@@ -1,4 +1,4 @@
-﻿module DesktopMain
+﻿module FortAssaultMainModule
 
 open SDL2  // TODO: It would be nicer if SDLCover could provide everything.
 
@@ -11,14 +11,14 @@ open TankMapFileLoader
 open EngineEntryPoint
 
 
-let HostWindowWidthPixels = 1280 
-let HostWindowHeightPixels = 800
-    
-let HostRetroScreenWidthPixels = 320 
-let HostRetroScreenHeightPixels = 200
+let FortAssaultWindowWidthPixels       = 1280 
+let FortAssaultWindowHeightPixels      =  800
+let FortAssaultRetroScreenWidthPixels  =  320 
+let FortAssaultRetroScreenHeightPixels =  200
 
 
-let DesktopMain () =
+
+let FortAssaultMain () =
 
     match LoadTankBattleSequences () with // TODO: These are static resources now.
     
@@ -44,10 +44,10 @@ let DesktopMain () =
 
             FrameworkDesktopMain 
                 "Fort Assault"
-                HostWindowWidthPixels
-                HostWindowHeightPixels
-                HostRetroScreenWidthPixels
-                HostRetroScreenHeightPixels
+                FortAssaultWindowWidthPixels
+                FortAssaultWindowHeightPixels
+                FortAssaultRetroScreenWidthPixels
+                FortAssaultRetroScreenHeightPixels
                 fortAssaultKeysNeeded
                 fortAssaultStaticResources
                 GameResourceImages 
