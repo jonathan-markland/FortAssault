@@ -52,9 +52,9 @@ Then navigate to http://localhost:8080
 TODO: I must find a better solution to copying the 
 Desktop version's image files manually!
 
-To obtain the production web site file set:
+To obtain the production web site file set, run this command in 
+the solution root folder:
 
-	cd FortAssaultWeb
 	npx webpack --mode production
 
 Build Desktop Linux Version
