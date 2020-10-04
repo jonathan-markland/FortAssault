@@ -231,10 +231,10 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
 
             let gameTime         = 0.0F<seconds>
             let gameResources    = { TankMapsList = tankMapsList }
-            let storyboard       = NewStoryboard gameResources gameTime
+            let storyboard       = NewFortAssaultStoryboard gameResources gameTime
             let renderFunction   = RenderToWebCanvas javascriptGameResources context2d
             let frameElapsedTime = 0.02F<seconds>
-            let gameGlobals      = InitialFortAssaultGlobals ()
+            let gameGlobals      = FortAssaultGlobalStateConstructor ()
             
             let mutableKeyStateStore =
                 NewMutableKeyStateStore
@@ -269,10 +269,10 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
                 let gameTime = 
                     (float32 tickCount) / 50.0F |> InSeconds
                 
-                RenderStoryboard renderFunction screenState gameTime
+                RenderFortAssaultStoryboard renderFunction screenState gameTime
 
                 let screenState = 
-                    NextStoryboardState gameResources screenState keyStateGetter gameTime frameElapsedTime 
+                    NextFortAssaultStoryboardState gameResources screenState keyStateGetter gameTime frameElapsedTime 
 
                 ClearKeyJustPressedFlags mutableKeyStateStore
 

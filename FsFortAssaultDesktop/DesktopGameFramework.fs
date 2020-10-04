@@ -257,82 +257,81 @@ let MainLoopProcessing
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let GameMain
+let ProcessExitFail    = 1
+let ProcessExitSuccess = 0
+
+
+let FrameworkDesktopMain
     gameWindowTitleString 
     hostWindowWidthPixels 
     hostWindowHeightPixels 
     hostRetroScreenWidthPixels 
     hostRetroScreenHeightPixels 
-    listOfKeysNeeded 
-    gameStaticData
     gameResourceImages 
     gameFontResourceImages
-    gameplayStartConstructor
-    gameRenderer 
-    gameFrameAdvanceFunction
-    gameGlobals
-    () =
-
-        match CreateWindowAndRenderer gameWindowTitleString hostWindowWidthPixels hostWindowHeightPixels with   // TODO: Re-visit window initial size constants
-                
-            | Some(_mainWindow, renderer) ->
-
-                match CreateRgb8888TextureForRenderer renderer hostRetroScreenWidthPixels hostRetroScreenHeightPixels with
-
-                    | Some(backingTexture) ->
-
-                        let path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
-                        let gameResources = LoadGameImagesAndFonts gameResourceImages gameFontResourceImages renderer path   // TODO:  Minor: We don't actually free the imageSet handles.
-
-                        MainLoopProcessing 
-                            renderer 
-                            backingTexture 
-                            gameResources 
-                            gameStaticData 
-                            gameplayStartConstructor
-                            gameGlobals
-                            gameRenderer 
-                            gameFrameAdvanceFunction
-                            listOfKeysNeeded
-
-                        1
-            
-                    | None ->
-                        failwith "Cannot create an SDL2 texture to store the game screen image."
-
-            | None ->
-                0
-
-
-
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let FrameworkDesktopMain // TODO: Merge with GameMain
-    gameName 
-    hostWindowWidthPixels
-    hostWindowHeightPixels
-    hostRetroScreenWidthPixels
-    hostRetroScreenHeightPixels
-    gameResourceImages 
-    gameFontResourceImages 
     listOfKeysNeeded 
-    gameStaticData 
-    gameGlobals
+    gameStaticDataConstructor
+    gameGlobalStateConstructor
     gameplayStartConstructor
     gameRenderer 
     gameFrameAdvanceFunction =
 
-    match WithSdl2Do (GameMain gameName hostWindowWidthPixels hostWindowHeightPixels hostRetroScreenWidthPixels hostRetroScreenHeightPixels listOfKeysNeeded gameStaticData gameResourceImages gameFontResourceImages gameplayStartConstructor gameRenderer gameFrameAdvanceFunction gameGlobals) with
+        let runGame () =
 
-        | None -> 
-            printfn "Cannot start the game because the SDL2 library failed to start."
-            0
+            match CreateWindowAndRenderer gameWindowTitleString hostWindowWidthPixels hostWindowHeightPixels with   // TODO: Re-visit window initial size constants
 
-        | Some(n) -> 
-            n
+                | None ->
+                    ProcessExitFail
+        
+                | Some(_mainWindow, renderer) ->
+
+                    match CreateRgb8888TextureForRenderer renderer hostRetroScreenWidthPixels hostRetroScreenHeightPixels with
+
+                        | None ->
+                            failwith "Cannot create an SDL2 texture to store the game screen image."
+
+                        | Some(backingTexture) ->
+
+                            let path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
+                            
+                            let gameResources = 
+                                LoadGameImagesAndFonts gameResourceImages gameFontResourceImages renderer path   // TODO:  Minor: We don't actually free the imageSet handles.
+
+                            let gameStaticData =
+                                gameStaticDataConstructor ()
+
+                            let gameGlobalState =
+                                gameGlobalStateConstructor ()
+
+                            MainLoopProcessing 
+                                renderer 
+                                backingTexture 
+                                gameResources 
+                                gameStaticData 
+                                (gameplayStartConstructor gameStaticData)
+                                gameGlobalState
+                                gameRenderer 
+                                gameFrameAdvanceFunction
+                                listOfKeysNeeded
+
+                            ProcessExitSuccess
+
+        try
+
+            match WithSdl2Do runGame with
+
+                | None -> 
+                    failwith "Cannot start the game because the SDL2 library failed to start."
+                    ProcessExitFail
+
+                | Some processExitCode -> 
+                    processExitCode
+
+        with 
+            | e ->
+                printfn "%s" (e.ToString())
+                ProcessExitFail
 
 
-
-
+            
 

@@ -59,7 +59,7 @@ type GameResources =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let RenderStoryboard render gameState gameTime =
+let RenderFortAssaultStoryboard render gameState gameTime =
     
     let (struct (storyboard , _gameGlobals)) = gameState
 
@@ -140,7 +140,7 @@ let Shortcut gameResources gameTime mode =
 
         | RunGameNormally ->
             // -- THIS CASE EXECUTES FOR THE RELEASE VERSION --
-            let gameGlobals = InitialFortAssaultGlobals ()
+            let gameGlobals = FortAssaultGlobalStateConstructor ()
             let highestScoreInInitialBoard = HiScoreFromScoreboard gameGlobals.GameScoreBoard
             GameTitleChapter(NewGameTitleScreen highestScoreInInitialBoard gameGlobals gameTime)
 
@@ -205,7 +205,7 @@ let Shortcut gameResources gameTime mode =
 
         | SkipToEnterYourName ->
             // Shortcut to Enter your name screen
-            let globals = InitialFortAssaultGlobals ()
+            let globals = FortAssaultGlobalStateConstructor ()
             let screen = NewPotentialEnterYourNameScreen {Score=25000u ; HiScore=25000u} globals.GameScoreBoard  // ie: you got the new hi score compared to InitialGameGlobals()
             PotentialEnterYourNameChapter screen
 
@@ -225,7 +225,7 @@ let Shortcut gameResources gameTime mode =
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 /// Called only once when the game boots
-let NewStoryboard gameResources gameTime =
+let NewFortAssaultStoryboard gameResources gameTime =
 
     #if SHORT_PLAYTHROUGH
     Shortcut gameResources gameTime RunGameNormally

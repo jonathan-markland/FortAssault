@@ -9,7 +9,7 @@ type FortAssaultGlobalState =
     }
 
 /// Establish the "boot-time" state for the scoreboard.
-let InitialFortAssaultGlobals () =
+let FortAssaultGlobalStateConstructor () =
     {
         GameScoreBoard = InitialScoreboard [ "Bob" ; "Scott" ; "Lara" ; "J" ] 10000u 5000u
     }

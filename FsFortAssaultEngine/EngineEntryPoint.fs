@@ -5,7 +5,7 @@ open Input
 open InputEventData
 open Storyboard
 
-let NextStoryboardState staticGameResources gameState keyStateGetter gameTime frameElapsedTime =  // TODO: Two functions called the same thing!!
+let NextFortAssaultStoryboardState staticGameResources gameState keyStateGetter gameTime frameElapsedTime =  // TODO: Two functions called the same thing!!
 
     // We wish to disguise the keyStateGetter by NOT passing it along.
     // Let's always use browser keys in the game engine, and the host can re-map them as needed.
