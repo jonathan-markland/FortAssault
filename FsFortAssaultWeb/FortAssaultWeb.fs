@@ -79,7 +79,8 @@ let JsDrawSubImage
     (dstheight:int) = jsNative                         // $9 
 
 let inline DrawSubImage context2d (HostImageObject(htmlImageObject)) srcleft srctop srcwidth srcheight dstleft dsttop dstwidth dstheight =
-    JsDrawSubImage context2d htmlImageObject srcleft srctop srcwidth srcheight dstleft dsttop dstwidth dstheight
+    if srcwidth > 0 && srcheight > 0 && dstwidth > 0 && dstheight > 0 then
+        JsDrawSubImage context2d htmlImageObject srcleft srctop srcwidth srcheight dstleft dsttop dstwidth dstheight
 
 
 [<Emit("$0.fillStyle=$5 ; $0.fillRect($1,$2,$3,$4)")>]
@@ -172,38 +173,37 @@ let LoadResourceFilesThenDo afterAllLoaded =
 
 // ------------------------------------------------------------------------------------------------------------
 
-let RenderToWebCanvas (gameResources:JavascriptGraphicResources) (context2d:Browser.Types.CanvasRenderingContext2D) drawingCommand =
-
-    /// Convert engine units to our pixels.
-    /// Currently this host is choosing to use 1:1 with the engine's coordinate scheme.
-    let px (n:float32<epx>) =
-        FloatEpxToInt n
+let RenderToWebCanvas (context2d:Browser.Types.CanvasRenderingContext2D) drawingCommand =
 
     match drawingCommand with
 
         | DrawImageWithTopLeftAtInt(left, top, imageVisual) ->
-            let bmp = imageVisual.HostImageObject
-            DrawImage context2d bmp ((int) left) ((int) top) // NB: not truncations, just removing the units of measure
+            DrawImage 
+                context2d imageVisual.HostImageObject 
+                (left |> IntEpxToInt) (top |> IntEpxToInt)
 
         | DrawStretchedImageWithTopLeftAt(left, top, imageVisual, width, height) ->
-            let bmp = imageVisual.HostImageObject
             let (w,h) = (imageVisual.EngineImageMetadata.ImageWidth , imageVisual.EngineImageMetadata.ImageHeight)
-            DrawSubImage context2d bmp 0 0 (w |> IntEpxToInt) (h |> IntEpxToInt) (px left) (px top) (px width) (px height)
-            // DrawFilledRectangle context2d (left |> FloatEpxToInt) (top |> FloatEpxToInt) (width |> FloatEpxToInt) (height |> FloatEpxToInt) 0xFF0000u
-            // DrawImage context2d bmp 100 150
+            DrawSubImage 
+                context2d imageVisual.HostImageObject
+                0 0 (w |> IntEpxToInt) (h |> IntEpxToInt) 
+                (left |> FloatEpxToInt) (top |> FloatEpxToInt) (width |> IntEpxToInt) (height |> IntEpxToInt)
 
         | DrawSubImageStretchedToTarget(srcleft, srctop, srcwidth, srcheight, dstleft, dsttop, dstwidth, dstheight, imageVisual) ->
-            let bmp = imageVisual.HostImageObject
-            // DrawImage context2d bmp 150 100
-            // DrawFilledRectangle context2d (px dstleft) (px dsttop) (px dstwidth) (px dstheight) 0x00CC00u
-            DrawSubImage context2d bmp srcleft srctop srcwidth srcheight (px dstleft) (px dsttop) (px dstwidth) (px dstheight)
+            DrawSubImage 
+                context2d imageVisual.HostImageObject
+                srcleft srctop srcwidth srcheight 
+                (dstleft |> FloatEpxToInt) (dsttop |> FloatEpxToInt) (dstwidth |> IntEpxToInt) (dstheight |> IntEpxToInt)
 
-        | DrawFilledRectangle(left, top, width, height, SolidColour(colour)) ->
+        | DrawFilledRectangle(left, top, width, height, SolidColour colour) ->
             let width  = width  |> IntEpxToInt
             let height = height |> IntEpxToInt
-            let left   = left |> IntEpxToInt
-            let top    = top  |> IntEpxToInt
-            DrawFilledRectangle context2d left top width height colour
+            let left   = left   |> IntEpxToInt
+            let top    = top    |> IntEpxToInt
+            DrawFilledRectangle 
+                context2d 
+                left top width height 
+                colour
 
 // ------------------------------------------------------------------------------------------------------------
 
@@ -227,7 +227,7 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
             let gameTime         = 0.0F<seconds>
             let gameResources    = { TankMapsList = tankMapsList }
             let storyboard       = NewFortAssaultStoryboard gameResources gameTime
-            let renderFunction   = RenderToWebCanvas javascriptGameResources context2d
+            let renderFunction   = RenderToWebCanvas context2d
             let frameElapsedTime = 0.02F<seconds>
             let gameGlobals      = FortAssaultGlobalStateConstructor ()
             

@@ -127,11 +127,6 @@ let unwrapFont fileName opt =
 /// using Float32 allowing higher resolution positioning if this side supported it(!)
 let private RenderToSdl renderer drawingCommand =
 
-    /// Convert engine units to our pixels.
-    /// Currently this host is choosing to use 1:1 with the engine's coordinate scheme.
-    let px (n:float32<epx>) =
-        FloatEpxToInt n
-
     match drawingCommand with
 
         | DrawImageWithTopLeftAtInt(left, top, imageVisual) ->
@@ -139,8 +134,8 @@ let private RenderToSdl renderer drawingCommand =
             DrawSdlImage 
                 renderer 
                 (hostImageObject :?> SdlImageFileMetadata)
-                ((int) left) 
-                ((int) top) // NB: not truncations, just removing the units of measure
+                (left |> IntEpxToInt) 
+                (top  |> IntEpxToInt)
 
         | DrawStretchedImageWithTopLeftAt(left, top, imageVisual, width, height) ->
             let (HostImageObject(hostImageObject)) = imageVisual.HostImageObject
@@ -148,9 +143,9 @@ let private RenderToSdl renderer drawingCommand =
                 renderer 
                 (hostImageObject :?> SdlImageFileMetadata).TextureHandle
                 0 0 
-                ((int) imageVisual.EngineImageMetadata.ImageWidth)
-                ((int) imageVisual.EngineImageMetadata.ImageHeight)
-                (px left) (px top) (px width) (px height)
+                (imageVisual.EngineImageMetadata.ImageWidth  |> IntEpxToInt)
+                (imageVisual.EngineImageMetadata.ImageHeight |> IntEpxToInt)
+                (left |> FloatEpxToInt) (top |> FloatEpxToInt) (width |> IntEpxToInt) (height |> IntEpxToInt)
 
         | DrawSubImageStretchedToTarget(srcleft, srctop, srcwidth, srcheight, dstleft, dsttop, dstwidth, dstheight, imageVisual) ->
             let (HostImageObject(hostImageObject)) = imageVisual.HostImageObject
@@ -158,7 +153,7 @@ let private RenderToSdl renderer drawingCommand =
                 renderer 
                 (hostImageObject :?> SdlImageFileMetadata).TextureHandle
                 srcleft srctop srcwidth srcheight
-                (px dstleft) (px dsttop) (px dstwidth) (px dstheight)
+                (dstleft |> FloatEpxToInt) (dsttop |> FloatEpxToInt) (dstwidth |> IntEpxToInt) (dstheight |> IntEpxToInt)
 
         | DrawFilledRectangle(left, top, width, height, SolidColour(colour)) ->
             let right  = (left + width) |> IntEpxToInt

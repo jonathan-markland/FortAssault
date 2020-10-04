@@ -26,21 +26,21 @@ type DrawingCommand =
         *  height_2    : int<epx> 
         *  colour_2    : SolidColour
 
-    | DrawStretchedImageWithTopLeftAt 
-        of leftX_3     : float32<epx> 
-        *  topY_3      : float32<epx> 
+    | DrawStretchedImageWithTopLeftAt
+        of leftX_3     : float32<epx>    // Floating point would allow host to more precisely position image
+        *  topY_3      : float32<epx>    // if it supports it.
         *  img_3       : ImageWithHostObject 
-        *  width_3     : float32<epx> 
-        *  height_3    : float32<epx>
+        *  width_3     : int<epx> 
+        *  height_3    : int<epx>
 
     | DrawSubImageStretchedToTarget
         of srcleft_4   : int 
         *  srctop_4    : int 
         *  srcwidth_4  : int 
         *  srcheight_4 : int 
-        *  dstleft_4   : float32<epx> 
-        *  dsttop_4    : float32<epx> 
-        *  dstwidth_4  : float32<epx> 
-        *  dstheight_4 : float32<epx> 
+        *  dstleft_4   : float32<epx>   // Floating point would allow host to more precisely position image
+        *  dsttop_4    : float32<epx>   // if it supports it.
+        *  dstwidth_4  : int<epx> 
+        *  dstheight_4 : int<epx> 
         *  img_4       : ImageWithHostObject
 

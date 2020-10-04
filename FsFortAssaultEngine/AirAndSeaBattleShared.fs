@@ -117,8 +117,8 @@ let DrawEnemyShips render listOfShips gameTime =
 
         let dstLeft   = ship.CentreX - ((shipWidth |> IntToFloatEpx) / 2.0F)
         let dstTop    = ship.BaseY - ((shipHeight  |> IntToFloatEpx) - sinkLevel)
-        let dstWidth  = shipWidth |> IntToFloatEpx
-        let dstHeight = srcHeight |> IntToFloatEpx
+        let dstWidth  = shipWidth
+        let dstHeight = srcHeight |> IntToIntEpx
         
         let cmd = 
             DrawSubImageStretchedToTarget(  // TODO: This broke the system with a struct-DU
