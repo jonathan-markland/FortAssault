@@ -24,14 +24,20 @@ let FortAssaultMain () =
     
         | Ok tankMapsList ->
 
-            let fortAssaultStaticResources = 
+            // Global data that never changes at all, even across game-starts:
+
+            let fortAssaultStaticData = 
                 { TankMapsList = tankMapsList }
+
+            // Global data that is survives gameplay sessions:
 
             let fortAssaultGlobals = 
                 InitialFortAssaultGlobals ()
 
-            let fortAssaultStartStateConstructor = 
-                NewStoryboard fortAssaultStaticResources
+            // Constructor function that starts a new game:
+
+            let fortAssaultGameplayStartConstructor = 
+                NewStoryboard fortAssaultStaticData
 
             let fortAssaultKeysNeeded =
                 [
@@ -48,14 +54,14 @@ let FortAssaultMain () =
                 FortAssaultWindowHeightPixels
                 FortAssaultRetroScreenWidthPixels
                 FortAssaultRetroScreenHeightPixels
+                FortAssaultResourceImages 
+                FortAssaultFontResourceImages
                 fortAssaultKeysNeeded
-                fortAssaultStaticResources
-                GameResourceImages 
-                GameFontResourceImages
-                fortAssaultStartStateConstructor
+                fortAssaultStaticData
+                fortAssaultGlobals
+                fortAssaultGameplayStartConstructor
                 RenderStoryboard
                 NextStoryboardState
-                fortAssaultGlobals
 
         | Error msg -> 
             System.Console.WriteLine(msg) |> ignore

@@ -97,7 +97,7 @@ let inline DrawFilledRectangle context2d x y w h (colouru:uint32) =
 
 let LoadFileListThenDo fileNameObtainer needsMagentaObtainer widthGetter heightGetter continuation resourceList =
 
-    let htmlImageElementResizeArrayForFonts = new ResizeArray<ImageWithHostObject>(GameFontResourceImages.Length)
+    let htmlImageElementResizeArrayForFonts = new ResizeArray<ImageWithHostObject>(FortAssaultFontResourceImages.Length)
 
     let rec recurse resourceRecordList fileNameObtainer needsMagentaObtainer =
 
@@ -149,9 +149,9 @@ let LoadResourceFilesThenDo afterAllLoaded =
     let imageWidthGetter  metadata = metadata.ImageWidth
     let imageHeightGetter metadata = metadata.ImageHeight
 
-    GameFontResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
+    FortAssaultFontResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
         (fun arrayOfLoadedFonts ->
-            GameResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
+            FortAssaultResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
                 (fun arrayOfLoadedImages ->
                     afterAllLoaded arrayOfLoadedFonts arrayOfLoadedImages
                 )

@@ -160,7 +160,16 @@ let TimerCallback (interval:uint32) (param:nativeint) : uint32 =  // TODO: Can t
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let MainLoopProcessing renderer backingTexture gameResources staticGameResources initialGameStateConstructor initGameGlobals renderStoryboard nextGameState keyboardKeysList =
+let MainLoopProcessing 
+    renderer 
+    backingTexture 
+    gameResources 
+    gameStaticData 
+    initialGameStateConstructor 
+    initGameGlobals 
+    gameRenderer 
+    gameFrameAdvanceFunction 
+    listOfKeysNeeded =
 
     SetStaticImageResourceArray gameResources.GameBMPs
 
@@ -173,7 +182,7 @@ let MainLoopProcessing renderer backingTexture gameResources staticGameResources
     let mutable screenState = (struct (initScreenState , initGameGlobals))
 
     // 20ms timer installed so that the main event loop receives 'SDL.SDL_EventType.SDL_USEREVENT' every 20ms (1/50th second)
-    let timerID =   // TODO: Push into library?
+    let timerID =
         SDL.SDL_AddTimer(20u, new SDL.SDL_TimerCallback(TimerCallback), 0n)
             
     if timerID = 0 then
@@ -182,13 +191,13 @@ let MainLoopProcessing renderer backingTexture gameResources staticGameResources
     let renderFunction = 
         RenderToSdl gameResources renderer   // TODO: We only pass gameResources in to get the fonts now.  Soon we won't need to pass gameResources at all.
 
-
     let mutableKeyStateStore =
         NewMutableKeyStateStore
             SDL.SDL_Scancode.SDL_SCANCODE_P
-            keyboardKeysList
+            listOfKeysNeeded
     
-    let keyStateGetter = LiveKeyStateFrom mutableKeyStateStore
+    let keyStateGetter = 
+        LiveKeyStateFrom mutableKeyStateStore
 
     let HandleFrameAdvanceEvent gameTime lastGameTime =
 
@@ -197,7 +206,7 @@ let MainLoopProcessing renderer backingTexture gameResources staticGameResources
         // DEBUG: force clean the drawing texture.  This may help observe artefacts where tiles don't join.
         // renderFunction (DrawFilledRectangle(0.0F<wu>, 0.0F<wu>, 320.0F<wu>, 256.0F<wu>, SolidColour(0xFF00FFu)))
 
-        renderStoryboard renderFunction screenState gameTime
+        gameRenderer renderFunction screenState gameTime
         SetRenderTargetToScreen renderer
         RenderCopyToFullTarget renderer backingTexture
         Present renderer
@@ -206,8 +215,8 @@ let MainLoopProcessing renderer backingTexture gameResources staticGameResources
             gameTime - lastGameTime
 
         let nextScreenState = 
-            nextGameState 
-                staticGameResources 
+            gameFrameAdvanceFunction 
+                gameStaticData 
                 screenState 
                 keyStateGetter
                 gameTime 
@@ -218,6 +227,7 @@ let MainLoopProcessing renderer backingTexture gameResources staticGameResources
 
         mutableKeyStateStore |> ClearKeyJustPressedFlags
 
+    // Classic main event loop.
 
     let mutable event            = new SDL.SDL_Event ()
     let mutable lastGameTime     = 0.0F<seconds>
@@ -253,13 +263,13 @@ let GameMain
     hostWindowHeightPixels 
     hostRetroScreenWidthPixels 
     hostRetroScreenHeightPixels 
-    keysListNeeded 
-    staticGameResources
+    listOfKeysNeeded 
+    gameStaticData
     gameResourceImages 
     gameFontResourceImages
-    initialGameStateConstructor
-    renderStoryboard 
-    nextStoryboardState
+    gameplayStartConstructor
+    gameRenderer 
+    gameFrameAdvanceFunction
     gameGlobals
     () =
 
@@ -278,12 +288,12 @@ let GameMain
                             renderer 
                             backingTexture 
                             gameResources 
-                            staticGameResources 
-                            initialGameStateConstructor
+                            gameStaticData 
+                            gameplayStartConstructor
                             gameGlobals
-                            renderStoryboard 
-                            nextStoryboardState
-                            keysListNeeded
+                            gameRenderer 
+                            gameFrameAdvanceFunction
+                            listOfKeysNeeded
 
                         1
             
@@ -304,16 +314,16 @@ let FrameworkDesktopMain // TODO: Merge with GameMain
     hostWindowHeightPixels
     hostRetroScreenWidthPixels
     hostRetroScreenHeightPixels
-    keysListNeeded 
-    staticGameResources 
     gameResourceImages 
     gameFontResourceImages 
-    initialGameStateConstructor
-    renderStoryboard 
-    nextStoryboardState
-    gameGlobals =
+    listOfKeysNeeded 
+    gameStaticData 
+    gameGlobals
+    gameplayStartConstructor
+    gameRenderer 
+    gameFrameAdvanceFunction =
 
-    match WithSdl2Do (GameMain gameName hostWindowWidthPixels hostWindowHeightPixels hostRetroScreenWidthPixels hostRetroScreenHeightPixels keysListNeeded staticGameResources gameResourceImages gameFontResourceImages initialGameStateConstructor renderStoryboard nextStoryboardState gameGlobals) with
+    match WithSdl2Do (GameMain gameName hostWindowWidthPixels hostWindowHeightPixels hostRetroScreenWidthPixels hostRetroScreenHeightPixels listOfKeysNeeded gameStaticData gameResourceImages gameFontResourceImages gameplayStartConstructor gameRenderer gameFrameAdvanceFunction gameGlobals) with
 
         | None -> 
             printfn "Cannot start the game because the SDL2 library failed to start."
