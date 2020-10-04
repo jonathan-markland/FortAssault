@@ -52,7 +52,7 @@ type Storyboard =
 
     | MechanicsTestPageChapter      of MechanicsTestPageScreenModel
 
-type GameResources =
+type FortAssaultGameResources =
     {
         TankMapsList : TankBattleMapMatrix list  // TODO: We could remove this now the resources are integrated.
     }
@@ -140,9 +140,11 @@ let Shortcut gameResources gameTime mode =
 
         | RunGameNormally ->
             // -- THIS CASE EXECUTES FOR THE RELEASE VERSION --
-            let gameGlobals = FortAssaultGlobalStateConstructor ()
-            let highestScoreInInitialBoard = HiScoreFromScoreboard gameGlobals.GameScoreBoard
-            GameTitleChapter(NewGameTitleScreen highestScoreInInitialBoard gameGlobals gameTime)
+            match FortAssaultGlobalStateConstructor () with
+                | Error msg -> failwith msg
+                | Ok gameGlobals ->
+                    let highestScoreInInitialBoard = HiScoreFromScoreboard gameGlobals.GameScoreBoard
+                    GameTitleChapter(NewGameTitleScreen highestScoreInInitialBoard gameGlobals gameTime)
 
         // -- NONE OF THE FOLLOWING CASES EXECUTE FOR THE RELEASE VERSION --
 
@@ -205,9 +207,11 @@ let Shortcut gameResources gameTime mode =
 
         | SkipToEnterYourName ->
             // Shortcut to Enter your name screen
-            let globals = FortAssaultGlobalStateConstructor ()
-            let screen = NewPotentialEnterYourNameScreen {Score=25000u ; HiScore=25000u} globals.GameScoreBoard  // ie: you got the new hi score compared to InitialGameGlobals()
-            PotentialEnterYourNameChapter screen
+            match FortAssaultGlobalStateConstructor () with
+                | Error msg -> failwith msg
+                | Ok globals ->
+                    let screen = NewPotentialEnterYourNameScreen {Score=25000u ; HiScore=25000u} globals.GameScoreBoard  // ie: you got the new hi score compared to InitialGameGlobals()
+                    PotentialEnterYourNameChapter screen
 
         | SkipToGameOverScreen ->
             // Shortcut to game over screen

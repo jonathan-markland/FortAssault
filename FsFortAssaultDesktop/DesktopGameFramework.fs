@@ -23,7 +23,7 @@ type FrameworkGameResourcesRecord =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (renderer:RendererNativeInt) rootPath =
+let LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (renderer:RendererNativeInt) rootPath =  // TODO: Result error string
 
     let fromFile transparencyColour name = 
 
@@ -178,8 +178,11 @@ let MainLoopProcessing
     let GetGameTime () = 
         (float32 tickCount) / 50.0F |> InSeconds
 
-    let initScreenState = initialGameStateConstructor (GetGameTime ())
-    let mutable screenState = (struct (initScreenState , initGameGlobals))
+    let initScreenState = 
+        initialGameStateConstructor (GetGameTime ())
+
+    let mutable screenState = 
+        (struct (initScreenState , initGameGlobals))
 
     // 20ms timer installed so that the main event loop receives 'SDL.SDL_EventType.SDL_USEREVENT' every 20ms (1/50th second)
     let timerID =
@@ -212,7 +215,7 @@ let MainLoopProcessing
         Present renderer
 
         let frameElapsedTime =
-            gameTime - lastGameTime
+            gameTime - lastGameTime  // TODO: Why calculate this.  Web version just passes constant.
 
         let nextScreenState = 
             gameFrameAdvanceFunction 
@@ -220,12 +223,13 @@ let MainLoopProcessing
                 screenState 
                 keyStateGetter
                 gameTime 
-                frameElapsedTime
+                frameElapsedTime  // TODO: Didn't like passing this really.
 
         tickCount <- tickCount + 1u
         screenState <- nextScreenState
 
         mutableKeyStateStore |> ClearKeyJustPressedFlags
+
 
     // Classic main event loop.
 
@@ -255,11 +259,10 @@ let MainLoopProcessing
                     HandleFrameAdvanceEvent gameTime lastGameTime
                 lastGameTime <- gameTime
 
+
+
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let ProcessExitFail    = 1
-let ProcessExitSuccess = 0
-
 
 let FrameworkDesktopMain
     gameWindowTitleString 
@@ -270,25 +273,25 @@ let FrameworkDesktopMain
     gameResourceImages 
     gameFontResourceImages
     listOfKeysNeeded 
-    gameStaticDataConstructor
-    gameGlobalStateConstructor
-    gameplayStartConstructor
+    (gameStaticDataConstructor  : unit -> Result<'gameStaticData,string>)
+    (gameGlobalStateConstructor : unit -> Result<'gameGlobalState,string>)
+    (gameplayStartConstructor   : 'gameStaticData -> float32<seconds> -> 'gameScreenModel)
     gameRenderer 
-    gameFrameAdvanceFunction =
+    gameFrameAdvanceFunction : string option =
 
         let runGame () =
 
             match CreateWindowAndRenderer gameWindowTitleString hostWindowWidthPixels hostWindowHeightPixels with   // TODO: Re-visit window initial size constants
 
                 | None ->
-                    ProcessExitFail
+                    Some "Main window and SDL2 renderer could not be created."
         
                 | Some(_mainWindow, renderer) ->
 
                     match CreateRgb8888TextureForRenderer renderer hostRetroScreenWidthPixels hostRetroScreenHeightPixels with
 
                         | None ->
-                            failwith "Cannot create an SDL2 texture to store the game screen image."
+                            Some "Cannot create an SDL2 texture to store the game screen image."
 
                         | Some(backingTexture) ->
 
@@ -297,40 +300,54 @@ let FrameworkDesktopMain
                             let gameResources = 
                                 LoadGameImagesAndFonts gameResourceImages gameFontResourceImages renderer path   // TODO:  Minor: We don't actually free the imageSet handles.
 
-                            let gameStaticData =
+                            let gameStaticDataResult =
                                 gameStaticDataConstructor ()
 
-                            let gameGlobalState =
+                            let gameGlobalStateResult = 
                                 gameGlobalStateConstructor ()
 
-                            MainLoopProcessing 
-                                renderer 
-                                backingTexture 
-                                gameResources 
-                                gameStaticData 
-                                (gameplayStartConstructor gameStaticData)
-                                gameGlobalState
-                                gameRenderer 
-                                gameFrameAdvanceFunction
-                                listOfKeysNeeded
+                            let errorResultToOption result =
+                                match result with
+                                    | Ok _ -> None
+                                    | Error errorMessage -> Some errorMessage
 
-                            ProcessExitSuccess
+                            gameGlobalStateResult
+                                |> Result.map (fun gameGlobalState ->
+
+                                    gameStaticDataResult
+                                        |> Result.map (fun gameStaticData ->
+
+                                            MainLoopProcessing 
+                                                renderer 
+                                                backingTexture 
+                                                gameResources 
+                                                gameStaticData 
+                                                (gameplayStartConstructor gameStaticData)
+                                                gameGlobalState
+                                                gameRenderer 
+                                                gameFrameAdvanceFunction
+                                                listOfKeysNeeded
+
+                                            None
+                                        )
+                                        |> errorResultToOption
+                                )
+                                |> errorResultToOption
 
         try
 
             match WithSdl2Do runGame with
 
                 | None -> 
-                    failwith "Cannot start the game because the SDL2 library failed to start."
-                    ProcessExitFail
+                    Some "The SDL2 library failed to start."
 
-                | Some processExitCode -> 
-                    processExitCode
+                | Some status -> 
+                    status
 
         with 
             | e ->
-                printfn "%s" (e.ToString())
-                ProcessExitFail
+                Some (sprintf "%s" (e.ToString()))
+                
 
 
             

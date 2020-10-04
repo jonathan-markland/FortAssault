@@ -278,6 +278,11 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
 
                 window.setTimeout((mainLoop screenState tickCount), 20) |> ignore
 
+            let gameGlobals =
+                match gameGlobals with
+                    | Error msg -> failwith msg
+                    | Ok globals -> globals
+
             mainLoop (struct (storyboard, gameGlobals)) 0u ()
 
    
