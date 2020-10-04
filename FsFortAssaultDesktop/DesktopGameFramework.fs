@@ -245,5 +245,84 @@ let MainLoopProcessing renderer backingTexture gameResources staticGameResources
                     HandleFrameAdvanceEvent gameTime lastGameTime
                 lastGameTime <- gameTime
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let GameMain
+    gameWindowTitleString 
+    hostWindowWidthPixels 
+    hostWindowHeightPixels 
+    hostRetroScreenWidthPixels 
+    hostRetroScreenHeightPixels 
+    keysListNeeded 
+    staticGameResources
+    gameResourceImages 
+    gameFontResourceImages
+    initialGameStateConstructor
+    renderStoryboard 
+    nextStoryboardState
+    gameGlobals
+    () =
+
+        match CreateWindowAndRenderer gameWindowTitleString hostWindowWidthPixels hostWindowHeightPixels with   // TODO: Re-visit window initial size constants
+                
+            | Some(_mainWindow, renderer) ->
+
+                match CreateRgb8888TextureForRenderer renderer hostRetroScreenWidthPixels hostRetroScreenHeightPixels with
+
+                    | Some(backingTexture) ->
+
+                        let path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
+                        let gameResources = LoadGameImagesAndFonts gameResourceImages gameFontResourceImages renderer path   // TODO:  Minor: We don't actually free the imageSet handles.
+
+                        MainLoopProcessing 
+                            renderer 
+                            backingTexture 
+                            gameResources 
+                            staticGameResources 
+                            initialGameStateConstructor
+                            gameGlobals
+                            renderStoryboard 
+                            nextStoryboardState
+                            keysListNeeded
+
+                        1
+            
+                    | None ->
+                        failwith "Cannot create an SDL2 texture to store the game screen image."
+
+            | None ->
+                0
+
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let FrameworkDesktopMain // TODO: Merge with GameMain
+    gameName 
+    hostWindowWidthPixels
+    hostWindowHeightPixels
+    hostRetroScreenWidthPixels
+    hostRetroScreenHeightPixels
+    keysListNeeded 
+    staticGameResources 
+    gameResourceImages 
+    gameFontResourceImages 
+    initialGameStateConstructor
+    renderStoryboard 
+    nextStoryboardState
+    gameGlobals =
+
+    match WithSdl2Do (GameMain gameName hostWindowWidthPixels hostWindowHeightPixels hostRetroScreenWidthPixels hostRetroScreenHeightPixels keysListNeeded staticGameResources gameResourceImages gameFontResourceImages initialGameStateConstructor renderStoryboard nextStoryboardState gameGlobals) with
+
+        | None -> 
+            printfn "Cannot start the game because the SDL2 library failed to start."
+            0
+
+        | Some(n) -> 
+            n
+
+
+
 
 
