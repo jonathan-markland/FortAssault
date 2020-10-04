@@ -5,7 +5,7 @@ VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 15.0.26124.0
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsAnyGame", "FsAnyGame\FsAnyGame.fsproj", "{F98CA334-C050-421A-AFE6-A1C23C818346}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsDesktopGameFramework", "FsSDL2Cover\FsDesktopGameFramework.fsproj", "{8B83A3F9-74DA-400B-AFCC-EA80C1748FEA}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsDesktopGameFramework", "FsDesktopGameFramework\FsDesktopGameFramework.fsproj", "{8B83A3F9-74DA-400B-AFCC-EA80C1748FEA}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsFortAssaultEngine", "FsFortAssaultEngine\FsFortAssaultEngine.fsproj", "{70B9D5FF-7A10-43A7-BC6C-7A38FE08FF25}"
 EndProject
