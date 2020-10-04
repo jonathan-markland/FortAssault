@@ -23,7 +23,7 @@ type FrameworkGameResourcesRecord =  // TODO: Unify with the javascript version!
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (renderer:RendererNativeInt) rootPath =  // TODO: Result error string
+let LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (renderer:SdlRendererNativeInt) rootPath =  // TODO: Result error string
 
     let fromFile transparencyColour name = 
 
@@ -33,7 +33,7 @@ let LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (renderer:R
         if not (File.Exists(fullPath)) then
             failwith (sprintf "Game could not start because file '%s' is missing." fullPath)
 
-        match LoadFromFileAndPrepareForRenderer renderer fullPath transparencyColour with
+        match LoadFromFileAndPrepareForSdlRenderer renderer fullPath transparencyColour with
             | Some(imageRecord) -> imageRecord
             | None -> failwith (sprintf "Game could not start because file '%s' has invalid content." fullPath)
 
@@ -136,17 +136,17 @@ let RenderToSdl gameResources renderer drawingCommand =
 
         | DrawImageWithTopLeftAtInt(left, top, imageVisual) ->
             let (HostImageObject(hostImageObject)) = imageVisual.HostImageObject
-            DrawImage 
+            DrawSdlImage 
                 renderer 
-                (hostImageObject :?> ImageFileMetadata)
+                (hostImageObject :?> SdlImageFileMetadata)
                 ((int) left) 
                 ((int) top) // NB: not truncations, just removing the units of measure
 
         | DrawStretchedImageWithTopLeftAt(left, top, imageVisual, width, height) ->
             let (HostImageObject(hostImageObject)) = imageVisual.HostImageObject
-            DrawSubImage 
+            DrawSdlSubImage 
                 renderer 
-                (hostImageObject :?> ImageFileMetadata).TextureHandle
+                (hostImageObject :?> SdlImageFileMetadata).TextureHandle
                 0 0 
                 ((int) imageVisual.EngineImageMetadata.ImageWidth)
                 ((int) imageVisual.EngineImageMetadata.ImageHeight)
@@ -154,9 +154,9 @@ let RenderToSdl gameResources renderer drawingCommand =
 
         | DrawSubImageStretchedToTarget(srcleft, srctop, srcwidth, srcheight, dstleft, dsttop, dstwidth, dstheight, imageVisual) ->
             let (HostImageObject(hostImageObject)) = imageVisual.HostImageObject
-            DrawSubImage 
+            DrawSdlSubImage 
                 renderer 
-                (hostImageObject :?> ImageFileMetadata).TextureHandle
+                (hostImageObject :?> SdlImageFileMetadata).TextureHandle
                 srcleft srctop srcwidth srcheight
                 (px dstleft) (px dsttop) (px dstwidth) (px dstheight)
 
@@ -165,7 +165,7 @@ let RenderToSdl gameResources renderer drawingCommand =
             let bottom = (top + height) |> IntEpxToInt
             let left   = left |> IntEpxToInt
             let top    = top  |> IntEpxToInt
-            SDLCover.DrawFilledRectangle renderer left top right bottom colour
+            SDLCover.DrawSdlFilledRectangle renderer left top right bottom colour
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -227,15 +227,15 @@ let MainLoopProcessing
 
     let HandleFrameAdvanceEvent gameTime lastGameTime =
 
-        SetRenderTargetToTexture renderer backingTexture
+        SetSdlRenderTargetToTexture renderer backingTexture
 
         // DEBUG: force clean the drawing texture.  This may help observe artefacts where tiles don't join.
         // renderFunction (DrawFilledRectangle(0.0F<wu>, 0.0F<wu>, 320.0F<wu>, 256.0F<wu>, SolidColour(0xFF00FFu)))
 
         gameRenderer renderFunction screenState gameTime
-        SetRenderTargetToScreen renderer
-        RenderCopyToFullTarget renderer backingTexture
-        Present renderer
+        SetSdlRenderTargetToScreen renderer
+        RenderCopyToFullSdlTarget renderer backingTexture
+        SdlPresent renderer
 
         let frameElapsedTime =
             gameTime - lastGameTime  // TODO: Why calculate this.  Web version just passes constant.
@@ -304,14 +304,14 @@ let FrameworkDesktopMain
 
         let runGame () =
 
-            match CreateWindowAndRenderer gameWindowTitleString hostWindowWidthPixels hostWindowHeightPixels with   // TODO: Re-visit window initial size constants
+            match CreateWindowAndSdlRenderer gameWindowTitleString hostWindowWidthPixels hostWindowHeightPixels with   // TODO: Re-visit window initial size constants
 
                 | None ->
                     Some "Main window and SDL2 renderer could not be created."
         
                 | Some(_mainWindow, renderer) ->
 
-                    match CreateRgb8888TextureForRenderer renderer hostRetroScreenWidthPixels hostRetroScreenHeightPixels with
+                    match CreateRgb8888TextureForSdlRenderer renderer hostRetroScreenWidthPixels hostRetroScreenHeightPixels with
 
                         | None ->
                             Some "Cannot create an SDL2 texture to store the game screen image."
