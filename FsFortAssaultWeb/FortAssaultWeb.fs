@@ -9,7 +9,7 @@ open Storyboard
 open Time
 open Geometry
 open DrawingCommands
-open GameGlobalState
+open FortAssaultGlobalState
 open KeyboardForFramework
 open Input
 open EngineEntryPoint
@@ -234,7 +234,7 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
             let storyboard       = NewStoryboard gameResources gameTime
             let renderFunction   = RenderToWebCanvas javascriptGameResources context2d
             let frameElapsedTime = 0.02F<seconds>
-            let gameGlobals      = InitialGameGlobals ()
+            let gameGlobals      = InitialFortAssaultGlobals ()
             
             let mutableKeyStateStore =
                 NewMutableKeyStateStore
@@ -272,7 +272,7 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
                 RenderStoryboard renderFunction screenState gameTime
 
                 let screenState = 
-                    NextGameState gameResources screenState keyStateGetter gameTime frameElapsedTime 
+                    NextStoryboardState gameResources screenState keyStateGetter gameTime frameElapsedTime 
 
                 ClearKeyJustPressedFlags mutableKeyStateStore
 

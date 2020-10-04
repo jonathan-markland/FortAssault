@@ -18,7 +18,7 @@ open MechanicsTestPage
 open FinalBossAndTankBattleShared
 open Rules
 open TankMapFileLoader
-open GameGlobalState
+open FortAssaultGlobalState
 open ScoreboardModel
 
 #if SHORT_PLAYTHROUGH
@@ -140,7 +140,7 @@ let Shortcut gameResources gameTime mode =
 
         | RunGameNormally ->
             // -- THIS CASE EXECUTES FOR THE RELEASE VERSION --
-            let gameGlobals = InitialGameGlobals ()
+            let gameGlobals = InitialFortAssaultGlobals ()
             let highestScoreInInitialBoard = HiScoreFromScoreboard gameGlobals.GameScoreBoard
             GameTitleChapter(NewGameTitleScreen highestScoreInInitialBoard gameGlobals gameTime)
 
@@ -205,7 +205,7 @@ let Shortcut gameResources gameTime mode =
 
         | SkipToEnterYourName ->
             // Shortcut to Enter your name screen
-            let globals = InitialGameGlobals ()
+            let globals = InitialFortAssaultGlobals ()
             let screen = NewPotentialEnterYourNameScreen {Score=25000u ; HiScore=25000u} globals.GameScoreBoard  // ie: you got the new hi score compared to InitialGameGlobals()
             PotentialEnterYourNameChapter screen
 
@@ -246,7 +246,7 @@ let NextStoryboardState staticGameResources gameState input gameTime frameElapse
 
     /// Where the GameGlobalState has been replaced this frame.
     let inline AdvanceAndReplaceGlobals (gameGlobals , storyboard) =
-        struct ((storyboard:Storyboard), (gameGlobals:GameGlobalState))
+        struct ((storyboard:Storyboard), (gameGlobals:FortAssaultGlobalState))
 
     /// Wrap a 'GET READY' intermission around the transition to a new state.
     let withIntermission desiredNextChapter =

@@ -1,11 +1,11 @@
 ﻿module EngineEntryPoint
 
-open GameGlobalState
+open FortAssaultGlobalState
 open Input
 open InputEventData
 open Storyboard
 
-let NextGameState staticGameResources gameState keyStateGetter gameTime frameElapsedTime =
+let NextStoryboardState staticGameResources gameState keyStateGetter gameTime frameElapsedTime =
 
     // We wish to disguise the keyStateGetter by NOT passing it along.
     // Let's always use browser keys in the game engine, and the host can re-map them as needed.

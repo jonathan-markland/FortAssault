@@ -7,7 +7,7 @@ open FontAlignment
 open InputEventData
 open BeachBackgroundRenderer
 open Time
-open GameGlobalState
+open FortAssaultGlobalState
 open ScoreboardModel
 open StaticResourceAccess
 
@@ -26,7 +26,7 @@ type GameTitleScreenState =
 type GameTitleScreenModel =
     {
         ScreenStartTime : float32<seconds>
-        GameGlobalState : GameGlobalState
+        GameGlobalState : FortAssaultGlobalState
         HiScore         : uint32
         State           : GameTitleScreenState
     }
