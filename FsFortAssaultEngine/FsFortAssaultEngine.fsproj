@@ -9,13 +9,11 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="ResourceFiles.fs" />
+    <Compile Include="FortAssaultImageFiles.fs" />
     <Compile Include="FortAssaultGlobalState.fs" />
-    <Compile Include="SoundEffects.fs" />
-    <Compile Include="EffectRequest.fs" />
     <Compile Include="Rules.fs" />
     <Compile Include="InputEventData.fs" />
-    <Compile Include="ImagesAndFonts.fs" />
+    <Compile Include="ResourceIDs.fs" />
     <Compile Include="SharedDrawing.fs" />
     <Compile Include="MapScreenSharedDetail.fs" />
     <Compile Include="Gun.fs" />

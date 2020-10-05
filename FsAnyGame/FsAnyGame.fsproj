@@ -11,7 +11,7 @@
     <Compile Include="Angle.fs" />
     <Compile Include="Time.fs" />
     <Compile Include="Geometry.fs" />
-    <Compile Include="ResourceFileMetadata.fs" />
+    <Compile Include="ImagesAndFonts.fs" />
     <Compile Include="StaticResourceSetup.fs" />
     <Compile Include="StaticResourceAccess.fs" />
     <Compile Include="Tiles.fs" />
@@ -19,8 +19,6 @@
     <Compile Include="Mechanics.fs" />
     <Compile Include="Input.fs" />
     <Compile Include="KeyboardForFramework.fs" />
-    <Compile Include="FontAlignment.fs" />
-    <Compile Include="FontCharacterPositioning.fs" />
     <Compile Include="ScoreHiScore.fs" />
     <Compile Include="Collisions.fs" />
     <Compile Include="PendingEvents.fs" />

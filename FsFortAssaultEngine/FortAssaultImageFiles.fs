@@ -1,6 +1,6 @@
 ﻿module FortAssaultImageFiles
 
-open ResourceFileMetadata
+open ImagesAndFonts
 open Geometry
 
 let private image colourKey fileName width height =

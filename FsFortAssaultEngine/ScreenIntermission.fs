@@ -3,9 +3,8 @@
 open Time
 open ResourceIDs
 open DrawingFunctions
-open FontAlignment
 open Geometry
-open ResourceFileMetadata
+open ImagesAndFonts
 open StaticResourceAccess
 
 

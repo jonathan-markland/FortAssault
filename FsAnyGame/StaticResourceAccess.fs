@@ -1,6 +1,6 @@
 ﻿module StaticResourceAccess
 
-open ResourceFileMetadata
+open ImagesAndFonts
 open StaticResourceSetup
 
 /// Obtain an image given an ID number.

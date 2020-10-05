@@ -1,6 +1,9 @@
-﻿module ResourceFileMetadata
+﻿module ImagesAndFonts
 
 open Geometry
+
+type TextHAlignment = LeftAlign | CentreAlign | RightAlign
+type TextVAlignment = TopAlign  | MiddleAlign | BottomAlign
 
 /// Transparency handling for bit-mapped images.
 type ImageColourKey = 

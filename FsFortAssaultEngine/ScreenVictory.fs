@@ -3,11 +3,10 @@
 open Time
 open DrawingFunctions
 open ScoreHiScore
-open FontAlignment
 open Geometry
 open InputEventData
 open ResourceIDs
-open ResourceFileMetadata
+open ImagesAndFonts
 open StaticResourceAccess
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

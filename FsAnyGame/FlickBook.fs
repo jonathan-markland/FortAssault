@@ -4,7 +4,7 @@ open Algorithm
 open Time
 open Mechanics
 open DrawingFunctions
-open ResourceFileMetadata
+open ImagesAndFonts
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

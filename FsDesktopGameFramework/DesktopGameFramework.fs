@@ -11,7 +11,7 @@ open KeyboardForFramework
 open Time
 open Geometry
 open DrawingShapes
-open ResourceFileMetadata
+open ImagesAndFonts
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

@@ -15,7 +15,7 @@ open FlickBook
 open AirAndSeaBattleShared
 open Collisions
 open Rules
-open ResourceFileMetadata
+open ImagesAndFonts
 open StaticResourceAccess
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

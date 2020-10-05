@@ -13,10 +13,9 @@ open ScorePanel
 open FlickBook
 open AirAndSeaBattleShared
 open Rules
-open FontAlignment
 open PendingEvents
 open InputEventData
-open ResourceFileMetadata
+open ImagesAndFonts
 open StaticResourceAccess
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

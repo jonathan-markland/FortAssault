@@ -3,7 +3,7 @@
 open DrawingFunctions
 open ResourceIDs
 open Geometry
-open FontAlignment
+open ImagesAndFonts
 open InputEventData
 open BeachBackgroundRenderer
 open Time

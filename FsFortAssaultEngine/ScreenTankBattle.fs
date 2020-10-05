@@ -15,7 +15,7 @@ open Mechanics
 open Collisions
 open Algorithm
 open FinalBossAndTankBattleShared
-open ResourceFileMetadata
+open ImagesAndFonts
 open StaticResourceAccess
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

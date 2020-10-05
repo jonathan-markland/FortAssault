@@ -23,7 +23,6 @@ open ScoreboardModel
 
 #if SHORT_PLAYTHROUGH
 open ImagesAndFonts
-open FontAlignment
 open DrawingFunctions
 open Geometry
 #endif

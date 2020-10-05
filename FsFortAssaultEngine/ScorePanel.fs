@@ -5,7 +5,7 @@ open ScoreHiScore
 open DrawingBarChart
 open ResourceIDs
 open DrawingFunctions
-open FontAlignment
+open ImagesAndFonts
 open Geometry
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

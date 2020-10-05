@@ -16,7 +16,7 @@ open InputEventData
 open ScorePanel
 open FlickBook
 open ResourceIDs
-open ResourceFileMetadata
+open ImagesAndFonts
 open StaticResourceAccess
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

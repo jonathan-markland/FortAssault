@@ -1,14 +1,12 @@
 ﻿module MechanicsTestPage
 
 open Time
-open SharedDrawing
 open DrawingShapes
 open DrawingFunctions
-open FontAlignment
 open Geometry
 open Mechanics
 open ResourceIDs
-open ResourceFileMetadata
+open ImagesAndFonts
 open StaticResourceAccess
 
 let AnimDurationSeconds = 3.0F<seconds>

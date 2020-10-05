@@ -10,8 +10,7 @@ open DrawingShapes
 open DrawingFunctions
 open ResourceIDs
 open Algorithm
-open FontAlignment
-open ResourceFileMetadata
+open ImagesAndFonts
 open StaticResourceAccess
 
 let SkyExplosionDuration  = 3.0F<seconds>

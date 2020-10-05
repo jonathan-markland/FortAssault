@@ -1,7 +1,7 @@
 ﻿module ResourceIDs
 
 open Geometry
-open ResourceFileMetadata
+open ImagesAndFonts
 
 // This game uses a 320*200 engine-coordinate (epx) space:
 

@@ -10,7 +10,7 @@ open Geometry
 open ResourceIDs
 open ScorePanel
 open MapScreenSharedDetail
-open ResourceFileMetadata
+open ImagesAndFonts
 open StaticResourceAccess
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

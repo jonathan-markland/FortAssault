@@ -3,15 +3,13 @@
 open Rules
 open DrawingFunctions
 open ResourceIDs
-open FontAlignment
 open Geometry
 open InputEventData
 open EnterYourName
 open BeachBackgroundRenderer
 open ScoreHiScore
 open ScoreboardModel
-open ResourceFileMetadata
-open StaticResourceAccess
+open ImagesAndFonts
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

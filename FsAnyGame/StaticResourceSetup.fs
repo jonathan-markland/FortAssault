@@ -1,7 +1,7 @@
 ﻿/// Only to be used from the Host program's initialisation.
 module StaticResourceSetup
 
-open ResourceFileMetadata
+open ImagesAndFonts
 
 let mutable (StaticImagesArray : ImageWithHostObject[]) = [||]
 let mutable (StaticFontsArray  : FontWithHostObject[])  = [||]

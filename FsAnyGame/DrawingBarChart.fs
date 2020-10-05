@@ -1,6 +1,6 @@
 ﻿module DrawingBarChart
 
-open ResourceFileMetadata
+open ImagesAndFonts
 open Geometry
 open DrawingFunctions
 

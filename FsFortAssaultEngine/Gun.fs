@@ -10,7 +10,7 @@ open InputEventData
 open DrawingFunctions
 open ResourceIDs
 open Mechanics
-open ResourceFileMetadata
+open ImagesAndFonts
 open StaticResourceAccess
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

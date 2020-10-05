@@ -7,7 +7,6 @@ open Time
 open DrawingShapes
 open DrawingFunctions
 open SharedDrawing
-open FontAlignment
 open ScoreHiScore
 open Geometry
 open Mechanics
@@ -17,7 +16,7 @@ open ScorePanel
 open FlickBook
 open Collisions
 open FinalBossAndTankBattleShared
-open ResourceFileMetadata
+open ImagesAndFonts
 open StaticResourceAccess
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

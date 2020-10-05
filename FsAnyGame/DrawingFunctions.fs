@@ -1,13 +1,11 @@
 ﻿module DrawingFunctions
 
 open DrawingShapes
-open FontCharacterPositioning
 open Geometry
 open Time
-open ResourceFileMetadata
+open ImagesAndFonts
 
 open StaticResourceAccess // TODO: needed for font solution because we pass IDs not objects -- may revisit!
-open FontAlignment
 
 // ---------------------------------------------------------------------------------------------------------
 //  Drawing bitmap images
@@ -54,6 +52,38 @@ let SquareAroundPoint render left top (side:int<epx>) colour =
 // ---------------------------------------------------------------------------------------------------------
 //  Drawing text
 // ---------------------------------------------------------------------------------------------------------
+
+/// Calculate the layout of an aligned monospace text string.
+/// Calls 'drawCharImage charIndex LeftX TopY' for each character.
+/// The chWidth/chHeight are the dimensions of a character at the target.
+/// The font definition must consist of digits 0-9 then capitals A-Z.
+let private LayOutMonospaceFontTextString drawCharImage chWidth chHeight x y message textHAlign textVAlign  =
+
+    let measuredWidth (s:string) =
+        s.Length * chWidth
+
+    let mutable posx =
+        match textHAlign with
+            | LeftAlign   -> x
+            | CentreAlign -> x - (message |> measuredWidth) / 2
+            | RightAlign  -> x - (message |> measuredWidth)
+
+    let posy =
+        match textVAlign with
+            | TopAlign    -> y
+            | MiddleAlign -> y - (chHeight / 2)
+            | BottomAlign -> y - chHeight
+
+    message |> Seq.iter (fun ch -> 
+        let write charIndex = drawCharImage charIndex posx posy
+        if      ch >= '0' && ch <= '9' then write ((int ch) - 48)
+        else if ch >= 'A' && ch <= 'Z' then write ((int ch) - 55)
+        else if ch >= 'a' && ch <= 'z' then write ((int ch) - 87)
+        else if ch = '.' then write 36
+        else ()
+        posx <- posx + chWidth
+    )
+
 
 let private DrawCharImageWithTopLeftAt render (x:int) (y:int) charIndex (fontDefinition:FontWithHostObject) =
 

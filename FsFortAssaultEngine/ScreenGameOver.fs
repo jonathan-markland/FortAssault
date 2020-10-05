@@ -4,11 +4,9 @@ open DrawingShapes
 open DrawingFunctions
 open ResourceIDs
 open ScoreHiScore
-open FontAlignment
 open Geometry
 open InputEventData
-open ResourceFileMetadata
-open StaticResourceAccess
+open ImagesAndFonts
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

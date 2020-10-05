@@ -3,7 +3,7 @@
 open DrawingShapes
 open ResourceIDs
 open ListSplicer
-open ResourceFileMetadata
+open ImagesAndFonts
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

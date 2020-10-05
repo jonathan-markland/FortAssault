@@ -1,7 +1,7 @@
 ﻿module DrawingShapes
 
 open Geometry
-open ResourceFileMetadata
+open ImagesAndFonts
 
 /// Solid R,G,B colour value.
 [<Struct>]
