@@ -29,6 +29,7 @@ type GameTitleScreenModel =
         GameGlobalState : FortAssaultGlobalState
         HiScore         : uint32
         State           : GameTitleScreenState
+        ScoreboardMemo  : string list
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -37,10 +38,7 @@ let RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 
     RenderBeachBackground render (gameTime / 4.0F)
     CentreImage render 160.0F<epx> 68.0F<epx> (ImageTitle |> ImageFromID)
-
-    let scoreboardText = ScoreboardText 30 model.GameGlobalState.GameScoreBoard  // TODO: memoize in the model?
-    Paragraph render BlackFontID CentreAlign TopAlign 160<epx> 94<epx> 20<epx> scoreboardText
-
+    Paragraph render BlackFontID CentreAlign TopAlign 160<epx> 94<epx> 20<epx> model.ScoreboardMemo
     Text render BlackFontID CentreAlign MiddleAlign 160<epx> 180<epx> "USE CURSOR KEYS ... Z TO FIRE"
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -51,6 +49,7 @@ let NewGameTitleScreen hiScore gameGlobalState gameTime =
         HiScore         = hiScore
         State           = GameTitleAwaitingFireButton
         ScreenStartTime = gameTime
+        ScoreboardMemo  = ScoreboardText 30 gameGlobalState.GameScoreBoard
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
