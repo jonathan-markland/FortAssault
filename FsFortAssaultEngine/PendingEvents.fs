@@ -1,5 +1,5 @@
 ﻿/// Experimental (simpler!) future events handling.
-module PendingEvents
+module PendingEvents // TODO: I want to get rid of this.
 
 open Time
 

@@ -21,7 +21,6 @@
     <Compile Include="KeyboardForFramework.fs" />
     <Compile Include="ScoreHiScore.fs" />
     <Compile Include="Collisions.fs" />
-    <Compile Include="PendingEvents.fs" />
     <Compile Include="DrawingShapes.fs" />
     <Compile Include="DrawingFunctions.fs" />
     <Compile Include="DrawingBarChart.fs" />
