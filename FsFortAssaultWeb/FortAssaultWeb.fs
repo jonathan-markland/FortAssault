@@ -154,19 +154,11 @@ let LoadResourceFilesThenDo afterAllLoaded =
         (fun arrayOfLoadedFontImages ->
 
             let arrayOfLoadedFonts = 
-                arrayOfLoadedFontImages |> Array.map 
-                    (fun fontImg -> 
-                        let charSide = fontImg.ImageMetadata.ImageHeight // TODO: This may need revisiting.
-                        {
-                            FontImage = fontImg 
-                            CharWidth               = charSide |> IntEpxToInt
-                            CharHeight              = charSide |> IntEpxToInt
-                        })
+                arrayOfLoadedFontImages |> Array.map BasicFont
 
             FortAssaultResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
                 (fun arrayOfLoadedImages ->
-                    afterAllLoaded arrayOfLoadedFonts arrayOfLoadedImages
-                )
+                    afterAllLoaded arrayOfLoadedFonts arrayOfLoadedImages)
         )
 
     // NB: We never get here (continuations called).

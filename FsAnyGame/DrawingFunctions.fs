@@ -87,53 +87,58 @@ let private LayOutMonospaceFontTextString drawCharImage chWidth chHeight x y mes
 
 let private DrawCharImageWithTopLeftAt render (x:int) (y:int) charIndex (fontDefinition:Font) =
 
-    let cwid = fontDefinition.CharWidth
-    let chei = fontDefinition.CharHeight
-    let chx  = (int charIndex) * cwid // TODO: constant: assuming char with for fonts.
+    let srcCharWidth  = fontDefinition.SrcCharWidth
+    let srcCharHeight = fontDefinition.SrcCharHeight
+    
+    let chx = (int charIndex) * srcCharWidth
 
     render (
         DrawSubImageStretchedToTarget (
-            chx, 0, cwid, chei,
-            (x |> IntToFloatEpx), (y |> IntToFloatEpx), (cwid |> IntToIntEpx), (chei |> IntToIntEpx),
+            chx, 0, srcCharWidth, srcCharHeight,
+            (x |> IntToFloatEpx), 
+            (y |> IntToFloatEpx), 
+            (fontDefinition.CharWidth  |> IntToIntEpx), 
+            (fontDefinition.CharHeight |> IntToIntEpx),
             fontDefinition.FontImage)) 
         
     
 
 /// Draw text string in a given font, aligned in a given way with respect to a point.
-let Text render (fontResource:FontID) hAlign vAlign (x:int<epx>) (y:int<epx>) message =
+let TextX render (fontDefinition:Font) hAlign vAlign (x:int<epx>) (y:int<epx>) message =
    
-    let fontDefinition = FontFromID fontResource
-    let cwid = fontDefinition.CharWidth
-    let chei = fontDefinition.CharHeight
-
     let drawCharImage (index:int) (left:int) (top:int) =
         // TODO: Should algorithm use uint32 for the char index?
         DrawCharImageWithTopLeftAt render left top (uint32 index) fontDefinition
     
-    // TODO: Constants? should be in the FontImageWithHostObject
-    LayOutMonospaceFontTextString drawCharImage cwid chei (IntEpxToInt x) (IntEpxToInt y) message hAlign vAlign  
+    let cw = fontDefinition.CharWidth
+    let ch = fontDefinition.CharHeight
+    LayOutMonospaceFontTextString drawCharImage cw ch (IntEpxToInt x) (IntEpxToInt y) message hAlign vAlign  
+
+
+
+/// Draw text string in a given font, aligned in a given way with respect to a point.
+let Text render (fontID:FontID) hAlign vAlign (x:int<epx>) (y:int<epx>) message =
+    TextX render (FontFromID fontID) hAlign vAlign x y message
 
 
 
 /// Draw a uint32 in a given font, aligned in a given way with respect to a point.
-let Num render fontResource hAlign vAlign x y (value:uint32) =
-    Text render fontResource hAlign vAlign x y (value.ToString())
+let Num render fontID hAlign vAlign x y (value:uint32) =
+    Text render fontID hAlign vAlign x y (value.ToString())
 
 
 
 /// Draw a float32 in a given font, aligned in a given way with respect to a point.
-let Flo render fontResource hAlign vAlign x y (value:float32) =
+let Flo render fontID hAlign vAlign x y (value:float32) =
     // TODO: the format string should be parameterized:
-    Text render fontResource hAlign vAlign x y (sprintf "%.1f" value)
+    Text render fontID hAlign vAlign x y (sprintf "%.1f" value)
 
 
 
 // Draw a repeated character starting from a given position extending for a given count.
 // The direction is specified as integer pixel deltas.
-let DrawRepeatedChar 
-    render (fontID:FontID) (dx:int<epx>) (dy:int<epx>) (charIndex:uint32) (startLeft:int<epx>) (startTop:int<epx>) numRepeats =
-
-    let fontDefinition = FontFromID fontID
+let DrawRepeatedCharX
+    render (fontDefinition:Font) (dx:int<epx>) (dy:int<epx>) (charIndex:uint32) (startLeft:int<epx>) (startTop:int<epx>) numRepeats =
 
     let mutable x'    = startLeft
     let mutable y'    = startTop
@@ -148,19 +153,23 @@ let DrawRepeatedChar
     (x', y')
 
 
+// Draw a repeated character starting from a given position extending for a given count.
+// The direction is specified as integer pixel deltas.
+let DrawRepeatedChar render (fontID:FontID) (dx:int<epx>) (dy:int<epx>) (charIndex:uint32) (startLeft:int<epx>) (startTop:int<epx>) numRepeats =
+    DrawRepeatedCharX render (fontID |> FontFromID) dx dy charIndex startLeft startTop numRepeats
+
 
 
 // ---------------------------------------------------------------------------------------------------------
 //  Drawing paragraph
 // ---------------------------------------------------------------------------------------------------------
 
-let Paragraph render fontResource hAlign vAlign (x:int<epx>) (y:int<epx>) (ydelta:int<epx>) messageList =
+let ParagraphX render fontDefinition hAlign vAlign (x:int<epx>) (y:int<epx>) (ydelta:int<epx>) messageList =
 
     match messageList with
         | [] -> ()
         | _  ->
 
-            let fontDefinition = FontFromID fontResource
             let chei   = fontDefinition.CharHeight |> IntToIntEpx
             let ydelta = max chei ydelta
 
@@ -175,5 +184,11 @@ let Paragraph render fontResource hAlign vAlign (x:int<epx>) (y:int<epx>) (ydelt
             messageList
                 |> List.iteri (fun i message ->
                     let y = y + ydelta * i
-                    Text render fontResource hAlign TopAlign x y message)
+                    TextX render fontDefinition hAlign TopAlign x y message)
+
+
+    
+let Paragraph render fontResource hAlign vAlign (x:int<epx>) (y:int<epx>) (ydelta:int<epx>) messageList =
+    ParagraphX render (FontFromID fontResource) hAlign vAlign (x:int<epx>) (y:int<epx>) (ydelta:int<epx>) messageList
+
 

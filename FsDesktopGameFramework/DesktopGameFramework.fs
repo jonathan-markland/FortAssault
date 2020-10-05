@@ -71,15 +71,9 @@ let private LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (re
                         HostImageRef  = HostImageRef(hostImageObject)
                     }
 
-                let charSide =
-                    int (imageWithHostObject.ImageMetadata.ImageHeight)
-
-                {
-                    FontImage   = imageWithHostObject
-                    CharWidth   = charSide
-                    CharHeight  = charSide
-                }) 
-                    |> List.toArray
+                BasicFont imageWithHostObject
+            ) 
+                |> List.toArray
 
     {
         GameBMPs = imagesArray
