@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants></DefineConstants>
+    <DefineConstants>SHORT_PLAYTHROUGH</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>

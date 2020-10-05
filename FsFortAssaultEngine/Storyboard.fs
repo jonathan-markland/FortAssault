@@ -22,6 +22,7 @@ open FortAssaultGlobalState
 open ScoreboardModel
 
 #if SHORT_PLAYTHROUGH
+open ResourceIDs
 open ImagesAndFonts
 open DrawingFunctions
 open Geometry

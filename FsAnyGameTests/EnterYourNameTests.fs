@@ -28,7 +28,7 @@ let ``Test model screen display`` () =
                 "JONATHAN...."
                 ""
                 ""
-                " ."
+                " V"
                 "PQRSTUVWXYZ .X ABCDEFGHIJKLMNO"
             ]
 
@@ -48,7 +48,7 @@ let ``Test rotate right`` () =
                 "JONATHAN...."
                 ""
                 ""
-                " ."
+                " V"
                 "QRSTUVWXYZ .X ABCDEFGHIJKLMNOP"
             ]
 
@@ -67,7 +67,7 @@ let ``Test rotate left`` () =
                 "JONATHAN...."
                 ""
                 ""
-                " ."
+                " V"
                 "OPQRSTUVWXYZ .X ABCDEFGHIJKLMN"
             ]
 
@@ -86,7 +86,7 @@ let ``Test select character`` () =
                 "JONATHANA..."
                 ""
                 ""
-                " ."
+                " V"
                 "PQRSTUVWXYZ .X ABCDEFGHIJKLMNO"
             ]
 
@@ -108,7 +108,7 @@ let ``Test delete character`` () =
                 "JONATHA....."
                 ""
                 ""
-                " ."
+                " V"
                 "NOPQRSTUVWXYZ .X ABCDEFGHIJKLM"
             ]
 

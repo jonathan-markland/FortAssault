@@ -82,7 +82,7 @@ let EnterYourNameModelScreenText model =
         model.Name.PadRight(model.MaxNameLength, '.')
         ""
         ""
-        " ."
+        " V"
         RotatedAlphabet Alphabet model.SelectorIndex
     ]
 
