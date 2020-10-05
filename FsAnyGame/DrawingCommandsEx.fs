@@ -7,6 +7,7 @@ open Time
 open ResourceFileMetadata
 
 open StaticResourceAccess // TODO: needed for font solution because we pass IDs not objects -- may revisit!
+open FontAlignment
 
 // ---------------------------------------------------------------------------------------------------------
 //  Drawing bitmap images
@@ -125,8 +126,24 @@ let DrawRepeatedChar
 
 let Paragraph render fontResource hAlign vAlign (x:int<epx>) (y:int<epx>) (ydelta:int<epx>) messageList =
 
-    messageList
-        |> List.iteri (fun i message ->
-            let y = y + ydelta * i
-            Text render fontResource hAlign vAlign x y message)
+    match messageList with
+        | [] -> ()
+        | _  ->
+
+            let fontDefinition = FontFromID fontResource
+            let chei   = fontDefinition.CharHeight |> IntToIntEpx
+            let ydelta = max chei ydelta
+
+            let verticalSpan = (messageList.Length - 1) * ydelta + chei
+
+            let y =
+                match vAlign with
+                    | TopAlign    -> y
+                    | MiddleAlign -> y - verticalSpan / 2
+                    | BottomAlign -> y - verticalSpan
+
+            messageList
+                |> List.iteri (fun i message ->
+                    let y = y + ydelta * i
+                    Text render fontResource hAlign TopAlign x y message)
 

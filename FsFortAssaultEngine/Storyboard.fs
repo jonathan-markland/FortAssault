@@ -232,7 +232,7 @@ let Shortcut gameResources gameTime mode =
 let NewFortAssaultStoryboard gameResources gameTime =
 
     #if SHORT_PLAYTHROUGH
-    Shortcut gameResources gameTime RunGameNormally
+    Shortcut gameResources gameTime SkipToEnterYourName // RunGameNormally
     #else
     Shortcut gameResources gameTime RunGameNormally  // ** DO NOT CHANGE THIS ONE! : Define SHORT_PLAYTHROUGH and set the one above **
     #endif

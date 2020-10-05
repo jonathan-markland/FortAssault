@@ -39,7 +39,7 @@ let RenderGameTitleScreen render model (gameTime:float32<seconds>) =
     CentreImage render 160.0F<epx> 68.0F<epx> (ImageTitle |> ImageFromID)
 
     let scoreboardText = ScoreboardText 30 model.GameGlobalState.GameScoreBoard  // TODO: memoize in the model?
-    Paragraph render BlackFontID CentreAlign MiddleAlign 160<epx> 94<epx> 20<epx> scoreboardText
+    Paragraph render BlackFontID CentreAlign TopAlign 160<epx> 94<epx> 20<epx> scoreboardText
 
     Text render BlackFontID CentreAlign MiddleAlign 160<epx> 180<epx> "USE CURSOR KEYS ... Z TO FIRE"
 
