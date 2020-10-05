@@ -2,7 +2,7 @@ module FortAssaultWeb
 
 open Fable.Core
 open Browser.Dom
-open ResourceFiles
+open FortAssaultImageFiles
 open ResourceFileMetadata
 open TankMapFileLoader
 open Storyboard

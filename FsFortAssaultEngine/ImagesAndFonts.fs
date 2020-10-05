@@ -2,7 +2,6 @@
 
 open Geometry
 open ResourceFileMetadata
-open DrawingShapes
 
 // This game uses a 320*200 engine-coordinate (epx) space:
 
