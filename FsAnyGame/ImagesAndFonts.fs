@@ -42,14 +42,14 @@ type ImageID = ImageID of int
 type FontID = FontID of int
 
 /// A reference to the host's image object (opaque type).
-type HostImageObject = HostImageObject of obj
+type HostImageRef = HostImageRef of obj
 
 /// Associates a host image object with the image metadata supplied by the game engine
 /// at the time the image was loaded.
 type ImageWithHostObject =
     {
         EngineImageMetadata : EngineImageMetadata
-        HostImageObject     : HostImageObject
+        HostImageObject     : HostImageRef
     }
 
 /// Font object, incoporating the image that hosts the font lettering.
