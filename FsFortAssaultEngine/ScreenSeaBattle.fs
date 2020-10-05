@@ -98,7 +98,7 @@ let WithEnemyShipSinking gameTime enemyShipX enemyShips =
 
     enemyShips 
         |> List.map (fun enemyShip -> 
-            if enemyShip.CentreX = enemyShipX then
+            if enemyShip.CentreX = enemyShipX && enemyShip.SinkStartTime.IsNone then
                 { enemyShip with SinkStartTime = Some(gameTime) }
             else
                 enemyShip)
