@@ -1,6 +1,6 @@
-﻿module DrawingCommandsEx
+﻿module DrawingFunctions
 
-open DrawingCommands
+open DrawingShapes
 open FontCharacterPositioning
 open Geometry
 open Time

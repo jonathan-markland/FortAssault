@@ -2,7 +2,7 @@
 
 open Geometry
 open ImagesAndFonts
-open DrawingCommandsEx
+open DrawingFunctions
 open Time
 open StaticResourceAccess
 

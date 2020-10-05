@@ -1,7 +1,7 @@
 ﻿module ScreenVictory
 
 open Time
-open DrawingCommandsEx
+open DrawingFunctions
 open ScoreHiScore
 open FontAlignment
 open Geometry

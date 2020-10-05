@@ -7,7 +7,7 @@ open Tiles
 open ScoreHiScore
 open ScorePanel
 open ImagesAndFonts
-open DrawingCommandsEx
+open DrawingFunctions
 open FlickBook
 open BeachBackgroundRenderer
 open InputEventData

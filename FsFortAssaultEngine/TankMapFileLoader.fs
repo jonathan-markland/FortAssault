@@ -1,6 +1,6 @@
 ﻿module TankMapFileLoader
 
-open DrawingCommands
+open DrawingShapes
 open ImagesAndFonts
 open ListSplicer
 open ResourceFileMetadata

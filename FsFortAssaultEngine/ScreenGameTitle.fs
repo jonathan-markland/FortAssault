@@ -1,6 +1,6 @@
 ﻿module ScreenGameTitle
 
-open DrawingCommandsEx
+open DrawingFunctions
 open ImagesAndFonts
 open Geometry
 open FontAlignment

@@ -1,7 +1,7 @@
 ﻿module ScreenGameOver
 
-open DrawingCommands
-open DrawingCommandsEx
+open DrawingShapes
+open DrawingFunctions
 open ImagesAndFonts
 open ScoreHiScore
 open FontAlignment

@@ -2,7 +2,7 @@
 
 open Time
 open ImagesAndFonts
-open DrawingCommandsEx
+open DrawingFunctions
 open FontAlignment
 open Geometry
 open ResourceFileMetadata

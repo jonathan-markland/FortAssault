@@ -1,9 +1,9 @@
-﻿module DrawingCommands
+﻿module DrawingShapes
 
 open Geometry
 open ResourceFileMetadata
 
-/// Solid colour value.
+/// Solid R,G,B colour value.
 [<Struct>]
 type SolidColour = SolidColour of uint32
 
@@ -12,7 +12,7 @@ type SolidColour = SolidColour of uint32
 /// liberty to interpret these requests in any way is sees fit, when projecting
 /// the image onto the screen.
 // [<Struct>]
-type DrawingCommand =
+type DrawingShapes =
     
     | DrawImageWithTopLeftAtInt      
         of leftX_1     : int<epx> 

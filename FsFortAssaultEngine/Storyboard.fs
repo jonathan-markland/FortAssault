@@ -24,7 +24,7 @@ open ScoreboardModel
 #if SHORT_PLAYTHROUGH
 open ImagesAndFonts
 open FontAlignment
-open DrawingCommandsEx
+open DrawingFunctions
 open Geometry
 #endif
 

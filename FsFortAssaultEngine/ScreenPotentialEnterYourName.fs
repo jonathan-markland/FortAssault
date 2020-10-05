@@ -1,7 +1,7 @@
 ﻿module ScreenPotentialEnterYourName
 
 open Rules
-open DrawingCommandsEx
+open DrawingFunctions
 open ImagesAndFonts
 open FontAlignment
 open Geometry

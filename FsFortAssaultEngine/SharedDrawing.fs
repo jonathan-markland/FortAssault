@@ -1,8 +1,8 @@
 ﻿module SharedDrawing
 
 open Geometry
-open DrawingCommands
-open DrawingCommandsEx
+open DrawingShapes
+open DrawingFunctions
 open ImagesAndFonts
 
 let ScoreboardArea render contentHeight =

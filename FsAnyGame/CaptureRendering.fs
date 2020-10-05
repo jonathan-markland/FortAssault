@@ -1,6 +1,6 @@
 ﻿module CaptureRendering
 
-open DrawingCommands
+open DrawingShapes
 
 
 
@@ -9,7 +9,7 @@ open DrawingCommands
 /// The drawing list is returned in REVERSE order.
 let CaptureRenderingToReverseList userDefinedDrawingFunction =
 
-    let mutable (drawingCommandsList:DrawingCommand list) = []
+    let mutable (drawingCommandsList:DrawingShapes list) = []
 
     let render command =
         drawingCommandsList <- command::drawingCommandsList

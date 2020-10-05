@@ -4,7 +4,7 @@ open Angle
 open ScoreHiScore
 open DrawingBarChart
 open ImagesAndFonts
-open DrawingCommandsEx
+open DrawingFunctions
 open FontAlignment
 open Geometry
 

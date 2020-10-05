@@ -10,7 +10,7 @@ open KeyboardForFramework
 
 open Time
 open Geometry
-open DrawingCommands
+open DrawingShapes
 open ResourceFileMetadata
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

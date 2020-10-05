@@ -2,9 +2,9 @@
 
 open Angle
 open Time
-open DrawingCommands
+open DrawingShapes
 open SharedDrawing
-open DrawingCommandsEx
+open DrawingFunctions
 open ScoreHiScore
 open Geometry
 open Mechanics

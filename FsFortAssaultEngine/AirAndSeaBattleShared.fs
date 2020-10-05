@@ -6,8 +6,8 @@ open Mechanics
 open FlickBook
 open Geometry
 open SharedDrawing
-open DrawingCommands
-open DrawingCommandsEx
+open DrawingShapes
+open DrawingFunctions
 open ImagesAndFonts
 open Algorithm
 open FontAlignment

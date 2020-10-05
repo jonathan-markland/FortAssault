@@ -8,7 +8,7 @@ open TankMapFileLoader
 open Storyboard
 open Time
 open Geometry
-open DrawingCommands
+open DrawingShapes
 open FortAssaultGlobalState
 open KeyboardForFramework
 open Input

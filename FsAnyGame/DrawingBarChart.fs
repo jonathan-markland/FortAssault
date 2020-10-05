@@ -2,7 +2,7 @@
 
 open ResourceFileMetadata
 open Geometry
-open DrawingCommandsEx
+open DrawingFunctions
 
 type BarChartStyle =
     {

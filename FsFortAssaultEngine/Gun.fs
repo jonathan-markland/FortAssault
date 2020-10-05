@@ -7,7 +7,7 @@ open Time
 open Geometry
 open Input
 open InputEventData
-open DrawingCommandsEx
+open DrawingFunctions
 open ImagesAndFonts
 open Mechanics
 open ResourceFileMetadata

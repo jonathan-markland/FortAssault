@@ -4,8 +4,8 @@
 
 open Angle
 open Time
-open DrawingCommands
-open DrawingCommandsEx
+open DrawingShapes
+open DrawingFunctions
 open SharedDrawing
 open FontAlignment
 open ScoreHiScore

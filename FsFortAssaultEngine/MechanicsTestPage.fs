@@ -2,8 +2,8 @@
 
 open Time
 open SharedDrawing
-open DrawingCommands
-open DrawingCommandsEx
+open DrawingShapes
+open DrawingFunctions
 open FontAlignment
 open Geometry
 open Mechanics

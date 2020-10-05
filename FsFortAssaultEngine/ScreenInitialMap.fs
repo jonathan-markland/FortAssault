@@ -3,7 +3,7 @@
 open Angle
 open Time
 open SharedDrawing
-open DrawingCommandsEx
+open DrawingFunctions
 open ScoreHiScore
 open Geometry
 open ImagesAndFonts

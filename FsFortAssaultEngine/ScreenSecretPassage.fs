@@ -7,7 +7,7 @@ open Angle
 open Time
 open Rules
 open SharedDrawing
-open DrawingCommandsEx
+open DrawingFunctions
 open ScoreHiScore
 open Geometry
 open Mechanics
