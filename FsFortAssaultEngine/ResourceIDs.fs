@@ -1,4 +1,4 @@
-﻿module ImagesAndFonts
+﻿module ResourceIDs
 
 open Geometry
 open ResourceFileMetadata

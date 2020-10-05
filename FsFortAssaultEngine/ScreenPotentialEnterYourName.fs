@@ -2,7 +2,7 @@
 
 open Rules
 open DrawingFunctions
-open ImagesAndFonts
+open ResourceIDs
 open FontAlignment
 open Geometry
 open InputEventData

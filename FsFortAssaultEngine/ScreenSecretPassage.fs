@@ -11,11 +11,11 @@ open DrawingFunctions
 open ScoreHiScore
 open Geometry
 open Mechanics
-open ImagesAndFonts
+open ResourceIDs
 open InputEventData
 open ScorePanel
 open FlickBook
-open ImagesAndFonts
+open ResourceIDs
 open ResourceFileMetadata
 open StaticResourceAccess
 

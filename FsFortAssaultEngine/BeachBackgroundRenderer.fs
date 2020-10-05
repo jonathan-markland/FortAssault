@@ -1,7 +1,7 @@
 ﻿module BeachBackgroundRenderer
 
 open Geometry
-open ImagesAndFonts
+open ResourceIDs
 open DrawingFunctions
 open Time
 open StaticResourceAccess

@@ -8,7 +8,7 @@ open Geometry
 open SharedDrawing
 open DrawingShapes
 open DrawingFunctions
-open ImagesAndFonts
+open ResourceIDs
 open Algorithm
 open FontAlignment
 open ResourceFileMetadata

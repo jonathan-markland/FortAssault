@@ -1,7 +1,7 @@
 ﻿module ScreenGameTitle
 
 open DrawingFunctions
-open ImagesAndFonts
+open ResourceIDs
 open Geometry
 open FontAlignment
 open InputEventData

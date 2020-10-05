@@ -11,7 +11,7 @@ open FontAlignment
 open ScoreHiScore
 open Geometry
 open Mechanics
-open ImagesAndFonts
+open ResourceIDs
 open Gun
 open ScorePanel
 open FlickBook

@@ -1,7 +1,7 @@
 ﻿module TankMapFileLoader
 
 open DrawingShapes
-open ImagesAndFonts
+open ResourceIDs
 open ListSplicer
 open ResourceFileMetadata
 

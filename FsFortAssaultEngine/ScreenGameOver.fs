@@ -2,7 +2,7 @@
 
 open DrawingShapes
 open DrawingFunctions
-open ImagesAndFonts
+open ResourceIDs
 open ScoreHiScore
 open FontAlignment
 open Geometry

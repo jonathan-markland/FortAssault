@@ -1,7 +1,7 @@
 ﻿module ScreenIntermission
 
 open Time
-open ImagesAndFonts
+open ResourceIDs
 open DrawingFunctions
 open FontAlignment
 open Geometry

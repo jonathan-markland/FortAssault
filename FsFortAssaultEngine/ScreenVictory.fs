@@ -6,7 +6,7 @@ open ScoreHiScore
 open FontAlignment
 open Geometry
 open InputEventData
-open ImagesAndFonts
+open ResourceIDs
 open ResourceFileMetadata
 open StaticResourceAccess
 

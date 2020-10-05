@@ -7,7 +7,7 @@ open ScoreHiScore
 open Geometry
 open Time
 open Mechanics
-open ImagesAndFonts
+open ResourceIDs
 open Gun
 open ScorePanel
 open FlickBook

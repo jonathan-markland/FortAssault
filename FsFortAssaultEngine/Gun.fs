@@ -8,7 +8,7 @@ open Geometry
 open Input
 open InputEventData
 open DrawingFunctions
-open ImagesAndFonts
+open ResourceIDs
 open Mechanics
 open ResourceFileMetadata
 open StaticResourceAccess

@@ -7,7 +7,7 @@ open DrawingFunctions
 open FontAlignment
 open Geometry
 open Mechanics
-open ImagesAndFonts
+open ResourceIDs
 open ResourceFileMetadata
 open StaticResourceAccess
 

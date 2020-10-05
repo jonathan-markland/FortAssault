@@ -7,7 +7,7 @@ open SharedDrawing
 open DrawingFunctions
 open ScoreHiScore
 open Geometry
-open ImagesAndFonts
+open ResourceIDs
 open ScorePanel
 open MapScreenSharedDetail
 open ResourceFileMetadata

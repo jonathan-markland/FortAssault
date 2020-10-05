@@ -6,7 +6,7 @@ open Geometry
 open Tiles
 open ScoreHiScore
 open ScorePanel
-open ImagesAndFonts
+open ResourceIDs
 open DrawingFunctions
 open FlickBook
 open BeachBackgroundRenderer
