@@ -17,8 +17,8 @@ open ImagesAndFonts
 
 type FrameworkGameResourcesRecord =  // TODO: Unify with the javascript version!
     {
-        GameBMPs    : ImageWithHostObject[]
-        Fonts       : FontWithHostObject[]
+        GameBMPs    : Image[]
+        Fonts       : Font[]
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -45,17 +45,17 @@ let private LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (re
             |> List.map (fun metadata -> 
                 
                 let key = 
-                    match metadata.ImageColourKey with 
-                        | NoColourKey -> None 
-                        | MagentaColourKey -> magenta
+                    match metadata.ImageTransparency with 
+                        | OpaqueImage -> None 
+                        | MagentaColourKeyImage -> magenta
                 
                 let fileName = metadata.ImageFileName
                 
                 let hostImageObject = fromFile key fileName
 
                 {
-                    EngineImageMetadata = metadata
-                    HostImageObject     = HostImageRef(hostImageObject)
+                    ImageMetadata = metadata
+                    HostImageRef  = HostImageRef(hostImageObject)
                 })
 
             |> List.toArray
@@ -67,17 +67,17 @@ let private LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (re
 
                 let imageWithHostObject =
                     {
-                        EngineImageMetadata = metadata
-                        HostImageObject     = HostImageRef(hostImageObject)
+                        ImageMetadata = metadata
+                        HostImageRef  = HostImageRef(hostImageObject)
                     }
 
                 let charSide =
-                    int (imageWithHostObject.EngineImageMetadata.ImageHeight)
+                    int (imageWithHostObject.ImageMetadata.ImageHeight)
 
                 {
-                    FontImageWithHostObject = imageWithHostObject
-                    CharWidth               = charSide
-                    CharHeight              = charSide
+                    FontImage   = imageWithHostObject
+                    CharWidth   = charSide
+                    CharHeight  = charSide
                 }) 
                     |> List.toArray
 
@@ -130,7 +130,7 @@ let private RenderToSdl renderer drawingCommand =
     match drawingCommand with
 
         | DrawImageWithTopLeftAtInt(left, top, imageVisual) ->
-            let (HostImageRef(hostImageObject)) = imageVisual.HostImageObject
+            let (HostImageRef(hostImageObject)) = imageVisual.HostImageRef
             DrawSdlImage 
                 renderer 
                 (hostImageObject :?> SdlImageFileMetadata)
@@ -138,17 +138,17 @@ let private RenderToSdl renderer drawingCommand =
                 (top  |> IntEpxToInt)
 
         | DrawStretchedImageWithTopLeftAt(left, top, imageVisual, width, height) ->
-            let (HostImageRef(hostImageObject)) = imageVisual.HostImageObject
+            let (HostImageRef(hostImageObject)) = imageVisual.HostImageRef
             DrawSdlSubImage 
                 renderer 
                 (hostImageObject :?> SdlImageFileMetadata).TextureHandle
                 0 0 
-                (imageVisual.EngineImageMetadata.ImageWidth  |> IntEpxToInt)
-                (imageVisual.EngineImageMetadata.ImageHeight |> IntEpxToInt)
+                (imageVisual.ImageMetadata.ImageWidth  |> IntEpxToInt)
+                (imageVisual.ImageMetadata.ImageHeight |> IntEpxToInt)
                 (left |> FloatEpxToInt) (top |> FloatEpxToInt) (width |> IntEpxToInt) (height |> IntEpxToInt)
 
         | DrawSubImageStretchedToTarget(srcleft, srctop, srcwidth, srcheight, dstleft, dsttop, dstwidth, dstheight, imageVisual) ->
-            let (HostImageRef(hostImageObject)) = imageVisual.HostImageObject
+            let (HostImageRef(hostImageObject)) = imageVisual.HostImageRef
             DrawSdlSubImage 
                 renderer 
                 (hostImageObject :?> SdlImageFileMetadata).TextureHandle

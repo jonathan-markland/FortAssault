@@ -147,7 +147,7 @@ let RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
         let elapsed = gameTime - model.ScreenStartTime
         CycleImages render pos.ptx pos.pty (SurrenderImages ()) FlagFlutterAnimDuration elapsed
 
-    let h = imgBack.EngineImageMetadata.ImageHeight
+    let h = imgBack.ImageMetadata.ImageHeight
 
     let DrawGun gameTime =
         Gun.DrawGun render (h |> IntToFloatEpx) model.GunAim gameTime
@@ -236,7 +236,7 @@ let NextFinalBossScreenState oldState input gameTime frameElapsedTime =
                     explosions |> WithCompletedFlickbooksRemoved gameTime
 
                 let gunBaseY =
-                    (ImageFinalBossBackground |> ImageFromID).EngineImageMetadata.ImageHeight |> IntToFloatEpx
+                    (ImageFinalBossBackground |> ImageFromID).ImageMetadata.ImageHeight |> IntToFloatEpx
                 
                 let gun =
                     UpdatedGunAimAccordingToInput input gameTime frameElapsedTime gunBaseY gun

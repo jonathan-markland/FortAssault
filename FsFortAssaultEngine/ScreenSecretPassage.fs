@@ -640,7 +640,7 @@ let RenderSecretPassageScreen render gameTime secretPassageScreenModel =
 
     let backImg = (ImageSecretPassage |> ImageFromID)
 
-    let h = backImg.EngineImageMetadata.ImageHeight
+    let h = backImg.ImageMetadata.ImageHeight
 
     Image1to1 render 0<epx> 0<epx> backImg
     ScoreboardArea render h

@@ -6,23 +6,23 @@ type TextHAlignment = LeftAlign | CentreAlign | RightAlign
 type TextVAlignment = TopAlign  | MiddleAlign | BottomAlign
 
 /// Transparency handling for bit-mapped images.
-type ImageColourKey = 
+type ImageTransparency = 
 
     /// The image is fully opaque.
-    | NoColourKey 
+    | OpaqueImage 
     
     /// The image is transparent where magenta 0xFF00FF pixels
     /// are fully transparent.
-    | MagentaColourKey
+    | MagentaColourKeyImage
 
 /// Image information supplied by the game engine to the host.
-type EngineImageMetadata =
+type ImageMetadata =
     {
         /// The leaf-name of the file from which an image resource originates.
         ImageFileName       : string
 
         /// Colour key handling indicator for this image.
-        ImageColourKey      : ImageColourKey
+        ImageTransparency   : ImageTransparency
 
         /// Width of image in pixels.
         ImageWidth          : int<epx>
@@ -44,29 +44,30 @@ type FontID = FontID of int
 /// A reference to the host's image object (opaque type).
 type HostImageRef = HostImageRef of obj
 
-/// Associates a host image object with the image metadata supplied by the game engine
-/// at the time the image was loaded.
-type ImageWithHostObject =
+/// Bitmap image recoed, used with drawing functions that draw bitmaps.
+/// Includes metadata about the image.
+type Image =
     {
-        EngineImageMetadata : EngineImageMetadata
-        HostImageObject     : HostImageRef
+        ImageMetadata   : ImageMetadata
+        HostImageRef    : HostImageRef
     }
 
-/// Font object, incoporating the image that hosts the font lettering.
-type FontWithHostObject =
+/// Font record, used with drawing functions that output text.
+/// Incoporates the bitmap image that hosts the font lettering.
+type Font =
     {
-        FontImageWithHostObject : ImageWithHostObject
-        CharWidth               : int
-        CharHeight              : int
+        FontImage    : Image
+        CharWidth    : int
+        CharHeight   : int
     }
 
 /// Obtain the dimensions of the given image as integers, which are native.
 let inline ImageDimensions imageWithHostObject =
-    (imageWithHostObject.EngineImageMetadata.ImageWidth , 
-        imageWithHostObject.EngineImageMetadata.ImageHeight)
+    (imageWithHostObject.ImageMetadata.ImageWidth , 
+        imageWithHostObject.ImageMetadata.ImageHeight)
 
 /// Obtain the dimensions of the given image as floating point.
 let inline ImageDimensionsF imageWithHostObject =
-    (imageWithHostObject.EngineImageMetadata.ImageWidth |> IntToFloatEpx , 
-        imageWithHostObject.EngineImageMetadata.ImageHeight |> IntToFloatEpx)
+    (imageWithHostObject.ImageMetadata.ImageWidth |> IntToFloatEpx , 
+        imageWithHostObject.ImageMetadata.ImageHeight |> IntToFloatEpx)
 

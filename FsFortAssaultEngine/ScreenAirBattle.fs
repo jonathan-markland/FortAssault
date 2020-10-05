@@ -187,7 +187,7 @@ let RenderAirBattleScreen render (model:AirBattleScreenModel) gameTime =
         DrawFlickbookInstanceList render model.SkyExplosion gameTime
 
     let backgroundHeight = 
-        (ImageSeaBattleBackground0 |> ImageFromID).EngineImageMetadata.ImageHeight  // They are all the same
+        (ImageSeaBattleBackground0 |> ImageFromID).ImageMetadata.ImageHeight  // They are all the same
 
     let DrawGun gameTime =
         Gun.DrawGun render (backgroundHeight |> IntToFloatEpx) model.GunAim gameTime
@@ -352,7 +352,7 @@ let NextAirBattleScreenState oldState input gameTime frameElapsedTime =
             
             else
                 let gunBaseY =
-                    (ImageSeaBattleBackground0 |> ImageFromID).EngineImageMetadata.ImageHeight |> IntToFloatEpx
+                    (ImageSeaBattleBackground0 |> ImageFromID).ImageMetadata.ImageHeight |> IntToFloatEpx
 
                 let alliedState  = oldState.AlliedState
                 let gun          = oldState.GunAim

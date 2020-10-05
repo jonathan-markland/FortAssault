@@ -17,7 +17,7 @@ type DrawingShapes =
     | DrawImageWithTopLeftAtInt      
         of leftX_1     : int<epx> 
         *  topY_1      : int<epx> 
-        *  img_1       : ImageWithHostObject
+        *  img_1       : Image
 
     | DrawFilledRectangle             
         of leftX_2     : int<epx> 
@@ -29,7 +29,7 @@ type DrawingShapes =
     | DrawStretchedImageWithTopLeftAt
         of leftX_3     : float32<epx>    // Floating point would allow host to more precisely position image
         *  topY_3      : float32<epx>    // if it supports it.
-        *  img_3       : ImageWithHostObject 
+        *  img_3       : Image 
         *  width_3     : int<epx> 
         *  height_3    : int<epx>
 
@@ -42,5 +42,5 @@ type DrawingShapes =
         *  dsttop_4    : float32<epx>   // if it supports it.
         *  dstwidth_4  : int<epx> 
         *  dstheight_4 : int<epx> 
-        *  img_4       : ImageWithHostObject
+        *  img_4       : Image
 

@@ -20,7 +20,7 @@ let ImageStretched render left top imageWithHostObject destWidth destHeight =
     render (DrawStretchedImageWithTopLeftAt(left, top, imageWithHostObject, destWidth, destHeight))
 
 /// Draw image centered about a point, without stretching.
-let CentreImage render cx cy (imageWithHostObject:ImageWithHostObject) =
+let CentreImage render cx cy (imageWithHostObject:Image) =
     let (w,h) = imageWithHostObject |> ImageDimensions
     let left  = cx - ((w / 2) |> IntToFloatEpx)
     let top   = cy - ((h / 2) |> IntToFloatEpx)
@@ -28,7 +28,7 @@ let CentreImage render cx cy (imageWithHostObject:ImageWithHostObject) =
 
 /// Draw image centered about a point, without stretching.
 /// The image is one of a repeating animation collection.
-let CycleImages render cx cy (imageArray:ImageWithHostObject array) (fullCycleDuration:float32<seconds>) (elapsed:float32<seconds>) =
+let CycleImages render cx cy (imageArray:Image array) (fullCycleDuration:float32<seconds>) (elapsed:float32<seconds>) =
     let numImages    = imageArray.Length
     let timePerImage = fullCycleDuration / (float32 numImages)
     let index        = (abs (int (elapsed / timePerImage))) % numImages
@@ -85,7 +85,7 @@ let private LayOutMonospaceFontTextString drawCharImage chWidth chHeight x y mes
     )
 
 
-let private DrawCharImageWithTopLeftAt render (x:int) (y:int) charIndex (fontDefinition:FontWithHostObject) =
+let private DrawCharImageWithTopLeftAt render (x:int) (y:int) charIndex (fontDefinition:Font) =
 
     let cwid = fontDefinition.CharWidth
     let chei = fontDefinition.CharHeight
@@ -95,7 +95,7 @@ let private DrawCharImageWithTopLeftAt render (x:int) (y:int) charIndex (fontDef
         DrawSubImageStretchedToTarget (
             chx, 0, cwid, chei,
             (x |> IntToFloatEpx), (y |> IntToFloatEpx), (cwid |> IntToIntEpx), (chei |> IntToIntEpx),
-            fontDefinition.FontImageWithHostObject)) 
+            fontDefinition.FontImage)) 
         
     
 

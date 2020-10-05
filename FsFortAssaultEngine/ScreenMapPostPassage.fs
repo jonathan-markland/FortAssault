@@ -70,7 +70,7 @@ let RenderMapPostPassageScreen render (model:MapPostPassageScreenModel) =
         | PostPassageScreenOver ->
             ()
 
-    let h = imgMap.EngineImageMetadata.ImageHeight
+    let h = imgMap.ImageMetadata.ImageHeight
 
     ScoreboardArea render h
 

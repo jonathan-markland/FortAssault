@@ -24,8 +24,8 @@ open EngineEntryPoint
 
 type JavascriptGraphicResources =
     {
-        Fonts  : FontWithHostObject[]
-        Images : ImageWithHostObject[]
+        Fonts  : Font[]
+        Images : Image[]
     }
 
 
@@ -98,7 +98,7 @@ let inline DrawFilledRectangle context2d x y w h (colouru:uint32) =
 
 let LoadFileListThenDo fileNameObtainer needsMagentaObtainer widthGetter heightGetter continuation resourceList =
 
-    let htmlImageElementResizeArrayForFonts = new ResizeArray<ImageWithHostObject>(FortAssaultFontResourceImages.Length)
+    let htmlImageElementResizeArrayForFonts = new ResizeArray<Image>(FortAssaultFontResourceImages.Length)
 
     let rec recurse resourceRecordList fileNameObtainer needsMagentaObtainer =
 
@@ -116,14 +116,14 @@ let LoadFileListThenDo fileNameObtainer needsMagentaObtainer widthGetter heightG
 
                     let imgWithHostObject =
                         {
-                            EngineImageMetadata = 
+                            ImageMetadata = 
                                 {
                                     ImageFileName  = fileName
-                                    ImageColourKey = if needsMagentaColourKeying then MagentaColourKey else NoColourKey
+                                    ImageTransparency = if needsMagentaColourKeying then MagentaColourKeyImage else OpaqueImage
                                     ImageWidth     = w
                                     ImageHeight    = h
                                 }
-                            HostImageObject = HostImageRef(htmlImageElement)
+                            HostImageRef = HostImageRef(htmlImageElement)
                         }
 
                     htmlImageElementResizeArrayForFonts.Add(imgWithHostObject)
@@ -143,9 +143,9 @@ let LoadResourceFilesThenDo afterAllLoaded =
         metadata.ImageFileName
 
     let imageIsColourKeyed metadata =
-        match metadata.ImageColourKey with 
-            | NoColourKey -> false
-            | MagentaColourKey -> true
+        match metadata.ImageTransparency with 
+            | OpaqueImage -> false
+            | MagentaColourKeyImage -> true
 
     let imageWidthGetter  metadata = metadata.ImageWidth
     let imageHeightGetter metadata = metadata.ImageHeight
@@ -156,9 +156,9 @@ let LoadResourceFilesThenDo afterAllLoaded =
             let arrayOfLoadedFonts = 
                 arrayOfLoadedFontImages |> Array.map 
                     (fun fontImg -> 
-                        let charSide = fontImg.EngineImageMetadata.ImageHeight // TODO: This may need revisiting.
+                        let charSide = fontImg.ImageMetadata.ImageHeight // TODO: This may need revisiting.
                         {
-                            FontImageWithHostObject = fontImg 
+                            FontImage = fontImg 
                             CharWidth               = charSide |> IntEpxToInt
                             CharHeight              = charSide |> IntEpxToInt
                         })
@@ -179,19 +179,19 @@ let RenderToWebCanvas (context2d:Browser.Types.CanvasRenderingContext2D) drawing
 
         | DrawImageWithTopLeftAtInt(left, top, imageVisual) ->
             DrawImage 
-                context2d imageVisual.HostImageObject 
+                context2d imageVisual.HostImageRef 
                 (left |> IntEpxToInt) (top |> IntEpxToInt)
 
         | DrawStretchedImageWithTopLeftAt(left, top, imageVisual, width, height) ->
-            let (w,h) = (imageVisual.EngineImageMetadata.ImageWidth , imageVisual.EngineImageMetadata.ImageHeight)
+            let (w,h) = (imageVisual.ImageMetadata.ImageWidth , imageVisual.ImageMetadata.ImageHeight)
             DrawSubImage 
-                context2d imageVisual.HostImageObject
+                context2d imageVisual.HostImageRef
                 0 0 (w |> IntEpxToInt) (h |> IntEpxToInt) 
                 (left |> FloatEpxToInt) (top |> FloatEpxToInt) (width |> IntEpxToInt) (height |> IntEpxToInt)
 
         | DrawSubImageStretchedToTarget(srcleft, srctop, srcwidth, srcheight, dstleft, dsttop, dstwidth, dstheight, imageVisual) ->
             DrawSubImage 
-                context2d imageVisual.HostImageObject
+                context2d imageVisual.HostImageRef
                 srcleft srctop srcwidth srcheight 
                 (dstleft |> FloatEpxToInt) (dsttop |> FloatEpxToInt) (dstwidth |> IntEpxToInt) (dstheight |> IntEpxToInt)
 

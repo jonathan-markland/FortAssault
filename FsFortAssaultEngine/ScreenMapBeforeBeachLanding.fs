@@ -70,7 +70,7 @@ let RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenM
         | ScreenOver ->
             ()
 
-    let mapHeight = imgMap.EngineImageMetadata.ImageHeight
+    let mapHeight = imgMap.ImageMetadata.ImageHeight
 
     ScoreboardArea render mapHeight
 

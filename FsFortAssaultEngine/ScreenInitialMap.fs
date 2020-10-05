@@ -107,7 +107,7 @@ let RenderInitialMapScreen render (model:InitialMapScreenModel) =
         | ScreenOverEngagedSecretPassage ->
             ()
 
-    let mapHeight = imgMap.EngineImageMetadata.ImageHeight
+    let mapHeight = imgMap.ImageMetadata.ImageHeight
 
     ScoreboardArea render mapHeight
 

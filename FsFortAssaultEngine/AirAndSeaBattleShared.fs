@@ -47,7 +47,7 @@ type EnemyShip =
     {
         CentreX        : float32<epx>
         BaseY          : float32<epx>
-        ShipImage      : ImageWithHostObject
+        ShipImage      : Image
         SinkStartTime  : float32<seconds> option
         ElevationToHit : float32<degrees>
     }
@@ -98,8 +98,8 @@ let DrawEnemyShips render listOfShips gameTime =
 
     listOfShips |> List.iter (fun ship -> 
 
-        let shipHeight = ship.ShipImage.EngineImageMetadata.ImageHeight
-        let shipWidth  = ship.ShipImage.EngineImageMetadata.ImageWidth
+        let shipHeight = ship.ShipImage.ImageMetadata.ImageHeight
+        let shipWidth  = ship.ShipImage.ImageMetadata.ImageWidth
 
         let sinkLevel =
             match ship.SinkStartTime with
@@ -149,8 +149,8 @@ let NewSkyExplosionFlickBook gameTime =
 
     let imgBack = ImageSeaBattleBackground0 |> ImageFromID
 
-    let w = imgBack.EngineImageMetadata.ImageWidth  |> IntToFloatEpx // They are all the same
-    let h = imgBack.EngineImageMetadata.ImageHeight |> IntToFloatEpx // They are all the same
+    let w = imgBack.ImageMetadata.ImageWidth  |> IntToFloatEpx // They are all the same
+    let h = imgBack.ImageMetadata.ImageHeight |> IntToFloatEpx // They are all the same
 
     {
         FlickBookType            = SkyExplosionFlickBookType ()

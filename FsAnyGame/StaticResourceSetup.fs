@@ -3,8 +3,8 @@ module StaticResourceSetup
 
 open ImagesAndFonts
 
-let mutable (StaticImagesArray : ImageWithHostObject[]) = [||]
-let mutable (StaticFontsArray  : FontWithHostObject[])  = [||]
+let mutable (StaticImagesArray : Image[]) = [||]
+let mutable (StaticFontsArray  : Font[])  = [||]
 
 /// To be called by the game on startup to establish a collection
 /// of images and fonts that can then be referred to by ImageID or FontID

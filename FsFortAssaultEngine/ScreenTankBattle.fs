@@ -462,7 +462,7 @@ let DoesPlayerCollideWithEnemyTank numTilesHorizontally gameTime enemyTanks play
     
     let r = TankCollisionRectangle TankX playerTankY playerTankDirection
     
-    let imgGun1 = (ImageEnemyTankGun1 |> ImageFromID).EngineImageMetadata
+    let imgGun1 = (ImageEnemyTankGun1 |> ImageFromID).ImageMetadata
 
     let EnemyTankRectangleFor x y =
 

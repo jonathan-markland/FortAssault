@@ -16,7 +16,7 @@ type FlickBookVisibility = Visible | Hidden
 type FlickBookType =
     {
         FlickBookDuration      : float32<seconds>
-        FlickBookImages        : ImageWithHostObject[]   // Array used so we can calculate an index from a time offset in O(1).
+        FlickBookImages        : Image[]   // Array used so we can calculate an index from a time offset in O(1).
         VisibilityBeforeStart  : FlickBookVisibility
         VisibilityAfterEnd     : FlickBookVisibility
     }
