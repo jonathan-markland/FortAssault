@@ -34,12 +34,21 @@ type GameTitleScreenModel =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let IsFireButtonOperative oldState gameTime =
+
+    let respondTime = oldState.ScreenStartTime + TimeBeforeResponding
+    gameTime > respondTime
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 let RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 
     RenderBeachBackground render (gameTime / 4.0F)
     CentreImage render 160.0F<epx> 68.0F<epx> (ImageTitle |> ImageFromID)
     Paragraph render BlackFontID CentreAlign TopAlign 160<epx> 94<epx> 20<epx> model.ScoreboardMemo
-    Text render BlackFontID CentreAlign MiddleAlign 160<epx> 180<epx> "USE CURSOR KEYS ... Z TO FIRE"
+
+    if IsFireButtonOperative model gameTime then
+        Text render BlackFontID CentreAlign MiddleAlign 160<epx> 180<epx> "USE CURSOR KEYS ... Z TO FIRE"
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -58,11 +67,8 @@ let NextGameTitleScreenState oldState input gameTime =
 
     if input.Fire.JustDown then
 
-        let respondTime = oldState.ScreenStartTime + TimeBeforeResponding
-
-        if gameTime > respondTime then
+        if IsFireButtonOperative oldState gameTime then
             { oldState with State = GameTitleScreenOver }
-
         else
             oldState
 
