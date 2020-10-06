@@ -22,7 +22,12 @@ Technology:
 
 In other words, one game, one language, its goes many places.
 
-I also have distilled a re-usable game algorithm library out of this.
+This is a research project also:
+
+	- Practice F#
+	- Distill a game library from this
+	- Distill desktop and web mini-frameworks from this
+	- Use in other similar games
 
 Screenshots
 ===========
@@ -74,24 +79,97 @@ I just use Visual Studio 2019, Community Edition.
 
 Set 'FsFortAssaultDesktopWindows' as the startup project.
 
-Functional Programming
-----------------------
-In Functional Programming, the data model is READ ONLY, for which F# has 100% support.  
+About Functional Programming for Newcomers
+==========================================
+In the discipline of Pure Functional Programming, the data model is always 
+READ ONLY.  F# has 100% support in the language and in its core library for this
+kind of programming, although it will allow you to have READ-WRITE data if you
+need it.  It is a hybrid "Functional-First" language.
 
-This program achieves that in the FsAnyGame and FsFortAssault libraries, where the
-visible data types are read-only throughout.
+In functional programming you do *not* pass addresses of things, and fiddle around 
+with their state by assignments, property-setters, or calling methods!  Instead
+you only ever READ them.  Indeed, *nobody* can tamper with values after the
+construction phase of a new data item.
 
-In functional programming you do not take parameters and fiddle around with their
-values!  Instead, you take parameters (or "values" as they are known), and read
-their state.  You then calculate a new desired state, and return that from your
-function.
+Your function progresses by reading its inputs, calculating a new desired result, 
+and returning that as its result:
+
+	- Parameters input -> Parameters processed -> New output returned.
+
+If you don't wish to calculate a new state for something (because conceptually 
+it hasn't changed), then simply return the original input as-is!
+
+Ideology
+--------
+In functional programming, the default data model is READ ONLY data because,
+ideologically, it is attempting to model the mathematical concept of a *value*.
+In mathematics:
+
+	- The number 7 is a *value*
+	- The number 7 *just exists*, it is not considered to be *stored* anywhere
+	- The number 7 does not have an *address*, so cannot be *re-assigned* to be some other number at any point
+	- The number 7 will always be 7, and never any other number.
+
+Inside the computer, functional programming makes compromises because, of course 
+things must have addresses!  But in making the data types read-only after initial
+construction, subsequent understanding of the program can be simplified.
+
+In a .Net context, F# lets you control whether your types are implemented by 
+containment (like C# structs), or whether they are indirectly on the managed
+heap (like C# class).  But, I think it's fair to say, that the concept of an
+address is diminished in Functional Programming.
+
+Simplify program comprehension
+------------------------------
+Understanding can be simplified because, once you know a parameter type is read-only,
+you know that the parameter can only ever be an INPUT to the function.  
+
+Understanding can also be simplified because sharing data that's read-only for 
+everyone, is safe and pretty uncontroversial.
+
+In C++/C#/Java the parameters usually have some mutability about them, perhaps as 
+part of their OO interfaces.  This way, parameters could be inputs, but they also 
+could be OUTPUTS, or even a hybrid of both!  You can no real way of knowing whether 
+that parameter object could have its value altered without tracing where it is 
+passed, and who might alter it.
+
+Performance
+-----------
+Sometimes newcomers are concerned about "creating new things all the time because
+you can't change existing things".
+
+There are many approaches to coming to terms with non-mutability:
+
+	- Mutability isn't as commonly needed as you think.
+	  What about that mutable C# object instance that is NEVER mutated?
+	  That would be ONE read-only F# record instance, with no net change
+	  in the amount of data stored.
+
+	- Design for re-use of existing data.
+	  Do all of the Space Invader's fields change?  Or just the (x,y)?
+	  Split data into several record types, from most-mutable to least-mutable.
+	  Forward-link them in that order, and "replace" only the front-end.
+	  
+	- Don't *store* what you can *calculate*.
+	  My "Flickbooks" do this for large parts of the animation of this game.
+
+	- Use the stack for temporary values
+
+A counterpoint is that in imperative programming, since data is almost always
+mutable by default, if you really don't want anyone else to modify your data, you
+have to make a *copy*.  Copies are expensive.
+
+Use of Functional Programming in this game
+------------------------------------------
+
+The main use of mutability is in the main loop where a mutable pointer points to
+the current game state record on the heap, and for key state recording.  All other 
+mutability is pretty strictly disguised, so the caller wouldn't ever know, or be
+accidentally affected by it.
 
 This architectural approach cascades from the overview level (that I call the 
 Storyboard) into the currently active screen, and down into the fine detail 
 of the data that makes the screen uniquely special.
-
-If you don't wish to calculate a new state for something (because conceptually 
-it hasn't changed), then simply return the original input as-is!
 
 You also try not to have side-effects by peppering code with OS calls to write things 
 to the Standard Out, or to files, or drawing on the display.  Inevitably, some of
@@ -100,85 +178,30 @@ impure Functional Programming language, but I have, by design, captured activiti
 like drawing to the screen, and sectioned them off from main processing.
 
 
-
 Architecture
 ------------
 
-| Assembly            | Purpose                                                                                            |
-|---------------------|----------------------------------------------------------------------------------------------------|
-| FsAnyGame           | Game algorithm library, based on F# core library only.                                             |
-| FsAnyGameTests      | Automation Tests for FsAnyGame.  Top priority of all the tests.                                    |
-| FsFortAssault       | Host-environment-agnostic library, based on F# core library only.                                  |
-| FsFortAssaultSDL2CS | Game entry point, .Net Core, for Desktop Windows (and hopefully Linux-- but not tested yet!)       |
-| FsSDL2              | F#-to-SDL2 smoothing library.  Done via the (third party) SDL2-CS interop library.                 |
-| FsXUnitExtensions   | Jonathan's attempt at making XUnit tests nicer on F#, in lieu of looking for a proper F# test lib. |
+| Assembly                | Purpose                                                                                            |
+|-------------------------|----------------------------------------------------------------------------------------------------|
+| FsAnyGame               | Game algorithm library, based on F# core library only.                                             |
+| FsAnyGameTests          | Automation Tests for the complex bits of FsAnyGame.  Top priority of all tests.                    |
+| FsDesktopGameFramework  | Game mini-framework for desktop Windows and Linux, using SDL2.                                     |
+| FsFortAssaultDesktop    | Fort Assault Linux/Windows Desktop version main program and resources.                             |
+| FsFortAssaultEngine     | Game engine, host-environment-agnostic.                                                            |
+| FsFortAssaultWeb        | Fort Assault web version, currently integrating the web framework (for now).  Using Web Canvas     |
+| FsXUnitExtensions       | Jonathan's attempt at making XUnit tests nicer on F#, in lieu of looking for a proper F# test lib. |
+| SDL2-CS                 | A (hopefully temporary) copy of the SDL2-CS framework, until the author puts that on NuGet! *hint* |
 
-Note - The Fable in-browser version is under development on a separate Spike repo, because 
-this is my first time using Fable, and I need to investigate a ton of stuff.  Well, a small
-wheelbarrow of stuff really.  Fable will be coming to this repo in due course.
+The Web framework needs separating out of FsFortAssaultWeb into a new library "FsWebGameFramework".
 
-
-Pure Functional Programming Notes
----------------------------------
-
-| Assembly            | Compliance note                     |
-|---------------------|-------------------------------------|
-| FsAnyGame           | 100% PFP                            |
-| FsFortAssault       | 100% PFP                            |
-| FsFortAssaultSDL2CS | The main loop is a loop, so not PFP |
-
-
-Source code guide
-=================
-
-Main and Message Loop
----------------------
-FsFortAssaultSDL2CS/Program.fs has the "main" function.
-It loads all the resources, and drops into "MainLoopProcessing", which 100% old-school message loop.
-
-The message loop stores the address of the current game state 'let mutable screenState ='.
-The game state is immutable, but the loop's pointer to the game state is mutable.
-
-SDL2 event handling is done in a way that tries to make it as easy as possible for
-pure-functional code to deal with the keyboard input without having to maintain
-extra state flags for itself.  See type 'InputEventData'.
-
-Game engine
------------
-FsFortAssault assembly is the game engine, which is NEITHER desktop nor web aware.
-
-The main loop calls the engine (in FsFortAssault) every 50th of a second to draw the 
-display 'RenderStoryboard'.  The main loop also calls NextStoryboardState every
-50th of a sceond to process the accumulated keyboard events that have happened during 
-the previous 1/50th of a second, and calculate the new game state.
-
-Event handling
---------------
-To be clear- there are only TWO events that the game engine ever sees:
-
-    - Draw the screen please
-    - Frame advance by 1/50th of a second please
-
-The Player's input is supplied into the Frame advance handler, and NOT supplied
-as separate events (it doesn't fit well with Functional Programming).
-
-The Storyboard and Screens
+Developer Screen Shortcuts
 --------------------------
-FsFortAssault/Storyboard.fs is the central orchestrator of how the game progresses between the
-title screen, and the many varied scenario screens that the game has.  The Storyboard is
-a Discriminated Union (DU) type, with one case for each "screen".  Each case contains the Data
-Model Type for the screen.  The Storyboard tries to know as little as possible about the
-screen's Data Models, but it has to know some minor stuff.  Very certainly, the screens
-are designed to know NOTHING about the data models of any of the other screens, and
-nothing of the Storyboard DU.  The screens also try to know as little as possible about the
-order in which the screens progress.  That is for the Storyboard to know where possible.
-
-Developer Shortcuts
--------------------
 In development, you can shortcut the game to a screen by altering the "NewStoryboard" function.
 This calls the "Shortcut" function, and you can choose various start-state cases for
 development purposes.  You must set this back to 'RunGameNormally' for release.
 
+Manual Test assistance
+----------------------
 SHORT_PLAYTHROUGH : A special mode for testing, enabled by inserting the following
 into FsFortAssaultEngine.fsproj:
 
@@ -188,44 +211,25 @@ into FsFortAssaultEngine.fsproj:
   </PropertyGroup>
 ```
 
-Functions a Screen module must provide
---------------------------------------
-The screens have a constructor called "New...screen name...", and a frame-advance function
-called every 1/50th of a second, called "Next...screen name...State".  They also have
-a rendering function called "Render...screen name..." which must take the screen's data
-model, and draw the screen by calling using the 'render' function supplied to it by the
-hosting framework.
+Automation Test notes
+---------------------
+I only really care about the FsAnyGame library.  It will get more tests, particularly
+because it is a re-use focus point.
 
-The Display
------------
-The game uses a 320 x 200 virtual coordinate system for the display, which the host is
-permitted to map to larger integral size multiples for the actual sprites, as it sees
-fit.  In this implementation I only use a 1:1 correspondance between the supplied PNG images
-in the Images folder, and the virtual coordinate system.
+FortAssault itself is something of a personal research project, and low priority 
+for automation tests.  I am happy to present this game for people to play, but it is 
+not likely to get more investment from me after it has served its purpose of
+practising and refining F# techniques and spinning off a mini library+framework
+that targets desktop and web environments.
 
+Program-correctness notes
+-------------------------
+In spite of no test framework for FsFortAssault, I make *fairly* good use of the brutal 
+strong typing of F# demonstrating use of features like Units Of Measure, and wrapping 
+basic types in Discriminated-Unions-Of-Just-One-Thing.  
 
-
-
-
-Future Framework Notes
-----------------------
-I would like to split FsFortAssaultSDL2CS into a framework assembly that will be the back-end
-of any F# game on Windows/Linux Desktop where SDL2 is assumed.  All of the game specific
-stuff would be removed.
-
-I need to write another game in order to distill the requirements for this.
-The framework is small, and this might not be meaningfully achieveable, perhaps
-to create new games, copy-paste-and-change will do.  In any case, the FsAnyGame 
-library is more important that this aim.
-
-
-
-Test notes
-----------
-No test framework for FsFortAssault.  Instead, just the brutal strong typing of F# demonstrating
-use of features like Units Of Measure, and wrapping basic types in Discriminated-Unions-Of-Just-One-Thing.
-Ultimately I don't care that much about this particular game, it's single-author, and will 
-serve its purpose to gestate the FsAnyGame library.
-
-
-
+F# has some superb features to support strength-under-refactoring, such as the exhausive 
+case checking of "match" when used with Discriminated Unions, and the exhaustive field 
+checking of record construction.  Even 'if' is checked:  Both the 'if' and 'else' arms
+must return the same type.  This is a good way of avoiding stupid accidents under 
+program change.
