@@ -98,7 +98,7 @@ let inline DrawFilledRectangle context2d x y w h (colouru:uint32) =
 
 let LoadFileListThenDo fileNameObtainer needsMagentaObtainer widthGetter heightGetter continuation resourceList =
 
-    let htmlImageElementResizeArrayForFonts = new ResizeArray<Image>(FortAssaultFontResourceImages.Length)
+    let htmlImageElementResizeArrayForFonts = new ResizeArray<Image>(resourceList |> List.length)
 
     let rec recurse resourceRecordList fileNameObtainer needsMagentaObtainer =
 
@@ -137,7 +137,7 @@ let LoadFileListThenDo fileNameObtainer needsMagentaObtainer widthGetter heightG
 
 // ------------------------------------------------------------------------------------------------------------
 
-let LoadResourceFilesThenDo afterAllLoaded =
+let LoadResourceFilesThenDo resourceImages fontResourceImages afterAllLoaded =
 
     let imageFileNameGetter metadata =
         metadata.ImageFileName
@@ -150,15 +150,15 @@ let LoadResourceFilesThenDo afterAllLoaded =
     let imageWidthGetter  metadata = metadata.ImageWidth
     let imageHeightGetter metadata = metadata.ImageHeight
 
-    FortAssaultFontResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
+    fontResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
         (fun arrayOfLoadedFontImages ->
 
             let arrayOfLoadedFonts = 
                 arrayOfLoadedFontImages |> Array.map BasicFont
 
-            FortAssaultResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
+            resourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
                 (fun arrayOfLoadedImages ->
-                    afterAllLoaded arrayOfLoadedFonts arrayOfLoadedImages)
+                    afterAllLoaded arrayOfLoadedImages arrayOfLoadedFonts)
         )
 
     // NB: We never get here (continuations called).
@@ -199,7 +199,15 @@ let RenderToWebCanvas (context2d:Browser.Types.CanvasRenderingContext2D) drawing
 
 // ------------------------------------------------------------------------------------------------------------
 
-let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
+let StartGame
+    listOfKeysNeeded
+    gameStaticDataConstructor
+    gameGlobalStateConstructor
+    gameplayStartConstructor
+    gameRenderer
+    gameFrameAdvanceFunction 
+    arrayOfLoadedImages
+    arrayOfLoadedFonts =
 
     let javascriptGameResources =
         {
@@ -212,27 +220,26 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
     let canvas = document.getElementById("gameScreen") :?> Browser.Types.HTMLCanvasElement
     let context2d = canvas.getContext("2d") :?> Browser.Types.CanvasRenderingContext2D
    
-    match LoadTankBattleSequences () with  // TODO:  Don't want to do this here or in the desktop version.
+    match gameStaticDataConstructor () with
     
-        | Ok tankMapsList ->
+        | Ok gameResources ->
 
             let gameTime         = 0.0F<seconds>
-            let gameResources    = { TankMapsList = tankMapsList }
-            let storyboard       = NewFortAssaultStoryboard gameResources gameTime
+            let storyboard       = gameplayStartConstructor gameResources gameTime
             let renderFunction   = RenderToWebCanvas context2d
             let frameElapsedTime = 0.02F<seconds>
-            let gameGlobals      = FortAssaultGlobalStateConstructor ()
+            let gameGlobals      = gameGlobalStateConstructor ()
+
+            let toKeyTuple (WebBrowserKeyCode k) =
+                (k, WebBrowserKeyCode k)
+
+            let toKeyTuples lst =
+                lst |> List.map toKeyTuple
             
             let mutableKeyStateStore =
                 NewMutableKeyStateStore
                     80 // P
-                    [
-                        (37 , WebBrowserKeyCode 37) // LEFT
-                        (39 , WebBrowserKeyCode 39) // RIGHT
-                        (38 , WebBrowserKeyCode 38) // UP   
-                        (40 , WebBrowserKeyCode 40) // DOWN 
-                        (90 , WebBrowserKeyCode 90) // Z    (FIRE)
-                    ]
+                    (listOfKeysNeeded |> toKeyTuples)
 
             let registerKeyHandler eventName handlerFunc =
                 document.addEventListener(
@@ -247,7 +254,8 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
             document.getElementById("loaderScreen").classList.add("hidden")
             document.getElementById("gameScreen").classList.remove("hidden")
 
-            let keyStateGetter = LiveKeyStateFrom mutableKeyStateStore
+            let keyStateGetter = 
+                LiveKeyStateFrom mutableKeyStateStore
 
             let rec mainLoop screenState tickCount () =
 
@@ -256,10 +264,10 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
                 let gameTime = 
                     (float32 tickCount) / 50.0F |> InSeconds
                 
-                RenderFortAssaultStoryboard renderFunction screenState gameTime
+                gameRenderer renderFunction screenState gameTime
 
                 let screenState = 
-                    NextFortAssaultStoryboardState gameResources screenState keyStateGetter gameTime frameElapsedTime 
+                    gameFrameAdvanceFunction gameResources screenState keyStateGetter gameTime frameElapsedTime 
 
                 ClearKeyJustPressedFlags mutableKeyStateStore
 
@@ -279,11 +287,42 @@ let StartGame arrayOfLoadedFonts arrayOfLoadedImages =
 
 
 
+
+
+
 // ------------------------------------------------------------------------------------------------------------
 //  BOOT
 // ------------------------------------------------------------------------------------------------------------
-   
-LoadResourceFilesThenDo StartGame
+
+let WebMain () =
+
+    let fortAssaultStaticDataConstructor () = 
+       LoadTankBattleSequences () 
+           |> Result.map (fun tankMapsList -> { TankMapsList = tankMapsList })
+
+    let fortAssaultKeysNeeded =
+        [
+            WebBrowserKeyCode 37
+            WebBrowserKeyCode 39
+            WebBrowserKeyCode 38
+            WebBrowserKeyCode 40
+            WebBrowserKeyCode 90
+        ]
+
+    LoadResourceFilesThenDo 
+        FortAssaultResourceImages 
+        FortAssaultFontResourceImages 
+        (StartGame
+            fortAssaultKeysNeeded
+            fortAssaultStaticDataConstructor 
+            FortAssaultGlobalStateConstructor 
+            NewFortAssaultStoryboard 
+            RenderFortAssaultStoryboard 
+            NextFortAssaultStoryboardState)
+
+
+
+WebMain ()
 
 
 
