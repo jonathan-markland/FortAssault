@@ -1,18 +1,17 @@
-module FortAssaultWeb
+module WebGameFramework
 
 open Fable.Core
 open Browser.Dom
-open FortAssaultImageFiles
-open ImagesAndFonts
-open TankMapFileLoader
-open Storyboard
+
+open StaticResourceSetup
+open KeyboardForFramework
+
 open Time
 open Geometry
 open DrawingShapes
-open FortAssaultGlobalState
-open KeyboardForFramework
+open ImagesAndFonts
+
 open Input
-open EngineEntryPoint
 
 
 
@@ -35,19 +34,19 @@ type JavascriptGraphicResources =
 // ------------------------------------------------------------------------------------------------------------
 
 [<Emit("console.log($0)")>]
-let ConsoleLog (messageText:string) : unit = jsNative
+let private ConsoleLog (messageText:string) : unit = jsNative
 
 
 
 /// Javascript alert() function
 [<Emit("alert($0)")>]
-let Alert (messageText:string) : unit = jsNative
+let private Alert (messageText:string) : unit = jsNative
 
 
 
 /// A supplementary Javascript function that we made.  TODO: It may not be necessary to even have this in Javascript!
 [<Emit("loadImageThenDo($0, $1, $2)")>]
-let LoadImageThenDo
+let private LoadImageThenDo
     (htmlImageElement:obj)
     (needsMagentaColourKey:bool)
     (onCompletionOfLoad:obj -> unit) : unit = jsNative
@@ -55,18 +54,18 @@ let LoadImageThenDo
 
 
 [<Emit("$0.drawImage($1, $2, $3)")>]
-let JsDrawImage 
+let private JsDrawImage 
     (context2d:Browser.Types.CanvasRenderingContext2D)
     (htmlImageObject:obj)
     (x:int)
     (y:int) = jsNative
 
-let inline DrawImage context2d (HostImageRef(htmlImageObject)) x y =
+let inline private DrawImage context2d (HostImageRef(htmlImageObject)) x y =
     JsDrawImage context2d htmlImageObject x y
 
 
 [<Emit("$0.drawImage($1, $2, $3, $4, $5, $6, $7, $8, $9)")>]
-let JsDrawSubImage 
+let private JsDrawSubImage 
     (context2d:Browser.Types.CanvasRenderingContext2D) // $0
     (htmlImageObject:obj)                              // $1
     (srcleft:int)                                      // $2
@@ -78,15 +77,15 @@ let JsDrawSubImage
     (dstwidth:int)                                     // $8 
     (dstheight:int) = jsNative                         // $9 
 
-let inline DrawSubImage context2d (HostImageRef(htmlImageObject)) srcleft srctop srcwidth srcheight dstleft dsttop dstwidth dstheight =
+let inline private DrawSubImage context2d (HostImageRef(htmlImageObject)) srcleft srctop srcwidth srcheight dstleft dsttop dstwidth dstheight =
     if srcwidth > 0 && srcheight > 0 && dstwidth > 0 && dstheight > 0 then // Avoid firefox exception
         JsDrawSubImage context2d htmlImageObject srcleft srctop srcwidth srcheight dstleft dsttop dstwidth dstheight
 
 
 [<Emit("$0.fillStyle=$5 ; $0.fillRect($1,$2,$3,$4)")>]
-let JsDrawFilledRectangle (context2d:Browser.Types.CanvasRenderingContext2D) (x:int) (y:int) (w:int) (h:int) (colour:string) = jsNative
+let private JsDrawFilledRectangle (context2d:Browser.Types.CanvasRenderingContext2D) (x:int) (y:int) (w:int) (h:int) (colour:string) = jsNative
     
-let inline DrawFilledRectangle context2d x y w h (colouru:uint32) =
+let inline private DrawFilledRectangle context2d x y w h (colouru:uint32) =
     let colourStr = "#" + colouru.ToString("x6")
     JsDrawFilledRectangle context2d x y w h colourStr
 
@@ -96,7 +95,7 @@ let inline DrawFilledRectangle context2d x y w h (colouru:uint32) =
 //  Load resources then start game
 // ------------------------------------------------------------------------------------------------------------
 
-let LoadFileListThenDo fileNameObtainer needsMagentaObtainer widthGetter heightGetter continuation resourceList =
+let private LoadFileListThenDo fileNameObtainer needsMagentaObtainer widthGetter heightGetter continuation resourceList =
 
     let htmlImageElementResizeArrayForFonts = new ResizeArray<Image>(resourceList |> List.length)
 
@@ -137,6 +136,7 @@ let LoadFileListThenDo fileNameObtainer needsMagentaObtainer widthGetter heightG
 
 // ------------------------------------------------------------------------------------------------------------
 
+// TODO: This should not need to be private?
 let LoadResourceFilesThenDo resourceImages fontResourceImages afterAllLoaded =
 
     let imageFileNameGetter metadata =
@@ -149,6 +149,7 @@ let LoadResourceFilesThenDo resourceImages fontResourceImages afterAllLoaded =
 
     let imageWidthGetter  metadata = metadata.ImageWidth
     let imageHeightGetter metadata = metadata.ImageHeight
+
 
     fontResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
         (fun arrayOfLoadedFontImages ->
@@ -165,7 +166,7 @@ let LoadResourceFilesThenDo resourceImages fontResourceImages afterAllLoaded =
 
 // ------------------------------------------------------------------------------------------------------------
 
-let RenderToWebCanvas (context2d:Browser.Types.CanvasRenderingContext2D) drawingCommand =
+let private RenderToWebCanvas (context2d:Browser.Types.CanvasRenderingContext2D) drawingCommand =
 
     match drawingCommand with
 
@@ -199,7 +200,7 @@ let RenderToWebCanvas (context2d:Browser.Types.CanvasRenderingContext2D) drawing
 
 // ------------------------------------------------------------------------------------------------------------
 
-let StartGame
+let FrameworkWebMain
     listOfKeysNeeded
     gameStaticDataConstructor
     gameGlobalStateConstructor
@@ -215,7 +216,7 @@ let StartGame
             Images   = arrayOfLoadedImages
         }
 
-    StaticResourceSetup.SetStaticImageAndFontResourceArrays arrayOfLoadedImages arrayOfLoadedFonts
+    SetStaticImageAndFontResourceArrays arrayOfLoadedImages arrayOfLoadedFonts
 
     let canvas = document.getElementById("gameScreen") :?> Browser.Types.HTMLCanvasElement
     let context2d = canvas.getContext("2d") :?> Browser.Types.CanvasRenderingContext2D
@@ -287,42 +288,6 @@ let StartGame
 
 
 
-
-
-
-// ------------------------------------------------------------------------------------------------------------
-//  BOOT
-// ------------------------------------------------------------------------------------------------------------
-
-let WebMain () =
-
-    let fortAssaultStaticDataConstructor () = 
-       LoadTankBattleSequences () 
-           |> Result.map (fun tankMapsList -> { TankMapsList = tankMapsList })
-
-    let fortAssaultKeysNeeded =
-        [
-            WebBrowserKeyCode 37
-            WebBrowserKeyCode 39
-            WebBrowserKeyCode 38
-            WebBrowserKeyCode 40
-            WebBrowserKeyCode 90
-        ]
-
-    LoadResourceFilesThenDo 
-        FortAssaultResourceImages 
-        FortAssaultFontResourceImages 
-        (StartGame
-            fortAssaultKeysNeeded
-            fortAssaultStaticDataConstructor 
-            FortAssaultGlobalStateConstructor 
-            NewFortAssaultStoryboard 
-            RenderFortAssaultStoryboard 
-            NextFortAssaultStoryboardState)
-
-
-
-WebMain ()
 
 
 

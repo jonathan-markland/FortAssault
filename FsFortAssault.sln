@@ -15,9 +15,11 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsAnyGameTests", "FsAnyGame
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsXunitExtensions", "FsXunitExtensions\FsXunitExtensions.fsproj", "{AEA3530F-9C15-41FA-B8CA-C00F59C284CE}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsFortAssaultWeb", "FsFortAssaultWeb\FsFortAssaultWeb.fsproj", "{66F6B2FA-F3D4-4EE8-8DA3-BC698A28BBD2}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsWebGameFramework", "FsWebGameFramework\FsWebGameFramework.fsproj", "{66F6B2FA-F3D4-4EE8-8DA3-BC698A28BBD2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SDL2-CS", "SDL2-CS\SDL2-CS.csproj", "{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsFortAssaultWeb", "FsFortAssaultWeb\FsFortAssaultWeb.fsproj", "{9580012D-2EF9-4843-AEB9-E71A2DC5061F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -125,6 +127,18 @@ Global
 		{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}.Release|x64.Build.0 = Release|Any CPU
 		{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}.Release|x86.ActiveCfg = Release|Any CPU
 		{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}.Release|x86.Build.0 = Release|Any CPU
+		{9580012D-2EF9-4843-AEB9-E71A2DC5061F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9580012D-2EF9-4843-AEB9-E71A2DC5061F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9580012D-2EF9-4843-AEB9-E71A2DC5061F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{9580012D-2EF9-4843-AEB9-E71A2DC5061F}.Debug|x64.Build.0 = Debug|Any CPU
+		{9580012D-2EF9-4843-AEB9-E71A2DC5061F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{9580012D-2EF9-4843-AEB9-E71A2DC5061F}.Debug|x86.Build.0 = Debug|Any CPU
+		{9580012D-2EF9-4843-AEB9-E71A2DC5061F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9580012D-2EF9-4843-AEB9-E71A2DC5061F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9580012D-2EF9-4843-AEB9-E71A2DC5061F}.Release|x64.ActiveCfg = Release|Any CPU
+		{9580012D-2EF9-4843-AEB9-E71A2DC5061F}.Release|x64.Build.0 = Release|Any CPU
+		{9580012D-2EF9-4843-AEB9-E71A2DC5061F}.Release|x86.ActiveCfg = Release|Any CPU
+		{9580012D-2EF9-4843-AEB9-E71A2DC5061F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
