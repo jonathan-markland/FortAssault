@@ -41,9 +41,8 @@ Screenshots
 ![Game screenshot](/WebImages/Image5.jpg)
 
 Browser version
----------------
-This is in the FortAssaultWeb folder. It shares the FsAnyGame and 
-FsFortAssault assemblies by relative path inclusion of the projects.
+===============
+This is in the FortAssaultWeb folder.
 
 It's all node.js / npm stack, so you need these.
 
@@ -54,13 +53,28 @@ To start the server:
 
 Then navigate to http://localhost:8080
 
-TODO: I must find a better solution to copying the 
-Desktop version's image files manually!
+The file 'webpack.config.js' contains a link to the F#
+project that contains the entry point for the web version.
 
-To obtain the production web site file set, run this command in 
-the solution root folder:
+Build the production website
+----------------------------
+To obtain the production web site file set, run this command
+from the solution root folder:
 
 	npx webpack --mode production
+
+The production web site ends up in the "wwwroot" folder as
+specified by the webpack.config.js file.
+
+Notes
+-----
+NB: The image files in wwwroot/Images are the ones that the
+Desktop version links to, so that there is only one image set.
+
+On the F# side, the 'web' code can be built by both the .Net
+compiler and the Fable compiler, but you cannot run the .DLL
+file made by the .Net compiler as it expects to interface
+with Javascript.
 
 Build Desktop Linux Version
 ---------------------------
@@ -77,105 +91,7 @@ Build Desktop Windows Version
 -----------------------------
 I just use Visual Studio 2019, Community Edition.
 
-Set 'FsFortAssaultDesktopWindows' as the startup project.
-
-About Functional Programming for Newcomers
-==========================================
-In the discipline of Pure Functional Programming, the data model is always 
-READ ONLY.  F# has 100% support in the language and in its core library for this
-kind of programming, although it will allow you to have READ-WRITE data if you
-need it.  It is a hybrid "Functional-First" language.
-
-In functional programming you do *not* pass addresses of things, and fiddle around 
-with their state by assignments, property-setters, or calling methods!  Instead
-you only ever READ them.  Indeed, *nobody* can tamper with values after the
-construction phase of a new data item.
-
-Your function progresses by reading its inputs, calculating a new desired result, 
-and returning that as its result:
-
-	- Parameters input -> Parameters processed -> New output returned.
-
-If you don't wish to calculate a new state for something (because conceptually 
-it hasn't changed), then simply return the original input as-is!
-
-Ideology
---------
-In functional programming, the default data model is READ ONLY data because,
-ideologically, it is attempting to model the mathematical concept of a *value*.
-In mathematics:
-
-	- The number 7 is a *value*
-	- The number 7 *just exists*, it is not considered to be *stored* anywhere
-	- The number 7 does not have an *address*, so cannot be *re-assigned* to be some other number at any point
-	- The number 7 will always be 7, and never any other number.
-
-Inside the computer, functional programming makes compromises because, of course 
-things must have addresses!  But in making the data types read-only after initial
-construction, subsequent understanding of the program can be simplified.
-
-In a .Net context, F# lets you control whether your types are implemented by 
-containment (like C# structs), or whether they are indirectly on the managed
-heap (like C# class).  But, I think it's fair to say, that the concept of an
-address is diminished in Functional Programming.
-
-Simplify program comprehension
-------------------------------
-Understanding can be simplified because, once you know a parameter type is read-only,
-you know that the parameter can only ever be an INPUT to the function.  
-
-Understanding can also be simplified because sharing data that's read-only for 
-everyone, is safe and pretty uncontroversial.
-
-In C++/C#/Java the parameters usually have some mutability about them, perhaps as 
-part of their OO interfaces.  This way, parameters could be inputs, but they also 
-could be OUTPUTS, or even a hybrid of both!  You can no real way of knowing whether 
-that parameter object could have its value altered without tracing where it is 
-passed, and who might alter it.
-
-Performance
------------
-Sometimes newcomers are concerned about "creating new things all the time because
-you can't change existing things".
-
-There are many approaches to coming to terms with non-mutability:
-
-	- Mutability isn't as commonly needed as you think.
-	  What about that mutable C# object instance that is NEVER mutated?
-	  That would be ONE read-only F# record instance, with no net change
-	  in the amount of data stored.
-
-	- Design for re-use of existing data.
-	  Do all of the Space Invader's fields change?  Or just the (x,y)?
-	  Split data into several record types, from most-mutable to least-mutable.
-	  Forward-link them in that order, and "replace" only the front-end.
-	  
-	- Don't *store* what you can *calculate*.
-	  My "Flickbooks" do this for large parts of the animation of this game.
-
-	- Use the stack for temporary values
-
-A counterpoint is that in imperative programming, since data is almost always
-mutable by default, if you really don't want anyone else to modify your data, you
-have to make a *copy*.  Copies are expensive.
-
-Use of Functional Programming in this game
-------------------------------------------
-
-The main use of mutability is in the main loop where a mutable pointer points to
-the current game state record on the heap, and for key state recording.  All other 
-mutability is pretty strictly disguised, so the caller wouldn't ever know, or be
-accidentally affected by it.
-
-This architectural approach cascades from the overview level (that I call the 
-Storyboard) into the currently active screen, and down into the fine detail 
-of the data that makes the screen uniquely special.
-
-You also try not to have side-effects by peppering code with OS calls to write things 
-to the Standard Out, or to files, or drawing on the display.  Inevitably, some of
-these activities are needed, and we can do these things in F# because it's an 
-impure Functional Programming language, but I have, by design, captured activities 
-like drawing to the screen, and sectioned them off from main processing.
+Set 'FsFortAssaultDesktop' as the startup project.
 
 
 Architecture
@@ -186,13 +102,12 @@ Architecture
 | FsAnyGame               | Game algorithm library, based on F# core library only.                                             |
 | FsAnyGameTests          | Automation Tests for the complex bits of FsAnyGame.  Top priority of all tests.                    |
 | FsDesktopGameFramework  | Game mini-framework for desktop Windows and Linux, using SDL2.                                     |
-| FsFortAssaultDesktop    | Fort Assault Linux/Windows Desktop version main program and resources.                             |
+| FsWebGameFramework      | Game mini-framework for web browsers using Fable, and Web Canvas.                                  |
+| FsFortAssaultDesktop    | Fort Assault Linux/Windows Desktop version main program.                                           |
 | FsFortAssaultEngine     | Game engine, host-environment-agnostic.                                                            |
-| FsFortAssaultWeb        | Fort Assault web version, currently integrating the web framework (for now).  Using Web Canvas     |
+| FsFortAssaultWeb        | Fort Assault web version main program.                                                             |
 | FsXUnitExtensions       | Jonathan's attempt at making XUnit tests nicer on F#, in lieu of looking for a proper F# test lib. |
 | SDL2-CS                 | A (hopefully temporary) copy of the SDL2-CS framework, until the author puts that on NuGet! *hint* |
-
-The Web framework needs separating out of FsFortAssaultWeb into a new library "FsWebGameFramework".
 
 Developer Screen Shortcuts
 --------------------------
@@ -224,12 +139,13 @@ that targets desktop and web environments.
 
 Program-correctness notes
 -------------------------
-In spite of no test framework for FsFortAssault, I make *fairly* good use of the brutal 
-strong typing of F# demonstrating use of features like Units Of Measure, and wrapping 
-basic types in Discriminated-Unions-Of-Just-One-Thing.  
+There is only a set of tests for some features of the shared library that are more
+"difficult".  I make no bones that the main game has no tests.  This has been a
+research project to get to grips with the technology stack.  Working alone on this
+has made tests less urgent.  With the stack tamed, and the library and framework
+shaping up nicely, the next game may have more of a test framework.
 
-F# has some superb features to support strength-under-refactoring, such as the exhausive 
-case checking of "match" when used with Discriminated Unions, and the exhaustive field 
-checking of record construction.  Even 'if' is checked:  Both the 'if' and 'else' arms
-must return the same type.  This is a good way of avoiding stupid accidents under 
-program change.
+F# has some superb features to support strength-under-refactoring which is why I
+use this.
+
+
