@@ -210,12 +210,6 @@ let FrameworkWebMain
     arrayOfLoadedImages
     arrayOfLoadedFonts =
 
-    let javascriptGameResources =
-        {
-            Fonts    = arrayOfLoadedFonts
-            Images   = arrayOfLoadedImages
-        }
-
     SetStaticImageAndFontResourceArrays arrayOfLoadedImages arrayOfLoadedFonts
 
     let canvas = document.getElementById("gameScreen") :?> Browser.Types.HTMLCanvasElement
