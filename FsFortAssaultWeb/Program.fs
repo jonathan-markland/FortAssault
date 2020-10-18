@@ -37,9 +37,7 @@ let WebMain () =
             fortAssaultKeysNeeded
             fortAssaultStaticDataConstructor 
             FortAssaultGlobalStateConstructor 
-            NewFortAssaultStoryboard 
-            RenderFortAssaultStoryboard 
-            NextFortAssaultStoryboardState)
+            NewFortAssaultStoryboard)
 
 
 

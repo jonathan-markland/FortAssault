@@ -20,6 +20,7 @@ open Rules
 open TankMapFileLoader
 open FortAssaultGlobalState
 open ScoreboardModel
+open ScreenHandler
 
 #if SHORT_PLAYTHROUGH
 open ResourceIDs
@@ -223,20 +224,6 @@ let Shortcut gameResources gameTime mode =
             let screen = NewMechanicsTestPageScreen gameTime
             MechanicsTestPageChapter screen
          
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//   Creation of new storyboard
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-/// Called only once when the game boots
-let NewFortAssaultStoryboard gameResources gameTime =
-
-    #if SHORT_PLAYTHROUGH
-    Shortcut gameResources gameTime SkipToEnterYourName // RunGameNormally
-    #else
-    Shortcut gameResources gameTime RunGameNormally  // ** DO NOT CHANGE THIS ONE! : Define SHORT_PLAYTHROUGH and set the one above **
-    #endif
-    
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -486,4 +473,5 @@ let NextStoryboardState staticGameResources gameState input gameTime frameElapse
             Advance (
                 MechanicsTestPageChapter 
                     (NextMechanicsTestPageScreenState model input gameTime))
+
 

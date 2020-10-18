@@ -48,7 +48,7 @@ It's all node.js / npm stack, so you need these.
 
 To start the server:
 
-	cd FortAssaultWeb
+	cd root-of-repository-folder
 	npm start
 
 Then navigate to http://localhost:8080

@@ -12,6 +12,7 @@ open DrawingShapes
 open ImagesAndFonts
 
 open Input
+open ScreenHandler
 
 
 
@@ -205,8 +206,6 @@ let FrameworkWebMain
     gameStaticDataConstructor
     gameGlobalStateConstructor
     gameplayStartConstructor
-    gameRenderer
-    gameFrameAdvanceFunction 
     arrayOfLoadedImages
     arrayOfLoadedFonts =
 
@@ -216,14 +215,21 @@ let FrameworkWebMain
     let context2d = canvas.getContext("2d") :?> Browser.Types.CanvasRenderingContext2D
    
     match gameStaticDataConstructor () with
-    
-        | Ok gameResources ->
+        | Error msg -> ConsoleLog msg
+        | Ok gameStaticData ->
 
-            let gameTime         = 0.0F<seconds>
-            let storyboard       = gameplayStartConstructor gameResources gameTime
-            let renderFunction   = RenderToWebCanvas context2d
+            let gameGlobalState =
+                match gameGlobalStateConstructor () with
+                    | Error msg -> failwith msg
+                    | Ok globals -> globals
+
+            let gameTime = 0.0F<seconds>
             let frameElapsedTime = 0.02F<seconds>
-            let gameGlobals      = gameGlobalStateConstructor ()
+
+            let gameState : ErasedGameState<'StaticGameResources> =
+                gameplayStartConstructor gameStaticData gameGlobalState gameTime
+
+            let renderFunction = RenderToWebCanvas context2d
 
             let toKeyTuple (WebBrowserKeyCode k) =
                 (k, WebBrowserKeyCode k)
@@ -252,30 +258,25 @@ let FrameworkWebMain
             let keyStateGetter = 
                 LiveKeyStateFrom mutableKeyStateStore
 
-            let rec mainLoop screenState tickCount () =
+            let rec mainLoop (gameState : ErasedGameState<'StaticGameResources>) tickCount () =
 
                 let tickCount = tickCount + 1u
                 
                 let gameTime = 
                     (float32 tickCount) / 50.0F |> InSeconds
                 
-                gameRenderer renderFunction screenState gameTime
+                gameState.Draw renderFunction gameTime
 
-                let screenState = 
-                    gameFrameAdvanceFunction gameResources screenState keyStateGetter gameTime frameElapsedTime 
+                let nextGameState = 
+                    gameState.Frame 
+                        gameStaticData 
+                        keyStateGetter 
+                        gameTime 
+                        frameElapsedTime 
 
                 ClearKeyJustPressedFlags mutableKeyStateStore
 
-                window.setTimeout((mainLoop screenState tickCount), 20) |> ignore
+                window.setTimeout((mainLoop nextGameState tickCount), 20) |> ignore
 
-            let gameGlobals =
-                match gameGlobals with
-                    | Error msg -> failwith msg
-                    | Ok globals -> globals
-
-            mainLoop (struct (storyboard, gameGlobals)) 0u ()
-
-   
-        | Error msg -> 
-            ConsoleLog msg
+            mainLoop gameState 0u ()
     

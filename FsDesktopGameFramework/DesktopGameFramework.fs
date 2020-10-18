@@ -227,7 +227,6 @@ let private MainLoopProcessing
         // DEBUG: force clean the drawing texture.  This may help observe artefacts where tiles don't join.
         // renderFunction (DrawFilledRectangle(0.0F<wu>, 0.0F<wu>, 320.0F<wu>, 256.0F<wu>, SolidColour(0xFF00FFu)))
 
-        // gameRenderer renderFunction screenState gameTime
         gameState.Draw renderFunction gameTime
         SetSdlRenderTargetToScreen renderer
         RenderCopyToFullSdlTarget renderer backingTexture
@@ -237,12 +236,6 @@ let private MainLoopProcessing
             gameTime - lastGameTime  // TODO: Why calculate this.  Web version just passes constant.
 
         let nextGameState = 
-            // gameFrameAdvanceFunction 
-            //     gameStaticData 
-            //     screenState 
-            //     keyStateGetter
-            //     gameTime 
-            //     frameElapsedTime  // TODO: Didn't like passing this really.
             gameState.Frame
                 gameStaticData
                 keyStateGetter
