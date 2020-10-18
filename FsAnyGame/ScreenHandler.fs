@@ -33,7 +33,7 @@ type ErasedGameState<'StaticGameResources>() =
 /// and a frame-advance function.
 type SpecificGameState<'Model, 'StaticGameResources>
     ( model     : 'Model, 
-      drawFunc  : RenderFunction -> float32<seconds> -> 'Model -> unit, 
+      drawFunc  : RenderFunction -> 'Model -> float32<seconds> -> unit, 
       frameFunc : 'StaticGameResources -> SpecificGameState<'Model, 'StaticGameResources> -> KeyStateFunction -> float32<seconds> -> float32<seconds> -> ErasedGameState<'StaticGameResources> ) =
 
     inherit ErasedGameState<'StaticGameResources>()
@@ -48,7 +48,7 @@ type SpecificGameState<'Model, 'StaticGameResources>
     member val FrameFunc = frameFunc
 
     override this.Draw render gameTime = 
-        this.DrawFunc render gameTime this.Model
+        this.DrawFunc render this.Model gameTime
 
     override this.Frame staticGameResources keyStateGetter gameTime frameElapsedTime = 
         this.FrameFunc staticGameResources this keyStateGetter gameTime frameElapsedTime   // 'this.Model' is the old state

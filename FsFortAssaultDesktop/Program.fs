@@ -49,8 +49,9 @@ let main argv =
             fortAssaultStaticDataConstructor
             FortAssaultGlobalStateConstructor
             NewFortAssaultStoryboard
-            RenderFortAssaultStoryboard
-            NextFortAssaultStoryboardState with
+            //RenderFortAssaultStoryboard
+            //NextFortAssaultStoryboardState 
+            with
 
         | Some errorMessage ->
             printfn "%s" errorMessage

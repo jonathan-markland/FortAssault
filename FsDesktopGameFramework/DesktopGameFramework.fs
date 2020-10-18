@@ -12,6 +12,7 @@ open Time
 open Geometry
 open DrawingShapes
 open ImagesAndFonts
+open ScreenHandler
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -176,11 +177,11 @@ let private MainLoopProcessing
     renderer 
     backingTexture 
     gameResources 
-    gameStaticData 
+    (gameStaticData : 'StaticGameResources)
     initialGameStateConstructor 
-    initGameGlobals 
-    gameRenderer 
-    gameFrameAdvanceFunction 
+    // initGameGlobals 
+    // gameRenderer 
+    // gameFrameAdvanceFunction 
     listOfKeysNeeded =
 
     SetStaticImageAndFontResourceArrays gameResources.GameBMPs gameResources.Fonts
@@ -190,11 +191,16 @@ let private MainLoopProcessing
     let GetGameTime () = 
         (float32 tickCount) / 50.0F |> InSeconds
 
-    let initScreenState = 
-        initialGameStateConstructor (GetGameTime ())
+    // TODO: remove:
 
-    let mutable screenState = 
-        (struct (initScreenState , initGameGlobals))
+    // let initScreenState = 
+    //     initialGameStateConstructor (GetGameTime ())
+
+    // let mutable screenState = 
+    //     (struct (initScreenState , initGameGlobals))
+
+    let mutable gameState : ErasedGameState<'StaticGameResources> =
+        initialGameStateConstructor (GetGameTime ())
 
     // 20ms timer installed so that the main event loop receives 'SDL.SDL_EventType.SDL_USEREVENT' every 20ms (1/50th second)
     let timerID =
@@ -221,7 +227,8 @@ let private MainLoopProcessing
         // DEBUG: force clean the drawing texture.  This may help observe artefacts where tiles don't join.
         // renderFunction (DrawFilledRectangle(0.0F<wu>, 0.0F<wu>, 320.0F<wu>, 256.0F<wu>, SolidColour(0xFF00FFu)))
 
-        gameRenderer renderFunction screenState gameTime
+        // gameRenderer renderFunction screenState gameTime
+        gameState.Draw renderFunction gameTime
         SetSdlRenderTargetToScreen renderer
         RenderCopyToFullSdlTarget renderer backingTexture
         SdlPresent renderer
@@ -229,16 +236,21 @@ let private MainLoopProcessing
         let frameElapsedTime =
             gameTime - lastGameTime  // TODO: Why calculate this.  Web version just passes constant.
 
-        let nextScreenState = 
-            gameFrameAdvanceFunction 
-                gameStaticData 
-                screenState 
+        let nextGameState = 
+            // gameFrameAdvanceFunction 
+            //     gameStaticData 
+            //     screenState 
+            //     keyStateGetter
+            //     gameTime 
+            //     frameElapsedTime  // TODO: Didn't like passing this really.
+            gameState.Frame
+                gameStaticData
                 keyStateGetter
-                gameTime 
+                gameTime
                 frameElapsedTime  // TODO: Didn't like passing this really.
 
         tickCount <- tickCount + 1u
-        screenState <- nextScreenState
+        gameState <- nextGameState
 
         mutableKeyStateStore |> ClearKeyJustPressedFlags
 
@@ -287,9 +299,10 @@ let FrameworkDesktopMain
     listOfKeysNeeded 
     (gameStaticDataConstructor  : unit -> Result<'gameStaticData,string>)
     (gameGlobalStateConstructor : unit -> Result<'gameGlobalState,string>)
-    (gameplayStartConstructor   : 'gameStaticData -> float32<seconds> -> 'gameScreenModel)
-    gameRenderer 
-    gameFrameAdvanceFunction : string option =
+    (gameplayStartConstructor   : 'gameStaticData -> 'gameGlobalState -> float32<seconds> -> ErasedGameState<'gameStaticData>)
+    // gameRenderer 
+    // gameFrameAdvanceFunction 
+        : string option =
 
         let runGame () =
 
@@ -334,10 +347,7 @@ let FrameworkDesktopMain
                                                 backingTexture 
                                                 gameResources 
                                                 gameStaticData 
-                                                (gameplayStartConstructor gameStaticData)
-                                                gameGlobalState
-                                                gameRenderer 
-                                                gameFrameAdvanceFunction
+                                                (gameplayStartConstructor gameStaticData gameGlobalState)
                                                 listOfKeysNeeded
 
                                             None
