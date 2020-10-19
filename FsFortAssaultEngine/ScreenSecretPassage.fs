@@ -730,7 +730,9 @@ let CheckIfRoundComplete stats ship gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextSecretPassageScreenState oldState input gameTime =
+let NextSecretPassageScreenState oldState keyStateGetter gameTime =
+
+    let input = keyStateGetter |> DecodedInput
 
     let ship = oldState.Ship
 

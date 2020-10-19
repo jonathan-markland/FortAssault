@@ -185,7 +185,9 @@ let NewVictoryScreen scoreAndHiScore gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextVictoryScreenState oldState input gameTime =
+let NextVictoryScreenState oldState keyStateGetter gameTime =
+
+    let input = keyStateGetter |> DecodedInput
 
     if input.Fire.JustDown then
         { oldState with RestartNow = true }

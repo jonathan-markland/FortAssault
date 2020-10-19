@@ -65,7 +65,9 @@ let NewMechanicsTestPageScreen gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextMechanicsTestPageScreenState oldState input gameTime =
+let NextMechanicsTestPageScreenState oldState _keyStateGetter gameTime =
+
+    // let input = keyStateGetter |> DecodedInput
 
     if gameTime > oldState.RepeatAtTime then
         NewMechanicsTestPageScreen gameTime

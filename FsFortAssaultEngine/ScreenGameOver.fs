@@ -35,7 +35,9 @@ let NewGameOverScreen scoreAndHiScore =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextGameOverScreenState oldState input _gameTime =
+let NextGameOverScreenState oldState keyStateGetter _gameTime =
+
+    let input = keyStateGetter |> DecodedInput
 
     if input.Fire.JustDown then
         { oldState with RestartNow = true }

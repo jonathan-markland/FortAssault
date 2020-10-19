@@ -230,8 +230,6 @@ let Shortcut gameResources gameTime mode =
 
 let NextStoryboardState staticGameResources gameState keyStateGetter gameTime frameElapsedTime =
 
-    let input = keyStateGetter |> DecodedInput
-
     let (struct (storyboard , gameGlobals)) = gameState
 
     /// Where the existing GameGlobalState has NOT changed this frame.
@@ -254,7 +252,7 @@ let NextStoryboardState staticGameResources gameState keyStateGetter gameTime fr
 
         | GameTitleChapter model ->  // TODO: Am I calling this "state" or "model" throughout this program?
             Advance (
-                let model = NextGameTitleScreenState model input gameTime
+                let model = NextGameTitleScreenState model keyStateGetter gameTime
                 if model |> StayOnTitleScreen then
                     GameTitleChapter model
                 else
@@ -264,7 +262,7 @@ let NextStoryboardState staticGameResources gameState keyStateGetter gameTime fr
                         
         | InitialMapChapter model ->
             Advance (
-                let model = NextInitialMapScreenState model input gameTime
+                let model = NextInitialMapScreenState model keyStateGetter gameTime
                 
                 match model |> InitialMapTransition with
                     | StayOnInitialMapScreen ->
@@ -285,7 +283,7 @@ let NextStoryboardState staticGameResources gameState keyStateGetter gameTime fr
 
         | SecretPassageChapter model ->
             Advance (
-                let model = NextSecretPassageScreenState model input gameTime
+                let model = NextSecretPassageScreenState model keyStateGetter gameTime
 
                 match model |> SecretPassageTransition with
                     | StayOnSecretPassageScreen -> 
@@ -303,7 +301,7 @@ let NextStoryboardState staticGameResources gameState keyStateGetter gameTime fr
 
         | MapPostPassageChapter model ->
             Advance (
-                let model = NextMapPostPassageScreenState model input gameTime
+                let model = NextMapPostPassageScreenState model keyStateGetter gameTime
                 if model |> StayOnMapPostPassage then
                     MapPostPassageChapter model
                 else
@@ -313,7 +311,7 @@ let NextStoryboardState staticGameResources gameState keyStateGetter gameTime fr
 
         | AirBattleChapter model ->
             Advance (
-                let model = NextAirBattleScreenState model input gameTime frameElapsedTime
+                let model = NextAirBattleScreenState model keyStateGetter gameTime frameElapsedTime
 
                 match model |> AirBattleTransition with
 
@@ -331,7 +329,7 @@ let NextStoryboardState staticGameResources gameState keyStateGetter gameTime fr
 
         | SeaBattleChapter model ->
             Advance (
-                let model = NextSeaBattleScreenState model input gameTime frameElapsedTime
+                let model = NextSeaBattleScreenState model keyStateGetter gameTime frameElapsedTime
 
                 match model |> SeaBattleTransition with
                     
@@ -349,7 +347,7 @@ let NextStoryboardState staticGameResources gameState keyStateGetter gameTime fr
 
         | MapBeforeBeachLandingChapter model ->
             Advance (
-                let model = NextMapBeforeBeachLandingScreenState model input gameTime
+                let model = NextMapBeforeBeachLandingScreenState model keyStateGetter gameTime
 
                 if model |> StayOnMapBeforeBeachLanding then
                     MapBeforeBeachLandingChapter model
@@ -368,7 +366,7 @@ let NextStoryboardState staticGameResources gameState keyStateGetter gameTime fr
 
         | TankBattleChapter model ->
             Advance (
-                let model = NextTankBattleScreenState model input gameTime frameElapsedTime
+                let model = NextTankBattleScreenState model keyStateGetter gameTime frameElapsedTime
 
                 match model |> TankBattleTransition with
 
@@ -403,7 +401,7 @@ let NextStoryboardState staticGameResources gameState keyStateGetter gameTime fr
 
         | FinalBossChapter model ->
             Advance (
-                let model = NextFinalBossScreenState model input gameTime frameElapsedTime
+                let model = NextFinalBossScreenState model keyStateGetter gameTime frameElapsedTime
 
                 match model |> FinalBossTransition with
 
@@ -430,7 +428,7 @@ let NextStoryboardState staticGameResources gameState keyStateGetter gameTime fr
 
         | IntermissionChapter model ->
             Advance (
-                let model = NextIntermissionScreenState model input gameTime
+                let model = NextIntermissionScreenState model keyStateGetter gameTime
 
                 if model |> StayOnIntermission then
                     IntermissionChapter model
@@ -440,7 +438,7 @@ let NextStoryboardState staticGameResources gameState keyStateGetter gameTime fr
 
         | GameOverChapter model ->
             Advance (
-                let model = NextGameOverScreenState model input gameTime
+                let model = NextGameOverScreenState model keyStateGetter gameTime
                 if model |> StayOnGameOverScreen then
                     GameOverChapter model
                 else
@@ -450,7 +448,7 @@ let NextStoryboardState staticGameResources gameState keyStateGetter gameTime fr
                 
         | VictoryChapter model ->
             Advance (
-                let model = NextVictoryScreenState model input gameTime
+                let model = NextVictoryScreenState model keyStateGetter gameTime
 
                 if model |> StayOnVictoryScreen then
                     VictoryChapter model
@@ -461,7 +459,7 @@ let NextStoryboardState staticGameResources gameState keyStateGetter gameTime fr
 
         | PotentialEnterYourNameChapter model ->
             AdvanceAndReplaceGlobals (
-                let model = NextPotentialEnterYourNameScreenState model input gameTime
+                let model = NextPotentialEnterYourNameScreenState model keyStateGetter gameTime
 
                 if model |> StayOnPotentialEnterYourNameScreen then
                     let gameGlobals = { gameGlobals with GameScoreBoard = model.Scoreboard }
@@ -475,6 +473,6 @@ let NextStoryboardState staticGameResources gameState keyStateGetter gameTime fr
         | MechanicsTestPageChapter model ->
             Advance (
                 MechanicsTestPageChapter 
-                    (NextMechanicsTestPageScreenState model input gameTime))
+                    (NextMechanicsTestPageScreenState model keyStateGetter gameTime))
 
 

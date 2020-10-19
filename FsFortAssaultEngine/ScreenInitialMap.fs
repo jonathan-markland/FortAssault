@@ -11,6 +11,7 @@ open ScorePanel
 open MapScreenSharedDetail
 open Rules
 open StaticResourceAccess
+open InputEventData
 
 
 let DefaultAlliedFleetLocation = { ptx=290.0F<epx> ; pty=15.0F<epx> }
@@ -137,7 +138,9 @@ let NewInitialMapScreen numShips scoreAndHiScore =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextInitialMapScreenState oldState input gameTime =
+let NextInitialMapScreenState oldState keyStateGetter gameTime =
+
+    let input = keyStateGetter |> DecodedInput
 
     match oldState.AlliedState with
 

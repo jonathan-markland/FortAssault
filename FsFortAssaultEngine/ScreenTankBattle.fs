@@ -652,7 +652,9 @@ type TankBattleChapterTransition =
     | RestartTankBattle               of newModel4 : TankBattleScreenModel
 
 
-let NextTankBattleScreenState oldState input gameTime frameElapsedTime =
+let NextTankBattleScreenState oldState keyStateGetter gameTime frameElapsedTime =
+
+    let input = keyStateGetter |> DecodedInput
 
     let newModel =
 

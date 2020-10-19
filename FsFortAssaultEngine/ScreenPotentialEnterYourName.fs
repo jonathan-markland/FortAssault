@@ -73,7 +73,9 @@ let AddingIntoScoreboard (dataModel:EnterYourNameModel) score oldScoreBoard =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextPotentialEnterYourNameScreenState oldState input _gameTime =
+let NextPotentialEnterYourNameScreenState oldState keyStateGetter _gameTime =
+
+    let input = keyStateGetter |> DecodedInput
 
     if oldState.CanEnterBoard then
 

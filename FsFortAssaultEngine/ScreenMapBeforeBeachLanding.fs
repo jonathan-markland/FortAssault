@@ -12,6 +12,7 @@ open ScorePanel
 open MapScreenSharedDetail
 open ImagesAndFonts
 open StaticResourceAccess
+open InputEventData
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -99,7 +100,9 @@ let NewMapBeforeBeachLandingScreen scoreAndHiScore shipsThrough =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextMapBeforeBeachLandingScreenState oldState input gameTime =
+let NextMapBeforeBeachLandingScreenState oldState keyStateGetter gameTime =
+
+    let input = keyStateGetter |> DecodedInput
 
     match oldState.AlliedState with
 

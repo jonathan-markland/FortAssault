@@ -377,7 +377,9 @@ let NewSeaBattleScreen scoreAndHiScore shipsRemaining gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextSeaBattleScreenState oldState input gameTime frameElapsedTime =
+let NextSeaBattleScreenState oldState keyStateGetter gameTime frameElapsedTime =
+
+    let input = keyStateGetter |> DecodedInput
 
     match oldState.AlliedState with
 

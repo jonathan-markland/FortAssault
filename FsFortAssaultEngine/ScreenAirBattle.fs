@@ -17,6 +17,7 @@ open Collisions
 open Rules
 open ImagesAndFonts
 open StaticResourceAccess
+open InputEventData
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -341,7 +342,9 @@ let NewAirBattleScreen enemyStrength scoreAndHiScore shipsRemaining gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextAirBattleScreenState oldState input gameTime frameElapsedTime =
+let NextAirBattleScreenState oldState keyStateGetter gameTime frameElapsedTime =
+
+    let input = keyStateGetter |> DecodedInput
 
     match oldState.AlliedState with
 

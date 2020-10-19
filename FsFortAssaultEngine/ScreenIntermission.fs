@@ -36,7 +36,10 @@ let NewIntermissionScreenState gameTime chapterConstructor =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextIntermissionScreenState model _input gameTime =
+let NextIntermissionScreenState model _keyStateGetter gameTime =
+
+    // let input = keyStateGetter |> DecodedInput
+
     if gameTime >= model.EndTime then 
         { model with EndNow = true } 
     else 

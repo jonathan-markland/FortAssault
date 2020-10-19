@@ -63,7 +63,9 @@ let NewGameTitleScreen hiScore gameGlobalState gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextGameTitleScreenState oldState input gameTime =
+let NextGameTitleScreenState oldState keyStateGetter gameTime =
+
+    let input = keyStateGetter |> DecodedInput
 
     if input.Fire.JustDown then
 

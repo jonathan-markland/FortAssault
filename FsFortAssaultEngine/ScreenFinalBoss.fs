@@ -18,6 +18,7 @@ open Collisions
 open FinalBossAndTankBattleShared
 open ImagesAndFonts
 open StaticResourceAccess
+open InputEventData
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -212,7 +213,9 @@ let NewFinalBossScreen scoreAndHiScore tanksRemaining finalBossAndTankBattleData
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextFinalBossScreenState oldState input gameTime frameElapsedTime =
+let NextFinalBossScreenState oldState keyStateGetter gameTime frameElapsedTime =
+
+    let input = keyStateGetter |> DecodedInput
 
     match oldState.AlliedState with
 
