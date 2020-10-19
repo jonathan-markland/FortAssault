@@ -21,6 +21,7 @@ open TankMapFileLoader
 open FortAssaultGlobalState
 open ScoreboardModel
 open ScreenHandler
+open InputEventData
 
 #if SHORT_PLAYTHROUGH
 open ResourceIDs
@@ -227,7 +228,9 @@ let Shortcut gameResources gameTime mode =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextStoryboardState staticGameResources gameState input gameTime frameElapsedTime =
+let NextStoryboardState staticGameResources gameState keyStateGetter gameTime frameElapsedTime =
+
+    let input = keyStateGetter |> DecodedInput
 
     let (struct (storyboard , gameGlobals)) = gameState
 
