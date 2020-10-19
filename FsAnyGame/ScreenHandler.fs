@@ -54,6 +54,11 @@ type SpecificGameState<'Model, 'StaticGameResources>
         this.FrameFunc staticGameResources this keyStateGetter gameTime frameElapsedTime   // 'this.Model' is the old state
 
 
+/// Returning a game state unchanged.  Casts to base.
+let inline Unchanged (gameState:SpecificGameState<'Model, 'StaticGameResources>) =
+    gameState :> ErasedGameState<'StaticGameResources>
+
+
 /// Obtain the model record from the SpecificGameState.
 let inline ModelFrom (gameState:SpecificGameState<'Model, 'StaticGameResources>) =
     gameState.Model
@@ -68,6 +73,10 @@ let inline NewGameState frameFunc drawFunc model =
 /// Update the model instance, but keep the model type and handler functions the same.
 let inline WithUpdatedModel model (gameState:SpecificGameState<'Model, 'StaticGameResources>) =
     NewGameState (gameState.FrameFunc) (gameState.DrawFunc) model
+
+/// Update the model instance, but keep the model type and handler functions the same.
+let inline ReplacesModelIn gameState model =
+    WithUpdatedModel model gameState
 
 
 /// Update the model instance and frame handler function, but keep the drawing function the same.

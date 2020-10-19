@@ -31,7 +31,7 @@ open Geometry
 #endif
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
+(*
 type Storyboard =
 
     // In rough order of gameplay:
@@ -53,6 +53,7 @@ type Storyboard =
     // Test page:
 
     | MechanicsTestPageChapter      of MechanicsTestPageScreenModel
+*)
 
 type FortAssaultGameResources =
     {
@@ -60,7 +61,7 @@ type FortAssaultGameResources =
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
+(*
 let RenderFortAssaultStoryboard render gameState gameTime =
     
     let (struct (storyboard , _gameGlobals)) = gameState
@@ -112,12 +113,12 @@ let RenderFortAssaultStoryboard render gameState gameTime =
     #if SHORT_PLAYTHROUGH
     Text render RedFontID CentreAlign MiddleAlign 160<epx> 10<epx> "WARNING  SHORT PLAY VERSION"
     #endif
-
+    *)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //   Shortcuts to levels for development purposes
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-            
+    (*        
 type DevelopmentShortcutMode =
     | RunGameNormally
     | SkipToInitialMap
@@ -132,7 +133,9 @@ type DevelopmentShortcutMode =
     | SkipToVictoryScreen
     | SkipToEnterYourName
     | SkipToGameOverScreen
-    | SkipToMechanicsTestPage
+    | SkipToMechanicsTestPage*)
+
+(*
 
 /// Provide access to developer shortcuts to various screens.
 /// Use RunGameNormally to start the game normally.
@@ -147,7 +150,6 @@ let Shortcut gameResources gameTime mode =
                 | Ok gameGlobals ->
                     let highestScoreInInitialBoard = HiScoreFromScoreboard gameGlobals.GameScoreBoard
                     GameTitleChapter(NewGameTitleScreen highestScoreInInitialBoard gameGlobals gameTime)
-
         // -- NONE OF THE FOLLOWING CASES EXECUTE FOR THE RELEASE VERSION --
 
         | SkipToInitialMap ->
@@ -224,11 +226,14 @@ let Shortcut gameResources gameTime mode =
             // Shortcut to the mechanics test page
             let screen = NewMechanicsTestPageScreen gameTime
             MechanicsTestPageChapter screen
-         
+  *)       
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+(*
 let NextStoryboardState staticGameResources gameState keyStateGetter gameTime frameElapsedTime =
+
+    
 
     let (struct (storyboard , gameGlobals)) = ModelFrom gameState
 
@@ -478,4 +483,7 @@ let NextStoryboardState staticGameResources gameState keyStateGetter gameTime fr
             Advance (
                 MechanicsTestPageChapter 
                     (NextMechanicsTestPageScreenState model keyStateGetter gameTime))
+
+            *)
+
 

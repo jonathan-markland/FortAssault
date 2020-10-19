@@ -1,5 +1,6 @@
 ﻿module ScreenGameTitle
 
+open ScreenHandler
 open DrawingFunctions
 open ResourceIDs
 open Geometry
@@ -63,19 +64,20 @@ let NewGameTitleScreen hiScore gameGlobalState gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextGameTitleScreenState oldState keyStateGetter gameTime =
+let NextGameTitleScreenState staticGameResources gameState keyStateGetter gameTime elapsed =
 
     let input = keyStateGetter |> DecodedInput
+    let model = ModelFrom gameState
 
     if input.Fire.JustDown then
 
-        if IsFireButtonOperative oldState gameTime then
-            { oldState with State = GameTitleScreenOver }
+        if IsFireButtonOperative model gameTime then
+            { model with State = GameTitleScreenOver } |> ReplacesModelIn gameState
         else
-            oldState
+            Unchanged gameState
 
     else
-        oldState
+        Unchanged gameState
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Query functions for Storyboard

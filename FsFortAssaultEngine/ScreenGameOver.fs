@@ -7,6 +7,7 @@ open ScoreHiScore
 open Geometry
 open InputEventData
 open ImagesAndFonts
+open ScreenHandler
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -35,15 +36,17 @@ let NewGameOverScreen scoreAndHiScore =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextGameOverScreenState oldState keyStateGetter _gameTime =
+let NextGameOverScreenState staticGameResources gameState keyStateGetter gameTime elapsed =
 
+    let model = ModelFrom gameState
     let input = keyStateGetter |> DecodedInput
 
     if input.Fire.JustDown then
-        { oldState with RestartNow = true }
+        { model with RestartNow = true } |> ReplacesModelIn gameState
     else
-        oldState
-        
+        gameState |> Unchanged
+    
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Query functions for Storyboard
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
