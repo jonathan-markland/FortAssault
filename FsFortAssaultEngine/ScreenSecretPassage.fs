@@ -594,7 +594,7 @@ let ShipImageFor direction =
         | FacingUp   -> ImageShip4)    
             |> ImageFromID
 
-let RenderSecretPassageScreen render gameTime secretPassageScreenModel =
+let RenderSecretPassageScreen render secretPassageScreenModel gameTime =
 
     let imgMine = ImageMine |> ImageFromID
 

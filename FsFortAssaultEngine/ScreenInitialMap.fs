@@ -90,7 +90,7 @@ let AlliesVersusSecretPassageOrEnemy alliesLocation enemyLocation gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let RenderInitialMapScreen render (model:InitialMapScreenModel) =
+let RenderInitialMapScreen render (model:InitialMapScreenModel) _gameTime =
 
     let imgMap = ImageMap |> ImageFromID
 

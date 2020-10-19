@@ -55,7 +55,7 @@ let AlliesVersusBeach alliesLocation gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenModel) =
+let RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenModel) _gameTime =
 
     let imgMap = ImageMap |> ImageFromID
 

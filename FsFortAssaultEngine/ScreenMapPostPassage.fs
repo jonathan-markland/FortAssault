@@ -54,7 +54,7 @@ let AlliesVersusEnemy alliesLocation enemyLocation gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let RenderMapPostPassageScreen render (model:MapPostPassageScreenModel) =
+let RenderMapPostPassageScreen render (model:MapPostPassageScreenModel) _gameTime =
 
     let imgMap = (ImageMap |> ImageFromID)
 

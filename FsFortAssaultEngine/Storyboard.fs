@@ -71,13 +71,13 @@ let RenderFortAssaultStoryboard render gameState gameTime =
             RenderGameTitleScreen render model gameTime
 
         | InitialMapChapter model ->
-            RenderInitialMapScreen render model
+            RenderInitialMapScreen render model gameTime
 
         | SecretPassageChapter model ->
-            RenderSecretPassageScreen render gameTime model
+            RenderSecretPassageScreen render model gameTime
 
         | MapPostPassageChapter model ->
-            RenderMapPostPassageScreen render model
+            RenderMapPostPassageScreen render model gameTime
 
         | AirBattleChapter model ->
             RenderAirBattleScreen render model gameTime
@@ -86,7 +86,7 @@ let RenderFortAssaultStoryboard render gameState gameTime =
             RenderSeaBattleScreen render model gameTime
 
         | MapBeforeBeachLandingChapter model ->
-            RenderMapBeforeBeachLandingScreen render model
+            RenderMapBeforeBeachLandingScreen render model gameTime
 
         | TankBattleChapter model ->
             RenderTankBattleScreen render model gameTime
