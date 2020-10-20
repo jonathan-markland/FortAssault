@@ -177,7 +177,6 @@ let private MainLoopProcessing
     renderer 
     backingTexture 
     gameResources 
-    (gameStaticData : 'StaticGameResources)
     initialGameStateConstructor 
     // initGameGlobals 
     // gameRenderer 
@@ -199,7 +198,7 @@ let private MainLoopProcessing
     // let mutable screenState = 
     //     (struct (initScreenState , initGameGlobals))
 
-    let mutable gameState : ErasedGameState<'StaticGameResources> =
+    let mutable gameState : ErasedGameState =
         initialGameStateConstructor (GetGameTime ())
 
     // 20ms timer installed so that the main event loop receives 'SDL.SDL_EventType.SDL_USEREVENT' every 20ms (1/50th second)
@@ -237,7 +236,6 @@ let private MainLoopProcessing
 
         let nextGameState = 
             gameState.Frame
-                gameStaticData
                 keyStateGetter
                 gameTime
                 frameElapsedTime  // TODO: Didn't like passing this really.
@@ -290,11 +288,8 @@ let FrameworkDesktopMain
     gameResourceImages 
     gameFontResourceImages
     listOfKeysNeeded 
-    (gameStaticDataConstructor  : unit -> Result<'gameStaticData,string>)
     (gameGlobalStateConstructor : unit -> Result<'gameGlobalState,string>)
-    (gameplayStartConstructor   : 'gameStaticData -> 'gameGlobalState -> float32<seconds> -> ErasedGameState<'gameStaticData>)
-    // gameRenderer 
-    // gameFrameAdvanceFunction 
+    (gameplayStartConstructor   : 'gameGlobalState -> float32<seconds> -> ErasedGameState)
         : string option =
 
         let runGame () =
@@ -318,9 +313,6 @@ let FrameworkDesktopMain
                             let gameResources = 
                                 LoadGameImagesAndFonts gameResourceImages gameFontResourceImages renderer path   // TODO:  Minor: We don't actually free the imageSet handles.
 
-                            let gameStaticDataResult =
-                                gameStaticDataConstructor ()
-
                             let gameGlobalStateResult = 
                                 gameGlobalStateConstructor ()
 
@@ -332,20 +324,14 @@ let FrameworkDesktopMain
                             gameGlobalStateResult
                                 |> Result.map (fun gameGlobalState ->
 
-                                    gameStaticDataResult
-                                        |> Result.map (fun gameStaticData ->
+                                    MainLoopProcessing 
+                                        renderer 
+                                        backingTexture 
+                                        gameResources 
+                                        (gameplayStartConstructor gameGlobalState)
+                                        listOfKeysNeeded
 
-                                            MainLoopProcessing 
-                                                renderer 
-                                                backingTexture 
-                                                gameResources 
-                                                gameStaticData 
-                                                (gameplayStartConstructor gameStaticData gameGlobalState)
-                                                listOfKeysNeeded
-
-                                            None
-                                        )
-                                        |> errorResultToOption
+                                    None
                                 )
                                 |> errorResultToOption
 

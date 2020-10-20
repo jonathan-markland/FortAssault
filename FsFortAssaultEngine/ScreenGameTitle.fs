@@ -9,38 +9,39 @@ open InputEventData
 open BeachBackgroundRenderer
 open Time
 open FortAssaultGlobalState
-open FortAssaultGameResources
 open ScoreboardModel
 open StaticResourceAccess
 open ScoreHiScore
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+// TODO: Possibly implement fire button inhibit as like FreezeFrame
+
 /// Intended to form a barrier against pressing FIRE 
 /// repeatedly at the end of the Enter Your Name screen.
-let TimeBeforeResponding = 2.0F<seconds>
+let private TimeBeforeResponding = 2.0F<seconds>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type GameTitleScreenModel =
+type private GameTitleScreenModel =
     {
         GameGlobalState       : FortAssaultGlobalState
         ScreenStartTime       : float32<seconds>
         HiScore               : uint32
         ScoreboardMemo        : string list
-        NextScreenConstructor : ScoreAndHiScore -> ErasedGameState<FortAssaultGameResources>
+        NextScreenConstructor : ScoreAndHiScore -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let IsFireButtonOperative oldState gameTime =
+let private IsFireButtonOperative model gameTime =
 
-    let respondTime = oldState.ScreenStartTime + TimeBeforeResponding
+    let respondTime = model.ScreenStartTime + TimeBeforeResponding
     gameTime > respondTime
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let RenderGameTitleScreen render model (gameTime:float32<seconds>) =
+let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 
     RenderBeachBackground render (gameTime / 4.0F)
     CentreImage render 160.0F<epx> 68.0F<epx> (ImageTitle |> ImageFromID)
@@ -51,24 +52,28 @@ let RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewGameTitleScreen hiScore gameGlobalState nextConstructor gameTime =
-    {
-        GameGlobalState = gameGlobalState
-        HiScore         = hiScore
-        ScreenStartTime = gameTime
-        ScoreboardMemo  = ScoreboardText 30 gameGlobalState.GameScoreBoard
-        NextScreenConstructor = nextConstructor
-    }
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let NextGameTitleScreenState staticGameResources gameState keyStateGetter gameTime elapsed =
+let private NextGameTitleScreenState gameState keyStateGetter gameTime elapsed =
 
     let input = keyStateGetter |> DecodedInput
     let model = ModelFrom gameState
 
     if input.Fire.JustDown && IsFireButtonOperative model gameTime then
-        model.NextScreenConstructor {Score=100u ; HiScore=10000u}
+        model.NextScreenConstructor {Score=0u ; HiScore=model.HiScore}
     else
         Unchanged gameState
     
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let NewGameTitleScreen hiScore gameGlobalState nextConstructor gameTime =
+
+    let titleScreenModel =
+        {
+            GameGlobalState = gameGlobalState
+            HiScore         = hiScore
+            ScreenStartTime = gameTime
+            ScoreboardMemo  = ScoreboardText 30 gameGlobalState.GameScoreBoard
+            NextScreenConstructor = nextConstructor
+        }
+
+    NewGameState NextGameTitleScreenState RenderGameTitleScreen titleScreenModel
+

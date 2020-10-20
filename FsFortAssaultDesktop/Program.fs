@@ -25,9 +25,9 @@ let ProcessExitSuccess = 0
 [<EntryPoint>]
 let main argv =
 
-    let fortAssaultStaticDataConstructor () = 
-        LoadTankBattleSequences () 
-            |> Result.map (fun tankMapsList -> { TankMapsList = tankMapsList })
+    // let fortAssaultStaticDataConstructor () = 
+    //     LoadTankBattleSequences () 
+    //         |> Result.map (fun tankMapsList -> { TankMapsList = tankMapsList })
 
     let fortAssaultKeysNeeded =
         [
@@ -47,11 +47,8 @@ let main argv =
             FortAssaultResourceImages 
             FortAssaultFontResourceImages
             fortAssaultKeysNeeded
-            fortAssaultStaticDataConstructor
             FortAssaultGlobalStateConstructor
             NewFortAssaultStoryboard
-            //RenderFortAssaultStoryboard
-            //NextFortAssaultStoryboardState 
             with
 
         | Some errorMessage ->

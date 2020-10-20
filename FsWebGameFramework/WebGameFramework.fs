@@ -203,7 +203,6 @@ let private RenderToWebCanvas (context2d:Browser.Types.CanvasRenderingContext2D)
 
 let FrameworkWebMain
     listOfKeysNeeded
-    gameStaticDataConstructor
     gameGlobalStateConstructor
     gameplayStartConstructor
     arrayOfLoadedImages
@@ -214,69 +213,64 @@ let FrameworkWebMain
     let canvas = document.getElementById("gameScreen") :?> Browser.Types.HTMLCanvasElement
     let context2d = canvas.getContext("2d") :?> Browser.Types.CanvasRenderingContext2D
    
-    match gameStaticDataConstructor () with
-        | Error msg -> ConsoleLog msg
-        | Ok gameStaticData ->
+    let gameGlobalState =
+        match gameGlobalStateConstructor () with
+            | Error msg -> failwith msg
+            | Ok globals -> globals
 
-            let gameGlobalState =
-                match gameGlobalStateConstructor () with
-                    | Error msg -> failwith msg
-                    | Ok globals -> globals
+    let gameTime = 0.0F<seconds>
+    let frameElapsedTime = 0.02F<seconds>
 
-            let gameTime = 0.0F<seconds>
-            let frameElapsedTime = 0.02F<seconds>
+    let gameState : ErasedGameState =
+        gameplayStartConstructor gameGlobalState gameTime
 
-            let gameState : ErasedGameState<'StaticGameResources> =
-                gameplayStartConstructor gameStaticData gameGlobalState gameTime
+    let renderFunction = RenderToWebCanvas context2d
 
-            let renderFunction = RenderToWebCanvas context2d
+    let toKeyTuple (WebBrowserKeyCode k) =
+        (k, WebBrowserKeyCode k)
 
-            let toKeyTuple (WebBrowserKeyCode k) =
-                (k, WebBrowserKeyCode k)
-
-            let toKeyTuples lst =
-                lst |> List.map toKeyTuple
+    let toKeyTuples lst =
+        lst |> List.map toKeyTuple
             
-            let mutableKeyStateStore =
-                NewMutableKeyStateStore
-                    80 // P
-                    (listOfKeysNeeded |> toKeyTuples)
+    let mutableKeyStateStore =
+        NewMutableKeyStateStore
+            80 // P
+            (listOfKeysNeeded |> toKeyTuples)
 
-            let registerKeyHandler eventName handlerFunc =
-                document.addEventListener(
-                    eventName, 
-                    fun e -> 
-                        let ke: Browser.Types.KeyboardEvent = downcast e
-                        if handlerFunc mutableKeyStateStore ((int) ke.keyCode) then e.preventDefault())
+    let registerKeyHandler eventName handlerFunc =
+        document.addEventListener(
+            eventName, 
+            fun e -> 
+                let ke: Browser.Types.KeyboardEvent = downcast e
+                if handlerFunc mutableKeyStateStore ((int) ke.keyCode) then e.preventDefault())
 
-            registerKeyHandler "keydown" HandleKeyDownEvent
-            registerKeyHandler "keyup"   HandleKeyUpEvent
+    registerKeyHandler "keydown" HandleKeyDownEvent
+    registerKeyHandler "keyup"   HandleKeyUpEvent
 
-            document.getElementById("loaderScreen").classList.add("hidden")
-            document.getElementById("gameScreen").classList.remove("hidden")
+    document.getElementById("loaderScreen").classList.add("hidden")
+    document.getElementById("gameScreen").classList.remove("hidden")
 
-            let keyStateGetter = 
-                LiveKeyStateFrom mutableKeyStateStore
+    let keyStateGetter = 
+        LiveKeyStateFrom mutableKeyStateStore
 
-            let rec mainLoop (gameState : ErasedGameState<'StaticGameResources>) tickCount () =
+    let rec mainLoop (gameState : ErasedGameState) tickCount () =
 
-                let tickCount = tickCount + 1u
+        let tickCount = tickCount + 1u
                 
-                let gameTime = 
-                    (float32 tickCount) / 50.0F |> InSeconds
+        let gameTime = 
+            (float32 tickCount) / 50.0F |> InSeconds
                 
-                gameState.Draw renderFunction gameTime
+        gameState.Draw renderFunction gameTime
 
-                let nextGameState = 
-                    gameState.Frame 
-                        gameStaticData 
-                        keyStateGetter 
-                        gameTime 
-                        frameElapsedTime 
+        let nextGameState = 
+            gameState.Frame 
+                keyStateGetter 
+                gameTime 
+                frameElapsedTime 
 
-                ClearKeyJustPressedFlags mutableKeyStateStore
+        ClearKeyJustPressedFlags mutableKeyStateStore
 
-                window.setTimeout((mainLoop nextGameState tickCount), 20) |> ignore
+        window.setTimeout((mainLoop nextGameState tickCount), 20) |> ignore
 
-            mainLoop gameState 0u ()
+    mainLoop gameState 0u ()
     

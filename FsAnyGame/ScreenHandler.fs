@@ -18,7 +18,7 @@ type KeyStateFunction = WebBrowserKeyCode -> InputEventKeyState
 /// frame, and one to calculate the next frame.  "Erased" refers to the fact that
 /// the exact type of the game state model is hidden.
 [<AbstractClass>] 
-type ErasedGameState<'StaticGameResources>() =
+type ErasedGameState() =
 
     /// Draw the model onto the screen, for the given game time, via the given 
     /// render function.
@@ -26,17 +26,17 @@ type ErasedGameState<'StaticGameResources>() =
 
     /// Calculate the model value, Draw function and Frame function for the next 
     /// frame of animation.
-    abstract member Frame : 'StaticGameResources -> KeyStateFunction -> float32<seconds> -> float32<seconds> -> ErasedGameState<'StaticGameResources>
+    abstract member Frame : KeyStateFunction -> float32<seconds> -> float32<seconds> -> ErasedGameState
 
 
 /// A binder for a game-state model of a user-defined type, a drawing function
 /// and a frame-advance function.
-type SpecificGameState<'Model, 'StaticGameResources>
+type SpecificGameState<'Model>
     ( model     : 'Model, 
       drawFunc  : RenderFunction -> 'Model -> float32<seconds> -> unit, 
-      frameFunc : 'StaticGameResources -> SpecificGameState<'Model, 'StaticGameResources> -> KeyStateFunction -> float32<seconds> -> float32<seconds> -> ErasedGameState<'StaticGameResources> ) =
+      frameFunc : SpecificGameState<'Model> -> KeyStateFunction -> float32<seconds> -> float32<seconds> -> ErasedGameState ) =
 
-    inherit ErasedGameState<'StaticGameResources>()
+    inherit ErasedGameState()
 
     /// The model state for this animation frame.
     member val Model     = model
@@ -50,28 +50,28 @@ type SpecificGameState<'Model, 'StaticGameResources>
     override this.Draw render gameTime = 
         this.DrawFunc render this.Model gameTime
 
-    override this.Frame staticGameResources keyStateGetter gameTime frameElapsedTime = 
-        this.FrameFunc staticGameResources this keyStateGetter gameTime frameElapsedTime   // 'this.Model' is the old state
+    override this.Frame keyStateGetter gameTime frameElapsedTime = 
+        this.FrameFunc this keyStateGetter gameTime frameElapsedTime   // 'this.Model' is the old state
 
 
 /// Returning a game state unchanged.  Casts to base.
-let inline Unchanged (gameState:SpecificGameState<'Model, 'StaticGameResources>) =
-    gameState :> ErasedGameState<'StaticGameResources>
+let inline Unchanged (gameState:SpecificGameState<'Model>) =
+    gameState :> ErasedGameState
 
 
 /// Obtain the model record from the SpecificGameState.
-let inline ModelFrom (gameState:SpecificGameState<'Model, 'StaticGameResources>) =
+let inline ModelFrom (gameState:SpecificGameState<'Model>) =
     gameState.Model
 
 
 /// Return a new game state with a model instance, frame handler and drawing handler.
 let inline NewGameState frameFunc drawFunc model =
-    (new SpecificGameState<'Model, 'StaticGameResources>(model, drawFunc, frameFunc))
-        :> ErasedGameState<'StaticGameResources>
+    (new SpecificGameState<'Model>(model, drawFunc, frameFunc))
+        :> ErasedGameState
 
 
 /// Update the model instance, but keep the model type and handler functions the same.
-let inline WithUpdatedModel model (gameState:SpecificGameState<'Model, 'StaticGameResources>) =
+let inline WithUpdatedModel model (gameState:SpecificGameState<'Model>) =
     NewGameState (gameState.FrameFunc) (gameState.DrawFunc) model
 
 /// Update the model instance, but keep the model type and handler functions the same.
@@ -80,6 +80,6 @@ let inline ReplacesModelIn gameState model =
 
 
 /// Update the model instance and frame handler function, but keep the drawing function the same.
-let inline WithUpdatedModelAndFrameFunc model frameFunc (gameState:SpecificGameState<'Model, 'StaticGameResources>) =
+let inline WithUpdatedModelAndFrameFunc model frameFunc (gameState:SpecificGameState<'Model>) =
     NewGameState frameFunc (gameState.DrawFunc) model
 

@@ -27,16 +27,7 @@ let RenderGameOverScreen render (model:GameOverScreenModel) gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewGameOverScreen scoreAndHiScore =
-    {
-        ScoreAndHiScore  = scoreAndHiScore
-        HiScoreText      = "HI SCORE   " + scoreAndHiScore.HiScore.ToString()
-        RestartNow       = false
-    }
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let NextGameOverScreenState staticGameResources gameState keyStateGetter gameTime elapsed =
+let NextGameOverScreenState gameState keyStateGetter gameTime elapsed =
 
     let model = ModelFrom gameState
     let input = keyStateGetter |> DecodedInput
@@ -46,10 +37,16 @@ let NextGameOverScreenState staticGameResources gameState keyStateGetter gameTim
     else
         gameState |> Unchanged
     
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  Query functions for Storyboard
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let StayOnGameOverScreen state =
-    not (state.RestartNow)
+let NewGameOverScreen scoreAndHiScore =
+
+    let gameOverModel =
+        {
+            ScoreAndHiScore  = scoreAndHiScore
+            HiScoreText      = "HI SCORE   " + scoreAndHiScore.HiScore.ToString()
+            RestartNow       = false
+        }
+
+    NewGameState NextGameOverScreenState RenderGameOverScreen gameOverModel
+

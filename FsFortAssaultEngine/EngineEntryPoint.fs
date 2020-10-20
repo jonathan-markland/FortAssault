@@ -1,8 +1,8 @@
 ﻿module EngineEntryPoint
 
-open ScreenHandler
 open ScreenGameTitle
 open ScreenGameOver
+open ScreenInitialMap
 open ScoreboardModel
 open FortAssaultGlobalState
 
@@ -13,7 +13,7 @@ open FortAssaultGlobalState
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 /// Called only once when the game boots
-let NewFortAssaultStoryboard gameResources (gameGlobalState:FortAssaultGlobalState) gameTime =
+let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
 
     // Todo:
     // #if SHORT_PLAYTHROUGH
@@ -24,28 +24,16 @@ let NewFortAssaultStoryboard gameResources (gameGlobalState:FortAssaultGlobalSta
     //     Shortcut gameResources gameTime RunGameNormally  // ** DO NOT CHANGE THIS ONE! : Define SHORT_PLAYTHROUGH and set the one above **
     // #endif
 
-    // let model = struct (storyboard , gameGlobalState)
-    // model |> NewGameState NextStoryboardState RenderFortAssaultStoryboard
-
-    // -------------------------------------------------------------------------------------------------
-
-    let gameOverCtor scoreAndHiscore =
-        let model = NewGameOverScreen scoreAndHiscore
-        NewGameState NextGameOverScreenState RenderGameOverScreen model
-
-    // -------------------------------------------------------------------------------------------------
-
     let highestScoreInInitialBoard = 
         HiScoreFromScoreboard gameGlobalState.GameScoreBoard
     
-    let model = 
-        NewGameTitleScreen 
-            highestScoreInInitialBoard 
-            gameGlobalState 
-            gameOverCtor
-            gameTime
-    
-    NewGameState NextGameTitleScreenState RenderGameTitleScreen model
+    let fudge shs gameTime = NewGameOverScreen shs
+
+    NewGameTitleScreen 
+        highestScoreInInitialBoard 
+        gameGlobalState 
+        (NewInitialMapScreen fudge fudge)
+        gameTime
 
 
 

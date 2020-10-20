@@ -18,9 +18,9 @@ open EngineEntryPoint
 
 let WebMain () =
 
-    let fortAssaultStaticDataConstructor () = 
-       LoadTankBattleSequences () 
-           |> Result.map (fun tankMapsList -> { TankMapsList = tankMapsList })
+    // let fortAssaultStaticDataConstructor () = 
+    //    LoadTankBattleSequences () 
+    //        |> Result.map (fun tankMapsList -> { 1TankMapsList = tankMapsList })
 
     let fortAssaultKeysNeeded =
         [
@@ -36,7 +36,6 @@ let WebMain () =
         FortAssaultFontResourceImages 
         (FrameworkWebMain
             fortAssaultKeysNeeded
-            fortAssaultStaticDataConstructor 
             FortAssaultGlobalStateConstructor 
             NewFortAssaultStoryboard)
 

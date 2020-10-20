@@ -27,6 +27,7 @@
     <Compile Include="CaptureRendering.fs" />
     <Compile Include="FlickBook.fs" />
     <Compile Include="ScreenHandler.fs" />
+    <Compile Include="FreezeFrame.fs" />
   </ItemGroup>
 
 </Project>
