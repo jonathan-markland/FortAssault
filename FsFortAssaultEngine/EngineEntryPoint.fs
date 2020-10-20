@@ -3,6 +3,7 @@
 open ScreenGameTitle
 open ScreenGameOver
 open ScreenInitialMap
+open ScreenVictory
 open ScoreboardModel
 open FortAssaultGlobalState
 
@@ -29,10 +30,13 @@ let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
     
     let fudge shs gameTime = NewGameOverScreen shs
 
+    let passage scoreAndHiScore gameTime = 
+        NewVictoryScreen scoreAndHiScore fudge gameTime
+
     NewGameTitleScreen 
         highestScoreInInitialBoard 
         gameGlobalState 
-        (NewInitialMapScreen fudge fudge)
+        (NewInitialMapScreen passage fudge)
         gameTime
 
 

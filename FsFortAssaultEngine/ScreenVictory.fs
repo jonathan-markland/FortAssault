@@ -8,17 +8,18 @@ open InputEventData
 open ResourceIDs
 open ImagesAndFonts
 open StaticResourceAccess
+open ScreenHandler
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type VictoryScreenModel =
+type private VictoryScreenModel =
     {
         ScoreAndHiScore     : ScoreAndHiScore
         ScoreText           : string
         HiScoreText         : string
         NextAnimStageTime   : float32<seconds>
         AnimationStage      : string list
-        RestartNow          : bool
+        WhereToAfterCtor    : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -35,14 +36,14 @@ type VictoryScreenModel =
 // - Medal default state is on the Colonel's uniform.
 // - Default states are overridden by letters indicated below:
 
-let TimePerAnimStage = 1.0F<seconds>
+let private TimePerAnimStage = 1.0F<seconds>
 
 //           |v---- P = President holds out hand  | Either of these implies showing the medal in the hands position.
 //           | v--- C = Colonel holds out hand    | 
 //           | 
 //           |  v-- x = Medal transfer phase
 
-let MedalSequence =
+let private MedalSequence =
     [
         "----|--x"
         "----|--x"
@@ -58,7 +59,7 @@ let MedalSequence =
 //        v------ 2 = Officer #2 holds salute
 //       v------- 1 = Officer #1 holds salute
 
-let SaluteSequence =
+let private SaluteSequence =
     [
         "---P|---"
         "123P|---"
@@ -67,7 +68,7 @@ let SaluteSequence =
         "123-|---"
     ]
 
-let MickeySaluteSequence =
+let private MickeySaluteSequence =
     [
         "---P|---"
         "-23P|---"
@@ -82,7 +83,7 @@ let MickeySaluteSequence =
         "123-|---"
     ]
 
-let pauseAfterwardsSequence =
+let private pauseAfterwardsSequence =
     [
         "----|---"
         "----|---"
@@ -90,15 +91,15 @@ let pauseAfterwardsSequence =
         "----|---"
     ]
 
-let NormalAnimation = MedalSequence @ SaluteSequence       @ pauseAfterwardsSequence
-let MickeyAnimation = MedalSequence @ MickeySaluteSequence @ pauseAfterwardsSequence
+let private NormalAnimation = MedalSequence @ SaluteSequence       @ pauseAfterwardsSequence
+let private MickeyAnimation = MedalSequence @ MickeySaluteSequence @ pauseAfterwardsSequence
 
-let AnimationSequence gameTime =
+let private AnimationSequence gameTime =
     if (gameTime % 4.0F<seconds>) < 1.0F<seconds> then MickeyAnimation else NormalAnimation
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let RenderAnimationStage render (currentStage:string) =
+let private RenderAnimationStage render (currentStage:string) =
 
     let CentreImage render cx cy img = CentreImage render cx cy (img |> ImageFromID)
 
@@ -156,7 +157,7 @@ let RenderAnimationStage render (currentStage:string) =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let RenderVictoryScreen render (model:VictoryScreenModel) gameTime =
+let private RenderVictoryScreen render (model:VictoryScreenModel) gameTime =
     
     Image1to1 render 0<epx> 0<epx> (VictoryScreenImageID |> ImageFromID)
     
@@ -173,27 +174,17 @@ let RenderVictoryScreen render (model:VictoryScreenModel) gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewVictoryScreen scoreAndHiScore gameTime =
-    {
-        ScoreAndHiScore     = scoreAndHiScore
-        ScoreText           = "FINAL SCORE   " + scoreAndHiScore.Score.ToString()
-        HiScoreText         = "HI SCORE   " + scoreAndHiScore.HiScore.ToString()
-        NextAnimStageTime   = gameTime + TimePerAnimStage
-        AnimationStage      = AnimationSequence gameTime
-        RestartNow          = false
-    }
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let NextVictoryScreenState oldState keyStateGetter gameTime =
+let private NextVictoryScreenState gameState keyStateGetter gameTime elapsed =
 
     let input = keyStateGetter |> DecodedInput
+    let model = ModelFrom gameState
 
     if input.Fire.JustDown then
-        { oldState with RestartNow = true }
+        model.WhereToAfterCtor model.ScoreAndHiScore gameTime
+
     else
-        let nextAnimStageTime = oldState.NextAnimStageTime
-        let animationStage    = oldState.AnimationStage   
+        let nextAnimStageTime = model.NextAnimStageTime
+        let animationStage    = model.AnimationStage   
 
             
         let nextAnimStageTime , animationStage =
@@ -208,18 +199,29 @@ let NextVictoryScreenState oldState keyStateGetter gameTime =
                         nextAnimStageTime , animationStage
 
 
-        {
-            ScoreAndHiScore     = oldState.ScoreAndHiScore   // never changes
-            ScoreText           = oldState.ScoreText         // never changes
-            HiScoreText         = oldState.HiScoreText       // never changes
-            NextAnimStageTime   = nextAnimStageTime
-            AnimationStage      = animationStage
-            RestartNow          = oldState.RestartNow        // never changes
-        }
+        gameState |> WithUpdatedModel
+            {
+                ScoreAndHiScore     = model.ScoreAndHiScore   // never changes
+                ScoreText           = model.ScoreText         // never changes
+                HiScoreText         = model.HiScoreText       // never changes
+                NextAnimStageTime   = nextAnimStageTime
+                AnimationStage      = animationStage
+                WhereToAfterCtor    = model.WhereToAfterCtor  // never changes
+            }
         
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  Query functions for Storyboard
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let StayOnVictoryScreen state =
-    not (state.RestartNow)
+let NewVictoryScreen scoreAndHiScore whereToAfter gameTime =
+
+    let victoryModel =
+        {
+            ScoreAndHiScore     = scoreAndHiScore
+            ScoreText           = "FINAL SCORE   " + scoreAndHiScore.Score.ToString()
+            HiScoreText         = "HI SCORE   " + scoreAndHiScore.HiScore.ToString()
+            NextAnimStageTime   = gameTime + TimePerAnimStage
+            AnimationStage      = AnimationSequence gameTime
+            WhereToAfterCtor    = whereToAfter
+        }
+
+    NewGameState NextVictoryScreenState RenderVictoryScreen victoryModel
+
