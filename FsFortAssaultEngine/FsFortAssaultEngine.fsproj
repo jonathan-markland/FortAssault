@@ -23,6 +23,7 @@
     <Compile Include="AirAndSeaBattleShared.fs" />
     <Compile Include="FinalBossAndTankBattleShared.fs" />
     <Compile Include="TankMapFileLoader.fs" />
+    <Compile Include="FortAssaultGameResources.fs" />
     <Compile Include="ScreenGameTitle.fs" />
     <Compile Include="ScreenInitialMap.fs" />
     <Compile Include="ScreenSecretPassage.fs" />

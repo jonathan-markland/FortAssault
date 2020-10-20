@@ -9,6 +9,7 @@ open FortAssaultGlobalState
 open Storyboard
 open TankMapFileLoader
 open EngineEntryPoint
+open FortAssaultGameResources
 
 
 let FortAssaultWindowWidthPixels       = 1280 

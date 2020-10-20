@@ -9,8 +9,10 @@ open InputEventData
 open BeachBackgroundRenderer
 open Time
 open FortAssaultGlobalState
+open FortAssaultGameResources
 open ScoreboardModel
 open StaticResourceAccess
+open ScoreHiScore
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -20,17 +22,13 @@ let TimeBeforeResponding = 2.0F<seconds>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type GameTitleScreenState =
-    | GameTitleAwaitingFireButton
-    | GameTitleScreenOver
-
 type GameTitleScreenModel =
     {
-        ScreenStartTime : float32<seconds>
-        GameGlobalState : FortAssaultGlobalState
-        HiScore         : uint32
-        State           : GameTitleScreenState
-        ScoreboardMemo  : string list
+        GameGlobalState       : FortAssaultGlobalState
+        ScreenStartTime       : float32<seconds>
+        HiScore               : uint32
+        ScoreboardMemo        : string list
+        NextScreenConstructor : ScoreAndHiScore -> ErasedGameState<FortAssaultGameResources>
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -53,13 +51,13 @@ let RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewGameTitleScreen hiScore gameGlobalState gameTime =
+let NewGameTitleScreen hiScore gameGlobalState nextConstructor gameTime =
     {
         GameGlobalState = gameGlobalState
         HiScore         = hiScore
-        State           = GameTitleAwaitingFireButton
         ScreenStartTime = gameTime
         ScoreboardMemo  = ScoreboardText 30 gameGlobalState.GameScoreBoard
+        NextScreenConstructor = nextConstructor
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -69,23 +67,8 @@ let NextGameTitleScreenState staticGameResources gameState keyStateGetter gameTi
     let input = keyStateGetter |> DecodedInput
     let model = ModelFrom gameState
 
-    if input.Fire.JustDown then
-
-        if IsFireButtonOperative model gameTime then
-            { model with State = GameTitleScreenOver } |> ReplacesModelIn gameState
-        else
-            Unchanged gameState
-
+    if input.Fire.JustDown && IsFireButtonOperative model gameTime then
+        model.NextScreenConstructor {Score=100u ; HiScore=10000u}
     else
         Unchanged gameState
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  Query functions for Storyboard
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let StayOnTitleScreen state =
-    match state.State with
-        | GameTitleAwaitingFireButton -> true
-        | GameTitleScreenOver -> false
-
     

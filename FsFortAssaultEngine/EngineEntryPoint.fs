@@ -29,21 +29,24 @@ let NewFortAssaultStoryboard gameResources (gameGlobalState:FortAssaultGlobalSta
 
     // -------------------------------------------------------------------------------------------------
 
-    // let highestScoreInInitialBoard = HiScoreFromScoreboard gameGlobalState.GameScoreBoard
-    // 
-    // let model = 
-    //     NewGameTitleScreen 
-    //         highestScoreInInitialBoard 
-    //         gameGlobalState 
-    //         gameTime
-    // 
-    // NewGameState NextGameTitleScreenState RenderGameTitleScreen model
+    let gameOverCtor scoreAndHiscore =
+        let model = NewGameOverScreen scoreAndHiscore
+        NewGameState NextGameOverScreenState RenderGameOverScreen model
 
-    let model =
-        NewGameOverScreen
-            {Score=0u;HiScore=123u}
+    // -------------------------------------------------------------------------------------------------
 
-    NewGameState NextGameOverScreenState RenderGameOverScreen model
+    let highestScoreInInitialBoard = 
+        HiScoreFromScoreboard gameGlobalState.GameScoreBoard
+    
+    let model = 
+        NewGameTitleScreen 
+            highestScoreInInitialBoard 
+            gameGlobalState 
+            gameOverCtor
+            gameTime
+    
+    NewGameState NextGameTitleScreenState RenderGameTitleScreen model
+
 
 
 

@@ -6,6 +6,7 @@ open FortAssaultImageFiles
 open TankMapFileLoader
 open Storyboard
 open FortAssaultGlobalState
+open FortAssaultGameResources
 open Input
 open EngineEntryPoint
 
