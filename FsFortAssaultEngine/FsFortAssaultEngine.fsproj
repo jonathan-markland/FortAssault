@@ -24,6 +24,7 @@
     <Compile Include="FinalBossAndTankBattleShared.fs" />
     <Compile Include="TankMapFileLoader.fs" />
     <Compile Include="FortAssaultGameResources.fs" />
+    <Compile Include="ScreenIntermission.fs" />
     <Compile Include="ScreenGameTitle.fs" />
     <Compile Include="ScreenInitialMap.fs" />
     <Compile Include="ScreenSecretPassage.fs" />
@@ -36,7 +37,6 @@
     <Compile Include="ScreenGameOver.fs" />
     <Compile Include="ScreenPotentialEnterYourName.fs" />
     <Compile Include="ScreenVictory.fs" />
-    <Compile Include="ScreenIntermission.fs" />
     <Compile Include="MechanicsTestPage.fs" />
     <Compile Include="Storyboard.fs" />
     <Compile Include="EngineEntryPoint.fs" />

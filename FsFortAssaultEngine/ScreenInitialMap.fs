@@ -14,6 +14,7 @@ open StaticResourceAccess
 open InputEventData
 open FreezeFrame
 open ScreenHandler
+open ScreenIntermission
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -126,12 +127,22 @@ let private NextInitialMapScreenState gameState keyStateGetter gameTime elapsed 
         NewEnemyFleetLocation enemyLocation alliedLocation
 
     if alliedLocation |> IsPointWithinRectangle SecretPassageTriggerRectangle then
-        let whereAfter = model.SecretPassageCtor model.ScoreAndHiScore
-        gameState |> WithFreezeFrameFor PauseDuration gameTime whereAfter
+        
+        let whereToAfter = 
+            model.ScoreAndHiScore
+                |> model.SecretPassageCtor 
+                |> WithFortAssaultIntermissionCard
+
+        gameState |> WithFreezeFrameFor PauseDuration gameTime whereToAfter
 
     elif alliedLocation |> IsWithinRegionOf enemyLocation EnemyEngagementDistance then
-        let whereAfter = model.EngageEnemyCtor model.ScoreAndHiScore
-        gameState |> WithFreezeFrameFor PauseDuration gameTime whereAfter
+        
+        let whereeToAfter = 
+            model.ScoreAndHiScore
+                |> model.EngageEnemyCtor 
+                |> WithFortAssaultIntermissionCard
+        
+        gameState |> WithFreezeFrameFor PauseDuration gameTime whereeToAfter
     
     else
         gameState |> WithUpdatedModel

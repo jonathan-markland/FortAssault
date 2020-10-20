@@ -3,6 +3,8 @@
 open Time
 open ScreenHandler
 
+
+
 type private FreezeFrameModel =
     {
         FrozenGameState   : ErasedGameState
@@ -11,24 +13,32 @@ type private FreezeFrameModel =
     }
 
 
+
 let private RenderFreezeFrame render model (gameTime:float32<seconds>) =
+    
     model.FrozenGameState.Draw render gameTime
 
 
+
 let private NextFreezeFrameState gameState keyStateGetter gameTime elapsed =
+    
     let model = ModelFrom gameState
+    
     if gameTime < model.UnfreezeGameTime then
         Unchanged gameState
     else
         model.PostFreezeCtor gameTime
 
 
-let WithFreezeFrameFor duration gameTime whereAfter outgoingGameState =
+
+let WithFreezeFrameFor duration gameTime whereToAfter outgoingGameState =
+
     let freezeModel =
         {
             FrozenGameState  = outgoingGameState
             UnfreezeGameTime = gameTime + duration
-            PostFreezeCtor   = whereAfter
+            PostFreezeCtor   = whereToAfter
         }
+
     NewGameState NextFreezeFrameState RenderFreezeFrame freezeModel
 
