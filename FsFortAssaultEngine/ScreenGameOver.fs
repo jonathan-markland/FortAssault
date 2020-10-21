@@ -50,3 +50,4 @@ let NewGameOverScreen scoreAndHiScore =
 
     NewGameState NextGameOverScreenState RenderGameOverScreen gameOverModel
 
+

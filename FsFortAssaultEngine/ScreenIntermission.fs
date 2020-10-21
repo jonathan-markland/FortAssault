@@ -4,16 +4,15 @@ open Time
 open ResourceIDs
 open StaticResourceAccess
 open IntermissionCard
+open FreezeFrame
 
 
 let WithFortAssaultIntermissionCard whereToAfter gameTime =
 
-    WithIntermission
-        4.0F<seconds>
-        gameTime 
+    NewIntermissionCard
         (ImageIntermissionBackground |> ImageFromID) 
         (YellowFontID |> FontFromID)
         "GET READY" 
         ScreenWidthInt ScreenHeightInt 
-        whereToAfter
+            |> WithFreezeFrameFor 4.0F<seconds> gameTime whereToAfter
         

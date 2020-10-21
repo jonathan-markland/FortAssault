@@ -1,6 +1,5 @@
 ﻿module IntermissionCard
 
-open Time
 open DrawingFunctions
 open Geometry
 open ImagesAndFonts
@@ -10,8 +9,6 @@ open ScreenHandler
 
 type private IntermissionCardModel =
     {
-        EndTime          : float32<seconds>
-        WhereToAfterCtor : float32<seconds> -> ErasedGameState
         BackgroundImage  : Image
         Font             : Font
         MessageText      : string
@@ -32,23 +29,15 @@ let private RenderIntermissionCard render model _gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private NextIntermissionCardState gameState _keyStateGetter gameTime _elapsed =
-
-    let model = ModelFrom gameState
-
-    if gameTime < model.EndTime then 
-        Unchanged gameState
-    else 
-        model.WhereToAfterCtor gameTime
+let private NextIntermissionCardState gameState _keyStateGetter _gameTime _elapsed =
+    Unchanged gameState
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let WithIntermission duration gameTime backgroundImage font messageText screenWidth screenHeight whereToAfter =
+let NewIntermissionCard backgroundImage font messageText screenWidth screenHeight =
 
     let intermissionModel =
         {
-            EndTime          = gameTime + duration
-            WhereToAfterCtor = whereToAfter
             BackgroundImage  = backgroundImage
             Font             = font
             MessageText      = messageText
