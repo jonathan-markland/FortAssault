@@ -10,42 +10,30 @@ open BeachBackgroundRenderer
 open ScoreHiScore
 open ScoreboardModel
 open ImagesAndFonts
+open ScreenHandler
+open Time
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type PotentialEnterYourNameScreenModel =
+type private PotentialEnterYourNameScreenModel =
     {
-        Scoreboard      : ScoreAndName list
-        ScoreAndHiScore : ScoreAndHiScore
-        DataModel       : EnterYourNameModel
-        MemoizedText    : string list
-        CanEnterBoard   : bool
+        Scoreboard         : ScoreAndName list
+        ScoreAndHiScore    : ScoreAndHiScore
+        EnterYourNameModel : EnterYourNameModel
+        MemoizedText       : string list
+        WhereToAfterCtor   : ScoreAndName list -> float32<seconds> -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let RenderPotentialEnterYourNameScreen render (model:PotentialEnterYourNameScreenModel) gameTime =
+let private RenderPotentialEnterYourNameScreen render (model:PotentialEnterYourNameScreenModel) gameTime =
 
     RenderBeachBackground render gameTime
     Paragraph render BlackFontID CentreAlign MiddleAlign 160<epx> 100<epx> 10<epx> model.MemoizedText
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewPotentialEnterYourNameScreen scoreAndHiScore oldScoreboard =
-
-    let model = NewEnterYourNameModel MaxPlayerNameLength
-
-    {
-        Scoreboard      = oldScoreboard
-        ScoreAndHiScore = scoreAndHiScore
-        DataModel       = model
-        MemoizedText    = model |> EnterYourNameModelScreenText
-        CanEnterBoard   = scoreAndHiScore.Score |> ScoreCanEnterBoard oldScoreboard
-    }
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let ModelUpdatedAccordingToInput model input =
+let private ModelUpdatedAccordingToInput model input =
 
     if input.Fire.JustDown then
         Some (model |> EnterYourNameModelWithInputApplied SelectLetter)
@@ -61,7 +49,7 @@ let ModelUpdatedAccordingToInput model input =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let AddingIntoScoreboard (dataModel:EnterYourNameModel) score oldScoreBoard =
+let private AddingIntoScoreboard (dataModel:EnterYourNameModel) score oldScoreBoard =
 
     oldScoreBoard 
         |> WithNewScoreIncluded 
@@ -73,43 +61,63 @@ let AddingIntoScoreboard (dataModel:EnterYourNameModel) score oldScoreBoard =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextPotentialEnterYourNameScreenState oldState keyStateGetter _gameTime =
+let private NextPotentialEnterYourNameScreenState gameState keyStateGetter gameTime _elapsed =
+
+    // We are only here because the name could enter the board in the first place.
 
     let input = keyStateGetter |> DecodedInput
+    let model = ModelFrom gameState
 
-    if oldState.CanEnterBoard then
+    match ModelUpdatedAccordingToInput model.EnterYourNameModel input with
+        
+        | None -> 
+            Unchanged gameState
 
-        let newState =
+        | Some enterYourNameModel ->
+            
+            if enterYourNameModel |> NameEntryComplete then
+                
+                let updatedScoreboard =
+                    model.Scoreboard 
+                        |> AddingIntoScoreboard enterYourNameModel model.ScoreAndHiScore.Score
 
-            match ModelUpdatedAccordingToInput oldState.DataModel input with
-                | None -> oldState
-                | Some model ->
-                    let text = model |> EnterYourNameModelScreenText
+                model.WhereToAfterCtor updatedScoreboard gameTime
+
+            else
+                gameState |> WithUpdatedModel
                     {
-                        Scoreboard      = oldState.Scoreboard       // we only latch a new scoreboard at the very end
-                        ScoreAndHiScore = oldState.ScoreAndHiScore  // never changes
-                        DataModel       = model
-                        MemoizedText    = text
-                        CanEnterBoard   = oldState.CanEnterBoard
+                        Scoreboard         = model.Scoreboard       // we only latch a new scoreboard at the very end
+                        ScoreAndHiScore    = model.ScoreAndHiScore  // never changes
+                        EnterYourNameModel = enterYourNameModel
+                        MemoizedText       = enterYourNameModel |> EnterYourNameModelScreenText
+                        WhereToAfterCtor   = model.WhereToAfterCtor
                     }
 
-        if newState.DataModel |> NameEntryComplete then
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let NewPotentialEnterYourNameScreen scoreAndHiScore oldScoreboard whereToAfter gameTime =
+
+    if scoreAndHiScore.Score |> ScoreCanEnterBoard oldScoreboard then
+
+        let enterYourNameModel = 
+            NewEnterYourNameModel MaxPlayerNameLength
+
+        let screenModel =
             {
-                newState with 
-                    Scoreboard    = oldState.Scoreboard |> AddingIntoScoreboard newState.DataModel newState.ScoreAndHiScore.Score
-                    CanEnterBoard = false // just in case the caller keeps calling us!
+                Scoreboard         = oldScoreboard
+                ScoreAndHiScore    = scoreAndHiScore
+                EnterYourNameModel = enterYourNameModel
+                MemoizedText       = enterYourNameModel |> EnterYourNameModelScreenText
+                WhereToAfterCtor   = whereToAfter
             }
-        else
-            newState
-        
+
+        NewGameState NextPotentialEnterYourNameScreenState RenderPotentialEnterYourNameScreen screenModel
+
     else
-        oldState  // You didn't make it to Enter Your Name!
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  Query functions for Storyboard
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+        // The player didn't enter the scoreboard, so we don't actually stay
+        // on this screen at all.
 
-let StayOnPotentialEnterYourNameScreen state =
-    state.CanEnterBoard && not (state.DataModel |> NameEntryComplete)
+        whereToAfter oldScoreboard gameTime
 
 

@@ -4,6 +4,7 @@ open ScreenGameTitle
 open ScreenGameOver
 open ScreenInitialMap
 open ScreenVictory
+open ScreenPotentialEnterYourName
 open ScoreboardModel
 open FortAssaultGlobalState
 
@@ -25,18 +26,27 @@ let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
     //     Shortcut gameResources gameTime RunGameNormally  // ** DO NOT CHANGE THIS ONE! : Define SHORT_PLAYTHROUGH and set the one above **
     // #endif
 
-    let highestScoreInInitialBoard = 
-        HiScoreFromScoreboard gameGlobalState.GameScoreBoard
-    
-    let fudge shs gameTime = NewGameOverScreen shs
+    // let highestScoreInInitialBoard = 
+    //     HiScoreFromScoreboard gameGlobalState.GameScoreBoard
+    // 
+    // let fudge shs gameTime = NewGameOverScreen shs
+    // 
+    // let passage scoreAndHiScore gameTime = 
+    //     NewVictoryScreen scoreAndHiScore fudge gameTime
+    // 
+    // NewGameTitleScreen 
+    //     highestScoreInInitialBoard 
+    //     gameGlobalState 
+    //     (NewInitialMapScreen passage fudge)
+    //     gameTime
 
-    let passage scoreAndHiScore gameTime = 
-        NewVictoryScreen scoreAndHiScore fudge gameTime
+    let afterEntry updatedScoreboard gameTime =
+        failwith ""
 
-    NewGameTitleScreen 
-        highestScoreInInitialBoard 
-        gameGlobalState 
-        (NewInitialMapScreen passage fudge)
+    NewPotentialEnterYourNameScreen 
+        {Score=10300u;HiScore=15000u}
+        gameGlobalState.GameScoreBoard 
+        afterEntry
         gameTime
 
 
