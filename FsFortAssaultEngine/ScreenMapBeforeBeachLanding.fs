@@ -18,7 +18,7 @@ open FreezeFrame
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let DefaultAlliedFleetLocation = { ptx=126.0F<epx> ; pty=76.0F<epx> }
+let DefaultAlliedFleetLocation = { ptx=135.0F<epx> ; pty=120.0F<epx> }
 
 /// These are permitted to overlap other rectangles, including the trigger rectangles.
 let PermissableTravelLocationRectangles =
