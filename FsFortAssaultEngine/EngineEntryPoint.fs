@@ -6,6 +6,7 @@ open ScreenInitialMap
 open ScreenVictory
 open ScreenPotentialEnterYourName
 open ScreenMapBeforeBeachLanding
+open ScreenMapPostPassage
 
 open ScoreboardModel
 open FortAssaultGlobalState
@@ -51,14 +52,21 @@ let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
     //     afterEntry
     //     gameTime
 
-    let afterEntry shs ships gameTime =
+    // let afterEntry gameTime =
+    //     failwith ""
+    //
+    // NewMapBeforeBeachLandingScreen 
+    //     {Score=10300u ; HiScore=15000u}
+    //     4u
+    //     afterEntry
+
+    let afterEntry gameTime =
         failwith ""
 
-    NewMapBeforeBeachLandingScreen 
+    NewMapPostPassageScreen
         {Score=10300u ; HiScore=15000u}
         4u
         afterEntry
-
     
 
 

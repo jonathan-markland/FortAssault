@@ -18,10 +18,10 @@ open FreezeFrame
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let DefaultAlliedFleetLocation = { ptx=135.0F<epx> ; pty=120.0F<epx> }
+let private DefaultAlliedFleetLocation = { ptx=135.0F<epx> ; pty=120.0F<epx> }
 
 /// These are permitted to overlap other rectangles, including the trigger rectangles.
-let PermissableTravelLocationRectangles =
+let private PermissableTravelLocationRectangles =
     [
         {
             Left   =  86.0F<epx>
@@ -34,7 +34,7 @@ let PermissableTravelLocationRectangles =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type MapBeforeBeachLandingScreenModel =
+type private MapBeforeBeachLandingScreenModel =
     {
         ScoreAndHiScore  : ScoreAndHiScore
         ShipsThrough     : uint32
@@ -44,7 +44,7 @@ type MapBeforeBeachLandingScreenModel =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenModel) _gameTime =
+let private RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenModel) _gameTime =
 
     let imgMap = ImageMap |> ImageFromID
 
@@ -77,7 +77,7 @@ let RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenM
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextMapBeforeBeachLandingScreenState gameState keyStateGetter gameTime _elapsed =
+let private NextMapBeforeBeachLandingScreenState gameState keyStateGetter gameTime _elapsed =
 
     let input = keyStateGetter |> DecodedInput
     let model = ModelFrom gameState
@@ -100,9 +100,6 @@ let NextMapBeforeBeachLandingScreenState gameState keyStateGetter gameTime _elap
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let NewMapBeforeBeachLandingScreen scoreAndHiScore shipsThrough whereToAfter =
-
-    let whereToAfter gameTime =
-        whereToAfter scoreAndHiScore shipsThrough gameTime
 
     let mapModel =
         {

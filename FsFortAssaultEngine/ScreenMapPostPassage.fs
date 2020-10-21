@@ -13,12 +13,14 @@ open MapScreenSharedDetail
 open ImagesAndFonts
 open StaticResourceAccess
 open InputEventData
+open ScreenHandler
+open FreezeFrame
 
 
-let DefaultAlliedFleetLocation = { ptx=124.0F<epx> ; pty=75.0F<epx> }
+let private DefaultAlliedFleetLocation = { ptx=124.0F<epx> ; pty=75.0F<epx> }
 
 /// These are permitted to overlap other rectangles, including the trigger rectangles.
-let PermissableTravelLocationRectangles =
+let private PermissableTravelLocationRectangles =
     [
         {
             Left   =  86.0F<epx>
@@ -30,31 +32,18 @@ let PermissableTravelLocationRectangles =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type AlliedState =
-    | AlliedFleetInPlay of PointF32
-    | Paused            of PointF32 * timeOfEngagement:float32<seconds>
-    | PostPassageScreenOver
-
-type MapPostPassageScreenModel =
+type private MapPostPassageScreenModel =
     {
-        ScoreAndHiScore:      ScoreAndHiScore
-        ShipsThrough:         uint32
-        AlliedState:          AlliedState
-        EnemyFleetCentre:     PointF32
+        ScoreAndHiScore   : ScoreAndHiScore
+        ShipsThrough      : uint32
+        AlliedFleetCentre : PointF32
+        EnemyFleetCentre  : PointF32
+        BattleCtor        : float32<seconds> -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let AlliesVersusEnemy alliesLocation enemyLocation gameTime =
-
-    if alliesLocation |> IsWithinRegionOf enemyLocation EnemyEngagementDistance then
-        Paused(alliesLocation, gameTime)
-    else
-        AlliedFleetInPlay(alliesLocation)
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let RenderMapPostPassageScreen render (model:MapPostPassageScreenModel) _gameTime =
+let private RenderMapPostPassageScreen render (model:MapPostPassageScreenModel) _gameTime =
 
     let imgMap = (ImageMap |> ImageFromID)
 
@@ -63,13 +52,9 @@ let RenderMapPostPassageScreen render (model:MapPostPassageScreenModel) _gameTim
     // PermissableTravelLocationRectangles |> List.iteri (fun i r ->
     //     render (DrawFilledRectangle(r.Left, r.Top, r |> RectangleWidth, r |> RectangleHeight, i |> AlternateOf 0xEE0000u 0x00FF00u)))
 
-    match model.AlliedState with
-        | AlliedFleetInPlay(location)
-        | Paused(location, _) ->
-            CentreImage render location.ptx location.pty (ImageAlliedFleetSymbol |> ImageFromID)
-            CentreImage render model.EnemyFleetCentre.ptx model.EnemyFleetCentre.pty (ImageEnemyFleetSymbol |> ImageFromID)
-        | PostPassageScreenOver ->
-            ()
+    let location = model.AlliedFleetCentre
+    CentreImage render location.ptx location.pty (ImageAlliedFleetSymbol |> ImageFromID)
+    CentreImage render model.EnemyFleetCentre.ptx model.EnemyFleetCentre.pty (ImageEnemyFleetSymbol |> ImageFromID)
 
     let h = imgMap.ImageMetadata.ImageHeight
 
@@ -91,53 +76,39 @@ let RenderMapPostPassageScreen render (model:MapPostPassageScreenModel) _gameTim
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewMapPostPassageScreen scoreAndHiScore shipsThrough =
-    {
-        ScoreAndHiScore  = scoreAndHiScore
-        ShipsThrough     = shipsThrough
-        AlliedState      = AlliedFleetInPlay(DefaultAlliedFleetLocation)
-        EnemyFleetCentre = DefaultEnemyFleetLocation
-    }
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let NextMapPostPassageScreenState oldState keyStateGetter gameTime =
+let private NextMapPostPassageScreenState gameState keyStateGetter gameTime _elapsed =
 
     let input = keyStateGetter |> DecodedInput
+    let model = ModelFrom gameState
 
-    match oldState.AlliedState with
+    let alliedLocation = NewAlliedFleetLocation model.AlliedFleetCentre input PermissableTravelLocationRectangles
+    let enemyLocation  = NewEnemyFleetLocation model.EnemyFleetCentre alliedLocation
 
-        | AlliedFleetInPlay(alliedLocation) ->
-    
-            let alliedLocation = NewAlliedFleetLocation alliedLocation input PermissableTravelLocationRectangles
-            let enemyLocation = NewEnemyFleetLocation oldState.EnemyFleetCentre alliedLocation
-            let allies = AlliesVersusEnemy alliedLocation enemyLocation gameTime
+    if alliedLocation |> IsWithinRegionOf enemyLocation EnemyEngagementDistance then
+        gameState |> WithFreezeFrameFor PauseTimeOnceEngaged gameTime model.BattleCtor
 
+    else
+        gameState |> WithUpdatedModel
             {
-                ScoreAndHiScore  = oldState.ScoreAndHiScore
-                ShipsThrough     = oldState.ShipsThrough
-                AlliedState      = allies
-                EnemyFleetCentre = enemyLocation
+                ScoreAndHiScore   = model.ScoreAndHiScore
+                ShipsThrough      = model.ShipsThrough
+                AlliedFleetCentre = alliedLocation
+                EnemyFleetCentre  = enemyLocation
+                BattleCtor        = model.BattleCtor
             }
 
-        | Paused(_,engagementTime) ->
-
-            let elapsedSinceEngagement = gameTime - engagementTime
-            if elapsedSinceEngagement > PauseTimeOnceEngaged then
-                { oldState with AlliedState = PostPassageScreenOver }
-            else
-                oldState
-
-        | PostPassageScreenOver ->
-        
-            oldState   // Ideology:  Never risk the rest of the logic when the screen is over.
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  Query functions for Storyboard
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let StayOnMapPostPassage state =
-    match state.AlliedState with
-        | AlliedFleetInPlay _
-        | Paused _              -> true
-        | PostPassageScreenOver -> false
+let NewMapPostPassageScreen scoreAndHiScore shipsThrough whereToAfter =
+
+    let mapModel =
+        {
+            ScoreAndHiScore   = scoreAndHiScore
+            ShipsThrough      = shipsThrough
+            AlliedFleetCentre = DefaultAlliedFleetLocation
+            EnemyFleetCentre  = DefaultEnemyFleetLocation
+            BattleCtor        = whereToAfter
+        }
+
+    NewGameState NextMapPostPassageScreenState RenderMapPostPassageScreen mapModel
+
