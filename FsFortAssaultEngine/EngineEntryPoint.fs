@@ -8,6 +8,7 @@ open ScreenPotentialEnterYourName
 open ScreenMapBeforeBeachLanding
 open ScreenMapPostPassage
 
+open ScoreHiScore
 open ScoreboardModel
 open FortAssaultGlobalState
 
@@ -32,15 +33,22 @@ let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
     // let highestScoreInInitialBoard = 
     //     HiScoreFromScoreboard gameGlobalState.GameScoreBoard
     // 
-    // let fudge shs gameTime = NewGameOverScreen shs
+    // let scoreAndHiScore = 
+    //     {Score=10300u ; HiScore=15000u}
     // 
-    // let passage scoreAndHiScore gameTime = 
-    //     NewVictoryScreen scoreAndHiScore fudge gameTime
+    // let fudgeGameOver _gameTime =
+    //     NewGameOverScreen scoreAndHiScore
+    // 
+    // let fudgeGameOver2 _shs _gameTime =
+    //     NewGameOverScreen scoreAndHiScore
+    // 
+    // let passage gameTime = 
+    //     NewVictoryScreen scoreAndHiScore fudgeGameOver2 gameTime
     // 
     // NewGameTitleScreen 
     //     highestScoreInInitialBoard 
     //     gameGlobalState 
-    //     (NewInitialMapScreen passage fudge)
+    //     (NewInitialMapScreen passage fudgeGameOver)
     //     gameTime
 
     // let afterEntry updatedScoreboard gameTime =
@@ -54,19 +62,19 @@ let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
 
     // let afterEntry gameTime =
     //     failwith ""
-    //
+    // 
     // NewMapBeforeBeachLandingScreen 
     //     {Score=10300u ; HiScore=15000u}
     //     4u
     //     afterEntry
 
-    let afterEntry gameTime =
-        failwith ""
-
-    NewMapPostPassageScreen
-        {Score=10300u ; HiScore=15000u}
-        4u
-        afterEntry
+    // let afterEntry gameTime =
+    //     failwith ""
+    // 
+    // NewMapPostPassageScreen
+    //     {Score=10300u ; HiScore=15000u}
+    //     4u
+    //     afterEntry
     
 
 

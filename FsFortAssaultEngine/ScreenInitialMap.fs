@@ -74,8 +74,8 @@ type private InitialMapScreenModel =
         ScoreAndHiScore     : ScoreAndHiScore
         AlliedFleetCentre   : PointF32
         EnemyFleetCentre    : PointF32
-        SecretPassageCtor   : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
-        EngageEnemyCtor     : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        SecretPassageCtor   : float32<seconds> -> ErasedGameState
+        EngageEnemyCtor     : float32<seconds> -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -86,8 +86,7 @@ let private RenderInitialMapScreen render (model:InitialMapScreenModel) _gameTim
 
     Image1to1 render 0<epx> 0<epx> imgMap
 
-    // PermissableTravelLocationRectangles |> List.iteri (fun i r ->
-    //     render (DrawFilledRectangle(r.Left, r.Top, r |> RectangleWidth, r |> RectangleHeight, i |> AlternateOf 0xEE0000u 0x00FF00u)))
+    // DrawDebugRectangles render PermissableTravelLocationRectangles
 
     CentreImage render model.AlliedFleetCentre.ptx model.AlliedFleetCentre.pty (ImageAlliedFleetSymbol |> ImageFromID)
     CentreImage render model.EnemyFleetCentre.ptx  model.EnemyFleetCentre.pty  (ImageEnemyFleetSymbol  |> ImageFromID)
@@ -129,19 +128,15 @@ let private NextInitialMapScreenState gameState keyStateGetter gameTime elapsed 
     if alliedLocation |> IsPointWithinRectangle SecretPassageTriggerRectangle then
         
         let whereToAfter = 
-            model.ScoreAndHiScore
-                |> model.SecretPassageCtor 
-                |> WithFortAssaultIntermissionCard
+            model.SecretPassageCtor |> WithFortAssaultIntermissionCard
 
         gameState |> WithFreezeFrameFor PauseDuration gameTime whereToAfter
 
     elif alliedLocation |> IsWithinRegionOf enemyLocation EnemyEngagementDistance then
         
         let whereeToAfter = 
-            model.ScoreAndHiScore
-                |> model.EngageEnemyCtor 
-                |> WithFortAssaultIntermissionCard
-        
+            model.EngageEnemyCtor |> WithFortAssaultIntermissionCard
+
         gameState |> WithFreezeFrameFor PauseDuration gameTime whereeToAfter
     
     else

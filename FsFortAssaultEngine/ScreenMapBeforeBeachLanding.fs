@@ -29,6 +29,12 @@ let private PermissableTravelLocationRectangles =
             Right  = 156.0F<epx>
             Bottom = 139.0F<epx>
         }
+        {
+            Left   =  68.0F<epx>
+            Top    = 130.0F<epx>
+            Right  =  91.0F<epx>
+            Bottom = 141.0F<epx>
+        }
         BeachLandingTriggerRectangle
     ]
 
@@ -47,18 +53,14 @@ type private MapBeforeBeachLandingScreenModel =
 let private RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenModel) _gameTime =
 
     let imgMap = ImageMap |> ImageFromID
-
     Image1to1 render 0<epx> 0<epx> imgMap
 
-    // PermissableTravelLocationRectangles |> List.iteri (fun i r ->
-    //     render (DrawFilledRectangle(r.Left, r.Top, r |> RectangleWidth, r |> RectangleHeight, i |> AlternateOf 0xEE0000u 0x00FF00u)))
+    // DrawDebugRectangles render PermissableTravelLocationRectangles
 
     let location = model.Location
-
     CentreImage render location.ptx location.pty (ImageAlliedFleetSymbol |> ImageFromID)
 
     let mapHeight = imgMap.ImageMetadata.ImageHeight
-
     ScoreboardArea render mapHeight
 
     let scorePanel =

@@ -37,9 +37,9 @@ let EnemyGivesChaseTriggerRectangle =
 
 let BeachLandingTriggerRectangle =
     {
-        Left   =  68.0F<epx>
+        Left   =  58.0F<epx>
         Top    = 130.0F<epx>
-        Right  =  91.0F<epx>
+        Right  =  68.0F<epx>
         Bottom = 141.0F<epx>
     }
 
@@ -90,6 +90,22 @@ let NewEnemyFleetLocation oldEnemyLocation alliesLocation =
         let delta = oldEnemyLocation |> SimpleMovementDeltaToGetTo attractionPoint EnemySpeed
         oldEnemyLocation |> PointMovedByDelta delta
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+open Geometry
+open DrawingShapes
+open Algorithm
+
+let DrawDebugRectangles render rectangles =
+
+    rectangles |> List.iteri (fun i r ->
+        render (
+            DrawFilledRectangle (
+                r.Left |> FloatEpxToIntEpx, 
+                r.Top |> FloatEpxToIntEpx, 
+                r |> RectangleWidth |> FloatEpxToIntEpx, 
+                r |> RectangleHeight |> FloatEpxToIntEpx, 
+                i |> AlternateOf (SolidColour 0xEE0000u) (SolidColour 0x00FF00u))))
 
 
 
