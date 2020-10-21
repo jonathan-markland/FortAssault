@@ -7,6 +7,9 @@ open ScreenVictory
 open ScreenPotentialEnterYourName
 open ScreenMapBeforeBeachLanding
 open ScreenMapPostPassage
+open ScreenTankBattle
+open FinalBossAndTankBattleShared
+open TankMapFileLoader
 
 open ScoreHiScore
 open ScoreboardModel
@@ -75,10 +78,31 @@ let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
     //     {Score=10300u ; HiScore=15000u}
     //     4u
     //     afterEntry
+
+    let fudgeGameOver scoreAndHiScore gameTime =
+        NewGameOverScreen scoreAndHiScore
+
+    let fudgeCourseComplete tanksRemaining shs gameTime =
+        failwith ""
+
+    let finalBossTargets = NewFinalBossAndTankBattleData ()
+
+    match LoadTankBattleSequences () with
+        | Error _ -> 
+            failwith ""
+        | Ok tankMaps ->
+            NewTankBattleScreen
+                {Score=10300u ; HiScore=15000u}
+                5u
+                finalBossTargets
+                tankMaps
+                fudgeGameOver
+                fudgeCourseComplete
+                gameTime
+
+
+
+
+
     
-
-
-
-
-
 
