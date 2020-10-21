@@ -13,10 +13,12 @@ open MapScreenSharedDetail
 open ImagesAndFonts
 open StaticResourceAccess
 open InputEventData
+open ScreenHandler
+open FreezeFrame
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let DefaultAlliedFleetLocation = { ptx=120.0F<epx> ; pty=97.0F<epx> }
+let DefaultAlliedFleetLocation = { ptx=126.0F<epx> ; pty=76.0F<epx> }
 
 /// These are permitted to overlap other rectangles, including the trigger rectangles.
 let PermissableTravelLocationRectangles =
@@ -32,26 +34,13 @@ let PermissableTravelLocationRectangles =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type AlliedState =
-    | FleetBeforeBeachLandingInPlay of PointF32
-    | EngagedBeachLanding           of PointF32 * timeOfEngagement:float32<seconds>
-    | ScreenOver
-
 type MapBeforeBeachLandingScreenModel =
     {
-        ScoreAndHiScore : ScoreAndHiScore
-        ShipsThrough    : uint32
-        AlliedState     : AlliedState
+        ScoreAndHiScore  : ScoreAndHiScore
+        ShipsThrough     : uint32
+        Location         : PointF32
+        BeachLandingCtor : float32<seconds> -> ErasedGameState
     }
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let AlliesVersusBeach alliesLocation gameTime =
-
-    if alliesLocation |> IsPointWithinRectangle BeachLandingTriggerRectangle then
-        EngagedBeachLanding(alliesLocation, gameTime)
-    else
-        FleetBeforeBeachLandingInPlay(alliesLocation)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -64,12 +53,9 @@ let RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenM
     // PermissableTravelLocationRectangles |> List.iteri (fun i r ->
     //     render (DrawFilledRectangle(r.Left, r.Top, r |> RectangleWidth, r |> RectangleHeight, i |> AlternateOf 0xEE0000u 0x00FF00u)))
 
-    match model.AlliedState with
-        | FleetBeforeBeachLandingInPlay(location)
-        | EngagedBeachLanding(location, _) ->
-            CentreImage render location.ptx location.pty (ImageAlliedFleetSymbol |> ImageFromID)
-        | ScreenOver ->
-            ()
+    let location = model.Location
+
+    CentreImage render location.ptx location.pty (ImageAlliedFleetSymbol |> ImageFromID)
 
     let mapHeight = imgMap.ImageMetadata.ImageHeight
 
@@ -91,51 +77,39 @@ let RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandingScreenM
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewMapBeforeBeachLandingScreen scoreAndHiScore shipsThrough =
-    {
-        ScoreAndHiScore  = scoreAndHiScore
-        ShipsThrough     = shipsThrough
-        AlliedState      = FleetBeforeBeachLandingInPlay(DefaultAlliedFleetLocation)
-    }
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let NextMapBeforeBeachLandingScreenState oldState keyStateGetter gameTime =
+let NextMapBeforeBeachLandingScreenState gameState keyStateGetter gameTime _elapsed =
 
     let input = keyStateGetter |> DecodedInput
+    let model = ModelFrom gameState
 
-    match oldState.AlliedState with
+    let alliedLocation = 
+        NewAlliedFleetLocation model.Location input PermissableTravelLocationRectangles
 
-        | FleetBeforeBeachLandingInPlay(alliedLocation) ->
-    
-            let alliedLocation = NewAlliedFleetLocation alliedLocation input PermissableTravelLocationRectangles
-            let allies = AlliesVersusBeach alliedLocation gameTime
+    if alliedLocation |> IsPointWithinRectangle BeachLandingTriggerRectangle then
+        gameState |> WithFreezeFrameFor PauseTimeOnceEngaged gameTime model.BeachLandingCtor
 
+    else
+        gameState |> WithUpdatedModel
             {
-                ScoreAndHiScore = oldState.ScoreAndHiScore
-                ShipsThrough    = oldState.ShipsThrough
-                AlliedState     = allies
+                ScoreAndHiScore  = model.ScoreAndHiScore
+                ShipsThrough     = model.ShipsThrough
+                Location         = alliedLocation
+                BeachLandingCtor = model.BeachLandingCtor
             }
 
-        | EngagedBeachLanding(_,engagementTime) ->
-
-            let elapsedSinceEngagement = gameTime - engagementTime
-            if elapsedSinceEngagement > PauseTimeOnceEngaged then
-                { oldState with AlliedState = ScreenOver }
-            else
-                oldState
-
-        | ScreenOver ->
-        
-            oldState   // Ideology:  Never risk the logic rest of the logic when the screen is over.
-
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  Query functions for Storyboard
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let StayOnMapBeforeBeachLanding state =
-    match state.AlliedState with
-        | FleetBeforeBeachLandingInPlay _ -> true
-        | EngagedBeachLanding _
-        | ScreenOver                      -> false
+let NewMapBeforeBeachLandingScreen scoreAndHiScore shipsThrough whereToAfter =
+
+    let whereToAfter gameTime =
+        whereToAfter scoreAndHiScore shipsThrough gameTime
+
+    let mapModel =
+        {
+            ScoreAndHiScore  = scoreAndHiScore
+            ShipsThrough     = shipsThrough
+            Location         = DefaultAlliedFleetLocation
+            BeachLandingCtor = whereToAfter
+        }
+
+    NewGameState NextMapBeforeBeachLandingScreenState RenderMapBeforeBeachLandingScreen mapModel
