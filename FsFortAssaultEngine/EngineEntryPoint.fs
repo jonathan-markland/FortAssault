@@ -10,6 +10,7 @@ open ScreenMapPostPassage
 open ScreenTankBattle
 open ScreenSecretPassage
 open ScreenAirBattle
+open ScreenSeaBattle
 open FinalBossAndTankBattleShared
 open TankMapFileLoader
 
@@ -131,6 +132,18 @@ let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
     //     fudgeCourseComplete
     //     gameTime
 
+    let fudgeGameOver scoreAndHiScore gameTime =
+        NewGameOverScreen scoreAndHiScore
+    
+    let fudgeCourseComplete shipsThrough shs gameTime =
+        failwith ""
+    
+    NewSeaBattleScreen
+        {Score=10300u ; HiScore=15000u}
+        3u
+        fudgeGameOver
+        fudgeCourseComplete
+        gameTime
 
 
 
