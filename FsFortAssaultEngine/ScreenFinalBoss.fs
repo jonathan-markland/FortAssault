@@ -19,25 +19,26 @@ open FinalBossAndTankBattleShared
 open ImagesAndFonts
 open StaticResourceAccess
 open InputEventData
+open ScreenHandler
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let TargetTriggerDistance     =   3.0F<epx>
-let InitialPlayerGunPositionX = 160.0F<epx>
-let BossGunCentrePosition     = { ptx=160.0F<epx> ; pty=20.0F<epx> }
-let PauseTimeWhenEnded        =   4.0F<seconds>
-let BossAnimationDuration     =  20.0F<seconds>
-let ExplosionDuration         =   0.75F<seconds>
-let FlagFlutterAnimDuration   =   0.5F<seconds>
-let ScoreForHittingTarget     =  2000u
-let GunStepRate               =   30.0F<degrees/seconds>
-let InitialGunElevation       =   30.0F<degrees>
+let private TargetTriggerDistance     =   3.0F<epx>
+let private InitialPlayerGunPositionX = 160.0F<epx>
+let private BossGunCentrePosition     = { ptx=160.0F<epx> ; pty=20.0F<epx> }
+let private PauseTimeWhenEnded        =   4.0F<seconds>
+let private BossAnimationDuration     =  20.0F<seconds>
+let private ExplosionDuration         =   0.75F<seconds>
+let private FlagFlutterAnimDuration   =   0.5F<seconds>
+let private ScoreForHittingTarget     =  2000u
+let private GunStepRate               =   30.0F<degrees/seconds>
+let private InitialGunElevation       =   30.0F<degrees>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let Imgs = Array.map ImageFromID
+let private Imgs = Array.map ImageFromID
 
-let BossFlickBookType () =  // TODO: Made into a function because of Fable static-initializer-order problem
+let private BossFlickBookType () =  // TODO: Made into a function because of Fable static-initializer-order problem
     {
         FlickBookDuration       = BossAnimationDuration
         FlickBookImages         = Imgs [|ImageFinalBoss0 ; ImageFinalBoss1 ; ImageFinalBoss2 ; ImageFinalBoss3 ; ImageFinalBoss4 ; ImageFinalBoss5 |]
@@ -45,7 +46,7 @@ let BossFlickBookType () =  // TODO: Made into a function because of Fable stati
         VisibilityAfterEnd      = Visible
     }
 
-let ExplosionFlickBookType () =  // TODO: Made into a function because of Fable static-initializer-order problem
+let private ExplosionFlickBookType () =  // TODO: Made into a function because of Fable static-initializer-order problem
     {
         FlickBookDuration       = ExplosionDuration
         FlickBookImages         = Imgs [| ImageShipExplode0 ; ImageShipExplode1 ; ImageShipExplode2 ; ImageShipExplode3 |]
@@ -55,13 +56,13 @@ let ExplosionFlickBookType () =  // TODO: Made into a function because of Fable 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type AlliedState =
+type private AlliedState =
     | AlliedTankInPlay
     | WonScreen        of startTime : float32<seconds>
     | TankIsShot       of startTime : float32<seconds>
     | FinalBossScreenOver
 
-type FinalBossScreenModel =
+type private FinalBossScreenModel =
     {
         FinalBossAndTankBattleData : FinalBossAndTankBattleData
         ScoreAndHiScore            : ScoreAndHiScore
@@ -71,28 +72,31 @@ type FinalBossScreenModel =
         AlliedState                : AlliedState
         Explosions                 : FlickBookInstance list
         BossGunFlickBook           : FlickBookInstance
+        WhereToGoOnGameOver        : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToOnVictory           : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToOnTankDestroyed     : uint32 -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
     }
 
-let SurrenderImages () =   // TODO: Made into a function because of Fable static-initializer-order problem
+let private SurrenderImages () =   // TODO: Made into a function because of Fable static-initializer-order problem
     Imgs [| ImageFinalBossSurrender0 ; ImageFinalBossSurrender1 |]
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let BossHasFired model gameTime =
+let private BossHasFired model gameTime =
 
     let elapsed = gameTime - model.ScreenStartTime
     elapsed > BossAnimationDuration
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewExplosion centreLocation gameTime =
+let private NewExplosion centreLocation gameTime =
     {
         FlickBookType            = ExplosionFlickBookType ()
         FlickBookMechanicsObject = MechanicsControlledStationaryObject centreLocation gameTime ExplosionDuration
         FlickBookStartTime       = gameTime
     }
 
-let ResultOfWhateverShellsHitTheFort shells (targets:Target list) explosions score gameTime =
+let private ResultOfWhateverShellsHitTheFort shells (targets:Target list) explosions score gameTime =
 
     let shellCollidesWithFort gameTime (shell:Shell) target =
         if target.TargetLocation = targets.Head.TargetLocation then  // Can only hit the head item!
@@ -119,7 +123,7 @@ let ResultOfWhateverShellsHitTheFort shells (targets:Target list) explosions sco
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
+let private RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
 
     let imgBack = ImageFinalBossBackground |> ImageFromID
 
@@ -192,7 +196,7 @@ let RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewFinalBossScreen scoreAndHiScore tanksRemaining finalBossAndTankBattleData gameTime =
+let private OldNewFinalBossScreen scoreAndHiScore tanksRemaining finalBossAndTankBattleData whereToGoOnGameOver whereToOnVictory whereToOnTankDestroyed gameTime =
 
     {
         FinalBossAndTankBattleData = finalBossAndTankBattleData
@@ -209,11 +213,14 @@ let NewFinalBossScreen scoreAndHiScore tanksRemaining finalBossAndTankBattleData
                 FlickBookStartTime       = gameTime
                 FlickBookMechanicsObject = MechanicsControlledStationaryObject BossGunCentrePosition gameTime BossAnimationDuration
             }
+        WhereToGoOnGameOver    = whereToGoOnGameOver   
+        WhereToOnVictory       = whereToOnVictory      
+        WhereToOnTankDestroyed = whereToOnTankDestroyed
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextFinalBossScreenState oldState keyStateGetter gameTime frameElapsedTime =
+let private OldNextFinalBossScreenState oldState keyStateGetter gameTime frameElapsedTime =
 
     let input = keyStateGetter |> DecodedInput
 
@@ -281,29 +288,44 @@ let NextFinalBossScreenState oldState keyStateGetter gameTime frameElapsedTime =
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  Query functions for Storyboard
+//  Adapter until above refactored
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type FinalBossAfterFrameCase =  StayOnFinalBossScreen | VictoryOverFinalBoss | FinalBossDestroyedTheTank | FinalBossGameOver
+let private NextFinalBossScreenState gameState keyStateGetter gameTime elapsed =
 
-let FinalBossTransition state =
+    let model = ModelFrom gameState
+    let model = OldNextFinalBossScreenState model keyStateGetter gameTime elapsed
 
-    match state.AlliedState with
+    match model.AlliedState with
 
         | AlliedTankInPlay
         | WonScreen _
         | TankIsShot _ -> 
-            StayOnFinalBossScreen
+            gameState |> WithUpdatedModel model
 
         | FinalBossScreenOver ->
-            if state.FinalBossAndTankBattleData.TargetsOnFinalBoss.IsEmpty then
-                VictoryOverFinalBoss
+            if model.FinalBossAndTankBattleData.TargetsOnFinalBoss.IsEmpty then
+                model.WhereToOnVictory model.ScoreAndHiScore gameTime 
 
-            elif state.TanksRemaining > 0u then
-                FinalBossDestroyedTheTank
+            elif model.TanksRemaining > 0u then
+                model.WhereToOnTankDestroyed model.TanksRemaining model.ScoreAndHiScore gameTime
 
             else
-                FinalBossGameOver
+                model.WhereToGoOnGameOver model.ScoreAndHiScore gameTime
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let NewFinalBossScreen scoreAndHiScore tanksRemaining finalBossAndTankBattleData whereToOnGameOver whereToOnVictory whereToOnTankDestroyed gameTime =
+
+    let bossModel =
+        OldNewFinalBossScreen 
+            scoreAndHiScore 
+            tanksRemaining 
+            finalBossAndTankBattleData 
+            whereToOnGameOver 
+            whereToOnVictory
+            whereToOnTankDestroyed
+            gameTime 
+
+    NewGameState NextFinalBossScreenState RenderFinalBossScreen bossModel
 

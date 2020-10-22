@@ -13,6 +13,7 @@ open ScreenAirBattle
 open ScreenSeaBattle
 open FinalBossAndTankBattleShared
 open TankMapFileLoader
+open ScreenFinalBoss
 
 open ScoreHiScore
 open ScoreboardModel
@@ -132,17 +133,37 @@ let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
     //     fudgeCourseComplete
     //     gameTime
 
+    // let fudgeGameOver scoreAndHiScore gameTime =
+    //     NewGameOverScreen scoreAndHiScore
+    // 
+    // let fudgeCourseComplete shipsThrough shs gameTime =
+    //     failwith ""
+    // 
+    // NewSeaBattleScreen
+    //     {Score=10300u ; HiScore=15000u}
+    //     3u
+    //     fudgeGameOver
+    //     fudgeCourseComplete
+    //     gameTime
+
     let fudgeGameOver scoreAndHiScore gameTime =
         NewGameOverScreen scoreAndHiScore
     
-    let fudgeCourseComplete shipsThrough shs gameTime =
+    let fudgeCourseComplete shs gameTime =
         failwith ""
+
+    let fudgeTankDestroyed shs gameTime = 
+        failwith ""
+
+    let finalBossTargets = NewFinalBossAndTankBattleData ()
     
-    NewSeaBattleScreen
+    NewFinalBossScreen
         {Score=10300u ; HiScore=15000u}
         3u
+        finalBossTargets
         fudgeGameOver
         fudgeCourseComplete
+        fudgeTankDestroyed
         gameTime
 
 
