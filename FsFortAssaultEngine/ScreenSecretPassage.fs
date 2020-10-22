@@ -15,9 +15,9 @@ open ResourceIDs
 open InputEventData
 open ScorePanel
 open FlickBook
-open ResourceIDs
 open ImagesAndFonts
 open StaticResourceAccess
+open ScreenHandler
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -44,7 +44,7 @@ type SecretPassageScreenFleetStats =
     {
         ShipsStillToNavigate : uint32
         ShipsSuccess         : uint32
-        Score                : ScoreAndHiScore
+        ScoreAndHiScore      : ScoreAndHiScore
     }
 
 type ShipRotation =
@@ -92,6 +92,8 @@ type SecretPassageScreenModel =
         Mines        : Mine list
         Animations   : FlickBookInstance list
         Ship         : ShipState
+        WhereToGoOnGameOver       : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToOnCourseCompletion : uint32 -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -652,7 +654,7 @@ let RenderSecretPassageScreen render secretPassageScreenModel gameTime =
 
     let scorePanel =
         {
-            ScoreAndHiScore  = secretPassageScreenModel.FleetStats.Score
+            ScoreAndHiScore  = secretPassageScreenModel.FleetStats.ScoreAndHiScore
             ShipsPending     = secretPassageScreenModel.FleetStats.ShipsStillToNavigate
             ShipsThrough     = secretPassageScreenModel.FleetStats.ShipsSuccess
             Tanks            = secretPassageScreenModel.FleetStats.ShipsSuccess |> ToTankCountFromShipCount
@@ -666,18 +668,20 @@ let RenderSecretPassageScreen render secretPassageScreenModel gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewSecretPassageScreen score initialShipCount screenStartGameTime =
+let OldNewSecretPassageScreen scoreAndHiScore initialShipCount whereToOnGameOver whereToOnCourseCompletion screenStartGameTime =
     {
         FleetStats = 
             {
-                ShipsStillToNavigate = initialShipCount
-                ShipsSuccess = 0u
-                Score = score
+                ShipsStillToNavigate      = initialShipCount
+                ShipsSuccess              = 0u
+                ScoreAndHiScore           = scoreAndHiScore
             }
         LiveTorpedos  = DefaultTorpedos screenStartGameTime
         Ship          = ShipInPlay(DefaultShipLocation ())
         Animations    = []
         Mines         = DefaultMines ()
+        WhereToGoOnGameOver       = whereToOnGameOver 
+        WhereToOnCourseCompletion = whereToOnCourseCompletion
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -702,7 +706,7 @@ let CheckIfRoundComplete stats ship gameTime =
             {
                 ShipsStillToNavigate = stats.ShipsStillToNavigate - 1u
                 ShipsSuccess         = newShipsSuccess
-                Score                = newScore
+                ScoreAndHiScore                = newScore
             }
 
         let ship = 
@@ -720,17 +724,17 @@ let CheckIfRoundComplete stats ship gameTime =
                 failwith "should not happen"
 
             | ShipExploding(_) ->
-                statsForNewRound stats stats.ShipsSuccess stats.Score
+                statsForNewRound stats stats.ShipsSuccess stats.ScoreAndHiScore
 
             | ShipGotThrough(_) ->
-                statsForNewRound stats (stats.ShipsSuccess + 1u) (stats.Score |> ScoreIncrementedBy ScoreForGettingAShipThrough)
+                statsForNewRound stats (stats.ShipsSuccess + 1u) (stats.ScoreAndHiScore |> ScoreIncrementedBy ScoreForGettingAShipThrough)
 
     else
         (stats, ship)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextSecretPassageScreenState oldState keyStateGetter gameTime =
+let private OldNextSecretPassageScreenState oldState keyStateGetter gameTime =
 
     let input = keyStateGetter |> DecodedInput
 
@@ -777,19 +781,60 @@ let NextSecretPassageScreenState oldState keyStateGetter gameTime =
                 Ship         = ship
                 Animations   = animations
                 Mines        = mines
+                WhereToGoOnGameOver       = oldState.WhereToGoOnGameOver
+                WhereToOnCourseCompletion = oldState.WhereToOnCourseCompletion
             }
 
+
+
+
+
+
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  Query functions for Storyboard
+//  Adapter until above refactored
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type SecretPassageAfterFrameCase = StayOnSecretPassageScreen | FromSecretPassageGoToNextScreen | SecretPassageGameOver
+let private NextSecretPassageScreenState gameState keyStateGetter gameTime elapsed =
 
-let SecretPassageTransition state =
-    match state.Ship with
+    let model = ModelFrom gameState
+    let model = OldNextSecretPassageScreenState model keyStateGetter gameTime
+
+    match model.Ship with
+        
         | ShipInPlay _
         | ShipGotThrough _ 
-        | ShipExploding _  -> StayOnSecretPassageScreen
+        | ShipExploding _  ->
+            gameState |> WithUpdatedModel model
+
         | SecretPassageScreenOver ->
-            if state.FleetStats.ShipsSuccess > 0u then FromSecretPassageGoToNextScreen else SecretPassageGameOver
-    
+            let shipsThrough = model.FleetStats.ShipsSuccess
+            if shipsThrough > 0u then 
+                model.WhereToOnCourseCompletion 
+                    shipsThrough
+                    model.FleetStats.ScoreAndHiScore 
+                    gameTime
+            else 
+                model.WhereToGoOnGameOver 
+                    model.FleetStats.ScoreAndHiScore 
+                    gameTime
+                    
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let NewSecretPassageScreen 
+        scoreAndHiScore
+        initialShipCount 
+        whereToOnGameOver 
+        whereToOnCourseCompletion 
+        gameTime =
+
+    let passageModel =
+        OldNewSecretPassageScreen 
+            scoreAndHiScore
+            initialShipCount 
+            whereToOnGameOver 
+            whereToOnCourseCompletion 
+            gameTime 
+
+    NewGameState NextSecretPassageScreenState RenderSecretPassageScreen passageModel
+
