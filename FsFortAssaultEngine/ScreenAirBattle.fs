@@ -18,6 +18,7 @@ open Rules
 open ImagesAndFonts
 open StaticResourceAccess
 open InputEventData
+open ScreenHandler
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -119,6 +120,8 @@ type AirBattleScreenModel =
         EnemyShips      : EnemyShip list
         Damage          : uint32
         LastSortieAt    : float32<seconds>
+        WhereToGoOnGameOver       : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToOnCourseCompletion : uint32 -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -324,7 +327,7 @@ let CommitSuicideCheck damage (input:InputEventData.InputEventData) =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewAirBattleScreen enemyStrength scoreAndHiScore shipsRemaining gameTime =
+let private OldNewAirBattleScreen enemyStrength scoreAndHiScore shipsRemaining whereToOnGameOver whereToOnCourseCompletion gameTime =
     {
         ScoreAndHiScore  = scoreAndHiScore
         ShipsRemaining   = shipsRemaining
@@ -338,11 +341,13 @@ let NewAirBattleScreen enemyStrength scoreAndHiScore shipsRemaining gameTime =
         PlaneBombs       = []
         Damage           = 0u
         LastSortieAt     = 0.0F<seconds>
+        WhereToGoOnGameOver       = whereToOnGameOver 
+        WhereToOnCourseCompletion = whereToOnCourseCompletion
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextAirBattleScreenState oldState keyStateGetter gameTime frameElapsedTime =
+let private OldNextAirBattleScreenState oldState keyStateGetter gameTime frameElapsedTime =
 
     let input = keyStateGetter |> DecodedInput
 
@@ -465,17 +470,53 @@ let NextAirBattleScreenState oldState keyStateGetter gameTime frameElapsedTime =
             oldState   // Ideology:  Never risk the logic rest of the logic when the screen is over.
 
 
+
+
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  Query functions for Storyboard
+//  Adapter until above refactored
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type AirBattleAfterFrameCase = StayOnAirBattleScreen | GoToScreenAfterAirBattle | AirBattleGameOver
+let private NextAirBattleScreenState gameState keyStateGetter gameTime elapsed =
 
-let AirBattleTransition state =
-    match state.AlliedState with
+    let model = ModelFrom gameState
+    let model = OldNextAirBattleScreenState model keyStateGetter gameTime elapsed
+
+    match model.AlliedState with
         | AlliedShipInPlay
         | ShipSinking _
-        | WonScreen _              -> StayOnAirBattleScreen
+        | WonScreen _ -> 
+            gameState |> WithUpdatedModel model
+
         | AirOrSeaBattleScreenOver ->
-            if state.ShipsRemaining > 0u then GoToScreenAfterAirBattle else AirBattleGameOver
+            if model.ShipsRemaining > 0u then 
+                model.WhereToOnCourseCompletion 
+                    model.ShipsRemaining
+                    model.ScoreAndHiScore 
+                    gameTime
+            else 
+                model.WhereToGoOnGameOver
+                    model.ScoreAndHiScore 
+                    gameTime
+                    
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let NewAirBattleScreen 
+        enemyStrength 
+        scoreAndHiScore 
+        shipsRemaining 
+        whereToOnGameOver 
+        whereToOnCourseCompletion 
+        gameTime =
+
+    let airBattleModel =
+        OldNewAirBattleScreen 
+            enemyStrength 
+            scoreAndHiScore 
+            shipsRemaining 
+            whereToOnGameOver 
+            whereToOnCourseCompletion 
+            gameTime
+
+    NewGameState NextAirBattleScreenState RenderAirBattleScreen airBattleModel
 

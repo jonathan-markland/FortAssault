@@ -9,12 +9,14 @@ open ScreenMapBeforeBeachLanding
 open ScreenMapPostPassage
 open ScreenTankBattle
 open ScreenSecretPassage
+open ScreenAirBattle
 open FinalBossAndTankBattleShared
 open TankMapFileLoader
 
 open ScoreHiScore
 open ScoreboardModel
 open FortAssaultGlobalState
+open Rules
 
 
 
@@ -102,18 +104,32 @@ let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
     //             fudgeCourseComplete
     //             gameTime
 
-    let fudgeGameOver scoreAndHiScore gameTime =
-        NewGameOverScreen scoreAndHiScore
-    
-    let fudgeCourseComplete shipsThrough shs gameTime =
-        failwith ""
+    // let fudgeGameOver scoreAndHiScore gameTime =
+    //     NewGameOverScreen scoreAndHiScore
+    // 
+    // let fudgeCourseComplete shipsThrough shs gameTime =
+    //     failwith ""
+    // 
+    // NewSecretPassageScreen 
+    //     {Score=10300u ; HiScore=15000u}
+    //     3u
+    //     fudgeGameOver
+    //     fudgeCourseComplete
+    //     gameTime
 
-    NewSecretPassageScreen 
-        {Score=10300u ; HiScore=15000u}
-        3u
-        fudgeGameOver
-        fudgeCourseComplete
-        gameTime
+    // let fudgeGameOver scoreAndHiScore gameTime =
+    //     NewGameOverScreen scoreAndHiScore
+    // 
+    // let fudgeCourseComplete shipsThrough shs gameTime =
+    //     failwith ""
+    // 
+    // NewAirBattleScreen
+    //     StrongEnemy
+    //     {Score=10300u ; HiScore=15000u}
+    //     3u
+    //     fudgeGameOver
+    //     fudgeCourseComplete
+    //     gameTime
 
 
 
