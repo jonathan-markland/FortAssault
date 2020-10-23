@@ -27,7 +27,6 @@ open Rules
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 /// Called only once when the game boots
-let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
 
     // Todo:
     // #if SHORT_PLAYTHROUGH
@@ -44,19 +43,19 @@ let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
     // let scoreAndHiScore = 
     //     {Score=10300u ; HiScore=15000u}
     // 
-    // let fudgeGameOver _gameTime =
+    // let whenGameOver _gameTime =
     //     NewGameOverScreen scoreAndHiScore
     // 
-    // let fudgeGameOver2 _shs _gameTime =
+    // let whenGameOver2 _shs _gameTime =
     //     NewGameOverScreen scoreAndHiScore
     // 
     // let passage gameTime = 
-    //     NewVictoryScreen scoreAndHiScore fudgeGameOver2 gameTime
+    //     NewVictoryScreen scoreAndHiScore whenGameOver2 gameTime
     // 
     // NewGameTitleScreen 
     //     highestScoreInInitialBoard 
     //     gameGlobalState 
-    //     (NewInitialMapScreen passage fudgeGameOver)
+    //     (NewInitialMapScreen passage whenGameOver)
     //     gameTime
 
     // let afterEntry updatedScoreboard gameTime =
@@ -84,90 +83,103 @@ let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
     //     4u
     //     afterEntry
 
-    // let fudgeGameOver scoreAndHiScore gameTime =
-    //     NewGameOverScreen scoreAndHiScore
-    // 
-    // let fudgeCourseComplete tanksRemaining shs gameTime =
-    //     failwith ""
-    // 
-    // let finalBossTargets = NewFinalBossAndTankBattleData ()
-    // 
-    // match LoadTankBattleSequences () with
-    //     | Error _ -> 
-    //         failwith ""
-    // 
-    //     | Ok tankMaps ->
-    //         NewTankBattleScreen
-    //             {Score=10300u ; HiScore=15000u}
-    //             5u
-    //             finalBossTargets
-    //             tankMaps
-    //             fudgeGameOver
-    //             fudgeCourseComplete
-    //             gameTime
 
-    // let fudgeGameOver scoreAndHiScore gameTime =
+    // let whenGameOver scoreAndHiScore gameTime =
     //     NewGameOverScreen scoreAndHiScore
     // 
-    // let fudgeCourseComplete shipsThrough shs gameTime =
+    // let whenCourseComplete shipsThrough shs gameTime =
     //     failwith ""
     // 
     // NewSecretPassageScreen 
     //     {Score=10300u ; HiScore=15000u}
     //     3u
-    //     fudgeGameOver
-    //     fudgeCourseComplete
+    //     whenGameOver
+    //     whenCourseComplete
     //     gameTime
 
-    // let fudgeGameOver scoreAndHiScore gameTime =
+    // let whenGameOver scoreAndHiScore gameTime =
     //     NewGameOverScreen scoreAndHiScore
     // 
-    // let fudgeCourseComplete shipsThrough shs gameTime =
+    // let whenCourseComplete shipsThrough shs gameTime =
     //     failwith ""
     // 
     // NewAirBattleScreen
     //     StrongEnemy
     //     {Score=10300u ; HiScore=15000u}
     //     3u
-    //     fudgeGameOver
-    //     fudgeCourseComplete
+    //     whenGameOver
+    //     whenCourseComplete
     //     gameTime
 
-    // let fudgeGameOver scoreAndHiScore gameTime =
+    // let whenGameOver scoreAndHiScore gameTime =
     //     NewGameOverScreen scoreAndHiScore
     // 
-    // let fudgeCourseComplete shipsThrough shs gameTime =
+    // let whenCourseComplete shipsThrough shs gameTime =
     //     failwith ""
     // 
     // NewSeaBattleScreen
     //     {Score=10300u ; HiScore=15000u}
     //     3u
-    //     fudgeGameOver
-    //     fudgeCourseComplete
+    //     whenGameOver
+    //     whenCourseComplete
     //     gameTime
 
-    let fudgeGameOver scoreAndHiScore gameTime =
-        NewGameOverScreen scoreAndHiScore
-    
-    let fudgeCourseComplete shs gameTime =
-        failwith ""
+let VictoryStory scoreAndHiScore gameTime =
 
-    let fudgeTankDestroyed shs gameTime = 
-        failwith ""
+    let whereToAfter scoreAndHiScore gameTime =
+        failwith "title screen"
 
-    let finalBossTargets = NewFinalBossAndTankBattleData ()
+    NewVictoryScreen scoreAndHiScore whereToAfter gameTime
+
+let rec FinalBossStory mapNumber tanksRemaining scoreAndHiScore finalBossTargets gameTime =
+
+    let whereToOnGameOver      = NewGameOverScreen
+    let whereToOnVictory       = VictoryStory
+    let whereToOnTankDestroyed = TankBattleStory
     
     NewFinalBossScreen
-        {Score=10300u ; HiScore=15000u}
-        3u
+        mapNumber
+        scoreAndHiScore
+        tanksRemaining
         finalBossTargets
-        fudgeGameOver
-        fudgeCourseComplete
-        fudgeTankDestroyed
+        whereToOnGameOver
+        whereToOnVictory
+        whereToOnTankDestroyed
         gameTime
-
-
-
-
     
+and TankBattleStory mapNumber tanksRemaining scoreAndHiScore finalBossTargets gameTime =
+
+    // TODO: We can lambda-bind the boss targets into whenCourseComplete because
+    //       the tank battle stage doesn't reduce the boss targets(!)
+    //       By passing the boss targets into the tank battle it looks like it could
+    //       change them.
+    // TODO: these screens should return a new tank count
+
+    let whenGameOver scoreAndHiScore gameTime =
+        NewGameOverScreen scoreAndHiScore
+    
+    let whenCourseComplete tanksRemaining scoreAndHiScore gameTime =
+        FinalBossStory mapNumber tanksRemaining scoreAndHiScore finalBossTargets gameTime
+    
+    match LoadTankBattleSequences () with
+        | Error _ -> 
+            failwith ""
+    
+        | Ok tankMaps ->
+            NewTankBattleScreen
+                scoreAndHiScore
+                tanksRemaining
+                mapNumber
+                tankMaps
+                whenGameOver
+                whenCourseComplete
+                gameTime
+
+
+
+let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
+
+    let finalBossTargets = NewFinalBossAndTankBattleData ()
+
+    FinalBossStory 1 4u {Score=10000u;HiScore=15000u} finalBossTargets gameTime
 

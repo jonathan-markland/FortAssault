@@ -88,10 +88,10 @@ type private TankBattleScreenConstantsModel =  // TODO: Use this convention in o
         ScreenStartTime                 : float32<seconds>
         TileMatrixTraits                : TileMatrixTraits
         LevelMap                        : TankBattleMapMatrix
-        FinalBossAndTankBattleData      : FinalBossAndTankBattleData
         GameOverOnTankBattleScreen      : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
         TankCompletedCourseSuccessfully : uint32 -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
         TankMapsList                    : TankBattleMapMatrix list
+        MapNumber                       : int
     }
 
 type private TankBattleScreenModel =
@@ -109,29 +109,6 @@ type private TankBattleScreenModel =
         EnemyMissiles      : FlickBookInstance list   // No scroll offsetting required
         EnemyTankLocations : EnemyTankMatrixLocation list
     }
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-/// Increment the map number for the next time we come into the tank battle screen.
-let private WithIncrementedMapNumber tankBattleScreenModel =
-
-    // I don't desire to re-bind the constants every frame for state that
-    // only changes at the very end of the level.
-
-    {
-        tankBattleScreenModel with
-            Constants =
-                {
-                    tankBattleScreenModel.Constants with
-                        FinalBossAndTankBattleData =
-                            {
-                                tankBattleScreenModel.Constants.FinalBossAndTankBattleData with
-                                    TankBattleMapNumber =
-                                        tankBattleScreenModel.Constants.FinalBossAndTankBattleData.TankBattleMapNumber + 1
-                            }
-                }
-    }
-
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -368,10 +345,10 @@ let private ChooseCourseMap (tankMapsList:TankBattleMapMatrix list) tankBattleMa
     tankMapsList.[tankBattleMapNumber % n]
 
 
-let private OldNewTankBattleScreen scoreAndHiScore tanksRemaining finalBossAndTankBattleData tankMapsList whereToOnGameOver whereToOnCourseCompletion gameTime =
+let private OldNewTankBattleScreen scoreAndHiScore tanksRemaining mapNumber tankMapsList whereToOnGameOver whereToOnCourseCompletion gameTime =
 
     let levelMap =
-        ChooseCourseMap tankMapsList finalBossAndTankBattleData.TankBattleMapNumber
+        ChooseCourseMap tankMapsList mapNumber
 
     let tileMatrixTraits =
         {
@@ -386,10 +363,10 @@ let private OldNewTankBattleScreen scoreAndHiScore tanksRemaining finalBossAndTa
             ScreenStartTime                 = gameTime
             TileMatrixTraits                = tileMatrixTraits
             LevelMap                        = levelMap
-            FinalBossAndTankBattleData      = finalBossAndTankBattleData
             GameOverOnTankBattleScreen      = whereToOnGameOver 
             TankCompletedCourseSuccessfully = whereToOnCourseCompletion
             TankMapsList                    = tankMapsList
+            MapNumber                       = mapNumber
         }
 
     {
@@ -733,7 +710,6 @@ let private OldNextTankBattleScreenState oldState keyStateGetter gameTime frameE
 
                 {
                     Constants          = oldState.Constants // Never updated during this level.
-
                     ScoreAndHiScore    = scoreAndHiScore
                     AlliedState        = alliedState
                     Decoratives        = decoratives    
@@ -743,15 +719,7 @@ let private OldNextTankBattleScreenState oldState keyStateGetter gameTime frameE
                     EnemyTankLocations = enemyTanks
                 }
 
-    match newModel.AlliedState with
-        
-        | AlliedTankReachedFort ->
-            newModel |> WithIncrementedMapNumber
-
-        | AlliedTankDestroyed
-        | AlliedTankInPlay _
-        | AlliedTankExploding _ ->
-            newModel
+    newModel
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -788,7 +756,7 @@ let private NextTankBattleScreenState gameState keyStateGetter gameTime elapsed 
     match TankBattleTransition model with
         | TankCompletedCourseSuccessfully -> 
             model.Constants.TankCompletedCourseSuccessfully 
-                model.TanksRemaining 
+                model.TanksRemaining
                 model.ScoreAndHiScore 
                 gameTime
 
@@ -805,7 +773,7 @@ let private NextTankBattleScreenState gameState keyStateGetter gameTime elapsed 
                 OldNewTankBattleScreen 
                     model.ScoreAndHiScore
                     model.TanksRemaining 
-                    model.Constants.FinalBossAndTankBattleData 
+                    model.Constants.MapNumber
                     model.Constants.TankMapsList 
                     model.Constants.GameOverOnTankBattleScreen 
                     model.Constants.TankCompletedCourseSuccessfully 
@@ -819,13 +787,13 @@ let private NextTankBattleScreenState gameState keyStateGetter gameTime elapsed 
 
 
 
-let NewTankBattleScreen scoreAndHiScore tanksRemaining finalBossAndTankBattleData tankMapsList whereToOnGameOver whereToOnCourseCompletion gameTime =
+let NewTankBattleScreen scoreAndHiScore tanksRemaining mapNumber tankMapsList whereToOnGameOver whereToOnCourseCompletion gameTime =
 
     let tankModel =
         OldNewTankBattleScreen 
             scoreAndHiScore 
             tanksRemaining 
-            finalBossAndTankBattleData 
+            mapNumber
             tankMapsList 
             whereToOnGameOver 
             whereToOnCourseCompletion 

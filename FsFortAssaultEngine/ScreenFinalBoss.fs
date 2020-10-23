@@ -64,7 +64,7 @@ type private AlliedState =
 
 type private FinalBossScreenModel =
     {
-        FinalBossAndTankBattleData : FinalBossAndTankBattleData
+        FinalBossTargets           : FinalBossTargets
         ScoreAndHiScore            : ScoreAndHiScore
         TanksRemaining             : uint32
         ScreenStartTime            : float32<seconds>
@@ -72,9 +72,10 @@ type private FinalBossScreenModel =
         AlliedState                : AlliedState
         Explosions                 : FlickBookInstance list
         BossGunFlickBook           : FlickBookInstance
-        WhereToGoOnGameOver        : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToGoOnGameOver        : ScoreAndHiScore -> ErasedGameState
         WhereToOnVictory           : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
-        WhereToOnTankDestroyed     : uint32 -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToOnTankDestroyed     : int -> uint32 -> ScoreAndHiScore -> FinalBossTargets -> float32<seconds> -> ErasedGameState
+        MapNumber                  : int
     }
 
 let private SurrenderImages () =   // TODO: Made into a function because of Fable static-initializer-order problem
@@ -161,7 +162,7 @@ let private RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
 
         | AlliedTankInPlay ->
             DrawBackground ()
-            DrawTargets model.FinalBossAndTankBattleData.TargetsOnFinalBoss
+            DrawTargets model.FinalBossTargets.TargetsOnFinalBoss
             DrawBossGun ()
             DrawFlickbookInstanceList render model.Explosions gameTime
             DrawGun gameTime
@@ -196,10 +197,17 @@ let private RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private OldNewFinalBossScreen scoreAndHiScore tanksRemaining finalBossAndTankBattleData whereToGoOnGameOver whereToOnVictory whereToOnTankDestroyed gameTime =
-
+let private OldNewFinalBossScreen 
+        scoreAndHiScore 
+        tanksRemaining 
+        finalBossTargets 
+        mapNumber
+        whereToGoOnGameOver 
+        whereToOnVictory 
+        whereToOnTankDestroyed 
+        gameTime =
     {
-        FinalBossAndTankBattleData = finalBossAndTankBattleData
+        FinalBossTargets  = finalBossTargets
 
         ScoreAndHiScore   = scoreAndHiScore
         TanksRemaining    = tanksRemaining
@@ -216,6 +224,7 @@ let private OldNewFinalBossScreen scoreAndHiScore tanksRemaining finalBossAndTan
         WhereToGoOnGameOver    = whereToGoOnGameOver   
         WhereToOnVictory       = whereToOnVictory      
         WhereToOnTankDestroyed = whereToOnTankDestroyed
+        MapNumber = mapNumber
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -230,7 +239,7 @@ let private OldNextFinalBossScreenState oldState keyStateGetter gameTime frameEl
 
             let elapsedSinceStart = gameTime - oldState.ScreenStartTime
 
-            if oldState.FinalBossAndTankBattleData.TargetsOnFinalBoss.IsEmpty then
+            if oldState.FinalBossTargets.TargetsOnFinalBoss.IsEmpty then
                 { oldState with AlliedState = WonScreen(gameTime) }
             
             elif elapsedSinceStart > BossAnimationDuration then
@@ -239,7 +248,7 @@ let private OldNextFinalBossScreenState oldState keyStateGetter gameTime frameEl
             else
                 let gun        = oldState.GunAim
                 let explosions = oldState.Explosions
-                let targets    = oldState.FinalBossAndTankBattleData.TargetsOnFinalBoss
+                let targets    = oldState.FinalBossTargets.TargetsOnFinalBoss
                 let score      = oldState.ScoreAndHiScore
 
                 let explosions =
@@ -265,11 +274,7 @@ let private OldNextFinalBossScreenState oldState keyStateGetter gameTime frameEl
                         GunAim           = gun
                         Explosions       = explosions
                         ScoreAndHiScore  = score
-                        FinalBossAndTankBattleData =
-                            {
-                                oldState.FinalBossAndTankBattleData with
-                                    TargetsOnFinalBoss = targets
-                            }
+                        FinalBossTargets = { TargetsOnFinalBoss = targets }
                 }
 
         | WonScreen(timeEnded)
@@ -304,24 +309,32 @@ let private NextFinalBossScreenState gameState keyStateGetter gameTime elapsed =
             gameState |> WithUpdatedModel model
 
         | FinalBossScreenOver ->
-            if model.FinalBossAndTankBattleData.TargetsOnFinalBoss.IsEmpty then
+            if model.FinalBossTargets.TargetsOnFinalBoss.IsEmpty then
                 model.WhereToOnVictory model.ScoreAndHiScore gameTime 
 
             elif model.TanksRemaining > 0u then
-                model.WhereToOnTankDestroyed model.TanksRemaining model.ScoreAndHiScore gameTime
+                model.WhereToOnTankDestroyed 
+                    (model.MapNumber + 1) 
+                    model.TanksRemaining 
+                    model.ScoreAndHiScore 
+                    model.FinalBossTargets 
+                    gameTime
 
             else
-                model.WhereToGoOnGameOver model.ScoreAndHiScore gameTime
+                model.WhereToGoOnGameOver model.ScoreAndHiScore
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewFinalBossScreen scoreAndHiScore tanksRemaining finalBossAndTankBattleData whereToOnGameOver whereToOnVictory whereToOnTankDestroyed gameTime =
+let NewFinalBossScreen 
+    mapNumber scoreAndHiScore tanksRemaining finalBossAndTankBattleData 
+    whereToOnGameOver whereToOnVictory whereToOnTankDestroyed gameTime =
 
     let bossModel =
         OldNewFinalBossScreen 
             scoreAndHiScore 
             tanksRemaining 
             finalBossAndTankBattleData 
+            mapNumber
             whereToOnGameOver 
             whereToOnVictory
             whereToOnTankDestroyed
