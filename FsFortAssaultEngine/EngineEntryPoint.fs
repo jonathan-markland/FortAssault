@@ -175,11 +175,24 @@ and TankBattleStory mapNumber tanksRemaining scoreAndHiScore finalBossTargets ga
                 whenCourseComplete
                 gameTime
 
+let MapBeforeBeachLandingStory shipsThrough scoreAndHiScore gameTime =
+
+    let mapNumber = 0
+
+    let finalBossTargets =
+        NewFinalBossAndTankBattleData ()
+
+    let afterLanding gameTime =
+        TankBattleStory mapNumber (shipsThrough |> ToTankCountFromShipCount) scoreAndHiScore finalBossTargets gameTime
+    
+    NewMapBeforeBeachLandingScreen 
+        scoreAndHiScore
+        shipsThrough
+        afterLanding
+
 
 
 let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
 
-    let finalBossTargets = NewFinalBossAndTankBattleData ()
-
-    FinalBossStory 1 4u {Score=10000u;HiScore=15000u} finalBossTargets gameTime
+    MapBeforeBeachLandingStory 4u {Score=10000u;HiScore=15000u} gameTime
 
