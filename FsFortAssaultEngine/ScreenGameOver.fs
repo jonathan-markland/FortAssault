@@ -41,7 +41,7 @@ let NextGameOverScreenState gameState keyStateGetter gameTime _elapsed =
     
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewGameOverScreen whereAfter scoreAndHiScore =
+let NewGameOverScreen scoreAndHiScore whereAfter =
 
     let gameOverModel =
         {

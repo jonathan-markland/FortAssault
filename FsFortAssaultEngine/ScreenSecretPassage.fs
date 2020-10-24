@@ -816,7 +816,7 @@ let private NextSecretPassageScreenState gameState keyStateGetter gameTime elaps
                     gameTime
             else 
                 model.WhereToGoOnGameOver 
-                    model.FleetStats.ScoreAndHiScore 
+                    model.FleetStats.ScoreAndHiScore
                     
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

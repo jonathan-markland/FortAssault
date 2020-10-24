@@ -129,6 +129,11 @@ let DrawScorePanel render y (panel:ScorePanel) =
     Text render YellowFontID LeftAlign TopAlign c3x ely "ELEVATION"
     Flo  render BlueFontID LeftAlign TopAlign (c3x + 96<epx>) ely (float32 panel.Elevation)
 
+    #if SHORT_PLAYTHROUGH
+    // As the score panel is usually drawn last, this should work:
+    Text render RedFontID CentreAlign MiddleAlign 160<epx> 10<epx> "WARNING  SHORT PLAY VERSION"
+    #endif
+
 
 
 let DrawTankBattleScorePanel render y (score:uint32) (numTanks:uint32) =
@@ -138,3 +143,8 @@ let DrawTankBattleScorePanel render y (score:uint32) (numTanks:uint32) =
 
     let message = sprintf "SCORE  %d     TANKS  %d" score numTanks
     Text render BlackFontID CentreAlign TopAlign x y message
+
+    #if SHORT_PLAYTHROUGH
+    // As the score panel is usually drawn last, this should work:
+    Text render RedFontID CentreAlign MiddleAlign 160<epx> 10<epx> "WARNING  SHORT PLAY VERSION"
+    #endif

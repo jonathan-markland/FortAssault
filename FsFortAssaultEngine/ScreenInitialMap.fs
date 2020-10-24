@@ -15,6 +15,7 @@ open InputEventData
 open FreezeFrame
 open ScreenHandler
 open ScreenIntermission
+open ImagesAndFonts
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -108,6 +109,11 @@ let private RenderInitialMapScreen render (model:InitialMapScreenModel) _gameTim
         }
 
     DrawScorePanel render mapHeight scorePanel
+
+    #if SHORT_PLAYTHROUGH
+    Text render RedFontID CentreAlign MiddleAlign 160<epx> 10<epx> "WARNING  SHORT PLAY VERSION"
+    #endif
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

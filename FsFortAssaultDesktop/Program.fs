@@ -8,7 +8,6 @@ open DesktopGameFramework
 open FortAssaultGlobalState
 open Storyboard
 open TankMapFileLoader
-open EngineEntryPoint
 open FortAssaultGameResources
 
 

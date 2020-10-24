@@ -49,7 +49,7 @@ let private RenderMapPostPassageScreen render (model:MapPostPassageScreenModel) 
 
     Image1to1 render 0<epx> 0<epx> imgMap
 
-    DrawDebugRectangles render PermissableTravelLocationRectangles
+    // DrawDebugRectangles render PermissableTravelLocationRectangles
 
     let location = model.AlliedFleetCentre
     CentreImage render location.ptx location.pty (ImageAlliedFleetSymbol |> ImageFromID)

@@ -1,6 +1,5 @@
 ﻿module Storyboard
 
-open ScoreHiScore
 open ScreenGameTitle
 open ScreenInitialMap
 open ScreenSecretPassage
@@ -10,18 +9,16 @@ open ScreenSeaBattle
 open ScreenMapBeforeBeachLanding
 open ScreenTankBattle
 open ScreenFinalBoss
-open ScreenIntermission
 open ScreenGameOver
 open ScreenVictory
 open ScreenPotentialEnterYourName
 open MechanicsTestPage
+
 open FinalBossAndTankBattleShared
 open Rules
 open TankMapFileLoader
 open FortAssaultGlobalState
 open ScoreboardModel
-open ScreenHandler
-open InputEventData
 
 #if SHORT_PLAYTHROUGH
 open ResourceIDs
@@ -29,88 +26,6 @@ open ImagesAndFonts
 open DrawingFunctions
 open Geometry
 #endif
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-(*
-type Storyboard =
-
-    // In rough order of gameplay:
-
-    | GameTitleChapter              of GameTitleScreenModel
-    | InitialMapChapter             of InitialMapScreenModel
-    | SecretPassageChapter          of SecretPassageScreenModel
-    | MapPostPassageChapter         of MapPostPassageScreenModel
-    | AirBattleChapter              of AirBattleScreenModel
-    | SeaBattleChapter              of SeaBattleScreenModel
-    | MapBeforeBeachLandingChapter  of MapBeforeBeachLandingScreenModel
-    | TankBattleChapter             of TankBattleScreenModel
-    | FinalBossChapter              of FinalBossScreenModel
-    | GameOverChapter               of GameOverScreenModel
-    | IntermissionChapter           of IntermissionScreenModel<Storyboard>
-    | VictoryChapter                of VictoryScreenModel
-    | PotentialEnterYourNameChapter of PotentialEnterYourNameScreenModel
-
-    // Test page:
-
-    | MechanicsTestPageChapter      of MechanicsTestPageScreenModel
-*)
-
-
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-(*
-let RenderFortAssaultStoryboard render gameState gameTime =
-    
-    let (struct (storyboard , _gameGlobals)) = gameState
-
-    match storyboard with 
-
-        | GameTitleChapter model ->
-            RenderGameTitleScreen render model gameTime
-
-        | InitialMapChapter model ->
-            RenderInitialMapScreen render model gameTime
-
-        | SecretPassageChapter model ->
-            RenderSecretPassageScreen render model gameTime
-
-        | MapPostPassageChapter model ->
-            RenderMapPostPassageScreen render model gameTime
-
-        | AirBattleChapter model ->
-            RenderAirBattleScreen render model gameTime
-
-        | SeaBattleChapter model ->
-            RenderSeaBattleScreen render model gameTime
-
-        | MapBeforeBeachLandingChapter model ->
-            RenderMapBeforeBeachLandingScreen render model gameTime
-
-        | TankBattleChapter model ->
-            RenderTankBattleScreen render model gameTime
-
-        | FinalBossChapter model ->
-            RenderFinalBossScreen render model gameTime
-
-        | GameOverChapter model ->
-            RenderGameOverScreen render model gameTime
-
-        | IntermissionChapter model ->
-            RenderIntermissionScreen render model gameTime
-
-        | VictoryChapter model ->
-            RenderVictoryScreen render model gameTime
-
-        | PotentialEnterYourNameChapter model ->
-            RenderPotentialEnterYourNameScreen render model gameTime
-
-        | MechanicsTestPageChapter model ->
-            RenderMechanicsTestPageScreen render model gameTime
-
-    #if SHORT_PLAYTHROUGH
-    Text render RedFontID CentreAlign MiddleAlign 160<epx> 10<epx> "WARNING  SHORT PLAY VERSION"
-    #endif
-    *)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //   Shortcuts to levels for development purposes
@@ -227,260 +142,154 @@ let Shortcut gameResources gameTime mode =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-(*
-let NextStoryboardState staticGameResources gameState keyStateGetter gameTime frameElapsedTime =
 
+let rec private EnterYourNameStory scoreAndHiScore gameTime =
+
+    // You can just direct here, and it will sort out whether to show or not.
+
+    let hack = // TODO
+        {
+            GameScoreBoard = InitialScoreboard [ "Bob" ; "Scott" ; "Lara" ; "J" ] 10000u 5000u
+        }
+
+    let afterEntry updatedScoreboard gameTime =
+        GameTitleStory { GameScoreBoard = updatedScoreboard } gameTime
     
+    NewPotentialEnterYourNameScreen 
+        scoreAndHiScore
+        hack.GameScoreBoard
+        afterEntry
+        gameTime
 
-    let (struct (storyboard , gameGlobals)) = ModelFrom gameState
+and private GameOverStory scoreAndHiScore =
+ 
+    NewGameOverScreen 
+        scoreAndHiScore 
+        EnterYourNameStory
 
-    /// Where the existing GameGlobalState has NOT changed this frame.
-    let inline Advance storyboard =
-        let nextModel = 
-            struct ((storyboard:Storyboard), gameGlobals)
-        gameState |> WithUpdatedModel nextModel
+and private VictoryStory scoreAndHiScore gameTime =
 
-    /// Where the GameGlobalState has been replaced this frame.
-    let inline AdvanceAndReplaceGlobals (gameGlobals , storyboard) =
-        let nextModel = 
-            struct ((storyboard:Storyboard), (gameGlobals:FortAssaultGlobalState))
-        gameState |> WithUpdatedModel nextModel
+    NewVictoryScreen 
+        scoreAndHiScore 
+        EnterYourNameStory 
+        gameTime
 
-    /// Wrap a 'GET READY' intermission around the transition to a new state.
-    let withIntermission desiredNextChapter =
-        IntermissionChapter
-            (NewIntermissionScreenState gameTime desiredNextChapter)
+and private FinalBossStory mapNumber tanksRemaining scoreAndHiScore finalBossTargets gameTime =
 
-    match storyboard with
+    NewFinalBossScreen
+        mapNumber
+        scoreAndHiScore
+        tanksRemaining
+        finalBossTargets
+        GameOverStory
+        VictoryStory
+        TankBattleStory
+        gameTime
+    
+and private TankBattleStory mapNumber tanksRemaining scoreAndHiScore finalBossTargets gameTime =
 
-        // Rule:  Battle-cases should check game-over status, not interim screens.
-        // Rule:  Enemy strength reduction from using the secret passage only affects air battle.
+    let whenCourseComplete tanksRemaining scoreAndHiScore gameTime =
+        FinalBossStory mapNumber tanksRemaining scoreAndHiScore finalBossTargets gameTime
+    
+    match LoadTankBattleSequences () with
+        | Error _ -> 
+            failwith "Failed to parse the tank battle level definitions."  // Should never happen as they're not in external files ever since the browser version.
+    
+        | Ok tankMaps ->
+            NewTankBattleScreen
+                scoreAndHiScore
+                tanksRemaining
+                mapNumber
+                tankMaps
+                GameOverStory
+                whenCourseComplete
+                gameTime
 
-        | GameTitleChapter model ->  // TODO: Am I calling this "state" or "model" throughout this program?
-            Advance (
-                let model = NextGameTitleScreenState model keyStateGetter gameTime
-                if model |> StayOnTitleScreen then
-                    GameTitleChapter model
-                else
-                    InitialMapChapter (
-                        NewInitialMapScreen NumShipsAtInitialEngagement { Score=0u ; HiScore=model.HiScore })
-            )
-                        
-        | InitialMapChapter model ->
-            Advance (
-                let model = NextInitialMapScreenState model keyStateGetter gameTime
-                
-                match model |> InitialMapTransition with
-                    | StayOnInitialMapScreen ->
-                        InitialMapChapter model
+and private MapBeforeBeachLandingStory shipsThrough scoreAndHiScore gameTime =
 
-                    | FromInitialMapGoToSecretPassage ->
-                        withIntermission
-                            (fun gameTime ->
-                                SecretPassageChapter 
-                                    (NewSecretPassageScreen model.ScoreAndHiScore model.NumShips gameTime))
+    let mapNumber = 0
 
-                    | FromInitialMapGoToSeaBattle ->
-                        withIntermission
-                            (fun gameTime ->
-                                AirBattleChapter 
-                                    (NewAirBattleScreen StrongEnemy model.ScoreAndHiScore model.NumShips gameTime))
-            )
+    let finalBossTargets =
+        NewFinalBossAndTankBattleData ()
 
-        | SecretPassageChapter model ->
-            Advance (
-                let model = NextSecretPassageScreenState model keyStateGetter gameTime
+    let afterLanding gameTime =
+        TankBattleStory mapNumber (shipsThrough |> ToTankCountFromShipCount) scoreAndHiScore finalBossTargets gameTime
+    
+    NewMapBeforeBeachLandingScreen 
+        scoreAndHiScore
+        shipsThrough
+        afterLanding
 
-                match model |> SecretPassageTransition with
-                    | StayOnSecretPassageScreen -> 
-                        SecretPassageChapter model
-                    
-                    | FromSecretPassageGoToNextScreen ->
-                        withIntermission
-                            (fun gameTime ->
-                                MapPostPassageChapter 
-                                    (NewMapPostPassageScreen model.FleetStats.Score model.FleetStats.ShipsSuccess))
-                    
-                    | SecretPassageGameOver ->
-                        GameOverChapter (NewGameOverScreen model.FleetStats.Score)
-            )
+and private SeaBattleStory shipsRemaining scoreAndHiScore gameTime = 
 
-        | MapPostPassageChapter model ->
-            Advance (
-                let model = NextMapPostPassageScreenState model keyStateGetter gameTime
-                if model |> StayOnMapPostPassage then
-                    MapPostPassageChapter model
-                else
-                    AirBattleChapter 
-                        (NewAirBattleScreen WeakerEnemy model.ScoreAndHiScore model.ShipsThrough gameTime)
-            )
+    NewSeaBattleScreen
+        scoreAndHiScore
+        shipsRemaining
+        GameOverStory
+        MapBeforeBeachLandingStory
+        gameTime
 
-        | AirBattleChapter model ->
-            Advance (
-                let model = NextAirBattleScreenState model keyStateGetter gameTime frameElapsedTime
+and private AirBattleStory enemyStrength shipsRemaining scoreAndHiScore gameTime =
 
-                match model |> AirBattleTransition with
+    NewAirBattleScreen
+        enemyStrength
+        scoreAndHiScore
+        shipsRemaining
+        GameOverStory 
+        SeaBattleStory
+        gameTime
 
-                    | StayOnAirBattleScreen -> 
-                        AirBattleChapter model
+and private MapPostPassageStory shipsThrough scoreAndHiScore gameTime =
 
-                    | GoToScreenAfterAirBattle ->
-                        SeaBattleChapter 
-                            (NewSeaBattleScreen model.ScoreAndHiScore model.ShipsRemaining gameTime)
+    let afterEngagement gameTime =
+        AirBattleStory WeakerEnemy shipsThrough scoreAndHiScore gameTime
+    
+    NewMapPostPassageScreen
+        scoreAndHiScore
+        shipsThrough
+        afterEngagement
 
-                    | AirBattleGameOver ->
-                        GameOverChapter 
-                            (NewGameOverScreen model.ScoreAndHiScore)
-            )
+and private SecretPassageScreenStory scoreAndHiScore gameTime =
 
-        | SeaBattleChapter model ->
-            Advance (
-                let model = NextSeaBattleScreenState model keyStateGetter gameTime frameElapsedTime
+    NewSecretPassageScreen 
+        scoreAndHiScore
+        NumShipsAtInitialEngagement
+        GameOverStory 
+        MapPostPassageStory
+        gameTime
 
-                match model |> SeaBattleTransition with
-                    
-                    | StayOnSeaBattleScreen ->
-                        SeaBattleChapter model
+and private InitialMapStory scoreAndHiScore =
 
-                    | GoToScreenAfterSeaBattle ->
-                        MapBeforeBeachLandingChapter 
-                            (NewMapBeforeBeachLandingScreen model.ScoreAndHiScore model.ShipsRemaining)
+    let secretPassage gameTime =
+        SecretPassageScreenStory scoreAndHiScore gameTime
 
-                    | SeaBattleGameOver ->
-                        GameOverChapter 
-                            (NewGameOverScreen model.ScoreAndHiScore)
-            )
+    let engageEnemy gameTime =
+        AirBattleStory StrongEnemy NumShipsAtInitialEngagement scoreAndHiScore gameTime 
 
-        | MapBeforeBeachLandingChapter model ->
-            Advance (
-                let model = NextMapBeforeBeachLandingScreenState model keyStateGetter gameTime
+    NewInitialMapScreen
+        secretPassage
+        engageEnemy
+        scoreAndHiScore
 
-                if model |> StayOnMapBeforeBeachLanding then
-                    MapBeforeBeachLandingChapter model
+and private GameTitleStory gameGlobalState gameTime =
 
-                else
-                    withIntermission
-                        (fun gameTime ->
-                            TankBattleChapter 
-                                (NewTankBattleScreen 
-                                    model.ScoreAndHiScore
-                                    (model.ShipsThrough |> ToTankCountFromShipCount)
-                                    (NewFinalBossAndTankBattleData ())
-                                    staticGameResources.TankMapsList 
-                                    gameTime))
-            )
+    let currentScoreboard =
+        gameGlobalState.GameScoreBoard
 
-        | TankBattleChapter model ->
-            Advance (
-                let model = NextTankBattleScreenState model keyStateGetter gameTime frameElapsedTime
-
-                match model |> TankBattleTransition with
-
-                    | StayOnTankBattleScreen ->
-                        TankBattleChapter model
-
-                    | TankCompletedCourseSuccessfully ->
-                        withIntermission
-                            (fun gameTime ->
-                                FinalBossChapter 
-                                    (NewFinalBossScreen 
-                                        model.ScoreAndHiScore
-                                        model.TanksRemaining
-                                        model.Constants.FinalBossAndTankBattleData
-                                        gameTime))
-
-                    | TankBattleGameOver ->
-                        GameOverChapter 
-                            (NewGameOverScreen model.ScoreAndHiScore)
-
-                    | RestartTankBattle ->
-                        withIntermission
-                            (fun gameTime ->
-                                TankBattleChapter 
-                                    (NewTankBattleScreen 
-                                        model.ScoreAndHiScore
-                                        model.TanksRemaining
-                                        model.Constants.FinalBossAndTankBattleData
-                                        staticGameResources.TankMapsList
-                                        gameTime))
-            )
-
-        | FinalBossChapter model ->
-            Advance (
-                let model = NextFinalBossScreenState model keyStateGetter gameTime frameElapsedTime
-
-                match model |> FinalBossTransition with
-
-                    | StayOnFinalBossScreen ->
-                        FinalBossChapter model
-
-                    | VictoryOverFinalBoss ->
-                        VictoryChapter 
-                            (NewVictoryScreen model.ScoreAndHiScore gameTime)
-
-                    | FinalBossDestroyedTheTank ->
-                        TankBattleChapter 
-                            (NewTankBattleScreen 
-                                model.ScoreAndHiScore
-                                model.TanksRemaining
-                                model.FinalBossAndTankBattleData
-                                staticGameResources.TankMapsList
-                                gameTime)
-
-                    | FinalBossGameOver ->
-                        GameOverChapter
-                            (NewGameOverScreen model.ScoreAndHiScore)
-            )
-
-        | IntermissionChapter model ->
-            Advance (
-                let model = NextIntermissionScreenState model keyStateGetter gameTime
-
-                if model |> StayOnIntermission then
-                    IntermissionChapter model
-                else
-                    model.NextChapterConstructor gameTime
-            )
-
-        | GameOverChapter model ->
-            Advance (
-                let model = NextGameOverScreenState model keyStateGetter gameTime
-                if model |> StayOnGameOverScreen then
-                    GameOverChapter model
-                else
-                    PotentialEnterYourNameChapter 
-                        (NewPotentialEnterYourNameScreen model.ScoreAndHiScore gameGlobals.GameScoreBoard)
-            )
-                
-        | VictoryChapter model ->
-            Advance (
-                let model = NextVictoryScreenState model keyStateGetter gameTime
-
-                if model |> StayOnVictoryScreen then
-                    VictoryChapter model
-                else
-                    PotentialEnterYourNameChapter 
-                        (NewPotentialEnterYourNameScreen model.ScoreAndHiScore gameGlobals.GameScoreBoard)
-            )
-
-        | PotentialEnterYourNameChapter model ->
-            AdvanceAndReplaceGlobals (
-                let model = NextPotentialEnterYourNameScreenState model keyStateGetter gameTime
-
-                if model |> StayOnPotentialEnterYourNameScreen then
-                    let gameGlobals = { gameGlobals with GameScoreBoard = model.Scoreboard }
-                    gameGlobals , PotentialEnterYourNameChapter model
-
-                else
-                    let gameGlobals = { gameGlobals with GameScoreBoard = model.Scoreboard }
-                    gameGlobals , GameTitleChapter (NewGameTitleScreen model.ScoreAndHiScore.HiScore gameGlobals gameTime)
-            )
-             
-        | MechanicsTestPageChapter model ->
-            Advance (
-                MechanicsTestPageChapter 
-                    (NextMechanicsTestPageScreenState model keyStateGetter gameTime))
-
-            *)
+    let highestScoreInInitialBoard = 
+        HiScoreFromScoreboard currentScoreboard
+    
+    NewGameTitleScreen 
+        highestScoreInInitialBoard 
+        gameGlobalState 
+        InitialMapStory
+        gameTime
 
 
+
+
+
+let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
+
+    GameTitleStory gameGlobalState gameTime
+    

@@ -50,6 +50,10 @@ let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
     if IsFireButtonOperative model gameTime then
         Text render BlackFontID CentreAlign MiddleAlign 160<epx> 180<epx> "USE CURSOR KEYS ... Z TO FIRE"
 
+    #if SHORT_PLAYTHROUGH
+    Text render RedFontID CentreAlign MiddleAlign 160<epx> 10<epx> "WARNING  SHORT PLAY VERSION"
+    #endif
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let private NextGameTitleScreenState gameState keyStateGetter gameTime elapsed =
