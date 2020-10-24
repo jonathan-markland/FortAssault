@@ -61,7 +61,7 @@ type SeaBattleScreenModel =
         PendingMessageTexts : Pending<string> list
         PendingScoreChanges : Pending<uint32> list
         MessageText         : string
-        WhereToGoOnGameOver       : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToGoOnGameOver       : ScoreAndHiScore -> ErasedGameState
         WhereToOnCourseCompletion : uint32 -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
     }
 
@@ -545,8 +545,7 @@ let private NextSeaBattleScreenState gameState keyStateGetter gameTime elapsed =
             else 
                 model.WhereToGoOnGameOver
                     model.ScoreAndHiScore 
-                    gameTime
-                    
+                   
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let NewSeaBattleScreen 

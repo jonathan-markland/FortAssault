@@ -88,7 +88,7 @@ type private TankBattleScreenConstantsModel =  // TODO: Use this convention in o
         ScreenStartTime                 : float32<seconds>
         TileMatrixTraits                : TileMatrixTraits
         LevelMap                        : TankBattleMapMatrix
-        GameOverOnTankBattleScreen      : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        GameOverOnTankBattleScreen      : ScoreAndHiScore -> ErasedGameState
         TankCompletedCourseSuccessfully : uint32 -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
         TankMapsList                    : TankBattleMapMatrix list
         MapNumber                       : int
@@ -763,7 +763,6 @@ let private NextTankBattleScreenState gameState keyStateGetter gameTime elapsed 
         | TankBattleGameOver -> 
             model.Constants.GameOverOnTankBattleScreen 
                 model.ScoreAndHiScore 
-                gameTime
 
         | StayOnTankBattleScreen -> 
             gameState |> WithUpdatedModel model

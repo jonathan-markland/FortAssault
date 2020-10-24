@@ -120,7 +120,7 @@ type AirBattleScreenModel =
         EnemyShips      : EnemyShip list
         Damage          : uint32
         LastSortieAt    : float32<seconds>
-        WhereToGoOnGameOver       : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToGoOnGameOver       : ScoreAndHiScore -> ErasedGameState
         WhereToOnCourseCompletion : uint32 -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
     }
 
@@ -497,7 +497,6 @@ let private NextAirBattleScreenState gameState keyStateGetter gameTime elapsed =
             else 
                 model.WhereToGoOnGameOver
                     model.ScoreAndHiScore 
-                    gameTime
                     
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

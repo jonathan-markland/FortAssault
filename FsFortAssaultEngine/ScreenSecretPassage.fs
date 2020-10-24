@@ -92,7 +92,7 @@ type SecretPassageScreenModel =
         Mines        : Mine list
         Animations   : FlickBookInstance list
         Ship         : ShipState
-        WhereToGoOnGameOver       : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToGoOnGameOver       : ScoreAndHiScore -> ErasedGameState
         WhereToOnCourseCompletion : uint32 -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
     }
 
@@ -817,7 +817,6 @@ let private NextSecretPassageScreenState gameState keyStateGetter gameTime elaps
             else 
                 model.WhereToGoOnGameOver 
                     model.FleetStats.ScoreAndHiScore 
-                    gameTime
                     
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

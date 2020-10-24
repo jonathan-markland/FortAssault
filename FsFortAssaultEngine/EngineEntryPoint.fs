@@ -37,103 +37,40 @@ open Rules
     //     Shortcut gameResources gameTime RunGameNormally  // ** DO NOT CHANGE THIS ONE! : Define SHORT_PLAYTHROUGH and set the one above **
     // #endif
 
-    // let highestScoreInInitialBoard = 
-    //     HiScoreFromScoreboard gameGlobalState.GameScoreBoard
-    // 
-    // let scoreAndHiScore = 
-    //     {Score=10300u ; HiScore=15000u}
-    // 
-    // let whenGameOver _gameTime =
-    //     NewGameOverScreen scoreAndHiScore
-    // 
-    // let whenGameOver2 _shs _gameTime =
-    //     NewGameOverScreen scoreAndHiScore
-    // 
-    // let passage gameTime = 
-    //     NewVictoryScreen scoreAndHiScore whenGameOver2 gameTime
-    // 
-    // NewGameTitleScreen 
-    //     highestScoreInInitialBoard 
-    //     gameGlobalState 
-    //     (NewInitialMapScreen passage whenGameOver)
-    //     gameTime
-
-    // let afterEntry updatedScoreboard gameTime =
-    //     failwith ""
-    // 
-    // NewPotentialEnterYourNameScreen 
-    //     {Score=10300u;HiScore=15000u}
-    //     gameGlobalState.GameScoreBoard 
-    //     afterEntry
-    //     gameTime
-
-    // let afterEntry gameTime =
-    //     failwith ""
-    // 
-    // NewMapBeforeBeachLandingScreen 
-    //     {Score=10300u ; HiScore=15000u}
-    //     4u
-    //     afterEntry
-
-    // let afterEntry gameTime =
-    //     failwith ""
-    // 
-    // NewMapPostPassageScreen
-    //     {Score=10300u ; HiScore=15000u}
-    //     4u
-    //     afterEntry
 
 
-    // let whenGameOver scoreAndHiScore gameTime =
-    //     NewGameOverScreen scoreAndHiScore
-    // 
-    // let whenCourseComplete shipsThrough shs gameTime =
-    //     failwith ""
-    // 
-    // NewSecretPassageScreen 
-    //     {Score=10300u ; HiScore=15000u}
-    //     3u
-    //     whenGameOver
-    //     whenCourseComplete
-    //     gameTime
 
-    // let whenGameOver scoreAndHiScore gameTime =
-    //     NewGameOverScreen scoreAndHiScore
-    // 
-    // let whenCourseComplete shipsThrough shs gameTime =
-    //     failwith ""
-    // 
-    // NewAirBattleScreen
-    //     StrongEnemy
-    //     {Score=10300u ; HiScore=15000u}
-    //     3u
-    //     whenGameOver
-    //     whenCourseComplete
-    //     gameTime
 
-    // let whenGameOver scoreAndHiScore gameTime =
-    //     NewGameOverScreen scoreAndHiScore
-    // 
-    // let whenCourseComplete shipsThrough shs gameTime =
-    //     failwith ""
-    // 
-    // NewSeaBattleScreen
-    //     {Score=10300u ; HiScore=15000u}
-    //     3u
-    //     whenGameOver
-    //     whenCourseComplete
-    //     gameTime
 
-let VictoryStory scoreAndHiScore gameTime =
+let rec GameOverStory scoreAndHiScore =
+
+    let hack = 
+        {
+            GameScoreBoard = InitialScoreboard [ "Bob" ; "Scott" ; "Lara" ; "J" ] 10000u 5000u
+        }
+
+    let afterEntry updatedScoreboard gameTime =
+        GameTitleStory { GameScoreBoard = updatedScoreboard } gameTime
+        
+    let whereAfterGameOver scoreAndHiScore gameTime = 
+        NewPotentialEnterYourNameScreen 
+            scoreAndHiScore
+            hack.GameScoreBoard
+            afterEntry
+            gameTime
+
+    NewGameOverScreen whereAfterGameOver scoreAndHiScore
+
+and VictoryStory scoreAndHiScore gameTime =
 
     let whereToAfter scoreAndHiScore gameTime =
         failwith "title screen"
 
     NewVictoryScreen scoreAndHiScore whereToAfter gameTime
 
-let rec FinalBossStory mapNumber tanksRemaining scoreAndHiScore finalBossTargets gameTime =
+and FinalBossStory mapNumber tanksRemaining scoreAndHiScore finalBossTargets gameTime =
 
-    let whereToOnGameOver      = NewGameOverScreen
+    let whereToOnGameOver      = GameOverStory
     let whereToOnVictory       = VictoryStory
     let whereToOnTankDestroyed = TankBattleStory
     
@@ -155,8 +92,8 @@ and TankBattleStory mapNumber tanksRemaining scoreAndHiScore finalBossTargets ga
     //       change them.
     // TODO: these screens should return a new tank count
 
-    let whenGameOver scoreAndHiScore gameTime =
-        NewGameOverScreen scoreAndHiScore
+    let whenGameOver =
+        GameOverStory 
     
     let whenCourseComplete tanksRemaining scoreAndHiScore gameTime =
         FinalBossStory mapNumber tanksRemaining scoreAndHiScore finalBossTargets gameTime
@@ -175,7 +112,7 @@ and TankBattleStory mapNumber tanksRemaining scoreAndHiScore finalBossTargets ga
                 whenCourseComplete
                 gameTime
 
-let MapBeforeBeachLandingStory shipsThrough scoreAndHiScore gameTime =
+and MapBeforeBeachLandingStory shipsThrough scoreAndHiScore gameTime =
 
     let mapNumber = 0
 
@@ -190,9 +127,94 @@ let MapBeforeBeachLandingStory shipsThrough scoreAndHiScore gameTime =
         shipsThrough
         afterLanding
 
+and SeaBattleStory shipsRemaining scoreAndHiScore gameTime = 
+
+    let whenGameOver =
+        GameOverStory 
+    
+    let whenCourseComplete =
+        MapBeforeBeachLandingStory
+    
+    NewSeaBattleScreen
+        scoreAndHiScore
+        shipsRemaining
+        whenGameOver
+        whenCourseComplete
+        gameTime
+
+and AirBattleStory enemyStrength shipsRemaining scoreAndHiScore gameTime =
+
+    let whenGameOver =
+        GameOverStory 
+    
+    let whenCourseComplete =
+        SeaBattleStory
+    
+    NewAirBattleScreen
+        enemyStrength
+        scoreAndHiScore
+        shipsRemaining
+        whenGameOver
+        whenCourseComplete
+        gameTime
+
+and MapPostPassageStory shipsThrough scoreAndHiScore gameTime =
+
+    let afterEngagement gameTime =
+        AirBattleStory WeakerEnemy shipsThrough scoreAndHiScore gameTime
+    
+    NewMapPostPassageScreen
+        scoreAndHiScore
+        shipsThrough
+        afterEngagement
+
+and SecretPassageScreenStory scoreAndHiScore gameTime =
+
+    let whenGameOver =
+        GameOverStory 
+    
+    let whenCourseComplete =
+        MapPostPassageStory
+    
+    NewSecretPassageScreen 
+        scoreAndHiScore
+        NumShipsAtInitialEngagement
+        whenGameOver
+        whenCourseComplete
+        gameTime
+
+and InitialMapStory scoreAndHiScore =
+
+    let secretPassage gameTime =
+        SecretPassageScreenStory scoreAndHiScore gameTime
+
+    let engageEnemy gameTime =
+        AirBattleStory StrongEnemy NumShipsAtInitialEngagement scoreAndHiScore gameTime 
+
+    NewInitialMapScreen
+        secretPassage
+        engageEnemy
+        scoreAndHiScore
+
+and GameTitleStory gameGlobalState gameTime =
+
+    let currentScoreboard =
+        gameGlobalState.GameScoreBoard
+
+    let highestScoreInInitialBoard = 
+        HiScoreFromScoreboard currentScoreboard
+    
+    NewGameTitleScreen 
+        highestScoreInInitialBoard 
+        gameGlobalState 
+        InitialMapStory
+        gameTime
+
+
+
 
 
 let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
 
-    MapBeforeBeachLandingStory 4u {Score=10000u;HiScore=15000u} gameTime
-
+    GameTitleStory gameGlobalState gameTime
+    
