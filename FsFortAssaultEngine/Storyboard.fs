@@ -17,7 +17,6 @@ open MechanicsTestPage
 open FinalBossAndTankBattleShared
 open Rules
 open TankMapFileLoader
-open FortAssaultGlobalState
 open ScoreboardModel
 
 #if SHORT_PLAYTHROUGH
@@ -142,22 +141,21 @@ let Shortcut gameResources gameTime mode =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let mutable private globalScoreboard : ScoreAndName list = []
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let rec private EnterYourNameStory scoreAndHiScore gameTime =
 
     // You can just direct here, and it will sort out whether to show or not.
 
-    let hack = // TODO
-        {
-            GameScoreBoard = InitialScoreboard [ "Bob" ; "Scott" ; "Lara" ; "J" ] 10000u 5000u
-        }
-
     let afterEntry updatedScoreboard gameTime =
-        GameTitleStory { GameScoreBoard = updatedScoreboard } gameTime
+        globalScoreboard <- updatedScoreboard
+        GameTitleStory gameTime
     
     NewPotentialEnterYourNameScreen 
         scoreAndHiScore
-        hack.GameScoreBoard
+        globalScoreboard
         afterEntry
         gameTime
 
@@ -271,17 +269,14 @@ and private InitialMapStory scoreAndHiScore =
         engageEnemy
         scoreAndHiScore
 
-and private GameTitleStory gameGlobalState gameTime =
-
-    let currentScoreboard =
-        gameGlobalState.GameScoreBoard
+and private GameTitleStory gameTime =
 
     let highestScoreInInitialBoard = 
-        HiScoreFromScoreboard currentScoreboard
+        HiScoreFromScoreboard globalScoreboard
     
     NewGameTitleScreen 
-        highestScoreInInitialBoard 
-        gameGlobalState 
+        highestScoreInInitialBoard
+        globalScoreboard
         InitialMapStory
         gameTime
 
@@ -289,7 +284,9 @@ and private GameTitleStory gameGlobalState gameTime =
 
 
 
-let NewFortAssaultStoryboard (gameGlobalState:FortAssaultGlobalState) gameTime =
+let NewFortAssaultStoryboard _ gameTime =
 
-    GameTitleStory gameGlobalState gameTime
+    globalScoreboard <- InitialScoreboard [ "Bob" ; "Scott" ; "Lara" ; "J" ] 10000u 5000u
+
+    GameTitleStory gameTime
     

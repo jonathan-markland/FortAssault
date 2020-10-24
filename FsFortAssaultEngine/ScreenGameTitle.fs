@@ -8,7 +8,6 @@ open ImagesAndFonts
 open InputEventData
 open BeachBackgroundRenderer
 open Time
-open FortAssaultGlobalState
 open ScoreboardModel
 open StaticResourceAccess
 open ScoreHiScore
@@ -25,7 +24,7 @@ let private TimeBeforeResponding = 2.0F<seconds>
 
 type private GameTitleScreenModel =
     {
-        GameGlobalState       : FortAssaultGlobalState
+        Scoreboard            : ScoreAndName list
         ScreenStartTime       : float32<seconds>
         HiScore               : uint32
         ScoreboardMemo        : string list
@@ -68,14 +67,14 @@ let private NextGameTitleScreenState gameState keyStateGetter gameTime elapsed =
     
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewGameTitleScreen hiScore gameGlobalState nextConstructor gameTime =
+let NewGameTitleScreen hiScore globalScoreboard nextConstructor gameTime =
 
     let titleScreenModel =
         {
-            GameGlobalState = gameGlobalState
+            Scoreboard      = globalScoreboard
             HiScore         = hiScore
             ScreenStartTime = gameTime
-            ScoreboardMemo  = ScoreboardText 30 gameGlobalState.GameScoreBoard
+            ScoreboardMemo  = ScoreboardText 30 globalScoreboard
             NextScreenConstructor = nextConstructor
         }
 
