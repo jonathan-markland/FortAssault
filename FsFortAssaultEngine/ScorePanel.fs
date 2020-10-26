@@ -58,6 +58,13 @@ let IntelligenceBarChartStyle =
 
 [<Struct>]
 type ScorePanel =
+
+    // TODO:  This could have stored memoized strings, since they rarely change compared to the
+    //        number of frames (garbage reduction).  Although, the screens would have to incorporate
+    //        this into their data model to be worth it.  Furthermore, if we're doing that, the
+    //        screens could have natively used this information, rather than duplicate it in their
+    //        data models, perhaps.
+
     {
         ScoreAndHiScore:  ScoreAndHiScore
         ShipsPending:     uint32
