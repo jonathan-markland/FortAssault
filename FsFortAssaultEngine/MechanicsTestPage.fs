@@ -8,13 +8,14 @@ open Mechanics
 open ResourceIDs
 open ImagesAndFonts
 open StaticResourceAccess
+open ScreenHandler
 
-let AnimDurationSeconds = 3.0F<seconds>
-let AnimRepeatPeriod    = 5.0F<seconds>
+let private AnimDurationSeconds = 3.0F<seconds>
+let private AnimRepeatPeriod    = 5.0F<seconds>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type MechanicsTestPageScreenModel =
+type private MechanicsTestPageScreenModel =
     {
         Functions     :  (float32<seconds> -> MOMReason) list
         RepeatAtTime  :   float32<seconds>
@@ -22,7 +23,7 @@ type MechanicsTestPageScreenModel =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let RenderMechanicsTestPageScreen render (model:MechanicsTestPageScreenModel) gameTime =
+let private RenderMechanicsTestPageScreen render (model:MechanicsTestPageScreenModel) gameTime =
 
     Rectangle render 0<epx> 0<epx> ScreenWidthInt ScreenHeightInt (SolidColour(0x000000u))
     
@@ -40,7 +41,17 @@ let RenderMechanicsTestPageScreen render (model:MechanicsTestPageScreenModel) ga
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewMechanicsTestPageScreen gameTime =
+let rec private NextMechanicsTestPageScreenState gameState keyStateGetter gameTime elapsed =
+
+    // let input = keyStateGetter |> DecodedInput
+    let model = ModelFrom gameState
+
+    if gameTime > model.RepeatAtTime then
+        NewMechanicsTestPageStoryboard () gameTime
+    else
+        Unchanged gameState
+        
+and NewMechanicsTestPageStoryboard _ gameTime =
 
     let test motionFunction x =
         FunctionThatGetsPositionOfMovingObject 
@@ -52,25 +63,17 @@ let NewMechanicsTestPageScreen gameTime =
 
     let arcMotion t duration = HalfAndHalf SlowingDown SpeedingUp |> DoneOverDuration t duration
 
-    {
-        RepeatAtTime = gameTime + AnimRepeatPeriod
-        Functions = 
-            [
-                test LinearMotion        50.0F<epx>
-                test SpeedingUpMotion   100.0F<epx>
-                test SlowingDownMotion  150.0F<epx>
-                test arcMotion          200.0F<epx>
-            ]
-    }
+    let model =
+        {
+            RepeatAtTime = gameTime + AnimRepeatPeriod
+            Functions = 
+                [
+                    test LinearMotion        50.0F<epx>
+                    test SpeedingUpMotion   100.0F<epx>
+                    test SlowingDownMotion  150.0F<epx>
+                    test arcMotion          200.0F<epx>
+                ]
+        }
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    NewGameState NextMechanicsTestPageScreenState RenderMechanicsTestPageScreen model
 
-let NextMechanicsTestPageScreenState oldState _keyStateGetter gameTime =
-
-    // let input = keyStateGetter |> DecodedInput
-
-    if gameTime > oldState.RepeatAtTime then
-        NewMechanicsTestPageScreen gameTime
-    else
-        oldState
-        

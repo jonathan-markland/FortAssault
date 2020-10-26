@@ -97,37 +97,44 @@ let IntelligenceBarChart panel v =
 
 let DrawScorePanel render y (panel:ScorePanel) =
 
+    // Columns
     let c1x = 4<epx>
     let c2x = c1x + 64<epx>
     let c3x = ScreenWidthInt / 2
-    let y   = y + 4<epx>
+    let c4x = c3x + 48<epx>
+    let c5x = c3x + 96<epx>
 
-    Text render YellowFontID LeftAlign TopAlign c1x y "SCORE"
-    Num  render RedFontID LeftAlign TopAlign c2x y (panel.ScoreAndHiScore.Score)
+    // Rows
+    let r1y = y + 4<epx>
+    let r2y = r1y + 12<epx>
+    let r3y = r1y + 24<epx>
 
-    let shy = y + 12<epx>
-    Text render YellowFontID LeftAlign TopAlign c1x shy "SHIPS"
-    Bar  render c2x shy ShipBarChartStyle (panel |> ShipBarChart)
+    // Left column:
+
+    Text render YellowFontID LeftAlign TopAlign c1x r1y "SCORE"
+    Num  render RedFontID LeftAlign TopAlign c2x r1y (panel.ScoreAndHiScore.Score)
+
+    Text render YellowFontID LeftAlign TopAlign c1x r2y "SHIPS"
+    Bar  render c2x r2y ShipBarChartStyle (panel |> ShipBarChart)
 
     if panel.MaxDamage > 0u then
-        let dmy = y + 24<epx>
-        Text render YellowFontID LeftAlign TopAlign c1x dmy "DAMAGE"
-        Bar  render c2x dmy DamageBarChartStyle (panel |> DamageBarChart)
+        Text render YellowFontID LeftAlign TopAlign c1x r3y "DAMAGE"
+        Bar  render c2x r3y DamageBarChartStyle (panel |> DamageBarChart)
+
+    // Right column:
+
+    Text render YellowFontID LeftAlign TopAlign c3x r1y "TANKS"
+    Bar  render c4x r1y TanksBarChartStyle (panel |> TanksBarChart)
+
+    Text render YellowFontID LeftAlign TopAlign c3x r2y "ELEVATION"
+    Flo  render BlueFontID LeftAlign TopAlign c5x r2y (float32 panel.Elevation)
 
     match panel.PlaneIntel with
         | Some planeCount ->
-            Text render YellowFontID LeftAlign TopAlign c3x y "INTEL"
-            Bar  render (c3x + 48<epx>) y IntelligenceBarChartStyle (IntelligenceBarChart panel planeCount)
+            Text render YellowFontID LeftAlign TopAlign c3x r3y "INTEL"
+            Bar  render c4x r3y IntelligenceBarChartStyle (IntelligenceBarChart panel planeCount)
         | None ->
             ()
-
-    let tay = y + 12<epx>
-    Text render YellowFontID LeftAlign TopAlign c3x tay "TANKS"
-    Bar  render (c3x + 48<epx>) tay TanksBarChartStyle (panel |> TanksBarChart)
-
-    let ely = y + 24<epx>
-    Text render YellowFontID LeftAlign TopAlign c3x ely "ELEVATION"
-    Flo  render BlueFontID LeftAlign TopAlign (c3x + 96<epx>) ely (float32 panel.Elevation)
 
     #if SHORT_PLAYTHROUGH
     // As the score panel is usually drawn last, this should work:

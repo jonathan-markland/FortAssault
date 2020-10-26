@@ -250,6 +250,22 @@ let private DrawMatrix render (constants:TankBattleScreenConstantsModel) (timeOf
             let tileImage = (tiles.[iy * numTilesHorizontally + ix]) |> ImageFromID
             Image1to1 render x y tileImage)
 
+    ForEachTileWithVisiblePortion 
+        constants.TileMatrixTraits
+        tileMatrixViewportWindow 
+        tileMatrixOffset 
+        (fun x y ix iy -> 
+            let tileImage = (tiles.[iy * numTilesHorizontally + ix]) |> ImageFromID
+            Image1to1 render x y tileImage)
+
+    ForEachTileWithVisiblePortion 
+        constants.TileMatrixTraits
+        tileMatrixViewportWindow 
+        tileMatrixOffset 
+        (fun x y ix iy -> 
+            let tileImage = (tiles.[iy * numTilesHorizontally + ix]) |> ImageFromID
+            Image1to1 render x y tileImage)
+
 
  // TODO: Made into functions because of Fable static-initializer-order problem:
 let private ImagesTankFacingLeft     () = Imgs [| ImageTankFacingLeft0     ; ImageTankFacingLeft1     |]

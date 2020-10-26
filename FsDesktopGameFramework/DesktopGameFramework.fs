@@ -81,39 +81,6 @@ let private LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (re
         Fonts    = fontsArray
     }
 
-
-(* TODO: We are missing validation of fonts which must be done in the shared framework - OLD CODE:
-
-let MakeNumCapsFontFromBMP (bmpSourceImage:ImageFileMetadata) =
-
-    let numGlyphs = 37
-
-    let { ImageHandle=_ ; TextureHandle=_ ; SourceRect=r } = bmpSourceImage
-
-    if r.w % numGlyphs = 0 then
-        Some(
-            {
-                EngineImageMetadata : EngineImageMetadata
-                HostImageObject     : HostImageObject
-            }
-
-
-            {
-                FontImageWithHostObject  = bmpSourceImage
-                CharWidth  = r.w / numGlyphs
-                CharHeight = r.h
-            })
-    else
-        None
-
-let unwrapFont fileName opt =
-    match opt with
-        | Some(font) -> font
-        | None -> failwith (sprintf "Game could not start because font '%s' file has incorrect content." fileName)
-
-
-*)
-
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 /// Render game drawing command to the screen.
@@ -178,9 +145,6 @@ let private MainLoopProcessing
     backingTexture 
     gameResources 
     initialGameStateConstructor 
-    // initGameGlobals 
-    // gameRenderer 
-    // gameFrameAdvanceFunction 
     listOfKeysNeeded =
 
     SetStaticImageAndFontResourceArrays gameResources.GameBMPs gameResources.Fonts
@@ -189,14 +153,6 @@ let private MainLoopProcessing
     
     let GetGameTime () = 
         (float32 tickCount) / 50.0F |> InSeconds
-
-    // TODO: remove:
-
-    // let initScreenState = 
-    //     initialGameStateConstructor (GetGameTime ())
-
-    // let mutable screenState = 
-    //     (struct (initScreenState , initGameGlobals))
 
     let mutable gameState : ErasedGameState =
         initialGameStateConstructor (GetGameTime ())

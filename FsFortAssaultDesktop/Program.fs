@@ -6,8 +6,7 @@ open FortAssaultImageFiles
 open Input
 open DesktopGameFramework
 open Storyboard
-open TankMapFileLoader
-open FortAssaultGameResources
+open MechanicsTestPage
 
 
 let FortAssaultWindowWidthPixels       = 1280 
@@ -32,7 +31,7 @@ let main argv =
             (SDL.SDL_Scancode.SDL_SCANCODE_Z     , WebBrowserKeyCode 90)
         ]
 
-    let stubGlobalStateConstructor () = Ok 1  // Feature not used by Fort Assault.
+    let stubGlobalStateConstructor () = Ok ()  // Feature not used by Fort Assault.
 
     match FrameworkDesktopMain 
             "Fort Assault"
@@ -44,7 +43,7 @@ let main argv =
             FortAssaultFontResourceImages
             fortAssaultKeysNeeded
             stubGlobalStateConstructor
-            NewFortAssaultStoryboard
+            NewFortAssaultStoryboard  // Or, swap out for NewMechanicsTestPageStoryboard
             with
 
         | Some errorMessage ->
