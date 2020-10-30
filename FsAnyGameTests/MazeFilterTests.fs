@@ -102,6 +102,9 @@ let ``MazeByteArray applied to basic maze produces correct pieces viewed via box
             "########"
         |]
 
+    // Reminder of how to obtain F# source code:  
+    // let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsHash
+
     let expected =
         [
             "┌─┬────┐"
@@ -164,6 +167,40 @@ let ``MazeByteArray applied to comprehensive case maze produces correct pieces v
 // --------------------------------------------------------------------------------------------------------
 
 [<Fact>]
+let ``MazeByteArray applied to maze with holes at edges`` () =
+
+    let maze =
+        [|
+            "#### ###"
+            "  #     "
+            "# # ## #"
+            "# #  # #"
+            "# #### #"
+            "#      #"
+            "#### ###"
+        |]
+
+    // Reminder of how to obtain F# source code:  
+    // let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsHash
+
+    let expected =
+        [
+            "╶─┬╴ ╶─╴"
+            "  │     "
+            "╷ │ ╶┐ ╷"
+            "│ │  │ │"
+            "│ └──┘ │"
+            "│      │"
+            "└──╴ ╶─┘"
+        ]
+
+    maze |> WhenTransformed IsHash |> ShouldEqual (Some expected)
+
+// --------------------------------------------------------------------------------------------------------
+//  Inverted logic tests
+// --------------------------------------------------------------------------------------------------------
+
+[<Fact>]
 let ``MazeByteArray applied to basic maze produces correct pieces with inverted logic when viewed via box drawing`` () =
 
     let maze =
@@ -189,6 +226,38 @@ let ``MazeByteArray applied to basic maze produces correct pieces with inverted 
             " │    │ "
             " └────┘ "
             "        "
+        ]
+
+    maze |> WhenTransformed IsNotHash |> ShouldEqual (Some expected)
+
+// --------------------------------------------------------------------------------------------------------
+
+[<Fact>]
+let ``MazeByteArray applied to maze with holes at edges inverted`` () =
+
+    let maze =
+        [|
+            "#### ###"
+            "  #     "
+            "# # ## #"
+            "# #  # #"
+            "# #### #"
+            "#      #"
+            "#### ###"
+        |]
+
+    // Reminder of how to obtain F# source code:  
+    // let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsNotHash
+
+    let expected =
+        [
+            "    ╷   "
+            "╶┐ ┌┴─┬╴"
+            " │ │  │ "
+            " │ └╴ │ "
+            " │    │ "
+            " └──┬─┘ "
+            "    ╵   "
         ]
 
     maze |> WhenTransformed IsNotHash |> ShouldEqual (Some expected)
