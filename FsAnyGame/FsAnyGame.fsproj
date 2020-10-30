@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="MazeFilter.fs" />
     <Compile Include="EnterYourName.fs" />
     <Compile Include="ScoreboardModel.fs" />
     <Compile Include="ListSplicer.fs" />
