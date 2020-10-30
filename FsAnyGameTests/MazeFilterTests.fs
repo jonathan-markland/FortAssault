@@ -46,7 +46,7 @@ let MazeToFSharpBoxDrawSourceCode isWall (maze:string[]) =
 
     let width = maze.[0].Length
 
-    maze |> (MazeByteArray isWall)
+    maze |> (StringArrayToMazeByteArray isWall)
          |> Option.map (fun maze -> maze |> ToFSharpBoxDrawSourceCodeSeq width |> String.concat "\r\n")
 
           
@@ -61,7 +61,7 @@ let WhenTransformed isWall (maze:string[]) =
 
     let width = if maze.Length > 0 then maze.[0].Length else 0
     maze 
-        |> (MazeByteArray isWall)
+        |> (StringArrayToMazeByteArray isWall)
         |> Option.map (ToUnicodeBoxDrawing width)
 
 
@@ -72,15 +72,15 @@ let WhenTransformed isWall (maze:string[]) =
         
 [<Fact>]
 let ``Empty input to MazeByteArray yields None`` () =
-    [||] |> MazeByteArray IsHash |> ShouldEqual None
+    [||] |> StringArrayToMazeByteArray IsHash |> ShouldEqual None
 
 [<Fact>]
 let ``Array of one empty string input to MazeByteArray yields None`` () =
-    [| "" |] |> MazeByteArray IsHash |> ShouldEqual None
+    [| "" |] |> StringArrayToMazeByteArray IsHash |> ShouldEqual None
 
 [<Fact>]
 let ``Array of two empty string inputs to MazeByteArray yields None`` () =
-    [| "" ; "" |] |> MazeByteArray IsHash |> ShouldEqual None
+    [| "" ; "" |] |> StringArrayToMazeByteArray IsHash |> ShouldEqual None
 
 
 
@@ -217,7 +217,7 @@ let ``MazeByteArray applied to comprehensive maze produces correct pieces with i
         |]
 
     // Reminder of how to obtain F# source code:  
-    let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsNotHash
+    // let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsNotHash
 
     let expected =
         [
