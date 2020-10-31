@@ -16,6 +16,13 @@ let inline FloatEpxToIntEpx x = x |> FloatEpxToInt |> IntToIntEpx
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+/// An integer cartesian point in Engine coordinate space.
+type PointI32 =
+    {
+        ptix : int<epx>
+        ptiy : int<epx>
+    }
+
 /// A floating-point cartesian point in Engine coordinate space.
 type PointF32 =
     {

@@ -40,14 +40,6 @@ let MazeFilterIter isWallAtXY width height masks action =
         else
             0uy
 
-        // let x = max 0 x
-        // let x = min (width-1) x
-        // let y = max 0 y
-        // let y = min (height-1) y
-        // if isWallAtXY x y then mask else 0uy
-
-
-
     for y in 0..(height-1) do
         for x in 0..(width-1) do
             if isWallAtXY x y then
@@ -79,6 +71,23 @@ let MazeByteArray width height isWallAtXY =
 
 
 
+/// Validates that the string array is a non-empty rectangle of text
+/// with the same number of characters on each line.  If so, returns
+/// the dimensions.  Otherwise returns None.
+let IfValidStringRectangleThen f (strings:string[]) =
+
+    let height = strings.Length
+    if height > 0 then
+        let width = strings.[0].Length
+        if width > 0 && strings |> Array.forall (fun str -> str.Length = width) then
+            f width height
+        else
+            None
+    else
+        None
+
+
+
 /// Parse a textual representation of a maze from an array of equal-length 
 /// strings, and return a row-primary byte array of direction bitmasks, 
 /// starting in the top left corner.  All rows must be the same width for 
@@ -86,15 +95,7 @@ let MazeByteArray width height isWallAtXY =
 /// squares in the input represent wall.
 let StringArrayToMazeByteArray isWallChar (maze:string[]) =
 
-    let height = maze.Length
-    if height > 0 then
-
-        let width = maze.[0].Length
-        if width > 0 && maze |> Array.forall (fun str -> str.Length = width) then
-
-            MazeByteArray width height (fun x y -> maze.[y].[x] |> isWallChar)
-
-        else None
-
-    else None
+    maze |> IfValidStringRectangleThen (fun width height ->
+        MazeByteArray width height (fun x y -> maze.[y].[x] |> isWallChar)
+    )
 

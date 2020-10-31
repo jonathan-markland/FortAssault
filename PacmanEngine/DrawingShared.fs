@@ -6,6 +6,8 @@ open Time
 open DrawingShapes
 
 type FacingDirection = FacingLeft | FacingRight | FacingUp | FacingDown
+
+/// Zero-based ghost number index type
 type GhostNumber = GhostNumber of int
 
 let SnapsPerSecond        = 8.0F
@@ -15,14 +17,18 @@ let EyesTwitchesPerSecond = 2.0F
 
 let DrawPacTileInt render image x y (tileIndex:int) =
 
-    render (
-        DrawSubImageStretchedToTarget (
-            tileIndex * 16, 0, 16, 16,
-            (x |> IntToFloatEpx), 
-            (y |> IntToFloatEpx), 
-            16<epx>, 
-            16<epx>,
-            image)) 
+    if tileIndex > 0 then  // tile index 0 is the blank tile
+
+        let xIndex = tileIndex - 1
+
+        render (
+            DrawSubImageStretchedToTarget (
+                xIndex * 16, 0, 16, 16,
+                (x |> IntToFloatEpx), 
+                (y |> IntToFloatEpx), 
+                16<epx>, 
+                16<epx>,
+                image)) 
 
 let private DrawPacTile render image x y (tileIndex:TileIndex) =
 

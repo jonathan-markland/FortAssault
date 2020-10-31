@@ -5,49 +5,51 @@ open ImagesAndFonts
 
 
 let TileSide = 16<epx>
+let TileSideInt = 16
 
 /// These index the PacmanLevel PNG files.
 type TileIndex =
-    
-    | Wall1  =  0
-    | Wall2  =  1
-    | Wall3  =  2
-    | Wall4  =  3
-    | Wall5  =  4
-    | Wall6  =  5
-    | Wall7  =  6
-    | Wall8  =  7
-    | Wall9  =  8
-    | Wall10 =  9
-    | Wall11 = 10
-    | Wall12 = 11
-    | Wall13 = 12
-    | Wall14 = 13
-    | Wall15 = 14
 
-    | Dot    = 15
-    | Pill1  = 16
-    | Pill2  = 17
+    | Blank  =  0uy  // 
+    | Wall1  =  1uy  // 
+    | Wall2  =  2uy  // 
+    | Wall3  =  3uy  // 
+    | Wall4  =  4uy  // 
+    | Wall5  =  5uy  // 
+    | Wall6  =  6uy  // 
+    | Wall7  =  7uy  // 
+    | Wall8  =  8uy  //    Must be a cluster
+    | Wall9  =  9uy  // 
+    | Wall10 = 10uy  // 
+    | Wall11 = 11uy  // 
+    | Wall12 = 12uy  // 
+    | Wall13 = 13uy  // 
+    | Wall14 = 14uy  // 
+    | Wall15 = 15uy  // 
 
-    | PacRight1 = 18
-    | PacLeft1  = 19
-    | PacUp1    = 20
-    | PacDown1  = 21
+    | Dot    = 16uy
+    | Pill1  = 17uy
+    | Pill2  = 18uy
 
-    | PacRight2 = 22
-    | PacLeft2  = 23
-    | PacUp2    = 24
-    | PacDown2  = 25
+    | PacRight1 = 19uy
+    | PacLeft1  = 20uy
+    | PacUp1    = 21uy
+    | PacDown1  = 22uy
 
-    | Ghost1    = 26
-    | Ghost2    = 27
-    | Ghost3    = 28
-    | Ghost4    = 29
+    | PacRight2 = 23uy
+    | PacLeft2  = 24uy
+    | PacUp2    = 25uy
+    | PacDown2  = 26uy
 
-    | Eyes1  = 30
-    | Eyes2  = 31
+    | Ghost1    = 27uy
+    | Ghost2    = 28uy
+    | Ghost3    = 29uy
+    | Ghost4    = 30uy
 
-    | GhostPale = 32
+    | Eyes1     = 31uy
+    | Eyes2     = 32uy
+
+    | GhostPale = 33uy
 
 
 // This game uses a 320*200 engine-coordinate (epx) space:
