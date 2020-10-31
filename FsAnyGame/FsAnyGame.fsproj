@@ -29,6 +29,7 @@
     <Compile Include="FlickBook.fs" />
     <Compile Include="ScreenHandler.fs" />
     <Compile Include="FreezeFrame.fs" />
+    <Compile Include="InterruptableVideo.fs" />
     <Compile Include="IntermissionCard.fs" />
   </ItemGroup>
 

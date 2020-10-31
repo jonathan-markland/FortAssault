@@ -19,7 +19,11 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsWebGameFramework", "FsWeb
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SDL2-CS", "SDL2-CS\SDL2-CS.csproj", "{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}"
 EndProject
-Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "FsFortAssaultWeb", "FsFortAssaultWeb\FsFortAssaultWeb.fsproj", "{9580012D-2EF9-4843-AEB9-E71A2DC5061F}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsFortAssaultWeb", "FsFortAssaultWeb\FsFortAssaultWeb.fsproj", "{9580012D-2EF9-4843-AEB9-E71A2DC5061F}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "PacmanDesktop", "PacmanDesktop\PacmanDesktop.fsproj", "{8AF618CF-B7CC-43D5-8674-2CFE27DED0DB}"
+EndProject
+Project("{F2A71F9B-5D33-465A-A702-920D77279786}") = "PacmanEngine", "PacmanEngine\PacmanEngine.fsproj", "{ECAADD95-4061-4861-90B3-7990A47E5A8F}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -139,6 +143,30 @@ Global
 		{9580012D-2EF9-4843-AEB9-E71A2DC5061F}.Release|x64.Build.0 = Release|Any CPU
 		{9580012D-2EF9-4843-AEB9-E71A2DC5061F}.Release|x86.ActiveCfg = Release|Any CPU
 		{9580012D-2EF9-4843-AEB9-E71A2DC5061F}.Release|x86.Build.0 = Release|Any CPU
+		{8AF618CF-B7CC-43D5-8674-2CFE27DED0DB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8AF618CF-B7CC-43D5-8674-2CFE27DED0DB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8AF618CF-B7CC-43D5-8674-2CFE27DED0DB}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8AF618CF-B7CC-43D5-8674-2CFE27DED0DB}.Debug|x64.Build.0 = Debug|Any CPU
+		{8AF618CF-B7CC-43D5-8674-2CFE27DED0DB}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{8AF618CF-B7CC-43D5-8674-2CFE27DED0DB}.Debug|x86.Build.0 = Debug|Any CPU
+		{8AF618CF-B7CC-43D5-8674-2CFE27DED0DB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8AF618CF-B7CC-43D5-8674-2CFE27DED0DB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8AF618CF-B7CC-43D5-8674-2CFE27DED0DB}.Release|x64.ActiveCfg = Release|Any CPU
+		{8AF618CF-B7CC-43D5-8674-2CFE27DED0DB}.Release|x64.Build.0 = Release|Any CPU
+		{8AF618CF-B7CC-43D5-8674-2CFE27DED0DB}.Release|x86.ActiveCfg = Release|Any CPU
+		{8AF618CF-B7CC-43D5-8674-2CFE27DED0DB}.Release|x86.Build.0 = Release|Any CPU
+		{ECAADD95-4061-4861-90B3-7990A47E5A8F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{ECAADD95-4061-4861-90B3-7990A47E5A8F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{ECAADD95-4061-4861-90B3-7990A47E5A8F}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{ECAADD95-4061-4861-90B3-7990A47E5A8F}.Debug|x64.Build.0 = Debug|Any CPU
+		{ECAADD95-4061-4861-90B3-7990A47E5A8F}.Debug|x86.ActiveCfg = Debug|Any CPU
+		{ECAADD95-4061-4861-90B3-7990A47E5A8F}.Debug|x86.Build.0 = Debug|Any CPU
+		{ECAADD95-4061-4861-90B3-7990A47E5A8F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{ECAADD95-4061-4861-90B3-7990A47E5A8F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{ECAADD95-4061-4861-90B3-7990A47E5A8F}.Release|x64.ActiveCfg = Release|Any CPU
+		{ECAADD95-4061-4861-90B3-7990A47E5A8F}.Release|x64.Build.0 = Release|Any CPU
+		{ECAADD95-4061-4861-90B3-7990A47E5A8F}.Release|x86.ActiveCfg = Release|Any CPU
+		{ECAADD95-4061-4861-90B3-7990A47E5A8F}.Release|x86.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

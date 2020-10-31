@@ -1,0 +1,23 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Rules.fs" />
+    <Compile Include="PacmanImageFiles.fs" />
+    <Compile Include="ResourceIDs.fs" />
+    <Compile Include="DrawingShared.fs" />
+    <Compile Include="ScreenPacman.fs" />
+    <Compile Include="ScreenGameOver.fs" />
+    <Compile Include="ScreenGameTitle.fs" />
+    <Compile Include="ScreenPotentialEnterYourName.fs" />
+    <Compile Include="Storyboard.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FsAnyGame\FsAnyGame.fsproj" />
+  </ItemGroup>
+
+</Project>
