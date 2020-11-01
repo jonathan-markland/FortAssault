@@ -11,19 +11,21 @@
 [<Struct>]
 type DirectionMasks =
     {
-        UpMask    : byte
-        DownMask  : byte
-        LeftMask  : byte
-        RightMask : byte
+        UpMask          : byte
+        DownMask        : byte
+        LeftMask        : byte
+        RightMask       : byte
+        CentralDotIndex : byte
     }
 
 
-let NewDirectionMasks u d l r =
+let NewDirectionMasks u d l r centralDotIndex =
     {
-        UpMask    = u
-        DownMask  = d
-        LeftMask  = l
-        RightMask = r
+        UpMask          = u
+        DownMask        = d
+        LeftMask        = l
+        RightMask       = r
+        CentralDotIndex = centralDotIndex
     }
 
 
@@ -47,7 +49,13 @@ let MazeFilterIter isWallAtXY width height masks action =
                 let d = test x (y+1) masks.DownMask
                 let l = test (x-1) y masks.LeftMask
                 let r = test (x+1) y masks.RightMask
-                action x y (u ||| d ||| l ||| r)
+                let bits = (u ||| d ||| l ||| r)
+                let shapeIndex =
+                    if bits = 0uy && (isWallAtXY x y) then
+                        masks.CentralDotIndex
+                    else
+                        bits
+                action x y shapeIndex
             else
                 action x y 0uy  // To completely define the output
 
@@ -59,7 +67,7 @@ let MazeByteArray width height isWallAtXY =
 
     if width > 0 && height > 0 then
 
-        let masks  = NewDirectionMasks 1uy 2uy 4uy 8uy
+        let masks  = NewDirectionMasks 1uy 2uy 4uy 8uy 16uy
         let output = Array.zeroCreate<byte> (width * height)
         let action x y mask = output.[y * width + x] <- mask
 

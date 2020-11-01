@@ -11,7 +11,7 @@ open MazeFilter
 
 let ToUnicodeBoxDrawing width (output:byte[]) =
 
-    let unicodeBoxDrawing = " ╵╷│╴┘┐┤╶└┌├─┴┬┼"
+    let unicodeBoxDrawing = " ╵╷│╴┘┐┤╶└┌├─┴┬┼●"
 
     let boxDrawOutput = 
         output 
@@ -153,7 +153,7 @@ let ``MazeByteArray applied to comprehensive case maze produces correct pieces v
             "│ ├╴  ╵    ╶┤ │"
             "│ │         │ │"
             "│ ├─╴     ╶─┤ │"
-            "│ │         │ │"
+            "│ │    ●    │ │"
             "│ │         │ │"
             "│ │   ╷   ┌┬┤ │"
             "│ │ ╷ │   ├┼┤ │"
