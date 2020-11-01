@@ -8,10 +8,10 @@ open DesktopGameFramework
 open Storyboard
 
 
-let PacmanWindowWidthPixels       = 1280 
-let PacmanWindowHeightPixels      =  800
 let PacmanRetroScreenWidthPixels  =  320 
 let PacmanRetroScreenHeightPixels =  256
+let PacmanWindowWidthPixels       = PacmanRetroScreenWidthPixels  * 3 
+let PacmanWindowHeightPixels      = PacmanRetroScreenHeightPixels * 3
 
 
 let ProcessExitFail    = 1

@@ -9,7 +9,7 @@ open Time
 open ScoreboardModel
 open StaticResourceAccess
 open InterruptableVideo
-open DrawingShared
+open PacmanShared
 open Input
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -18,9 +18,18 @@ type private GameTitleScreenModel =
     {
         Scoreboard     : ScoreAndName list
         ScoreboardMemo : string list
+        PacLeftMemo    : PacmanState
+        PacRightMemo   : PacmanState
+        Ghost0Memo     : GhostState
+        Ghost1Memo     : GhostState
+        Ghost2Memo     : GhostState
+        Ghost3Memo     : GhostState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let inline PercentOfScreenWidth  x = (ScreenWidthInt * x) / 100
+let inline PercentOfScreenHeight x = (ScreenHeightInt * x) / 100
 
 let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 
@@ -29,31 +38,30 @@ let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 
     let tilesImage = Level1ImageID |> ImageFromID
 
-    let inline percentOfScreenWidth  x = (ScreenWidthInt * x) / 100
-    let inline percentOfScreenHeight x = (ScreenHeightInt * x) / 100
+    let x20pc = 20 |> PercentOfScreenWidth
+    let x40pc = 40 |> PercentOfScreenWidth
+    let x50pc = 50 |> PercentOfScreenWidth
+    let x60pc = 60 |> PercentOfScreenWidth
+    let x80pc = 80 |> PercentOfScreenWidth
 
-    let x20pc = 20 |> percentOfScreenWidth
-    let x40pc = 40 |> percentOfScreenWidth
-    let x50pc = 50 |> percentOfScreenWidth
-    let x60pc = 60 |> percentOfScreenWidth
-    let x80pc = 80 |> percentOfScreenWidth
-
-    let y20pc = 20 |> percentOfScreenHeight
-    let y50pc = 50 |> percentOfScreenHeight
-    let y75pc = 75 |> percentOfScreenHeight
-    let y90pc = 90 |> percentOfScreenHeight
+    let y20pc = 20 |> PercentOfScreenHeight
+    let y50pc = 50 |> PercentOfScreenHeight
+    let y75pc = 75 |> PercentOfScreenHeight
+    let y90pc = 90 |> PercentOfScreenHeight
 
     let verticalSpacing = 16<epx>
 
     let pillMode = false
 
-    DrawPacMan render tilesImage x20pc y20pc FacingRight pillMode gameTime
-    DrawPacMan render tilesImage x80pc y20pc FacingLeft  pillMode gameTime
+    let (originx,originy) = (0<epx> , 0<epx>)
 
-    DrawGhost render tilesImage x20pc y90pc (GhostNumber 0) gameTime
-    DrawGhost render tilesImage x40pc y90pc (GhostNumber 1) gameTime
-    DrawGhost render tilesImage x60pc y90pc (GhostNumber 2) gameTime
-    DrawGhost render tilesImage x80pc y90pc (GhostNumber 3) gameTime
+    DrawPacMan render tilesImage originx originy model.PacRightMemo false gameTime
+    DrawPacMan render tilesImage originx originy model.PacLeftMemo  false gameTime
+
+    DrawGhost render tilesImage originx originy model.Ghost0Memo gameTime
+    DrawGhost render tilesImage originx originy model.Ghost1Memo gameTime
+    DrawGhost render tilesImage originx originy model.Ghost2Memo gameTime
+    DrawGhost render tilesImage originx originy model.Ghost3Memo gameTime
 
     Text render GreyFontID CentreAlign MiddleAlign x50pc y20pc "PAC MAN"
 
@@ -68,12 +76,47 @@ let private NextGameTitleScreenState gameState keyStateGetter gameTime elapsed =
     
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let TitleScreenPac facing percentX percentY =
+
+    let cx = percentX |> PercentOfScreenWidth
+    let cy = percentY |> PercentOfScreenHeight
+
+    { 
+        PacPosition = { ptix=cx ; ptiy=cy }
+        PacFacingDirection = facing
+    }
+
+let TitleScreenGhost ghostNumber percentX percentY =
+
+    let cx = percentX |> PercentOfScreenWidth
+    let cy = percentY |> PercentOfScreenHeight
+
+    let pos = { ptix=cx ; ptiy=cy } 
+
+    { 
+        GhostPosition = pos
+        GhostState2 = 
+            { 
+                GhostNumber       = ghostNumber
+                GhostMode         = GhostNormal
+                GhostHomePosition = pos
+            } 
+    }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 let NewGameTitleScreen globalScoreboard nextConstructor =
 
     let titleScreenModel =
         {
             Scoreboard      = globalScoreboard
             ScoreboardMemo  = ScoreboardText 24 globalScoreboard
+            PacLeftMemo     = TitleScreenPac FacingRight 20 20 
+            PacRightMemo    = TitleScreenPac FacingLeft  80 20
+            Ghost0Memo      = TitleScreenGhost (GhostNumber 0) 20 90
+            Ghost1Memo      = TitleScreenGhost (GhostNumber 1) 40 90
+            Ghost2Memo      = TitleScreenGhost (GhostNumber 2) 60 90
+            Ghost3Memo      = TitleScreenGhost (GhostNumber 3) 80 90
         }
 
     NewGameState NextGameTitleScreenState RenderGameTitleScreen titleScreenModel

@@ -8,7 +8,7 @@
     <Compile Include="Rules.fs" />
     <Compile Include="PacmanImageFiles.fs" />
     <Compile Include="ResourceIDs.fs" />
-    <Compile Include="DrawingShared.fs" />
+    <Compile Include="PacmanShared.fs" />
     <Compile Include="ScreenPacman.fs" />
     <Compile Include="ScreenGameOver.fs" />
     <Compile Include="ScreenGameTitle.fs" />

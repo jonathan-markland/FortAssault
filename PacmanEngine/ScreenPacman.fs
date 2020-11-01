@@ -6,10 +6,9 @@ open ScoreHiScore
 open Geometry
 open ResourceIDs
 open StaticResourceAccess
-open FreezeFrame
 open ScreenHandler
 open ImagesAndFonts
-open DrawingShared
+open PacmanShared
 open Input
 open MazeFilter
 
@@ -40,18 +39,6 @@ let private DefaultMaze =
     |]
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-type private PacmanState =
-    {
-        PacPosition : PointI32
-        // PillUntil   : float32<seconds> option
-    }
-
-type private GhostState =
-    {
-        // GhostNumber   : GhostNumber
-        GhostPosition : PointI32
-    }
 
 type private MazeState =
     {
@@ -252,28 +239,20 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
         cx cy
         model.MazeState
 
-    let (ox,oy) = 
+    let (originx,originy) = 
         OriginForMazeOfDimensions 
             cx cy 
             model.MazeState.MazeTilesCountX 
             model.MazeState.MazeTilesCountY
 
+    let pillMode = AnyGhostsAreEdibleIn model.GhostsState
+
     DrawPacMan 
-        render tilesImage 
-        (model.PacmanState.PacPosition.ptix + ox)
-        (model.PacmanState.PacPosition.ptiy + oy)
-        FacingRight // TODO: facingDirection 
-        false // TODO: pillMode 
-        gameTime
+        render tilesImage originx originy model.PacmanState pillMode gameTime
 
     model.GhostsState
-        |> List.iteri (fun i ghost ->
-            DrawGhost
-                render tilesImage
-                (ghost.GhostPosition.ptix + ox)
-                (ghost.GhostPosition.ptiy + oy)
-                (GhostNumber i)
-                gameTime)
+        |> List.iteri (fun i ghostState ->
+            DrawGhost render tilesImage originx originy ghostState gameTime)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -299,9 +278,11 @@ let NewPacmanScreen whereToOnGameOver scoreAndHiScore =
         {
             ScoreAndHiScore   = scoreAndHiScore
             MazeState         = unpackedMaze.UnpackedMazeState
-            PacmanState       = { PacPosition = unpackedMaze.UnpackedPacmanPosition }
-            GhostsState       = unpackedMaze.UnpackedGhostPositions |> List.map (fun ghostPos -> { GhostPosition = ghostPos })
             WhereToOnGameOver = whereToOnGameOver
+
+            // TODO: sort out
+            PacmanState = { PacPosition = unpackedMaze.UnpackedPacmanPosition ; PacFacingDirection = FacingRight }
+            GhostsState = unpackedMaze.UnpackedGhostPositions |> List.mapi (fun i ghostPos -> { GhostPosition = ghostPos ; GhostState2 = { GhostNumber = GhostNumber(i) ; GhostMode = GhostNormal ; GhostHomePosition = ghostPos } })
         }
 
     NewGameState NextPacmanScreenState RenderPacmanScreen pacModel

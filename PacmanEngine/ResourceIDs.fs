@@ -50,7 +50,8 @@ type TileIndex =
     | Eyes1     = 32uy
     | Eyes2     = 33uy
 
-    | GhostPale = 34uy
+    | GhostPale      = 34uy
+    | GhostReturning = 35uy
 
 
 // This game uses a 320*200 engine-coordinate (epx) space:
