@@ -18,10 +18,22 @@ let EyesTwitchesPerSecond = 2.0F
 //  DATA MODELS
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+type PacMode = 
+    | PacAlive 
+    | PacDyingUntil of float32<seconds>
+    | PacDead
+
+type PacState2 =
+    {
+        PacMode            : PacMode
+        PacFacingDirection : FacingDirection
+        LivesLeft          : int
+    }
+
 type PacmanState =
     {
+        PacState2          : PacState2
         PacPosition        : PointI32
-        PacFacingDirection : FacingDirection
     }
 
 type GhostMode =
@@ -109,7 +121,7 @@ let DrawPacMan render image originx originy pacmanState pillMode (gameTime:float
     let y = cy - (TileSide / 2) + originy
 
     let index =
-        (int) (match pacmanState.PacFacingDirection with 
+        (int) (match pacmanState.PacState2.PacFacingDirection with 
                 | FacingLeft  -> TileIndex.PacLeft1
                 | FacingRight -> TileIndex.PacRight1
                 | FacingUp    -> TileIndex.PacUp1

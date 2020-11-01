@@ -281,7 +281,7 @@ let NewPacmanScreen whereToOnGameOver scoreAndHiScore =
             WhereToOnGameOver = whereToOnGameOver
 
             // TODO: sort out
-            PacmanState = { PacPosition = unpackedMaze.UnpackedPacmanPosition ; PacFacingDirection = FacingRight }
+            PacmanState = { PacPosition = unpackedMaze.UnpackedPacmanPosition ; PacState2 = { PacFacingDirection = FacingRight ; PacMode = PacAlive ; LivesLeft = 3 } }
             GhostsState = unpackedMaze.UnpackedGhostPositions |> List.mapi (fun i ghostPos -> { GhostPosition = ghostPos ; GhostState2 = { GhostNumber = GhostNumber(i) ; GhostMode = GhostNormal ; GhostHomePosition = ghostPos } })
         }
 

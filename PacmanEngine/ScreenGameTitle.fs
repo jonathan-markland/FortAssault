@@ -12,6 +12,10 @@ open InterruptableVideo
 open PacmanShared
 open Input
 
+// TODO: Possiblity for library?  For convenience?
+let inline PercentOfScreenWidth  x = (ScreenWidthInt * x) / 100
+let inline PercentOfScreenHeight x = (ScreenHeightInt * x) / 100
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 type private GameTitleScreenModel =
@@ -28,9 +32,6 @@ type private GameTitleScreenModel =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let inline PercentOfScreenWidth  x = (ScreenWidthInt * x) / 100
-let inline PercentOfScreenHeight x = (ScreenHeightInt * x) / 100
-
 let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 
     let backgroundImage = Background2ImageID |> ImageFromID
@@ -38,16 +39,11 @@ let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 
     let tilesImage = Level1ImageID |> ImageFromID
 
-    let x20pc = 20 |> PercentOfScreenWidth
-    let x40pc = 40 |> PercentOfScreenWidth
     let x50pc = 50 |> PercentOfScreenWidth
-    let x60pc = 60 |> PercentOfScreenWidth
-    let x80pc = 80 |> PercentOfScreenWidth
 
     let y20pc = 20 |> PercentOfScreenHeight
     let y50pc = 50 |> PercentOfScreenHeight
     let y75pc = 75 |> PercentOfScreenHeight
-    let y90pc = 90 |> PercentOfScreenHeight
 
     let verticalSpacing = 16<epx>
 
@@ -83,7 +79,12 @@ let TitleScreenPac facing percentX percentY =
 
     { 
         PacPosition = { ptix=cx ; ptiy=cy }
-        PacFacingDirection = facing
+        PacState2 = 
+            {
+                PacMode            = PacAlive
+                PacFacingDirection = facing
+                LivesLeft          = 3
+            }
     }
 
 let TitleScreenGhost ghostNumber percentX percentY =
@@ -120,6 +121,6 @@ let NewGameTitleScreen globalScoreboard nextConstructor =
         }
 
     NewGameState NextGameTitleScreenState RenderGameTitleScreen titleScreenModel
-        |> AsInterruptableVideoThen nextConstructor (WebBrowserKeyCode 90)
+        |> AsInterruptableVideoThen nextConstructor (WebBrowserKeyCode 90)  // TODO: Fire button constant?
 
 
