@@ -5,6 +5,19 @@ open Geometry
 open Time
 open DrawingShapes
 
+// TODO: library?
+
+/// Returns an integer value that switches between 0 and 1, at a given rate.
+let inline UnitPulse (rate:float32) (gameTime:float32<seconds>) = 
+    ((int)(gameTime * rate)) &&& 1
+
+/// Returns a value that switches between a given low and high, at a given rate.
+let PulseBetween (rate:float32) low high (gameTime:float32<seconds>) = 
+    if (UnitPulse rate gameTime) = 0 then low else high
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+
 type FacingDirection = FacingLeft | FacingRight | FacingUp | FacingDown
 
 type GhostNumber = 
@@ -19,9 +32,15 @@ let EyesTwitchesPerSecond = 2.0F
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 type PacMode = 
+
+    /// Pacman is alive and controlled by player.
     | PacAlive 
+
+    /// Pacman flashing during death phase.
     | PacDyingUntil of float32<seconds>
-    | PacDead
+
+    /// Pacman is absent from the screen, and the restart logic kicks in at the game time.
+    | PacDeadUntil of float32<seconds>
 
 type PacState2 =
     {
@@ -35,6 +54,11 @@ type PacmanState =
         PacState2          : PacState2
         PacPosition        : PointI32
     }
+
+    // Reminder: "Pill mode" is NOT a state of pacman himself.  If any of the ghosts
+    //           are running down their "edible mode" timers, than pacman is in pill mode.
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 type GhostMode =
 
@@ -82,7 +106,11 @@ let IsGhostModeEdible ghostMode =
         | GhostEdibleUntil _ -> true
         | _ -> false
 
-let AnyGhostsAreEdibleIn ghostList =
+/// Asks whether the game is in "pill mode", which is the case
+/// for pacman if any of the ghosts are currently edible.  Each
+/// ghost must be individually considered because some may be
+/// in normal mode (after regeneration) while others in edible mode.
+let InPillMode ghostList =
     ghostList |> List.exists (fun ghost -> ghost.GhostState2.GhostMode |> IsGhostModeEdible)
 
 
@@ -120,7 +148,7 @@ let DrawPacMan render image originx originy pacmanState pillMode (gameTime:float
     let x = cx - (TileSide / 2) + originx
     let y = cy - (TileSide / 2) + originy
 
-    let index =
+    let pacDirectionalImageIndex =
         (int) (match pacmanState.PacState2.PacFacingDirection with 
                 | FacingLeft  -> TileIndex.PacLeft1
                 | FacingRight -> TileIndex.PacRight1
@@ -129,11 +157,12 @@ let DrawPacMan render image originx originy pacmanState pillMode (gameTime:float
 
     let pillModeFactor = if pillMode then 2.0F else 1.0F
 
-    let n = ((int)(gameTime * SnapsPerSecond * pillModeFactor)) &&& 1
+    let pacImageIndex = 
+        gameTime |> PulseBetween 
+            (SnapsPerSecond * pillModeFactor)
+            pacDirectionalImageIndex (pacDirectionalImageIndex + 4) 
 
-    let index = if n = 0 then index else index + 4
-
-    DrawPacTileInt render image x y index
+    DrawPacTileInt render image x y pacImageIndex
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -147,6 +176,8 @@ let DrawGhost render image originx originy ghostState (gameTime:float32<seconds>
 
     DrawPacTileInt render image x y (ghostNumber + (int) TileIndex.Ghost1)
 
-    let n = ((int)(gameTime * EyesTwitchesPerSecond * (float32 (ghostNumber + 1)))) &&& 1
-    DrawPacTileInt render image x y (n + (int) TileIndex.Eyes1)
+    let wiggleRate = EyesTwitchesPerSecond * (float32 (ghostNumber + 1))
+    let eyes = gameTime |> PulseBetween wiggleRate TileIndex.Eyes1 TileIndex.Eyes2
+
+    DrawPacTileInt render image x y ((int) eyes)
 

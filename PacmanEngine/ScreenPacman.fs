@@ -245,7 +245,7 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
             model.MazeState.MazeTilesCountX 
             model.MazeState.MazeTilesCountY
 
-    let pillMode = AnyGhostsAreEdibleIn model.GhostsState
+    let pillMode = InPillMode model.GhostsState
 
     DrawPacMan 
         render tilesImage originx originy model.PacmanState pillMode gameTime
