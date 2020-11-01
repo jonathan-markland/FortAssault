@@ -52,6 +52,8 @@ type PacState2 =
 type PacmanState =
     {
         PacState2          : PacState2
+
+        /// Stored position is relative to top left of maze.
         PacPosition        : PointI32
     }
 
@@ -85,6 +87,7 @@ type GhostState2 =
 
         /// Ghost position at start of screen, used to 
         /// return to base after being eaten.
+        /// Stored position is relative to top left of maze.
         GhostHomePosition : PointI32
 
         /// Ghost state.
@@ -94,6 +97,8 @@ type GhostState2 =
 type GhostState =
     {
         GhostState2    : GhostState2
+
+        /// Stored position is relative to top left of maze.
         GhostPosition  : PointI32
     }
 
@@ -149,8 +154,8 @@ let DrawPacMan render image originx originy pacmanState pillMode (gameTime:float
 
     let { ptix=cx ; ptiy=cy } = pacmanState.PacPosition
 
-    let x = cx - (TileSide / 2) + originx
-    let y = cy - (TileSide / 2) + originy
+    let x = cx + originx
+    let y = cy + originy
 
     let pacDirectionalImageIndex =
         (int) (match pacmanState.PacState2.PacFacingDirection with 
@@ -175,8 +180,8 @@ let DrawGhost render image originx originy ghostState (gameTime:float32<seconds>
     let { ptix=cx ; ptiy=cy } = ghostState.GhostPosition
     let (GhostNumber(ghostNumber)) = ghostState.GhostState2.GhostNumber
 
-    let x = cx - (TileSide / 2) + originx
-    let y = cy - (TileSide / 2) + originy
+    let x = cx + originx
+    let y = cy + originy
 
     DrawPacTileInt render image x y (ghostNumber + (int) TileIndex.Ghost1) gameTime
 

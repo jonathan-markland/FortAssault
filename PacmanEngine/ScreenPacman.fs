@@ -154,8 +154,7 @@ let private TextMazeDefinitionUnpacked mazeArray = // TODO: move to a module?
             | NotFound    -> failwith (sprintf "Could not find char '%s' in the maze definition." (ch.ToString()))
             | NotUnique   -> failwith (sprintf "Char '%s' is not unique in the maze definition." (ch.ToString()))
             | Found(x,y)  -> 
-                let h = TileSide / 2
-                { ptix = x * TileSide + h ; ptiy = y * TileSide + h }
+                { ptix = x * TileSide ; ptiy = y * TileSide }
 
     let ghostPositions =
         [1..4] |> List.map (fun n -> 
