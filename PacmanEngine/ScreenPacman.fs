@@ -189,7 +189,7 @@ let private OriginForMazeOfDimensions cx cy (countX:int) (countY:int) =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private DrawSpecificMazeCentred render image cx cy countX countY (mazeByteArray:byte[]) =
+let private DrawSpecificMazeCentred render image cx cy countX countY (mazeByteArray:byte[]) gameTime =
 
     let (x,y) = OriginForMazeOfDimensions cx cy countX countY
 
@@ -199,29 +199,32 @@ let private DrawSpecificMazeCentred render image cx cy countX countY (mazeByteAr
         for tx in 0..countX - 1 do
             let tileIndex = mazeByteArray.[ty * countX + tx]
             let x' = x + tx * TileSide
-            DrawPacTileInt render image x' y' ((int)tileIndex)
+            DrawPacTileInt render image x' y' ((int)tileIndex) gameTime
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private DrawMazeCentred render image cx cy mazeState =
+let private DrawMazeCentred render image cx cy mazeState gameTime =
 
     DrawSpecificMazeCentred 
         render image cx cy 
         mazeState.MazeTilesCountX
         mazeState.MazeTilesCountY
         mazeState.MazeTiles
+        gameTime
 
     // DrawSpecificMazeCentred 
     //     render image cx cy 
     //     mazeState.MazeTilesCountX
     //     mazeState.MazeTilesCountY
     //     mazeState.MazeGhostRails
+    //     gameTime
 
     // DrawSpecificMazeCentred 
     //     render image cx cy 
     //     mazeState.MazeTilesCountX
     //     mazeState.MazeTilesCountY
     //     mazeState.MazePlayersRails
+    //     gameTime
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -238,6 +241,7 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
         render tilesImage 
         cx cy
         model.MazeState
+        gameTime
 
     let (originx,originy) = 
         OriginForMazeOfDimensions 

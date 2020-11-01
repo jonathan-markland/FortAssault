@@ -119,25 +119,29 @@ let InPillMode ghostList =
 //  DRAWING
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let DrawPacTileInt render image x y (tileIndex:int) =
+let DrawPacTileInt render image x y (tileIndex:int) gameTime =
 
     if tileIndex > 0 then  // tile index 0 is the blank tile
 
-        let xIndex = tileIndex - 1
+        let xIndex =
+            if tileIndex = ((int) TileIndex.Pill1) then
+                gameTime |> PulseBetween 10.0F ((int) TileIndex.Pill1) ((int) TileIndex.Pill2)
+            else
+                tileIndex
 
         render (
             DrawSubImageStretchedToTarget (
-                xIndex * 16, 0, 16, 16,
+                (xIndex - 1) * 16, 0, 16, 16,   // subtract 1 because we don't store image data for the blank tile.
                 (x |> IntToFloatEpx), 
                 (y |> IntToFloatEpx), 
                 16<epx>, 
                 16<epx>,
                 image)) 
 
-let private DrawPacTile render image x y (tileIndex:TileIndex) =
+let private DrawPacTile render image x y (tileIndex:TileIndex) gameTime =
 
     let ti = ((int) tileIndex)
-    DrawPacTileInt render image x y ti
+    DrawPacTileInt render image x y ti gameTime
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -162,7 +166,7 @@ let DrawPacMan render image originx originy pacmanState pillMode (gameTime:float
             (SnapsPerSecond * pillModeFactor)
             pacDirectionalImageIndex (pacDirectionalImageIndex + 4) 
 
-    DrawPacTileInt render image x y pacImageIndex
+    DrawPacTileInt render image x y pacImageIndex gameTime
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -174,10 +178,10 @@ let DrawGhost render image originx originy ghostState (gameTime:float32<seconds>
     let x = cx - (TileSide / 2) + originx
     let y = cy - (TileSide / 2) + originy
 
-    DrawPacTileInt render image x y (ghostNumber + (int) TileIndex.Ghost1)
+    DrawPacTileInt render image x y (ghostNumber + (int) TileIndex.Ghost1) gameTime
 
     let wiggleRate = EyesTwitchesPerSecond * (float32 (ghostNumber + 1))
     let eyes = gameTime |> PulseBetween wiggleRate TileIndex.Eyes1 TileIndex.Eyes2
 
-    DrawPacTileInt render image x y ((int) eyes)
+    DrawPacTileInt render image x y ((int) eyes) gameTime
 
