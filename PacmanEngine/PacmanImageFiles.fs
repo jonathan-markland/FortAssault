@@ -19,7 +19,7 @@ let PacmanFontResourceImages =
 let PacmanResourceImages =
     [
         image OpaqueImage           "PacmanBackground.png"   320 256
-        image MagentaColourKeyImage "PacmanLevel1.png"       528  16
+        image MagentaColourKeyImage "PacmanLevel1.png"       544  16
         image OpaqueImage           "PacmanBackground2.png"  320 256
     ]
 

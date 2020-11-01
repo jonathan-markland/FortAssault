@@ -11,45 +11,46 @@ let TileSideInt = 16
 type TileIndex =
 
     | Blank  =  0uy  // 
-    | Wall1  =  1uy  // 
-    | Wall2  =  2uy  // 
-    | Wall3  =  3uy  // 
-    | Wall4  =  4uy  // 
-    | Wall5  =  5uy  // 
-    | Wall6  =  6uy  // 
-    | Wall7  =  7uy  // 
-    | Wall8  =  8uy  //    Must be a cluster
-    | Wall9  =  9uy  // 
-    | Wall10 = 10uy  // 
-    | Wall11 = 11uy  // 
-    | Wall12 = 12uy  // 
-    | Wall13 = 13uy  // 
-    | Wall14 = 14uy  // 
-    | Wall15 = 15uy  // 
+    | Wall0  =  1uy  //
+    | Wall1  =  2uy  // 
+    | Wall2  =  3uy  // 
+    | Wall3  =  4uy  // 
+    | Wall4  =  5uy  // 
+    | Wall5  =  6uy  // 
+    | Wall6  =  7uy  // 
+    | Wall7  =  8uy  // 
+    | Wall8  =  9uy  //    Must be a cluster
+    | Wall9  = 10uy  // 
+    | Wall10 = 11uy  // 
+    | Wall11 = 12uy  // 
+    | Wall12 = 13uy  // 
+    | Wall13 = 14uy  // 
+    | Wall14 = 15uy  // 
+    | Wall15 = 16uy  // 
 
-    | Dot    = 16uy
-    | Pill1  = 17uy
-    | Pill2  = 18uy
+    | Dot    = 17uy
+    | Pill1  = 18uy
+    | Pill2  = 19uy
 
-    | PacRight1 = 19uy
-    | PacLeft1  = 20uy
-    | PacUp1    = 21uy
-    | PacDown1  = 22uy
+    | PacRight1 = 20uy
+    | PacLeft1  = 21uy
+    | PacUp1    = 22uy
+    | PacDown1  = 23uy
 
-    | PacRight2 = 23uy
-    | PacLeft2  = 24uy
-    | PacUp2    = 25uy
-    | PacDown2  = 26uy
+    | PacRight2 = 24uy
+    | PacLeft2  = 25uy
+    | PacUp2    = 26uy
+    | PacDown2  = 27uy
 
-    | Ghost1    = 27uy
-    | Ghost2    = 28uy
-    | Ghost3    = 29uy
-    | Ghost4    = 30uy
+    | Ghost1    = 28uy
+    | Ghost2    = 29uy
+    | Ghost3    = 30uy
+    | Ghost4    = 31uy
 
-    | Eyes1     = 31uy
-    | Eyes2     = 32uy
+    | Eyes1     = 32uy
+    | Eyes2     = 33uy
 
-    | GhostPale = 33uy
+    | GhostPale = 34uy
 
 
 // This game uses a 320*200 engine-coordinate (epx) space:

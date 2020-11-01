@@ -16,16 +16,16 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="PacmanBackground2.png">
+    <Content Include="..\wwwroot\Images\PacmanBackground.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="PacmanFont.png">
+    <Content Include="..\wwwroot\Images\PacmanBackground2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="PacmanLevel1.png">
+    <Content Include="..\wwwroot\Images\PacmanFont.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="PacmanBackground.png">
+    <Content Include="..\wwwroot\Images\PacmanLevel1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="LICENSE.png.txt">
