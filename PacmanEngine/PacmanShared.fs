@@ -4,6 +4,7 @@ open ResourceIDs
 open Geometry
 open Time
 open DrawingShapes
+open MazeFilter
 
 // TODO: library?
 
@@ -17,8 +18,55 @@ let PulseBetween (rate:float32) low high (gameTime:float32<seconds>) =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+// TODO: library?
 
-type FacingDirection = FacingLeft | FacingRight | FacingUp | FacingDown
+type FacingDirection = FacingRight | FacingDown | FacingLeft | FacingUp
+
+let FacingDirectionToMazeByte facingDirection = 
+    match facingDirection with
+        | FacingLeft  -> MazeByteLeft
+        | FacingRight -> MazeByteRight
+        | FacingUp    -> MazeByteUp
+        | FacingDown  -> MazeByteDown
+
+let FacingDirectionToInt facingDirection =
+    match facingDirection with
+        | FacingLeft  -> 0
+        | FacingUp    -> 1
+        | FacingRight -> 2
+        | FacingDown  -> 3
+
+type Angle = ZeroAngle | ClockwiseTurn90 | AboutTurn180 | AntiClockwiseTurn90
+
+let IntToAngle i = 
+    match i with
+        | 0 -> ZeroAngle
+        | 1 -> ClockwiseTurn90
+        | 2 -> AboutTurn180
+        | 3 -> AntiClockwiseTurn90
+        | _ -> failwith "Invalid integer value for conversion to type Angle"
+
+let AngleBetween current previous =
+    let d = (current |> FacingDirectionToInt) - (previous |> FacingDirectionToInt)
+    (d &&& 3) |> IntToAngle
+
+let DirectionToMovementDeltaI32 facingDirection =
+    match facingDirection with
+        | FacingLeft  -> { modix = -1<epx> ; modiy =  0<epx> }
+        | FacingRight -> { modix =  1<epx> ; modiy =  0<epx> }
+        | FacingUp    -> { modix =  0<epx> ; modiy = -1<epx> }
+        | FacingDown  -> { modix =  0<epx> ; modiy =  1<epx> }
+
+let KeyStatesToDirection u d l r defaultDirection =
+    // These are to be exclusive.
+    if   u=true  && d=false && l=false && r=false then FacingUp
+    elif u=false && d=true  && l=false && r=false then FacingDown
+    elif u=false && d=false && l=true  && r=false then FacingLeft
+    elif u=false && d=false && l=false && r=true  then FacingRight
+    else defaultDirection
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 
 type GhostNumber = 
     /// Zero-based ghost number index type
@@ -34,12 +82,17 @@ let EyesTwitchesPerSecond = 2.0F
 type PacMode = 
 
     /// Pacman is alive and controlled by player.
+    /// Can always do a 180 degree turn.  Can only turn 90 degrees when
+    /// aligned on the major grid, and as the maze allows.  Pac travels
+    /// until hitting a dead end or 90 degree corner where he stops.
     | PacAlive 
 
     /// Pacman flashing during death phase.
+    /// Player cannot control during this.
     | PacDyingUntil of float32<seconds>
 
     /// Pacman is absent from the screen, and the restart logic kicks in at the game time.
+    /// Player cannot control during this.
     | PacDeadUntil of float32<seconds>
 
 type PacState2 =

@@ -11,6 +11,7 @@ open ImagesAndFonts
 open PacmanShared
 open Input
 open MazeFilter
+open Rules
 
 // TODO: gameState |> WithFreezeFrameFor PauseDuration gameTime whereToAfter
 
@@ -44,7 +45,7 @@ type private MazeState =
     {
         MazeTilesCountX  : int
         MazeTilesCountY  : int
-        MazeTiles        : byte[]  // content mutated by pacman eating things
+        MazeTiles        : byte[]  // content mutated by pacman eating things   // TODO: strong type wrapper for bytes
         MazeGhostRails   : byte[]  // not mutated
         MazePlayersRails : byte[]  // not mutated
     }
@@ -258,18 +259,235 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
             DrawGhost render tilesImage originx originy ghostState gameTime)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Support functions
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let KeysFrom keyStateGetter =
+    let up    = (keyStateGetter (WebBrowserKeyCode 38)).Held
+    let down  = (keyStateGetter (WebBrowserKeyCode 40)).Held
+    let left  = (keyStateGetter (WebBrowserKeyCode 37)).Held
+    let right = (keyStateGetter (WebBrowserKeyCode 39)).Held
+    struct (up, down, left, right)
+
+/// Asks whether the given pacman or ghost position is aligned
+/// to cover a single tile.
+let IsAlignedOnTile position =
+
+    let {ptix=x ; ptiy=y} = position
+    let isAligned n = ((n |> IntEpxToInt) % TileSideInt) = 0
+
+    x |> isAligned && y |> isAligned
+
+/// For a precise pacman or ghost position that is precisely over
+/// a single tile, this returns the rails array index of that tile.
+/// If the position not perfectly aligned on a single tile, this
+/// returns None.
+let TileIndexOf position numTilesAcross =
+
+    if position |> IsAlignedOnTile then
+        let {ptix=x ; ptiy=y} = position
+        let txi = x / TileSide
+        let tyi = y / TileSide
+        Some (tyi * numTilesAcross + txi)
+
+    else
+        None
+
+/// The railsByte defines permissable directions, and we return
+/// true if movement in the given direction is allowed by the railsByte.
+let IsDirectionAllowedBy railsByte facingDirection =
+
+    (railsByte &&& (facingDirection |> FacingDirectionToMazeByte)) <> 0uy
+    
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  PAC MAN himself:  State advance per frame
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+(*
+type PacMode = 
+
+    /// Pacman is alive and controlled by player.
+    | PacAlive 
+
+    /// Pacman flashing during death phase.
+    | PacDyingUntil of float32<seconds>
+
+    /// Pacman is absent from the screen, and the restart logic kicks in at the game time.
+    | PacDeadUntil of float32<seconds>
+
+type PacState2 =
+    {
+        PacMode            : PacMode
+        PacFacingDirection : FacingDirection
+        LivesLeft          : int
+    }
+
+type PacmanState =
+    {
+        PacState2          : PacState2
+
+        /// Stored position is relative to top left of maze.
+        PacPosition        : PointI32
+    }
+*)
+
+[<Struct>]
+type PacHasEaten =
+    | EatenNothing
+    | EatenDot of dotTileArrayIndex:int
+    | EatenPowerPill of powerPillTileArrayIndex:int
+
+/// Handles all the positive things for pac man:  Moving and eating.
+/// Returns an indicator of what happened.
+let private AdvancePacMan keyStateGetter mazeState pacmanState =
+    
+    let position  = pacmanState.PacPosition
+    let direction = pacmanState.PacState2.PacFacingDirection
+    let mode      = pacmanState.PacState2.PacMode
+
+    match mode with
+
+        | PacAlive ->
+            
+            let struct (up, down, left, right) = KeysFrom keyStateGetter
+            
+            let directionImpliedByKeys  = KeyStatesToDirection up down left right direction
+            let angleToCurrentDirection = AngleBetween directionImpliedByKeys direction
+
+            let tile = TileIndexOf position mazeState.MazeTilesCountX
+
+            let direction =
+                match angleToCurrentDirection with
+                    | ZeroAngle 
+                    | AboutTurn180 -> directionImpliedByKeys
+
+                    | AntiClockwiseTurn90
+                    | ClockwiseTurn90 ->
+                        match tile with
+                            | None -> direction // disallow, not perfectly aligned
+                            | Some tileIndex ->
+                                if directionImpliedByKeys 
+                                    |> IsDirectionAllowedBy mazeState.MazePlayersRails.[tileIndex] then
+                                    directionImpliedByKeys
+                                else
+                                    direction // disallow, no exit in that direction.
+
+            let eaten, scoreIncrement =
+                match tile with
+                    | None -> EatenNothing , 0u
+                    | Some tileIndex ->
+                        let tileType = mazeState.MazeTiles.[tileIndex]
+                        if tileType = ((byte) TileIndex.Dot) then
+                            (EatenDot tileIndex) , ScoreForEatingDot
+                        else if tileType = ((byte) TileIndex.Pill1) then   // We don't store Pill2 in the matrix.
+                            (EatenPowerPill tileIndex) , ScoreForEatingPowerPill
+                        else
+                            EatenNothing , 0u
+
+            let position =  // TODO: issue of frame rate!
+
+                let potentialPosition = 
+                    position |> PointI32MovedByDelta (direction |> DirectionToMovementDeltaI32)
+
+                match tile with
+                    | None -> potentialPosition // Can always allow movement when inbetween tiles
+                    | Some tileIndex ->
+                        if direction |> IsDirectionAllowedBy mazeState.MazePlayersRails.[tileIndex] then
+                            potentialPosition
+                        else
+                            position // disallow, no exit in that direction.
+            
+            (eaten , position , direction , scoreIncrement)            
+
+
+        | PacDyingUntil(_deadTime) ->
+            (EatenNothing , position , direction , 0u)
+
+
+        | PacDeadUntil(_endScreenTime) ->
+            (EatenNothing , position , direction , 0u)
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  State update application
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let WithPacManStateChangesAppliedFrom position direction pacmanState =
+
+    if direction = pacmanState.PacState2.PacFacingDirection then
+        {
+            PacState2 = pacmanState.PacState2  // unchanged
+            PacPosition = position
+        }
+    else
+        {
+            PacState2 =
+                {
+                    PacMode            = pacmanState.PacState2.PacMode
+                    PacFacingDirection = direction
+                    LivesLeft          = pacmanState.PacState2.LivesLeft
+                }
+            PacPosition = position
+        }
+
+
+
+let private WithDotsRemovedFromArrayWhere eaten mazeState =
+
+    match eaten with
+        | EatenNothing -> mazeState
+        | EatenDot tileIndex
+        | EatenPowerPill tileIndex ->
+            mazeState.MazeTiles.[tileIndex] <- ((byte) TileIndex.Blank)  // mutable
+            mazeState
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Screen state advance on frame
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
 
-    //   let up    = (keyStateGetter (WebBrowserKeyCode 38)).Held
-    //   let down  = (keyStateGetter (WebBrowserKeyCode 40)).Held
-    //   let left  = (keyStateGetter (WebBrowserKeyCode 37)).Held
-    //   let right = (keyStateGetter (WebBrowserKeyCode 39)).Held
-    //
-    //   let model = ModelFrom gameState
+    // Unpack
 
+    let model = ModelFrom gameState
 
-    Unchanged gameState
+    let {
+            ScoreAndHiScore        = scoreAndHiScore
+            MazeState              = mazeState
+            PacmanState            = pacmanState
+            GhostsState            = ghostStateList
+            WhereToOnGameOver      = _
+        }
+            = model
+
+    // Calculation
+
+    let eaten , position , direction , scoreIncrement =
+        AdvancePacMan keyStateGetter mazeState pacmanState
+
+    let scoreAndHiScore =
+        scoreAndHiScore |> ScoreIncrementedBy scoreIncrement
+
+    // Application
+
+    let pacmanState =
+        pacmanState |> WithPacManStateChangesAppliedFrom position direction
+
+    let mazeState =
+        mazeState |> WithDotsRemovedFromArrayWhere eaten
+
+    // Repack
+
+    gameState |> WithUpdatedModel
+        {
+            ScoreAndHiScore   = scoreAndHiScore
+            MazeState         = mazeState
+            PacmanState       = pacmanState
+            GhostsState       = ghostStateList
+            WhereToOnGameOver = model.WhereToOnGameOver
+        }        
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

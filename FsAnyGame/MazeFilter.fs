@@ -61,13 +61,20 @@ let MazeFilterIter isWallAtXY width height masks action =
 
 
 
+let MazeByteUp    = 1uy
+let MazeByteDown  = 2uy
+let MazeByteLeft  = 4uy
+let MazeByteRight = 8uy
+let MazeByteCentralDotIndex = 16uy
+
+
 /// Parse a 2D resource and return a row-primary byte array of 
 /// maze path direction bitmasks, starting in the top left corner.
 let MazeByteArray width height isWallAtXY =
 
     if width > 0 && height > 0 then
 
-        let masks  = NewDirectionMasks 1uy 2uy 4uy 8uy 16uy
+        let masks  = NewDirectionMasks MazeByteUp MazeByteDown MazeByteLeft MazeByteRight MazeByteCentralDotIndex
         let output = Array.zeroCreate<byte> (width * height)
         let action x y mask = output.[y * width + x] <- mask
 

@@ -23,6 +23,13 @@ type PointI32 =
         ptiy : int<epx>
     }
 
+/// A movement delta in Engine coordinate space.
+type MovementDeltaI32 =
+    {
+        modix : int<epx>
+        modiy : int<epx>
+    }
+
 /// A floating-point cartesian point in Engine coordinate space.
 type PointF32 =
     {
@@ -92,6 +99,14 @@ let PointMovedByDelta delta point =
     {
         ptx = point.ptx + delta.modx
         pty = point.pty + delta.mody
+    }
+
+/// Returns a new point that is an existing point translated 
+/// in 2D space by the given 2D delta.
+let PointI32MovedByDelta delta point =
+    {
+        ptix = point.ptix + delta.modix
+        ptiy = point.ptiy + delta.modiy
     }
 
 /// Returns a floating point movement delta that, if applied, would 
