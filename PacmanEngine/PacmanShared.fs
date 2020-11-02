@@ -5,6 +5,7 @@ open Geometry
 open Time
 open DrawingShapes
 open MazeFilter
+open Rules
 
 // TODO: library?
 
@@ -236,7 +237,24 @@ let DrawGhost render image originx originy ghostState (gameTime:float32<seconds>
     let x = cx + originx
     let y = cy + originy
 
-    DrawPacTileInt render image x y (ghostNumber + (int) TileIndex.Ghost1) gameTime
+    let ghostImageIndex =
+        let normal = ghostNumber + (int) TileIndex.Ghost1
+        match ghostState.GhostState2.GhostMode with
+            | GhostNormal ->
+                normal
+
+            | GhostEdibleUntil t ->
+                let img = (int) TileIndex.GhostPale
+                if (t - gameTime) < PowerPillWarnTime then
+                    gameTime |> PulseBetween PowerPillWarnFlashRate img normal
+                else
+                    img
+
+            | GhostRegeneratingUntil _
+            | GhostReturningToBase ->
+                (int) TileIndex.GhostReturning
+
+    DrawPacTileInt render image x y ghostImageIndex gameTime
 
     let wiggleRate = EyesTwitchesPerSecond * (float32 (ghostNumber + 1))
     let eyes = gameTime |> PulseBetween wiggleRate TileIndex.Eyes1 TileIndex.Eyes2

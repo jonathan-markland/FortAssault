@@ -318,6 +318,12 @@ let inline WithGhostMode mode ghost =
     }
 
 
+/// Asks whether the given ghost is at its base home position.
+let inline IsAtHomePosition ghost =
+    ghost.GhostPosition = ghost.GhostState2.GhostHomePosition
+
+
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  PAC MAN himself:  State advance per frame
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -449,17 +455,25 @@ let private WithEdibleGhostsIfPowerPill eaten gameTime ghostStateList =
             )
 
 
-/// State update for ghosts when they're no longer edible.
+/// State update for ghosts based on timeouts.
 let private WithReturnToNormalityIfTimeOutAt gameTime ghostStateList =
     ghostStateList |> List.map (fun ghost ->
         match ghost |> GhostMode with
-            | GhostEdibleUntil t ->
+
+            | GhostNormal ->
+                ghost
+
+            | GhostEdibleUntil t
+            | GhostRegeneratingUntil t -> 
                 if gameTime >= t then ghost |> WithGhostMode GhostNormal else ghost
-            | GhostNormal
-            | GhostReturningToBase
-            | GhostRegeneratingUntil _ -> 
-                ghost  // This ghost does not become edible.
+
+            | GhostReturningToBase ->
+                if ghost |> IsAtHomePosition then
+                    ghost |> WithGhostMode (GhostRegeneratingUntil (gameTime + RegenerationTime)) 
+                else
+                    ghost
     )
+
 
 
 
