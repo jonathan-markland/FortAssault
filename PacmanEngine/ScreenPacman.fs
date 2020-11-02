@@ -300,37 +300,27 @@ let IsDirectionAllowedBy railsByte facingDirection =
     (railsByte &&& (facingDirection |> FacingDirectionToMazeByte)) <> 0uy
     
 
+/// Obtain the mode of the given ghost.
+let inline GhostMode ghost =
+    ghost.GhostState2.GhostMode
+
+
+/// Update the mode of the given ghost.
+let inline WithGhostMode mode ghost =
+    {
+        GhostPosition = ghost.GhostPosition
+        GhostState2   =
+            {
+                GhostNumber       = ghost.GhostState2.GhostNumber
+                GhostHomePosition = ghost.GhostState2.GhostHomePosition
+                GhostMode         = mode
+            }
+    }
+
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  PAC MAN himself:  State advance per frame
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-(*
-type PacMode = 
-
-    /// Pacman is alive and controlled by player.
-    | PacAlive 
-
-    /// Pacman flashing during death phase.
-    | PacDyingUntil of float32<seconds>
-
-    /// Pacman is absent from the screen, and the restart logic kicks in at the game time.
-    | PacDeadUntil of float32<seconds>
-
-type PacState2 =
-    {
-        PacMode            : PacMode
-        PacFacingDirection : FacingDirection
-        LivesLeft          : int
-    }
-
-type PacmanState =
-    {
-        PacState2          : PacState2
-
-        /// Stored position is relative to top left of maze.
-        PacPosition        : PointI32
-    }
-*)
 
 [<Struct>]
 type PacHasEaten =
@@ -412,6 +402,7 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
 //  State update application
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+/// State update for pacman position and direction.
 let WithPacManStateChangesAppliedFrom position direction pacmanState =
 
     if direction = pacmanState.PacState2.PacFacingDirection then
@@ -431,7 +422,7 @@ let WithPacManStateChangesAppliedFrom position direction pacmanState =
         }
 
 
-
+/// State update for the maze as pac man eats things.
 let private WithDotsRemovedFromArrayWhere eaten mazeState =
 
     match eaten with
@@ -440,6 +431,36 @@ let private WithDotsRemovedFromArrayWhere eaten mazeState =
         | EatenPowerPill tileIndex ->
             mazeState.MazeTiles.[tileIndex] <- ((byte) TileIndex.Blank)  // mutable
             mazeState
+
+
+/// State update for ghosts if pacman eats a power pill
+let private WithEdibleGhostsIfPowerPill eaten gameTime ghostStateList =
+
+    match eaten with
+        | EatenNothing 
+        | EatenDot _ -> ghostStateList
+        | EatenPowerPill _ ->
+            ghostStateList |> List.map (fun ghost ->
+                match ghost |> GhostMode with
+                    | GhostNormal
+                    | GhostEdibleUntil _ -> ghost |> WithGhostMode (GhostEdibleUntil (gameTime + PowerPillTime))
+                    | GhostReturningToBase
+                    | GhostRegeneratingUntil _ -> ghost  // This ghost does not become edible.
+            )
+
+
+/// State update for ghosts when they're no longer edible.
+let private WithReturnToNormalityIfTimeOutAt gameTime ghostStateList =
+    ghostStateList |> List.map (fun ghost ->
+        match ghost |> GhostMode with
+            | GhostEdibleUntil t ->
+                if gameTime >= t then ghost |> WithGhostMode GhostNormal else ghost
+            | GhostNormal
+            | GhostReturningToBase
+            | GhostRegeneratingUntil _ -> 
+                ghost  // This ghost does not become edible.
+    )
+
 
 
 
@@ -477,6 +498,11 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
 
     let mazeState =
         mazeState |> WithDotsRemovedFromArrayWhere eaten
+
+    let ghostStateList =
+        ghostStateList 
+            |> WithReturnToNormalityIfTimeOutAt gameTime
+            |> WithEdibleGhostsIfPowerPill eaten gameTime
 
     // Repack
 
