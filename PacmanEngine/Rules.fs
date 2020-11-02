@@ -12,3 +12,4 @@ let PowerPillWarnTime = 4.0F<seconds>  // Must be less than PowerPillTime
 let PowerPillWarnFlashRate = 12.0F
 
 let RegenerationTime = 5.0F<seconds>
+let RegenerationFlashRate = 8.0F

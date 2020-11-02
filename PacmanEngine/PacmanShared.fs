@@ -238,21 +238,26 @@ let DrawGhost render image originx originy ghostState (gameTime:float32<seconds>
     let y = cy + originy
 
     let ghostImageIndex =
+        
         let normal = ghostNumber + (int) TileIndex.Ghost1
+        let dark = (int) TileIndex.GhostReturning
+        let pale = (int) TileIndex.GhostPale
+
         match ghostState.GhostState2.GhostMode with
             | GhostNormal ->
                 normal
 
             | GhostEdibleUntil t ->
-                let img = (int) TileIndex.GhostPale
                 if (t - gameTime) < PowerPillWarnTime then
-                    gameTime |> PulseBetween PowerPillWarnFlashRate img normal
+                    gameTime |> PulseBetween PowerPillWarnFlashRate pale normal
                 else
-                    img
+                    pale
 
-            | GhostRegeneratingUntil _
             | GhostReturningToBase ->
-                (int) TileIndex.GhostReturning
+                dark
+
+            | GhostRegeneratingUntil _ ->
+                gameTime |> PulseBetween RegenerationFlashRate dark normal
 
     DrawPacTileInt render image x y ghostImageIndex gameTime
 
