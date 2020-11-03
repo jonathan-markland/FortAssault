@@ -36,8 +36,8 @@ type private MapPostPassageScreenModel =
     {
         ScoreAndHiScore   : ScoreAndHiScore
         ShipsThrough      : uint32
-        AlliedFleetCentre : PointF32
-        EnemyFleetCentre  : PointF32
+        AlliedFleetCentre : Point<float32<epx>>
+        EnemyFleetCentre  : Point<float32<epx>>
         BattleCtor        : float32<seconds> -> ErasedGameState
     }
 

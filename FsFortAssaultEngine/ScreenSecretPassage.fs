@@ -64,7 +64,7 @@ type Ship =
     {
         ShipRotation : ShipRotation
         ShipSpeed    : ShipSpeed
-        ShipCentre   : PointF32
+        ShipCentre   : Point<float32<epx>>
     }
 
 type ShipState =
@@ -75,7 +75,7 @@ type ShipState =
 
 type Mine =
     {
-        MineLocation : PointF32
+        MineLocation : Point<float32<epx>>
     }
 
 type Torpedo =

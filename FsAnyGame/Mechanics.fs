@@ -13,13 +13,13 @@ open Time
 [<Struct>]
 type MOMReason =
     | MOMYetToAppear
-    | MOMVisibleAtPosition of pos:PointF32
+    | MOMVisibleAtPosition of pos:Point<float32<epx>>
     | MOMDisappeared
 
 
 
 let FunctionThatGetsPositionOfStationaryObject
-    (pos       : PointF32)
+    (pos       : Point<float32<epx>>)
     (startTime : float32<seconds>) 
     (duration  : float32<seconds>) =
 
@@ -41,8 +41,8 @@ let FunctionThatGetsPositionOfStationaryObject
 
 let FunctionThatGetsPositionOfMovingObject
     motionFunction
-    (startPos  : PointF32) 
-    (endPos    : PointF32)
+    (startPos  : Point<float32<epx>>) 
+    (endPos    : Point<float32<epx>>)
     (startTime : float32<seconds>) 
     (duration  : float32<seconds>) =
 
@@ -141,15 +141,15 @@ let inline SlowingDownMotion (t:float32<seconds>) (duration:float32<seconds>) =
 type MechanicsObjectModel =
     {
         PositionGetter  :  (float32<seconds> -> MOMReason)
-        StartPosition   :  PointF32
-        FinalPosition   :  PointF32
+        StartPosition   :  Point<float32<epx>>
+        FinalPosition   :  Point<float32<epx>>
         EndGameTime     :  float32<seconds>
     }
 
 
 
 let MechanicsControlledStationaryObject
-        (pos       : PointF32)
+        (pos       : Point<float32<epx>>)
         (startTime : float32<seconds>) 
         (duration  : float32<seconds>) =
     {
@@ -163,8 +163,8 @@ let MechanicsControlledStationaryObject
 
 let MechanicsControlledMovingObject
         motionFunction
-        (startPos  : PointF32) 
-        (endPos    : PointF32)
+        (startPos  : Point<float32<epx>>) 
+        (endPos    : Point<float32<epx>>)
         (startTime : float32<seconds>) 
         (duration  : float32<seconds>) =
     {

@@ -73,8 +73,8 @@ let private PermissableTravelLocationRectangles =
 type private InitialMapScreenModel =
     {
         ScoreAndHiScore     : ScoreAndHiScore
-        AlliedFleetCentre   : PointF32
-        EnemyFleetCentre    : PointF32
+        AlliedFleetCentre   : Point<float32<epx>>
+        EnemyFleetCentre    : Point<float32<epx>>
         SecretPassageCtor   : float32<seconds> -> ErasedGameState
         EngageEnemyCtor     : float32<seconds> -> ErasedGameState
     }

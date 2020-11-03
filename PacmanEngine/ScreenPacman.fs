@@ -91,8 +91,8 @@ let FindUnique charToFind (mazeArray:string[]) =
 type private UnpackedMaze =
     {
         UnpackedMazeState      : MazeState
-        UnpackedPacmanPosition : PointI32
-        UnpackedGhostPositions : PointI32 list
+        UnpackedPacmanPosition : Point<int<epx>>
+        UnpackedGhostPositions : Point<int<epx>> list
     }
 
 let private TextMazeDefinitionUnpacked mazeArray = // TODO: move to a module?
@@ -155,7 +155,7 @@ let private TextMazeDefinitionUnpacked mazeArray = // TODO: move to a module?
             | NotFound    -> failwith (sprintf "Could not find char '%s' in the maze definition." (ch.ToString()))
             | NotUnique   -> failwith (sprintf "Char '%s' is not unique in the maze definition." (ch.ToString()))
             | Found(x,y)  -> 
-                { ptix = x * TileSide ; ptiy = y * TileSide }
+                { ptx = x * TileSide ; pty = y * TileSide }
 
     let ghostPositions =
         [1..4] |> List.map (fun n -> 
@@ -273,7 +273,7 @@ let KeysFrom keyStateGetter =
 /// to cover a single tile.
 let IsAlignedOnTile position =
 
-    let {ptix=x ; ptiy=y} = position
+    let {ptx=x ; pty=y} = position
     let isAligned n = ((n |> IntEpxToInt) % TileSideInt) = 0
 
     x |> isAligned && y |> isAligned
@@ -285,7 +285,7 @@ let IsAlignedOnTile position =
 let TileIndexOf position numTilesAcross =
 
     if position |> IsAlignedOnTile then
-        let {ptix=x ; ptiy=y} = position
+        let {ptx=x ; pty=y} = position
         let txi = x / TileSide
         let tyi = y / TileSide
         Some (tyi * numTilesAcross + txi)
@@ -303,13 +303,13 @@ let IsDirectionAllowedBy railsByte facingDirection =
 /// Obtain the bounding rectangle of a tile sized
 /// rectangle with its top left at a given pixel position.
 let TileBoundingRectangle position =
-    let x = position.ptix
-    let y = position.ptix
+    let x = position.ptx
+    let y = position.ptx
     {
-        LeftI32   = x
-        TopI32    = y
-        RightI32  = x + TileSide
-        BottomI32 = y + TileSide
+        Left   = x
+        Top    = y
+        Right  = x + TileSide
+        Bottom = y + TileSide
     }
 
 
@@ -370,8 +370,8 @@ let inline IsAtHomePosition ghost =
 /// given the top left positions of both.
 let TilesOverlap tilePos1 tilePos2 =
 
-    let {ptix=left1 ; ptiy=top1} = tilePos1
-    let {ptix=left2 ; ptiy=top2} = tilePos2
+    let {ptx=left1 ; pty=top1} = tilePos1
+    let {ptx=left2 ; pty=top2} = tilePos2
 
     let intersects a b =
         let a' = a + TileSide
@@ -485,7 +485,7 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
             let position =  // TODO: issue of frame rate!
 
                 let potentialPosition = 
-                    position |> PointI32MovedByDelta (direction |> DirectionToMovementDeltaI32)
+                    position |> PointMovedByDelta (direction |> DirectionToMovementDeltaI32)
 
                 match tile with
                     | None -> potentialPosition // Can always allow movement when inbetween tiles
@@ -542,7 +542,7 @@ let AdvanceToHomePosition ghost =
 
     let position = 
         ghost.GhostPosition 
-            |> PointI32MovedByDelta delta
+            |> PointMovedByDelta delta
 
     (position , ghost.GhostState2.GhostFacingDirection)
 

@@ -6,7 +6,7 @@ open Geometry
 
 type Target =
     {
-        TargetLocation : PointF32
+        TargetLocation : Point<float32<epx>>
     }
 
 /// Targets remaining on the fort.  Passed between tank battle and fort screens.

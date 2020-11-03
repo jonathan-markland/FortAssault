@@ -53,10 +53,10 @@ let AngleBetween current previous =
 
 let inline DirectionToMovementDelta zero i facingDirection =
     match facingDirection with
-        | FacingLeft  -> { modix = -i    ; modiy =  zero }
-        | FacingRight -> { modix =  i    ; modiy =  zero }
-        | FacingUp    -> { modix =  zero ; modiy = -i    }
-        | FacingDown  -> { modix =  zero ; modiy =  i    }
+        | FacingLeft  -> { modx = -i    ; mody =  zero }
+        | FacingRight -> { modx =  i    ; mody =  zero }
+        | FacingUp    -> { modx =  zero ; mody = -i    }
+        | FacingDown  -> { modx =  zero ; mody =  i    }
 
 let DirectionToMovementDeltaI32 =
     DirectionToMovementDelta 0<epx> 1<epx> 
@@ -111,7 +111,7 @@ type PacmanState =
         PacState2          : PacState2
 
         /// Stored position is relative to top left of maze.
-        PacPosition        : PointI32
+        PacPosition        : Point<int<epx>>
     }
 
     // Reminder: "Pill mode" is NOT a state of pacman himself.  If any of the ghosts
@@ -145,7 +145,7 @@ type GhostState2 =
         /// Ghost position at start of screen, used to 
         /// return to base after being eaten.
         /// Stored position is relative to top left of maze.
-        GhostHomePosition : PointI32
+        GhostHomePosition : Point<int<epx>>
 
         /// Travel direction
         GhostFacingDirection : FacingDirection
@@ -159,7 +159,7 @@ type GhostState =
         GhostState2    : GhostState2
 
         /// Stored position is relative to top left of maze.
-        GhostPosition  : PointI32
+        GhostPosition  : Point<int<epx>>
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -212,7 +212,7 @@ let private DrawPacTile render image x y (tileIndex:TileIndex) gameTime =
 
 let DrawPacMan render image originx originy pacmanState pillMode (gameTime:float32<seconds>) =
 
-    let { ptix=cx ; ptiy=cy } = pacmanState.PacPosition
+    let { ptx=cx ; pty=cy } = pacmanState.PacPosition
 
     let x = cx + originx
     let y = cy + originy
@@ -237,7 +237,7 @@ let DrawPacMan render image originx originy pacmanState pillMode (gameTime:float
 
 let DrawGhost render image originx originy ghostState (gameTime:float32<seconds>) =
 
-    let { ptix=cx ; ptiy=cy } = ghostState.GhostPosition
+    let { ptx=cx ; pty=cy } = ghostState.GhostPosition
     let (GhostNumber(ghostNumber)) = ghostState.GhostState2.GhostNumber
 
     let x = cx + originx

@@ -80,7 +80,7 @@ let TitleScreenPac facing percentX percentY =
     let h = TileSide / 2
 
     { 
-        PacPosition = { ptix=cx-h ; ptiy=cy-h }
+        PacPosition = { ptx=cx-h ; pty=cy-h }
         PacState2 = 
             {
                 PacMode            = PacAlive
@@ -96,7 +96,7 @@ let TitleScreenGhost ghostNumber percentX percentY =
 
     let h = TileSide / 2
 
-    let pos = { ptix=cx-h ; ptiy=cy-h } 
+    let pos = { ptx=cx-h ; pty=cy-h } 
 
     { 
         GhostPosition = pos
