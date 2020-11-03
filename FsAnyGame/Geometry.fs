@@ -110,30 +110,33 @@ let PointI32MovedByDelta delta point =
     }
 
 /// Returns a floating point movement delta that, if applied, would 
-/// cause a given object located at 'toPoint' to move towards a target
-/// located at 'fromPoint'.
+/// cause a given object located at 'fromPoint' to move towards a target
+/// located at 'toPoint'.
 let SimpleMovementDeltaToGetTo toPoint speed fromPoint =
 
     // NB Slightly weird formulae to eliminate floating point wiggle potential
 
-    {
-        modx =
-            let delta = toPoint.ptx - fromPoint.ptx
-            if delta > speed then
-                speed
-            elif delta < 0.0F<epx> then
-                -speed
-            else
-                0.0F<epx>
+    let inline delta toN speed fromN =
+        let delta = toN - fromN
+        if delta > speed then speed elif delta < 0.0F<epx> then -speed else 0.0F<epx>
 
-        mody =
-            let delta = toPoint.pty - fromPoint.pty
-            if delta > speed then
-                speed
-            elif delta < 0.0F<epx> then
-                -speed
-            else
-                0.0F<epx>
+    {
+        modx = delta toPoint.ptx speed fromPoint.ptx
+        mody = delta toPoint.pty speed fromPoint.pty
+    }
+
+/// Returns an integer movement delta that, if applied, would 
+/// cause a given object located at 'fromPoint' to move towards a target
+/// located at 'toPoint'.
+let SimpleMovementDeltaI32ToGetTo toPoint speed fromPoint =
+
+    let inline delta toN speed fromN =
+        let delta = toN - fromN
+        if delta > speed then speed elif delta < 0<epx> then -speed else 0<epx>
+
+    {
+        modix = delta toPoint.ptix speed fromPoint.ptix
+        modiy = delta toPoint.ptiy speed fromPoint.ptiy
     }
 
 /// Returns true if the given point lies within any of the rectangles in a list.

@@ -144,6 +144,9 @@ type GhostState2 =
         /// Stored position is relative to top left of maze.
         GhostHomePosition : PointI32
 
+        /// Travel direction
+        GhostFacingDirection : FacingDirection
+
         /// Ghost state.
         GhostMode      : GhostMode
     }

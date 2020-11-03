@@ -102,9 +102,10 @@ let TitleScreenGhost ghostNumber percentX percentY =
         GhostPosition = pos
         GhostState2 = 
             { 
-                GhostNumber       = ghostNumber
-                GhostMode         = GhostNormal
-                GhostHomePosition = pos
+                GhostNumber          = ghostNumber
+                GhostMode            = GhostNormal
+                GhostHomePosition    = pos
+                GhostFacingDirection = FacingUp  // Arbitrary.  Doesn't affect the graphics.
             } 
     }
 

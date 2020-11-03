@@ -298,6 +298,25 @@ let TileIndexOf position numTilesAcross =
 let IsDirectionAllowedBy railsByte facingDirection =
 
     (railsByte &&& (facingDirection |> FacingDirectionToMazeByte)) <> 0uy
+
+
+/// Obtain the mode of pacman.
+let inline PacMode pacman =
+    pacman.PacState2.PacMode
+
+
+/// Update pacman's mode.
+let WithPacMode mode pacman =
+    {
+        PacPosition = pacman.PacPosition
+        PacState2 =
+            {
+                PacMode            = mode
+                PacFacingDirection = pacman.PacState2.PacFacingDirection
+                LivesLeft          = pacman.PacState2.LivesLeft
+            }
+    }
+
     
 
 /// Obtain the mode of the given ghost.
@@ -306,14 +325,15 @@ let inline GhostMode ghost =
 
 
 /// Update the mode of the given ghost.
-let inline WithGhostMode mode ghost =
+let WithGhostMode mode ghost =
     {
         GhostPosition = ghost.GhostPosition
         GhostState2   =
             {
-                GhostNumber       = ghost.GhostState2.GhostNumber
-                GhostHomePosition = ghost.GhostState2.GhostHomePosition
-                GhostMode         = mode
+                GhostNumber          = ghost.GhostState2.GhostNumber
+                GhostHomePosition    = ghost.GhostState2.GhostHomePosition
+                GhostFacingDirection = ghost.GhostState2.GhostFacingDirection
+                GhostMode            = mode
             }
     }
 
@@ -321,6 +341,38 @@ let inline WithGhostMode mode ghost =
 /// Asks whether the given ghost is at its base home position.
 let inline IsAtHomePosition ghost =
     ghost.GhostPosition = ghost.GhostState2.GhostHomePosition
+
+
+/// Determine if two pacman-maze-tile sized areas overlap
+/// given the top left positions of both.
+let TilesOverlap tilePos1 tilePos2 =
+
+    let {ptix=left1 ; ptiy=top1} = tilePos1
+    let {ptix=left2 ; ptiy=top2} = tilePos2
+
+    let intersects a b =
+        let a' = a + TileSide
+        let b' = b + TileSide
+        not (b >= a' || b' <= a)
+
+    left1 |> intersects left2  &&  top1 |> intersects top2
+
+
+/// Asks whether a pacman-maze-tile sized area overlaps any
+/// of the GhostNormal-state ghosts in the list.  Ghosts in
+/// other states never participate in intersection.
+/// The tilePos denotes the top left corner.
+let TileIntersectsNormalGhostsIn ghostStateList tilePos =
+
+    let intersects pos ghost =
+        TilesOverlap pos ghost.GhostPosition
+
+    ghostStateList |> List.exists (fun ghost ->
+        match ghost.GhostState2.GhostMode with
+            | GhostNormal -> ghost |> intersects tilePos
+            | GhostEdibleUntil _
+            | GhostRegeneratingUntil _
+            | GhostReturningToBase -> false)
 
 
 
@@ -405,11 +457,138 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
             (EatenNothing , position , direction , 0u)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Ghost position advance
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let AdvanceGhost2 (allGhosts:GhostState list) (pacman:PacmanState) pacMask (ghost:GhostState) gameTime =
+
+    // If not exactly on a tile then keep moving in current direction.
+    // If on a tile:
+
+    // If we can spy PAC then mask off all other directions.
+
+    //    or- If we can spy PAC then mask off his direction, and if this leaves
+    //    or- no directions then that freezes this ghost, but that's fine!
+
+    // Else if we spy other ghosts, mask off those directions.
+    // If directions is now empty, then bail by restoring.
+    // With the resulting directions:
+    // - If straight rail then keep moving in current direction.
+    // - Consider the number of directions given by the tile:
+    //   + One = about turn always
+    //   + Two = (corner) 80% probability of continue around corner, vs 20% about-turn
+    //   + Three = 50% keep straight, 40% turn corner, 10% about-turn
+    //   + Four = 50% keep straight, 20% turn corner 1, 20% turn corner 2, 10% about-turn
+    // ... But the weightings should be parameterised per ghost to give each one traits.
+
+    //(position , direction)
+    (ghost.GhostPosition , ghost.GhostState2.GhostFacingDirection) 
+
+
+let AdvanceToHomePosition ghost =
+
+    let delta = 
+        ghost.GhostPosition 
+            |> SimpleMovementDeltaI32ToGetTo ghost.GhostState2.GhostHomePosition 1<epx>
+
+    let position = 
+        ghost.GhostPosition 
+            |> PointI32MovedByDelta delta
+
+    (position , ghost.GhostState2.GhostFacingDirection)
+
+
+let AdvanceGhost allGhosts pacman ghost gameTime =
+
+    let (position , direction) =
+        match ghost |> GhostMode with
+            | GhostNormal ->
+                AdvanceGhost2 allGhosts pacman 0x00 ghost gameTime
+
+            | GhostEdibleUntil _ -> 
+                AdvanceGhost2 allGhosts pacman 0x0F ghost gameTime
+
+            | GhostReturningToBase ->
+                AdvanceToHomePosition ghost
+
+            | GhostRegeneratingUntil _ ->
+                // No movement while re-generating in the base.
+                (ghost.GhostPosition , ghost.GhostState2.GhostFacingDirection) 
+
+    {
+        GhostPosition = position
+        GhostState2 =
+            {
+                GhostNumber          = ghost.GhostState2.GhostNumber
+                GhostHomePosition    = ghost.GhostState2.GhostHomePosition
+                GhostMode            = ghost.GhostState2.GhostMode
+                GhostFacingDirection = direction
+            }
+    }
+
+
+let WithGhostMovement pacman gameTime allGhosts =
+
+    allGhosts |> List.map (fun ghost -> AdvanceGhost allGhosts pacman ghost gameTime)
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Collisions PAC vs GHOSTS
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+/// State changes on pacman as a result of collision detection with ghosts
+let WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime pacmanState =
+
+    match pacmanState.PacState2.PacMode with
+
+        | PacDyingUntil _
+        | PacDeadUntil _ -> 
+            pacmanState   // intersection does not apply
+
+        | PacAlive ->
+            if pacmanState.PacPosition |> TileIntersectsNormalGhostsIn ghostStateList then
+                pacmanState |> WithPacMode
+                    (PacDyingUntil (gameTime + PacmanDyingAnimationTime))
+            else
+                pacmanState
+
+
+/// State changes on ghosts as a result of collision detection with pacman
+let WithStateChangesResultingFromCollisionWithPacman pacmanPos ghosts =
+
+    let isEdibleGhostOverlappingPacmanAt pacmanPos ghost =
+
+        match ghost.GhostState2.GhostMode with
+            | GhostEdibleUntil _        -> ghost.GhostPosition |> TilesOverlap pacmanPos
+            | GhostNormal
+            | GhostReturningToBase      
+            | GhostRegeneratingUntil _  -> false
+
+    // Garbage optimisation:  Scan for intersections and calculate score for eaten ghosts.
+
+    let score = 
+        ghosts |> List.sumBy (fun ghost ->
+            if ghost |> isEdibleGhostOverlappingPacmanAt pacmanPos then ScoreForEatingGhost else NoScore)
+
+    let ghosts = 
+        if score = 0u then
+            ghosts  // no ghosts changed state because none were eaten
+        else
+            ghosts |> List.map (fun ghost ->
+                if ghost |> isEdibleGhostOverlappingPacmanAt pacmanPos then 
+                    ghost |> WithGhostMode GhostReturningToBase
+                else
+                    ghost)
+
+    struct (ghosts , score)
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  State update application
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 /// State update for pacman position and direction.
-let WithPacManStateChangesAppliedFrom position direction pacmanState =
+let WithPacManMovementStateChangesAppliedFrom position direction pacmanState =
 
     if direction = pacmanState.PacState2.PacFacingDirection then
         {
@@ -497,18 +676,14 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
         }
             = model
 
-    // Calculation
-
     let eaten , position , direction , scoreIncrement =
         AdvancePacMan keyStateGetter mazeState pacmanState
 
     let scoreAndHiScore =
         scoreAndHiScore |> ScoreIncrementedBy scoreIncrement
 
-    // Application
-
     let pacmanState =
-        pacmanState |> WithPacManStateChangesAppliedFrom position direction
+        pacmanState |> WithPacManMovementStateChangesAppliedFrom position direction
 
     let mazeState =
         mazeState |> WithDotsRemovedFromArrayWhere eaten
@@ -517,6 +692,16 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
         ghostStateList 
             |> WithReturnToNormalityIfTimeOutAt gameTime
             |> WithEdibleGhostsIfPowerPill eaten gameTime
+            |> WithGhostMovement pacmanState gameTime
+
+    let pacmanState =
+        pacmanState |> WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime
+
+    let struct (ghostStateList , scoreIncrement) =
+        ghostStateList |> WithStateChangesResultingFromCollisionWithPacman pacmanState.PacPosition
+
+    let scoreAndHiScore =
+        scoreAndHiScore |> ScoreIncrementedBy scoreIncrement
 
     // Repack
 
@@ -543,7 +728,7 @@ let NewPacmanScreen whereToOnGameOver scoreAndHiScore =
 
             // TODO: sort out
             PacmanState = { PacPosition = unpackedMaze.UnpackedPacmanPosition ; PacState2 = { PacFacingDirection = FacingRight ; PacMode = PacAlive ; LivesLeft = 3 } }
-            GhostsState = unpackedMaze.UnpackedGhostPositions |> List.mapi (fun i ghostPos -> { GhostPosition = ghostPos ; GhostState2 = { GhostNumber = GhostNumber(i) ; GhostMode = GhostNormal ; GhostHomePosition = ghostPos } })
+            GhostsState = unpackedMaze.UnpackedGhostPositions |> List.mapi (fun i ghostPos -> { GhostPosition = ghostPos ; GhostState2 = { GhostNumber = GhostNumber(i) ; GhostMode = GhostNormal ; GhostHomePosition = ghostPos ; GhostFacingDirection = FacingUp } })
         }
 
     NewGameState NextPacmanScreenState RenderPacmanScreen pacModel
