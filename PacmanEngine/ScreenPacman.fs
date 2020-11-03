@@ -300,9 +300,27 @@ let IsDirectionAllowedBy railsByte facingDirection =
     (railsByte &&& (facingDirection |> FacingDirectionToMazeByte)) <> 0uy
 
 
+/// Obtain the bounding rectangle of a tile sized
+/// rectangle with its top left at a given pixel position.
+let TileBoundingRectangle position =
+    let x = position.ptix
+    let y = position.ptix
+    {
+        LeftI32   = x
+        TopI32    = y
+        RightI32  = x + TileSide
+        BottomI32 = y + TileSide
+    }
+
+
 /// Obtain the mode of pacman.
 let inline PacMode pacman =
     pacman.PacState2.PacMode
+
+
+/// Obtain pacman's bounding rectangle.
+let inline PacBoundingRectangle pacman =
+    pacman.PacPosition |> TileBoundingRectangle
 
 
 /// Update pacman's mode.
@@ -322,6 +340,11 @@ let WithPacMode mode pacman =
 /// Obtain the mode of the given ghost.
 let inline GhostMode ghost =
     ghost.GhostState2.GhostMode
+
+
+/// Obtain a ghost's bounding rectangle.
+let inline GhostBoundingRectangle ghost =
+    ghost.GhostPosition |> TileBoundingRectangle
 
 
 /// Update the mode of the given ghost.
@@ -374,6 +397,32 @@ let TileIntersectsNormalGhostsIn ghostStateList tilePos =
             | GhostRegeneratingUntil _
             | GhostReturningToBase -> false)
 
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  SPYING - looking down the corridors
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+   
+/// Returns the corridor rectangle  TODO
+// let CorridorRectangle tilesHorizontally tilesVertically mazeByteArray originTileX originTileY direction =
+// 
+//     let step = direction |> DirectionToMovementDelta 0 1
+// 
+//     let left = originTile.ptix
+//     let top  = originTile.ptiy
+// 
+//     let inline rect l t r b = { LeftI32=l ; TopI32=t ; RightI32=r ; BottomI32=b }
+// 
+//     match direction with
+//         | FacingUp    -> rect left 0<epx> (left+TileSide) (top+TileSide)
+//         | FacingDown  -> rect left top (left+TileSide) (top+TileSide * tilesVertically)
+//         | FacingLeft  -> rect 0<epx> top (left+TileSide) (top+TileSide)
+//         | FacingRight -> rect left top (left+TileSide * tilesHorizontally) (top+TileSide)
+
+
+
+// let CanSpyPositionAt otherPosition maze fromPosition =
+
+    
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

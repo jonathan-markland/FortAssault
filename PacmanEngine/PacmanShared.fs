@@ -51,12 +51,15 @@ let AngleBetween current previous =
     let d = (current |> FacingDirectionToInt) - (previous |> FacingDirectionToInt)
     (d &&& 3) |> IntToAngle
 
-let DirectionToMovementDeltaI32 facingDirection =
+let inline DirectionToMovementDelta zero i facingDirection =
     match facingDirection with
-        | FacingLeft  -> { modix = -1<epx> ; modiy =  0<epx> }
-        | FacingRight -> { modix =  1<epx> ; modiy =  0<epx> }
-        | FacingUp    -> { modix =  0<epx> ; modiy = -1<epx> }
-        | FacingDown  -> { modix =  0<epx> ; modiy =  1<epx> }
+        | FacingLeft  -> { modix = -i    ; modiy =  zero }
+        | FacingRight -> { modix =  i    ; modiy =  zero }
+        | FacingUp    -> { modix =  zero ; modiy = -i    }
+        | FacingDown  -> { modix =  zero ; modiy =  i    }
+
+let DirectionToMovementDeltaI32 =
+    DirectionToMovementDelta 0<epx> 1<epx> 
 
 let KeyStatesToDirection u d l r defaultDirection =
     // These are to be exclusive.

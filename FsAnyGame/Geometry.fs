@@ -24,10 +24,10 @@ type PointI32 =
     }
 
 /// A movement delta in Engine coordinate space.
-type MovementDeltaI32 =
+type MovementDeltaI32<'t> =
     {
-        modix : int<epx>
-        modiy : int<epx>
+        modix : 't
+        modiy : 't
     }
 
 /// A floating-point cartesian point in Engine coordinate space.
@@ -51,6 +51,15 @@ type RectangleF32 =
         Top    : float32<epx>
         Right  : float32<epx>
         Bottom : float32<epx>
+    }
+
+/// An integer rectangle in Engine coordinate space.
+type RectangleI32 =
+    {
+        LeftI32   : int<epx>
+        TopI32    : int<epx>
+        RightI32  : int<epx>
+        BottomI32 : int<epx>
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
