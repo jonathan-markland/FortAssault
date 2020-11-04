@@ -36,28 +36,56 @@ let NewDirectionMasks u d l r centralDotIndex =
 /// with user-definable bit values for the direction bits.
 let MazeFilterIter isWallAtXY width height masks action =
 
-    let test x y mask =
-        if x >= 0 && y >= 0 && x < width && y < height then
-            if isWallAtXY x y then mask else 0uy
-        else
-            0uy
+    if width > 0 && height > 0 then
 
-    for y in 0..(height-1) do
-        for x in 0..(width-1) do
-            if isWallAtXY x y then
-                let u = test x (y-1) masks.UpMask
-                let d = test x (y+1) masks.DownMask
-                let l = test (x-1) y masks.LeftMask
-                let r = test (x+1) y masks.RightMask
-                let bits = (u ||| d ||| l ||| r)
-                let shapeIndex =
-                    if bits = 0uy && (isWallAtXY x y) then
-                        masks.CentralDotIndex
-                    else
-                        bits
-                action x y shapeIndex
-            else
-                action x y 0uy  // To completely define the output
+        let h = height - 1
+        let w = width  - 1
+
+        let setIfExitAt x y directionBitmask =
+            
+            /// A range is defined [0..e].
+            /// The value n could step one place outside this range, 
+            /// so if it does, wrap it back onto the other side:
+            let inline withWraparound e n =
+                if n < 0 then e else if n > e then 0 else n
+
+            /// See if x or y are off the grid, if so wrap back 
+            /// onto the opposite side:
+            let (x,y) = (x |> withWraparound w , y |> withWraparound h)
+
+            if isWallAtXY x y then directionBitmask else 0uy
+
+        let horizontal = masks.LeftMask ||| masks.RightMask
+        let vertical   = masks.UpMask ||| masks.DownMask
+
+        let inline edgeMask where x a b mask =
+            if where && (a ||| b) = mask then 0uy else x
+
+        for y in 0..h do
+            for x in 0..w do
+                if isWallAtXY x y then
+                    
+                    let u = setIfExitAt x (y-1) masks.UpMask
+                    let d = setIfExitAt x (y+1) masks.DownMask
+                    let l = setIfExitAt (x-1) y masks.LeftMask
+                    let r = setIfExitAt (x+1) y masks.RightMask
+
+                    let u' = edgeMask (y=0) u l r horizontal
+                    let l' = edgeMask (x=0) l u d vertical
+                    let d' = edgeMask (y=h) d l r horizontal
+                    let r' = edgeMask (x=w) r u d vertical
+
+                    let bits = (u' ||| d' ||| l' ||| r')
+
+                    let shapeIndex =
+                        if bits = 0uy && (isWallAtXY x y) then
+                            masks.CentralDotIndex
+                        else
+                            bits
+
+                    action x y shapeIndex
+                else
+                    action x y 0uy  // To completely define the output
 
 
 

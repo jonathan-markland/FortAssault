@@ -103,7 +103,7 @@ let ``MazeByteArray applied to basic maze produces correct pieces viewed via box
         |]
 
     // Reminder of how to obtain F# source code:  
-    // let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsHash
+    let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsHash
 
     let expected =
         [
@@ -171,27 +171,27 @@ let ``MazeByteArray applied to maze with holes at edges`` () =
 
     let maze =
         [|
-            "#### ###"
+            "#### # #"
             "  #     "
             "# # ## #"
-            "# #  # #"
+            "  #  # #"
             "# #### #"
-            "#      #"
-            "#### ###"
+            "#       "
+            "# ## ###"
         |]
 
     // Reminder of how to obtain F# source code:  
-    // let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsHash
+    let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsHash
 
     let expected =
         [
-            "╶─┬╴ ╶─╴"
+            "──┬┘ ╵ └"
             "  │     "
-            "╷ │ ╶┐ ╷"
-            "│ │  │ │"
-            "│ └──┘ │"
-            "│      │"
-            "└──╴ ╶─┘"
+            "╴ │ ╶┐ ┌"
+            "  │  │ │"
+            "┐ └──┘ └"
+            "│       "
+            "│ ┌┐ ┌──"
         ]
 
     maze |> WhenTransformed IsHash |> ShouldEqual (Some expected)
@@ -235,29 +235,31 @@ let ``MazeByteArray applied to basic maze produces correct pieces with inverted 
 [<Fact>]
 let ``MazeByteArray applied to maze with holes at edges inverted`` () =
 
+    // Some holes allow wrap-around because they align, some don't.
+
     let maze =
         [|
-            "#### ###"
+            "#### # #"
             "  #     "
             "# # ## #"
-            "# #  # #"
+            "  #  # #"
             "# #### #"
-            "#      #"
-            "#### ###"
+            "#       "
+            "# ## ###"
         |]
 
     // Reminder of how to obtain F# source code:  
-    // let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsNotHash
+    let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsNotHash
 
     let expected =
         [
-            "    ╷   "
-            "╶┐ ┌┴─┬╴"
+            "    │ ╷ "
+            "─┐ ┌┴─┼─"
             " │ │  │ "
-            " │ └╴ │ "
+            "╶┤ └╴ │ "
             " │    │ "
-            " └──┬─┘ "
-            "    ╵   "
+            " ├──┬─┴╴"
+            " ╵  │   "
         ]
 
     maze |> WhenTransformed IsNotHash |> ShouldEqual (Some expected)
