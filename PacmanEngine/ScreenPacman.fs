@@ -472,13 +472,18 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
             model.MazeState.MazeTilesCountY
 
     let pillMode = InPillMode model.GhostsState
-
-    DrawPacMan 
-        render tilesImage originx originy model.PacmanState pillMode gameTime
+    let x = model.PacmanState.PacPosition.ptx + originx
+    let y = model.PacmanState.PacPosition.pty + originy
+    let direction = model.PacmanState.PacState2.PacFacingDirection
+    DrawPacMan render tilesImage x y direction pillMode gameTime
 
     model.GhostsState
         |> List.iteri (fun i ghostState ->
-            DrawGhost render tilesImage originx originy ghostState gameTime)
+            let x = ghostState.GhostPosition.ptx + originx
+            let y = ghostState.GhostPosition.pty + originy
+            let number = ghostState.GhostState2.GhostNumber
+            let mode = ghostState.GhostState2.GhostMode
+            DrawGhost render tilesImage x y number mode gameTime)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  SPYING - looking down the corridors

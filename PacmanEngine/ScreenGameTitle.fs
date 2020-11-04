@@ -91,7 +91,7 @@ let private NextGameTitleScreenState gameState keyStateGetter gameTime elapsed =
     
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let TitleScreenPac facing percentX percentY =
+let private TitleScreenPac facing percentX percentY =
 
     let cx = percentX |> PercentOfScreenWidth
     let cy = percentY |> PercentOfScreenHeight
@@ -103,7 +103,7 @@ let TitleScreenPac facing percentX percentY =
         direction = facing
     }
 
-let TitleScreenGhost ghostNumber percentX percentY =
+let private TitleScreenGhost ghostNumber percentX percentY =
 
     let cx = percentX |> PercentOfScreenWidth
     let cy = percentY |> PercentOfScreenHeight

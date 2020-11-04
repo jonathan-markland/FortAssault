@@ -197,16 +197,11 @@ let DrawPacTileInt render image x y (tileIndex:int) gameTime =
         render (
             DrawSubImageStretchedToTarget (
                 (xIndex - 1) * 16, 0, 16, 16,   // subtract 1 because we don't store image data for the blank tile.
-                (x |> IntToFloatEpx), 
-                (y |> IntToFloatEpx), 
+                (x |> IntEpxToInt |> IntToFloatEpx), 
+                (y |> IntEpxToInt |> IntToFloatEpx), 
                 16<epx>, 
                 16<epx>,
                 image)) 
-
-let private DrawPacTile render image x y (tileIndex:TileIndex) gameTime =
-
-    let ti = ((int) tileIndex)
-    DrawPacTileInt render image x y ti gameTime
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -228,7 +223,7 @@ let DrawPacMan render image x y facingDirection pillMode (gameTime:float32<secon
             (SnapsPerSecond * pillModeFactor)
             pacDirectionalImageIndex (pacDirectionalImageIndex + 4) 
 
-    DrawPacTileInt render image (x |> IntEpxToInt) (y |> IntEpxToInt) pacImageIndex gameTime
+    DrawPacTileInt render image x y pacImageIndex gameTime
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -258,10 +253,10 @@ let DrawGhost render image x y (GhostNumber(ghostNumber)) ghostMode (gameTime:fl
             | GhostRegeneratingUntil _ ->
                 gameTime |> PulseBetween RegenerationFlashRate dark normal
 
-    DrawPacTileInt render image (x |> IntEpxToInt) (y |> IntEpxToInt) ghostImageIndex gameTime
+    DrawPacTileInt render image x y ghostImageIndex gameTime
 
     let wiggleRate = EyesTwitchesPerSecond * (float32 (ghostNumber + 1))
     let eyes = gameTime |> PulseBetween wiggleRate TileIndex.Eyes1 TileIndex.Eyes2
 
-    DrawPacTileInt render image (x |> IntEpxToInt) (y |> IntEpxToInt) ((int) eyes) gameTime
+    DrawPacTileInt render image x y ((int) eyes) gameTime
 
