@@ -18,16 +18,30 @@ let inline PercentOfScreenHeight x = (ScreenHeightInt * x) / 100
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+type private TitleScreenPacmanState =
+    {
+        x : int<epx>
+        y : int<epx>
+        direction : FacingDirection
+    }
+
+type private TitleScreenGhostState =
+    {
+        x : int<epx>
+        y : int<epx>
+        number : GhostNumber
+    }
+
 type private GameTitleScreenModel =
     {
         Scoreboard     : ScoreAndName list
         ScoreboardMemo : string list
-        PacLeftMemo    : PacmanState
-        PacRightMemo   : PacmanState
-        Ghost0Memo     : GhostState
-        Ghost1Memo     : GhostState
-        Ghost2Memo     : GhostState
-        Ghost3Memo     : GhostState
+        PacLeftMemo    : TitleScreenPacmanState
+        PacRightMemo   : TitleScreenPacmanState
+        Ghost0Memo     : TitleScreenGhostState
+        Ghost1Memo     : TitleScreenGhostState
+        Ghost2Memo     : TitleScreenGhostState
+        Ghost3Memo     : TitleScreenGhostState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -47,17 +61,22 @@ let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 
     let verticalSpacing = 16<epx>
 
-    let pillMode = false
+    let DrawPacMan pacmanState =
+        let pillMode = false
+        let { x=x ; y=y ; direction=facingDirection } = pacmanState
+        DrawPacMan render tilesImage x y facingDirection pillMode gameTime
 
-    let (originx,originy) = (0<epx> , 0<epx>)
+    let DrawGhost ghostState =
+        let { x=x ; y=y ; number=ghostNumber } = ghostState
+        DrawGhost render tilesImage x y ghostNumber GhostNormal gameTime
 
-    DrawPacMan render tilesImage originx originy model.PacRightMemo false gameTime
-    DrawPacMan render tilesImage originx originy model.PacLeftMemo  false gameTime
+    DrawPacMan model.PacRightMemo
+    DrawPacMan model.PacLeftMemo 
 
-    DrawGhost render tilesImage originx originy model.Ghost0Memo gameTime
-    DrawGhost render tilesImage originx originy model.Ghost1Memo gameTime
-    DrawGhost render tilesImage originx originy model.Ghost2Memo gameTime
-    DrawGhost render tilesImage originx originy model.Ghost3Memo gameTime
+    DrawGhost  model.Ghost0Memo
+    DrawGhost  model.Ghost1Memo
+    DrawGhost  model.Ghost2Memo
+    DrawGhost  model.Ghost3Memo
 
     Text render GreyFontID CentreAlign MiddleAlign x50pc y20pc "PAC MAN"
 
@@ -76,37 +95,24 @@ let TitleScreenPac facing percentX percentY =
 
     let cx = percentX |> PercentOfScreenWidth
     let cy = percentY |> PercentOfScreenHeight
-
-    let h = TileSide / 2
+    let h  = TileSide / 2
 
     { 
-        PacPosition = { ptx=cx-h ; pty=cy-h }
-        PacState2 = 
-            {
-                PacMode            = PacAlive
-                PacFacingDirection = facing
-                LivesLeft          = 3
-            }
+        x = cx - h
+        y = cy - h
+        direction = facing
     }
 
 let TitleScreenGhost ghostNumber percentX percentY =
 
     let cx = percentX |> PercentOfScreenWidth
     let cy = percentY |> PercentOfScreenHeight
-
-    let h = TileSide / 2
-
-    let pos = { ptx=cx-h ; pty=cy-h } 
+    let h  = TileSide / 2
 
     { 
-        GhostPosition = pos
-        GhostState2 = 
-            { 
-                GhostNumber          = ghostNumber
-                GhostMode            = GhostNormal
-                GhostHomePosition    = pos
-                GhostFacingDirection = FacingUp  // Arbitrary.  Doesn't affect the graphics.
-            } 
+        x = cx - h
+        y = cy - h
+        number = ghostNumber
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

@@ -210,15 +210,12 @@ let private DrawPacTile render image x y (tileIndex:TileIndex) gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let DrawPacMan render image originx originy pacmanState pillMode (gameTime:float32<seconds>) =
-
-    let { ptx=x ; pty=y } = pacmanState.PacPosition
-
-    let x = x + originx
-    let y = y + originy
+/// Draw pac man image with top left at (x,y) facing in the direction given,
+/// with appropriate open/closed mouth animation.
+let DrawPacMan render image x y facingDirection pillMode (gameTime:float32<seconds>) =
 
     let pacDirectionalImageIndex =
-        (int) (match pacmanState.PacState2.PacFacingDirection with 
+        (int) (match facingDirection with 
                 | FacingLeft  -> TileIndex.PacLeft1
                 | FacingRight -> TileIndex.PacRight1
                 | FacingUp    -> TileIndex.PacUp1
@@ -231,17 +228,13 @@ let DrawPacMan render image originx originy pacmanState pillMode (gameTime:float
             (SnapsPerSecond * pillModeFactor)
             pacDirectionalImageIndex (pacDirectionalImageIndex + 4) 
 
-    DrawPacTileInt render image x y pacImageIndex gameTime
+    DrawPacTileInt render image (x |> IntEpxToInt) (y |> IntEpxToInt) pacImageIndex gameTime
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let DrawGhost render image originx originy ghostState (gameTime:float32<seconds>) =
-
-    let { ptx=cx ; pty=cy } = ghostState.GhostPosition
-    let (GhostNumber(ghostNumber)) = ghostState.GhostState2.GhostNumber
-
-    let x = cx + originx
-    let y = cy + originy
+/// Draw ghost image with top left at (x,y), selecting the appropriate
+/// ghost colour and eyes animation frame.
+let DrawGhost render image x y (GhostNumber(ghostNumber)) ghostMode (gameTime:float32<seconds>) =
 
     let ghostImageIndex =
         
@@ -249,7 +242,7 @@ let DrawGhost render image originx originy ghostState (gameTime:float32<seconds>
         let dark = (int) TileIndex.GhostReturning
         let pale = (int) TileIndex.GhostPale
 
-        match ghostState.GhostState2.GhostMode with
+        match ghostMode with
             | GhostNormal ->
                 normal
 
@@ -265,10 +258,10 @@ let DrawGhost render image originx originy ghostState (gameTime:float32<seconds>
             | GhostRegeneratingUntil _ ->
                 gameTime |> PulseBetween RegenerationFlashRate dark normal
 
-    DrawPacTileInt render image x y ghostImageIndex gameTime
+    DrawPacTileInt render image (x |> IntEpxToInt) (y |> IntEpxToInt) ghostImageIndex gameTime
 
     let wiggleRate = EyesTwitchesPerSecond * (float32 (ghostNumber + 1))
     let eyes = gameTime |> PulseBetween wiggleRate TileIndex.Eyes1 TileIndex.Eyes2
 
-    DrawPacTileInt render image x y ((int) eyes) gameTime
+    DrawPacTileInt render image (x |> IntEpxToInt) (y |> IntEpxToInt) ((int) eyes) gameTime
 
