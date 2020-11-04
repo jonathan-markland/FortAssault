@@ -22,10 +22,10 @@ let private PauseDuration = 2.0F<seconds>
 
 let private DefaultMaze =
     [|
-        "#########.##########"
+        "#########.########.#"
         "#@..##......##.....#"
         "#.#....####....#.#.#"
-        "#.#.##########...#.#"
+        "..#.##########...#.#"
         "#.#............#.#.#"
         "#...###.####.#.#@..#"
         "#.#.#...#12:.#.#####"
@@ -35,8 +35,8 @@ let private DefaultMaze =
         "#...#.########.#.#.#"
         "#.#.#........#.....#"
         "#@#.#.#.####.#.#@#.#"
-        "#.....#........#...#"
-        "#########.##########"
+        "#.....#........#...."
+        "###.#####.##########"
     |]
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -368,7 +368,7 @@ let CorridorRectangle tilesHorizontally tilesVertically (mazeByteArray:byte[]) o
 //  DRAWING
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private DrawSpecificMazeCentred render image cx cy countX countY (mazeByteArray:byte[]) gameTime pacPosHack =
+let private DrawSpecificMazeCentred render image cx cy countX countY (mazeByteArray:byte[]) gameTime =
 
     let (x,y) = OriginForMazeOfDimensions cx cy countX countY
 
@@ -380,23 +380,9 @@ let private DrawSpecificMazeCentred render image cx cy countX countY (mazeByteAr
             let x' = x + tx * TileSide
             DrawPacTileInt render image x' y' ((int)tileIndex) gameTime
 
-
-    // TODO:  HACK:
-    let facing = pacPosHack.PacState2.PacFacingDirection
-    let pos = pacPosHack.PacPosition
-    let pos = { ptx=pos.ptx / 16<epx> ; pty=pos.pty/16<epx> }
-    let origin = { modx=x ; mody=y }
-    let r = CorridorRectangle countX countY mazeByteArray pos facing |> RectangleMovedByDelta origin
-
-    let shape =
-        DrawingShapes.DrawFilledRectangle (
-            r.Left, r.Top, (r |> RectangleWidth), (r |> RectangleHeight), (DrawingShapes.SolidColour 0xFF00FFu))
-
-    render shape
-
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private DrawMazeCentred render image cx cy mazeState gameTime pacPosHack =
+let private DrawMazeCentred render image cx cy mazeState gameTime =
 
     DrawSpecificMazeCentred 
         render image cx cy 
@@ -404,7 +390,6 @@ let private DrawMazeCentred render image cx cy mazeState gameTime pacPosHack =
         mazeState.MazeTilesCountY
         mazeState.MazeTiles
         gameTime
-        pacPosHack
 
     // DrawSpecificMazeCentred 
     //     render image cx cy 
@@ -422,6 +407,24 @@ let private DrawMazeCentred render image cx cy mazeState gameTime pacPosHack =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let private DrawCorridorFinderResult render cx cy countX countY mazeByteArray pacPosHack =
+
+    let (x,y) = OriginForMazeOfDimensions cx cy countX countY
+
+    let facing = pacPosHack.PacState2.PacFacingDirection
+    let pos    = pacPosHack.PacPosition
+    let pos    = { ptx=pos.ptx / 16<epx> ; pty=pos.pty/16<epx> }
+    let origin = { modx=x ; mody=y }
+    let r      = CorridorRectangle countX countY mazeByteArray pos facing |> RectangleMovedByDelta origin
+
+    let shape =
+        DrawingShapes.DrawFilledRectangle (
+            r.Left, r.Top, (r |> RectangleWidth), (r |> RectangleHeight), (DrawingShapes.SolidColour 0xFF00FFu))
+
+    render shape
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
 
     let backgroundImage = BackgroundImageID |> ImageFromID
@@ -436,7 +439,13 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
         cx cy
         model.MazeState
         gameTime
-        model.PacmanState // TODO: HACK
+
+    // DrawCorridorFinderResult 
+    //     render cx cy 
+    //     model.MazeState.MazeTilesCountX 
+    //     model.MazeState.MazeTilesCountY
+    //     model.MazeState.MazeTiles
+    //     model.PacmanState
 
     let (originx,originy) = 
         OriginForMazeOfDimensions 
