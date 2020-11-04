@@ -188,77 +188,6 @@ let private OriginForMazeOfDimensions cx cy (countX:int) (countY:int) =
     (x,y)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let private DrawSpecificMazeCentred render image cx cy countX countY (mazeByteArray:byte[]) gameTime =
-
-    let (x,y) = OriginForMazeOfDimensions cx cy countX countY
-
-    for ty in 0..countY - 1 do
-        let y' = y + ty * TileSide
-
-        for tx in 0..countX - 1 do
-            let tileIndex = mazeByteArray.[ty * countX + tx]
-            let x' = x + tx * TileSide
-            DrawPacTileInt render image x' y' ((int)tileIndex) gameTime
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let private DrawMazeCentred render image cx cy mazeState gameTime =
-
-    DrawSpecificMazeCentred 
-        render image cx cy 
-        mazeState.MazeTilesCountX
-        mazeState.MazeTilesCountY
-        mazeState.MazeTiles
-        gameTime
-
-    // DrawSpecificMazeCentred 
-    //     render image cx cy 
-    //     mazeState.MazeTilesCountX
-    //     mazeState.MazeTilesCountY
-    //     mazeState.MazeGhostRails
-    //     gameTime
-
-    // DrawSpecificMazeCentred 
-    //     render image cx cy 
-    //     mazeState.MazeTilesCountX
-    //     mazeState.MazeTilesCountY
-    //     mazeState.MazePlayersRails
-    //     gameTime
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
-
-    let backgroundImage = BackgroundImageID |> ImageFromID
-    Image1to1 render 0<epx> 0<epx> backgroundImage
-
-    let tilesImage = Level1ImageID |> ImageFromID
-
-    let cx,cy = (ScreenWidthInt / 2) , (ScreenHeightInt / 2) 
-
-    DrawMazeCentred 
-        render tilesImage 
-        cx cy
-        model.MazeState
-        gameTime
-
-    let (originx,originy) = 
-        OriginForMazeOfDimensions 
-            cx cy 
-            model.MazeState.MazeTilesCountX 
-            model.MazeState.MazeTilesCountY
-
-    let pillMode = InPillMode model.GhostsState
-
-    DrawPacMan 
-        render tilesImage originx originy model.PacmanState pillMode gameTime
-
-    model.GhostsState
-        |> List.iteri (fun i ghostState ->
-            DrawGhost render tilesImage originx originy ghostState gameTime)
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Support functions
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -304,7 +233,7 @@ let IsDirectionAllowedBy railsByte facingDirection =
 /// rectangle with its top left at a given pixel position.
 let TileBoundingRectangle position =
     let x = position.ptx
-    let y = position.ptx
+    let y = position.pty
     {
         Left   = x
         Top    = y
@@ -399,24 +328,135 @@ let TileIntersectsNormalGhostsIn ghostStateList tilePos =
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  CORRIDOR DETERMINATION
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+/// Returns the corridor rectangle starting from a given maze tile 'originTile',
+/// where originTile is a 2D array index into the tiles matrix.  Takes the actual
+/// maze, not the rails as the mazeByteArray.
+let CorridorRectangle tilesHorizontally tilesVertically (mazeByteArray:byte[]) originTile direction =
+
+    let stepDelta =
+        direction |> DirectionToMovementDelta 0 1
+
+    let isWall (t:byte) =
+        t >= ((byte)TileIndex.Wall0) && t <= ((byte)TileIndex.Wall15)
+    
+    let hasNoExitInDirectionOfTravel pos =  // Not strictly correct, will cause inclusion of the wall square hit, but that is benign for our purposes.
+        isWall (mazeByteArray.[pos.pty * tilesHorizontally + pos.ptx])
+
+    let noSquareExistsAt pos =
+        pos.ptx < 0 || pos.pty < 0 || pos.ptx >= tilesHorizontally || pos.pty >= tilesVertically
+
+    let boundingRectangleOfSquareAt pos =
+        pos |> PointMult TileSide |> TileBoundingRectangle
+
+    let rec stepper  stepDelta position accumulator =
+        
+        let nextPosition = position |> PointMovedByDelta stepDelta
+
+        if noSquareExistsAt nextPosition || position |> hasNoExitInDirectionOfTravel then
+            accumulator
+        else
+            let r = boundingRectangleOfSquareAt nextPosition
+            let union = TightestBoundingRectangleOf r accumulator
+            stepper  stepDelta nextPosition union
+
+    stepper stepDelta originTile (boundingRectangleOfSquareAt originTile)
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  DRAWING
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let private DrawSpecificMazeCentred render image cx cy countX countY (mazeByteArray:byte[]) gameTime pacPosHack =
+
+    let (x,y) = OriginForMazeOfDimensions cx cy countX countY
+
+    for ty in 0..countY - 1 do
+        let y' = y + ty * TileSide
+
+        for tx in 0..countX - 1 do
+            let tileIndex = mazeByteArray.[ty * countX + tx]
+            let x' = x + tx * TileSide
+            DrawPacTileInt render image x' y' ((int)tileIndex) gameTime
+
+
+    // HACK:
+    let facing = pacPosHack.PacState2.PacFacingDirection
+    let pos = pacPosHack.PacPosition
+    let pos = { ptx=pos.ptx / 16<epx> ; pty=pos.pty/16<epx> }
+    let origin = { modx=x ; mody=y }
+    let r = CorridorRectangle countX countY mazeByteArray pos facing |> RectangleMovedByDelta origin
+
+    let shape =
+        DrawingShapes.DrawFilledRectangle (
+            r.Left, r.Top, (r |> RectangleWidth), (r |> RectangleHeight), (DrawingShapes.SolidColour 0xFF00FFu))
+
+    render shape
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let private DrawMazeCentred render image cx cy mazeState gameTime pacPosHack =
+
+    DrawSpecificMazeCentred 
+        render image cx cy 
+        mazeState.MazeTilesCountX
+        mazeState.MazeTilesCountY
+        mazeState.MazeTiles
+        gameTime
+        pacPosHack
+
+    // DrawSpecificMazeCentred 
+    //     render image cx cy 
+    //     mazeState.MazeTilesCountX
+    //     mazeState.MazeTilesCountY
+    //     mazeState.MazeGhostRails
+    //     gameTime
+
+    // DrawSpecificMazeCentred 
+    //     render image cx cy 
+    //     mazeState.MazeTilesCountX
+    //     mazeState.MazeTilesCountY
+    //     mazeState.MazePlayersRails
+    //     gameTime
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
+
+    let backgroundImage = BackgroundImageID |> ImageFromID
+    Image1to1 render 0<epx> 0<epx> backgroundImage
+
+    let tilesImage = Level1ImageID |> ImageFromID
+
+    let cx,cy = (ScreenWidthInt / 2) , (ScreenHeightInt / 2) 
+
+    DrawMazeCentred 
+        render tilesImage 
+        cx cy
+        model.MazeState
+        gameTime
+        model.PacmanState // TODO: HACK
+
+    let (originx,originy) = 
+        OriginForMazeOfDimensions 
+            cx cy 
+            model.MazeState.MazeTilesCountX 
+            model.MazeState.MazeTilesCountY
+
+    let pillMode = InPillMode model.GhostsState
+
+    DrawPacMan 
+        render tilesImage originx originy model.PacmanState pillMode gameTime
+
+    model.GhostsState
+        |> List.iteri (fun i ghostState ->
+            DrawGhost render tilesImage originx originy ghostState gameTime)
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  SPYING - looking down the corridors
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
    
-/// Returns the corridor rectangle  TODO
-// let CorridorRectangle tilesHorizontally tilesVertically mazeByteArray originTileX originTileY direction =
-// 
-//     let step = direction |> DirectionToMovementDelta 0 1
-// 
-//     let left = originTile.ptix
-//     let top  = originTile.ptiy
-// 
-//     let inline rect l t r b = { LeftI32=l ; TopI32=t ; RightI32=r ; BottomI32=b }
-// 
-//     match direction with
-//         | FacingUp    -> rect left 0<epx> (left+TileSide) (top+TileSide)
-//         | FacingDown  -> rect left top (left+TileSide) (top+TileSide * tilesVertically)
-//         | FacingLeft  -> rect 0<epx> top (left+TileSide) (top+TileSide)
-//         | FacingRight -> rect left top (left+TileSide * tilesHorizontally) (top+TileSide)
 
 
 

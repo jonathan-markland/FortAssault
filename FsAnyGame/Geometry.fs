@@ -40,6 +40,8 @@ type Rectangle<'t> =
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let inline PointMult factor (p:Point<'t>) = { ptx = p.ptx * factor ; pty = p.pty * factor }
     
 let inline RectangleWidth  (r:Rectangle<'t>) = r.Right - r.Left
 let inline RectangleHeight (r:Rectangle<'t>) = r.Bottom - r.Top
@@ -79,12 +81,31 @@ let IsPointWithinRectangle rectangle point =
 let RectangleIntersects r1 r2 =
     not (r1.Left > r2.Right || r1.Right < r2.Left || r1.Top > r2.Bottom || r1.Bottom < r2.Top)
 
+/// Return the tightest bounding rectangle of the two given rectangles.
+let TightestBoundingRectangleOf r1 r2 =
+    {
+        Left   = min  r1.Left   r2.Left
+        Top    = min  r1.Top    r2.Top
+        Right  = max  r1.Right  r2.Right
+        Bottom = max  r1.Bottom r2.Bottom
+    }
+
 /// Returns a new point that is an existing point translated 
 /// in 2D space by the given 2D delta.
 let inline PointMovedByDelta delta point =
     {
         ptx = point.ptx + delta.modx
         pty = point.pty + delta.mody
+    }
+
+/// Returns a new rectangle that is an existing rectangle translated 
+/// in 2D space by the given 2D delta.
+let inline RectangleMovedByDelta delta r =
+    {
+        Left   = r.Left   + delta.modx
+        Top    = r.Top    + delta.mody
+        Right  = r.Right  + delta.modx
+        Bottom = r.Bottom + delta.mody
     }
 
 /// Returns a floating point movement delta that, if applied, would 
