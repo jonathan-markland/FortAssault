@@ -22,21 +22,21 @@ let private PauseDuration = 2.0F<seconds>
 
 let private DefaultMaze =
     [|
-        "####################"
+        "#########.##########"
         "#@..##......##.....#"
         "#.#....####....#.#.#"
         "#.#.##########...#.#"
         "#.#............#.#.#"
         "#...###.####.#.#@..#"
         "#.#.#...#12:.#.#####"
-        "#.#...#.#34:.#.....#"
+        "..#...#.#34:.#......"
         "#...###0####.#.#.#.#"
         "###.#..........#.#.#"
         "#...#.########.#.#.#"
         "#.#.#........#.....#"
         "#@#.#.#.####.#.#@#.#"
         "#.....#........#...#"
-        "####################"
+        "#########.##########"
     |]
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -381,7 +381,7 @@ let private DrawSpecificMazeCentred render image cx cy countX countY (mazeByteAr
             DrawPacTileInt render image x' y' ((int)tileIndex) gameTime
 
 
-    // HACK:
+    // TODO:  HACK:
     let facing = pacPosHack.PacState2.PacFacingDirection
     let pos = pacPosHack.PacPosition
     let pos = { ptx=pos.ptx / 16<epx> ; pty=pos.pty/16<epx> }
