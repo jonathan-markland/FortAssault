@@ -20,15 +20,13 @@ let inline PercentOfScreenHeight x = (ScreenHeightInt * x) / 100
 
 type private TitleScreenPacmanState =
     {
-        x : int<epx>
-        y : int<epx>
+        pos       : Point<int<epx>>
         direction : FacingDirection
     }
 
 type private TitleScreenGhostState =
     {
-        x : int<epx>
-        y : int<epx>
+        pos    : Point<int<epx>>
         number : GhostNumber
     }
 
@@ -63,12 +61,12 @@ let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 
     let DrawPacMan pacmanState =
         let pillMode = false
-        let { x=x ; y=y ; direction=facingDirection } = pacmanState
-        DrawPacMan render tilesImage x y facingDirection pillMode gameTime
+        let { pos=pos ; direction=facingDirection } = pacmanState
+        DrawPacMan render tilesImage pos facingDirection pillMode gameTime
 
     let DrawGhost ghostState =
-        let { x=x ; y=y ; number=ghostNumber } = ghostState
-        DrawGhost render tilesImage x y ghostNumber GhostNormal gameTime
+        let { pos=pos ; number=ghostNumber } = ghostState
+        DrawGhost render tilesImage pos ghostNumber GhostNormal gameTime
 
     DrawPacMan model.PacRightMemo
     DrawPacMan model.PacLeftMemo 
@@ -98,8 +96,7 @@ let private TitleScreenPac facing percentX percentY =
     let h  = TileSide / 2
 
     { 
-        x = cx - h
-        y = cy - h
+        pos = { ptx = cx - h ; pty = cy - h }
         direction = facing
     }
 
@@ -110,8 +107,7 @@ let private TitleScreenGhost ghostNumber percentX percentY =
     let h  = TileSide / 2
 
     { 
-        x = cx - h
-        y = cy - h
+        pos = { ptx = cx - h ; pty = cy - h }
         number = ghostNumber
     }
 

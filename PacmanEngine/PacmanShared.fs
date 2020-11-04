@@ -205,9 +205,11 @@ let DrawPacTileInt render image x y (tileIndex:int) gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-/// Draw pac man image with top left at (x,y) facing in the direction given,
+/// Draw pac man image with top left at pos facing in the direction given,
 /// with appropriate open/closed mouth animation.
-let DrawPacMan render image x y facingDirection pillMode (gameTime:float32<seconds>) =
+let DrawPacMan render image pos facingDirection pillMode (gameTime:float32<seconds>) =
+
+    let { ptx=x ; pty=y } = pos
 
     let pacDirectionalImageIndex =
         (int) (match facingDirection with 
@@ -227,9 +229,11 @@ let DrawPacMan render image x y facingDirection pillMode (gameTime:float32<secon
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-/// Draw ghost image with top left at (x,y), selecting the appropriate
+/// Draw ghost image with top left at pos, selecting the appropriate
 /// ghost colour and eyes animation frame.
-let DrawGhost render image x y (GhostNumber(ghostNumber)) ghostMode (gameTime:float32<seconds>) =
+let DrawGhost render image pos (GhostNumber(ghostNumber)) ghostMode (gameTime:float32<seconds>) =
+
+    let { ptx=x ; pty=y } = pos
 
     let ghostImageIndex =
         

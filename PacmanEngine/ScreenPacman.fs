@@ -336,13 +336,24 @@ let private PointWrappedAtMazeEdges mazeState point =
     let width  = mazeState.MazeTilesCountX * TileSide
     let height = mazeState.MazeTilesCountY * TileSide
 
-    let x = if x < 0<epx> then x + width  else x
-    let y = if y < 0<epx> then y + height else y
+    let h = TileSide / 2
 
-    let x = if x >= width  then x - width  else x
-    let y = if y >= height then y - height else y
+    let x = 
+        if x < -h then x + width
+        else if x >= (width-h)  then x - width
+        else x
+
+    let y = 
+        if y < -h then y + height 
+        else if y >= (height-h) then y - height
+        else y
 
     { ptx=x ; pty=y }
+
+
+let OffsetByOrigin originx originy point =
+    let { ptx=x ; pty=y } = point
+    { ptx=x + originx ; pty=y + originy }
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -472,18 +483,26 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
             model.MazeState.MazeTilesCountY
 
     let pillMode = InPillMode model.GhostsState
-    let x = model.PacmanState.PacPosition.ptx + originx
-    let y = model.PacmanState.PacPosition.pty + originy
+
+    let pos = model.PacmanState.PacPosition 
+                |> PointWrappedAtMazeEdges model.MazeState
+                |> OffsetByOrigin originx originy 
+                
     let direction = model.PacmanState.PacState2.PacFacingDirection
-    DrawPacMan render tilesImage x y direction pillMode gameTime
+
+    DrawPacMan render tilesImage pos direction pillMode gameTime
 
     model.GhostsState
         |> List.iteri (fun i ghostState ->
-            let x = ghostState.GhostPosition.ptx + originx
-            let y = ghostState.GhostPosition.pty + originy
+
+            let pos = ghostState.GhostPosition
+                        |> PointWrappedAtMazeEdges model.MazeState
+                        |> OffsetByOrigin originx originy
+                        
             let number = ghostState.GhostState2.GhostNumber
             let mode = ghostState.GhostState2.GhostMode
-            DrawGhost render tilesImage x y number mode gameTime)
+
+            DrawGhost render tilesImage pos number mode gameTime)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  SPYING - looking down the corridors

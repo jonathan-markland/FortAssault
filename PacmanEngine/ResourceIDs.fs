@@ -54,7 +54,8 @@ type TileIndex =
     | GhostReturning = 35uy
 
 
-// This game uses a 320*200 engine-coordinate (epx) space:
+// TODO: Should these be in here?
+// This game uses a the following engine-coordinate (epx) space:
 
 let ScreenWidthInt  = 320<epx>  // Must be the same as below!
 let ScreenHeightInt = 256<epx>  // Must be the same as below!
