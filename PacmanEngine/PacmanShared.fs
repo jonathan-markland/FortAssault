@@ -212,10 +212,10 @@ let private DrawPacTile render image x y (tileIndex:TileIndex) gameTime =
 
 let DrawPacMan render image originx originy pacmanState pillMode (gameTime:float32<seconds>) =
 
-    let { ptx=cx ; pty=cy } = pacmanState.PacPosition
+    let { ptx=x ; pty=y } = pacmanState.PacPosition
 
-    let x = cx + originx
-    let y = cy + originy
+    let x = x + originx
+    let y = y + originy
 
     let pacDirectionalImageIndex =
         (int) (match pacmanState.PacState2.PacFacingDirection with 

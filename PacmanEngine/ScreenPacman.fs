@@ -327,6 +327,24 @@ let TileIntersectsNormalGhostsIn ghostStateList tilePos =
             | GhostReturningToBase -> false)
 
 
+/// Wrapping function for pacman and ghosts for when 
+/// passages exit the sides of the grid.
+let private PointWrappedAtMazeEdges mazeState point =
+
+    let { ptx=x ; pty=y } = point
+
+    let width  = mazeState.MazeTilesCountX * TileSide
+    let height = mazeState.MazeTilesCountY * TileSide
+
+    let x = if x < 0<epx> then x + width  else x
+    let y = if y < 0<epx> then y + height else y
+
+    let x = if x >= width  then x - width  else x
+    let y = if y >= height then y - height else y
+
+    { ptx=x ; pty=y }
+
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  CORRIDOR DETERMINATION
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -533,14 +551,16 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
 
             let position =  // TODO: issue of frame rate!
 
-                let potentialPosition = 
-                    position |> PointMovedByDelta (direction |> DirectionToMovementDeltaI32)
+                let proposedPosition = 
+                    position 
+                        |> PointMovedByDelta (direction |> DirectionToMovementDeltaI32)
+                        |> PointWrappedAtMazeEdges mazeState
 
                 match tile with
-                    | None -> potentialPosition // Can always allow movement when inbetween tiles
+                    | None -> proposedPosition // Can always allow movement when inbetween tiles
                     | Some tileIndex ->
                         if direction |> IsDirectionAllowedBy mazeState.MazePlayersRails.[tileIndex] then
-                            potentialPosition
+                            proposedPosition
                         else
                             position // disallow, no exit in that direction.
             
