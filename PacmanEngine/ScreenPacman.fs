@@ -12,6 +12,8 @@ open PacmanShared
 open Input
 open MazeFilter
 open Rules
+open Algorithm
+
 
 // TODO: gameState |> WithFreezeFrameFor PauseDuration gameTime whereToAfter
 
@@ -226,7 +228,7 @@ let TileIndexOf position =  // TODO: strongly type the return value
 /// true if movement in the given direction is allowed by the railsByte.
 let IsDirectionAllowedBy railsByte facingDirection =
 
-    (railsByte &&& (facingDirection |> FacingDirectionToMazeByte)) <> 0uy
+    (railsByte &&& (facingDirection |> FacingDirectionToBitMaskByte)) <> 0uy
 
 
 /// Obtain the bounding rectangle of a tile sized
@@ -363,7 +365,7 @@ let OffsetByOrigin originx originy point =
 /// Returns the corridor rectangle starting from a given maze tile 'originTile',
 /// where originTile is a 2D array index into the tiles matrix.  Takes the actual
 /// maze, not the rails as the mazeByteArray.
-let CorridorRectangle tilesHorizontally tilesVertically (mazeByteArray:byte[]) originTile direction =
+let CorridorRectangle tilesHorizontally tilesVertically (mazeByteArray:byte[]) originTile direction =  // TODO: originTile's unit is not clear
 
     let stepDelta =
         direction |> DirectionToMovementDelta 0 1
@@ -420,6 +422,7 @@ let private DrawMazeCentred render image cx cy mazeState gameTime =
         mazeState.MazeTiles
         gameTime
 
+    // To show the ghost rails:
     // DrawSpecificMazeCentred 
     //     render image cx cy 
     //     mazeState.MazeTilesCountX
@@ -427,6 +430,7 @@ let private DrawMazeCentred render image cx cy mazeState gameTime =
     //     mazeState.MazeGhostRails
     //     gameTime
 
+    // To show the player rails:
     // DrawSpecificMazeCentred 
     //     render image cx cy 
     //     mazeState.MazeTilesCountX
@@ -513,18 +517,6 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
             let mode = ghostState.GhostState2.GhostMode
 
             DrawGhost render tilesImage pos number mode gameTime)
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  SPYING - looking down the corridors
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-   
-
-
-
-// let CanSpyPositionAt otherPosition maze fromPosition =
-
-    
-
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  PAC MAN himself:  State advance per frame
@@ -614,6 +606,87 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
         | PacDeadUntil(_endScreenTime) ->
             (EatenNothing , position , direction , 0u)
 
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Algorithms
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+/// mask must not have any bits set that are zero in limitMask
+let DoesntIncreaseOn (limitMask:byte) (mask:byte) =
+    System.Diagnostics.Debug.Assert (limitMask <= 15uy)
+    System.Diagnostics.Debug.Assert (mask <= 15uy)
+    (mask ||| limitMask) = limitMask
+
+
+
+
+let ForEachDirectionFold folder directions =
+
+    // For each direction in directions:
+    // Essentially a fold threading the directions bitmask.
+    // Must be intelligent and NOT call handler if 
+    // direction gets masked off by an earlier return.
+
+    System.Diagnostics.Debug.Assert ((directions &&& 15uy) = directions)
+
+    let f currentDirectionMask directions =
+        if (currentDirectionMask &&& directions) <> 0uy then
+            let newDirections = directions |> folder currentDirectionMask
+            System.Diagnostics.Debug.Assert (newDirections |> DoesntIncreaseOn directions)
+            newDirections
+        else
+            directions
+
+    directions |> f 1uy |> f 2uy |> f 4uy |> f 8uy
+
+
+
+let IsTheSameGhostAs ghost otherGhost =
+    ghost.GhostState2.GhostNumber = otherGhost.GhostState2.GhostNumber
+
+
+
+let IsIntersectedByAnyOtherGhostTo selfGhost allGhosts corridorRect =
+
+    allGhosts |> List.exists (fun otherGhost ->
+        if selfGhost |> IsTheSameGhostAs otherGhost then
+            false  // We do not "see" ourself down the corridors.
+        else
+            let otherGhostRect = otherGhost.GhostPosition |> TileBoundingRectangle
+            otherGhostRect |> RectangleIntersects corridorRect)
+
+
+
+let IsStraightRail b =
+    let horizontalRail = (MazeByteLeft ||| MazeByteRight)
+    let verticalRail   = (MazeByteUp ||| MazeByteDown)
+    (b = horizontalRail)  ||  (b = verticalRail)
+
+
+
+let ProbabilisticallyReducedToOneBy (gameTime:float32<seconds>) potentialDirections =
+
+    // TODO: hacked
+
+    let a = if (potentialDirections &&& 1uy) = 1uy then [1uy] else []
+    let b = if (potentialDirections &&& 2uy) = 2uy then [2uy] else []
+    let c = if (potentialDirections &&& 4uy) = 4uy then [4uy] else []
+    let d = if (potentialDirections &&& 8uy) = 8uy then [8uy] else []
+
+    let all = a |> List.append b |> List.append c |> List.append d
+
+    let result = (gameTime * 17.0F) |> ChooseItemFromListBasedOnGameTime all
+    System.Diagnostics.Debug.Assert (result |> DoesntIncreaseOn potentialDirections)
+    result
+
+        
+
+    
+
+
+
+
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Ghost position advance
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -634,33 +707,62 @@ let private AdvanceGhost2 mazeState (allGhosts:GhostState list) (pacman:PacmanSt
                 direction
 
             | Some (txi, tyi) ->
+
                 let i = tyi * mazeState.MazeTilesCountX + txi
 
                 // Ghost precisely on a tile.  This is a decision point.
 
+                let pacRect = pacman.PacPosition |> TileBoundingRectangle
+
+                let ghostDirectionEliminationDecision currentDirection directionsRemaining =
+
+                    let corridorRect = 
+                        CorridorRectangle 
+                            mazeState.MazeTilesCountX
+                            mazeState.MazeTilesCountY
+                            mazeState.MazeTiles
+                            { ptx=txi ; pty=tyi }
+                            (currentDirection |> SingleBitInByteToFacingDirection)
+
+                    if pacRect |> RectangleIntersects corridorRect then
+                        match ghost.GhostState2.GhostMode with
+                            | GhostNormal -> currentDirection    // Restrict to this direction to cause ghost to choose to follow the direction of pacman.
+                            | GhostEdibleUntil _ -> directionsRemaining ^^^ currentDirection   // Cause ghost to choose to run away from the direction of pacman.
+                            | _ -> failwith "Should not have been called in this ghost mode"
+
+                    else if corridorRect |> IsIntersectedByAnyOtherGhostTo ghost allGhosts then
+                        directionsRemaining ^^^ currentDirection  // eliminate corridor following towards another ghost
+
+                    else
+                        directionsRemaining   // We made no filteration decision.
+
                 let directionsGivenByRails = rails.[i]
 
-                // let potentialDirections =
-                //   For each direction in directionsGivenByRails:  [essentially a fold.  Must be intelligent and NOT call handler if direction gets masked off by return]
-                //     Get the corridor rectangle corridorRect
-                //     If PAC intersects the corridorRect then:
-                //       If we're GhostNormal then return the mask for this corridor's direction.
-                //       Else if we're edible then return the input directions mask with this direction removed.  [Which may freeze this ghost, but that's OK]
-                //       Else failwith "Should not have been called in this ghost mode"
-                //     Else if any other ghost intersects the corridorRect then:
-                //       return an updated mask with this corridor's direction eliminated.
+                let potentialDirections =
+                    directionsGivenByRails // TODO: reinstate |> ForEachDirectionFold ghostDirectionEliminationDecision 
 
-                // If directions is now empty, then bail by restoring.
+                let potentialDirections =
+                    if potentialDirections = 0uy then directionsGivenByRails else potentialDirections
 
-                // let direction =
-                //   With the resulting directions:
-                //   - If straight rail then keep moving in current direction.
-                //   - Consider the number of directions given by the tile:
-                //     + One = about turn always
-                //     + Two = (corner) 80% probability of continue around corner, vs 20% about-turn
-                //     + Three = 50% keep straight, 40% turn corner, 10% about-turn
-                //     + Four = 50% keep straight, 20% turn corner 1, 20% turn corner 2, 10% about-turn
-                //   ... But the weightings should be parameterised per ghost to give each one traits.
+                System.Diagnostics.Debug.Assert (potentialDirections <> 0uy)
+
+                let direction =
+                    if potentialDirections |> IsStraightRail then
+                        direction   // Keep moving in current direction on a (resultant) straight rail.
+                    else
+                        let (GhostNumber(hackGn)) = ghost.GhostState2.GhostNumber
+                        let hackOffset = LanguagePrimitives.Float32WithMeasure<seconds>((float32) hackGn)  // TODO: HACK
+                        potentialDirections 
+                            |> ProbabilisticallyReducedToOneBy (gameTime + hackOffset) // TODO: Adding hackOffset is a hack
+                            |> SingleBitInByteToFacingDirection // TODO: hack -- we should natively return the direcction from the previous call
+
+                        // TODO: 
+                        //   - Consider the number of directions given by the tile:
+                        //     + One = about turn always
+                        //     + Two = (corner) 80% probability of continue around corner, vs 20% about-turn
+                        //     + Three = 50% keep straight, 40% turn corner, 10% about-turn
+                        //     + Four = 50% keep straight, 20% turn corner 1, 20% turn corner 2, 10% about-turn
+                        //   ... But the weightings should be parameterised per ghost to give each one traits.
 
                 direction
 

@@ -23,12 +23,19 @@ let PulseBetween (rate:float32) low high (gameTime:float32<seconds>) =
 
 type FacingDirection = FacingRight | FacingDown | FacingLeft | FacingUp
 
-let FacingDirectionToMazeByte facingDirection = 
+let FacingDirectionToBitMaskByte facingDirection =  // TODO: Type model for the bitmask
     match facingDirection with
         | FacingLeft  -> MazeByteLeft
         | FacingRight -> MazeByteRight
         | FacingUp    -> MazeByteUp
         | FacingDown  -> MazeByteDown
+
+let SingleBitInByteToFacingDirection b =
+    if b=MazeByteLeft then FacingLeft
+    else if b=MazeByteRight then FacingRight
+    else if b=MazeByteUp then FacingUp
+    else if b=MazeByteDown then FacingDown
+    else failwith "Byte passed that wasn't a single bit representing a direction"
 
 let FacingDirectionToInt facingDirection =
     match facingDirection with
