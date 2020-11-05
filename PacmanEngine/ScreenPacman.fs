@@ -211,13 +211,13 @@ let IsAlignedOnTile position =
 /// a single tile, this returns the rails array index of that tile.
 /// If the position not perfectly aligned on a single tile, this
 /// returns None.
-let TileIndexOf position numTilesAcross =  // TODO: strongly type the return value
+let TileIndexOf position =  // TODO: strongly type the return value
 
     if position |> IsAlignedOnTile then
         let {ptx=x ; pty=y} = position
         let txi = x / TileSide
         let tyi = y / TileSide
-        Some (tyi * numTilesAcross + txi)
+        Some (txi, tyi)
 
     else
         None
@@ -553,7 +553,7 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
             let directionImpliedByKeys  = KeyStatesToDirection up down left right direction
             let angleToCurrentDirection = AngleBetween directionImpliedByKeys direction
 
-            let tile = TileIndexOf position mazeState.MazeTilesCountX
+            let tile = TileIndexOf position
 
             let direction =
                 match angleToCurrentDirection with
@@ -564,9 +564,10 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
                     | ClockwiseTurn90 ->
                         match tile with
                             | None -> direction // disallow, not perfectly aligned
-                            | Some tileIndex ->
+                            | Some (txi, tyi) ->
+                                let i = tyi * mazeState.MazeTilesCountX + txi
                                 if directionImpliedByKeys 
-                                    |> IsDirectionAllowedBy mazeState.MazePlayersRails.[tileIndex] then
+                                    |> IsDirectionAllowedBy mazeState.MazePlayersRails.[i] then
                                     directionImpliedByKeys
                                 else
                                     direction // disallow, no exit in that direction.
@@ -574,12 +575,16 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
             let eaten, scoreIncrement =
                 match tile with
                     | None -> EatenNothing , 0u
-                    | Some tileIndex ->
-                        let tileType = mazeState.MazeTiles.[tileIndex]
+                    | Some (txi, tyi) ->
+                        let i = tyi * mazeState.MazeTilesCountX + txi
+
+                        let tileType = mazeState.MazeTiles.[i]
                         if tileType = ((byte) TileIndex.Dot) then
-                            (EatenDot tileIndex) , ScoreForEatingDot
+                            (EatenDot i) , ScoreForEatingDot
+
                         else if tileType = ((byte) TileIndex.Pill1) then   // We don't store Pill2 in the matrix.
-                            (EatenPowerPill tileIndex) , ScoreForEatingPowerPill
+                            (EatenPowerPill i) , ScoreForEatingPowerPill
+
                         else
                             EatenNothing , 0u
 
@@ -592,8 +597,9 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
 
                 match tile with
                     | None -> proposedPosition // Can always allow movement when inbetween tiles
-                    | Some tileIndex ->
-                        if direction |> IsDirectionAllowedBy mazeState.MazePlayersRails.[tileIndex] then
+                    | Some (txi, tyi) ->
+                        let i = tyi * mazeState.MazeTilesCountX + txi
+                        if direction |> IsDirectionAllowedBy mazeState.MazePlayersRails.[i] then
                             proposedPosition
                         else
                             position // disallow, no exit in that direction.
@@ -618,7 +624,7 @@ let private AdvanceGhost2 mazeState (allGhosts:GhostState list) (pacman:PacmanSt
 
     let position  = ghost.GhostPosition
     let direction = ghost.GhostState2.GhostFacingDirection
-    let tile      = TileIndexOf position mazeState.MazeTilesCountX
+    let tile      = TileIndexOf position
     let rails     = mazeState.MazeGhostRails
 
     let direction =
@@ -627,10 +633,12 @@ let private AdvanceGhost2 mazeState (allGhosts:GhostState list) (pacman:PacmanSt
             | None -> 
                 direction
 
-            | Some tile ->
+            | Some (txi, tyi) ->
+                let i = tyi * mazeState.MazeTilesCountX + txi
+
                 // Ghost precisely on a tile.  This is a decision point.
 
-                let directionsGivenByRails = rails.[tile]
+                let directionsGivenByRails = rails.[i]
 
                 // let potentialDirections =
                 //   For each direction in directionsGivenByRails:  [essentially a fold.  Must be intelligent and NOT call handler if direction gets masked off by return]
