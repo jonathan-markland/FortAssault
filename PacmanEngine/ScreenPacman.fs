@@ -211,7 +211,7 @@ let IsAlignedOnTile position =
 /// a single tile, this returns the rails array index of that tile.
 /// If the position not perfectly aligned on a single tile, this
 /// returns None.
-let TileIndexOf position numTilesAcross =
+let TileIndexOf position numTilesAcross =  // TODO: strongly type the return value
 
     if position |> IsAlignedOnTile then
         let {ptx=x ; pty=y} = position
@@ -482,15 +482,25 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
             model.MazeState.MazeTilesCountX 
             model.MazeState.MazeTilesCountY
 
-    let pillMode = InPillMode model.GhostsState
-
     let pos = model.PacmanState.PacPosition 
                 |> PointWrappedAtMazeEdges model.MazeState
                 |> OffsetByOrigin originx originy 
-                
+    
     let direction = model.PacmanState.PacState2.PacFacingDirection
 
-    DrawPacMan render tilesImage pos direction pillMode gameTime
+    match model.PacmanState.PacState2.PacMode with
+        | PacAlive ->
+            let pillMode = InPillMode model.GhostsState
+            DrawPacManAlive render tilesImage pos direction pillMode gameTime
+
+        | PacDyingUntil _ ->
+            if gameTime |> PulseBetween PacmanDyingFlashRate true false then
+                DrawPacManAlive render tilesImage pos direction false gameTime
+            else
+                () // No graphics desired.
+
+        | PacDeadUntil _ ->
+            () // No graphics desired.
 
     model.GhostsState
         |> List.iteri (fun i ghostState ->
@@ -602,36 +612,66 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
 //  Ghost position advance
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let AdvanceGhost2 (allGhosts:GhostState list) (pacman:PacmanState) pacMask (ghost:GhostState) gameTime =
+let private AdvanceGhost2 mazeState (allGhosts:GhostState list) (pacman:PacmanState) pacMask (ghost:GhostState) gameTime =
 
-    // If not exactly on a tile then keep moving in current direction.
-    // If on a tile:
+    // NB:  Only called for GhostNormal and GhostEdibleUntil cases.
 
-    // If we can spy PAC then mask off all other directions.
+    let position  = ghost.GhostPosition
+    let direction = ghost.GhostState2.GhostFacingDirection
+    let tile      = TileIndexOf position mazeState.MazeTilesCountX
+    let rails     = mazeState.MazeGhostRails
 
-    //    or- If we can spy PAC then mask off his direction, and if this leaves
-    //    or- no directions then that freezes this ghost, but that's fine!
+    let direction =
+        match tile with
 
-    // Else if we spy other ghosts, mask off those directions.
-    // If directions is now empty, then bail by restoring.
-    // With the resulting directions:
-    // - If straight rail then keep moving in current direction.
-    // - Consider the number of directions given by the tile:
-    //   + One = about turn always
-    //   + Two = (corner) 80% probability of continue around corner, vs 20% about-turn
-    //   + Three = 50% keep straight, 40% turn corner, 10% about-turn
-    //   + Four = 50% keep straight, 20% turn corner 1, 20% turn corner 2, 10% about-turn
-    // ... But the weightings should be parameterised per ghost to give each one traits.
+            | None -> 
+                direction
 
-    //(position , direction)
-    (ghost.GhostPosition , ghost.GhostState2.GhostFacingDirection) 
+            | Some tile ->
+                // Ghost precisely on a tile.  This is a decision point.
+
+                let directionsGivenByRails = rails.[tile]
+
+                // let potentialDirections =
+                //   For each direction in directionsGivenByRails:  [essentially a fold.  Must be intelligent and NOT call handler if direction gets masked off by return]
+                //     Get the corridor rectangle corridorRect
+                //     If PAC intersects the corridorRect then:
+                //       If we're GhostNormal then return the mask for this corridor's direction.
+                //       Else if we're edible then return the input directions mask with this direction removed.  [Which may freeze this ghost, but that's OK]
+                //       Else failwith "Should not have been called in this ghost mode"
+                //     Else if any other ghost intersects the corridorRect then:
+                //       return an updated mask with this corridor's direction eliminated.
+
+                // If directions is now empty, then bail by restoring.
+
+                // let direction =
+                //   With the resulting directions:
+                //   - If straight rail then keep moving in current direction.
+                //   - Consider the number of directions given by the tile:
+                //     + One = about turn always
+                //     + Two = (corner) 80% probability of continue around corner, vs 20% about-turn
+                //     + Three = 50% keep straight, 40% turn corner, 10% about-turn
+                //     + Four = 50% keep straight, 20% turn corner 1, 20% turn corner 2, 10% about-turn
+                //   ... But the weightings should be parameterised per ghost to give each one traits.
+
+                direction
+
+    let position = 
+        position 
+            |> PointMovedByDelta (direction |> DirectionToMovementDeltaI32)
+            |> PointWrappedAtMazeEdges mazeState
+
+    (position, direction)
+
+
+
 
 
 let AdvanceToHomePosition ghost =
 
     let delta = 
         ghost.GhostPosition 
-            |> SimpleMovementDeltaI32ToGetTo ghost.GhostState2.GhostHomePosition 1<epx>
+            |> SimpleMovementDeltaI32ToGetTo ghost.GhostState2.GhostHomePosition
 
     let position = 
         ghost.GhostPosition 
@@ -640,15 +680,15 @@ let AdvanceToHomePosition ghost =
     (position , ghost.GhostState2.GhostFacingDirection)
 
 
-let AdvanceGhost allGhosts pacman ghost gameTime =
+let private AdvanceGhost mazeState allGhosts pacman ghost gameTime =
 
     let (position , direction) =
         match ghost |> GhostMode with
             | GhostNormal ->
-                AdvanceGhost2 allGhosts pacman 0x00 ghost gameTime
+                AdvanceGhost2 mazeState allGhosts pacman 0x00 ghost gameTime
 
             | GhostEdibleUntil _ -> 
-                AdvanceGhost2 allGhosts pacman 0x0F ghost gameTime
+                AdvanceGhost2 mazeState allGhosts pacman 0x0F ghost gameTime
 
             | GhostReturningToBase ->
                 AdvanceToHomePosition ghost
@@ -669,9 +709,9 @@ let AdvanceGhost allGhosts pacman ghost gameTime =
     }
 
 
-let WithGhostMovement pacman gameTime allGhosts =
+let private WithGhostMovement mazeState pacman gameTime allGhosts =
 
-    allGhosts |> List.map (fun ghost -> AdvanceGhost allGhosts pacman ghost gameTime)
+    allGhosts |> List.map (fun ghost -> AdvanceGhost mazeState allGhosts pacman ghost gameTime)
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -683,16 +723,23 @@ let WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime pac
 
     match pacmanState.PacState2.PacMode with
 
-        | PacDyingUntil _
-        | PacDeadUntil _ -> 
-            pacmanState   // intersection does not apply
-
         | PacAlive ->
             if pacmanState.PacPosition |> TileIntersectsNormalGhostsIn ghostStateList then
                 pacmanState |> WithPacMode
                     (PacDyingUntil (gameTime + PacmanDyingAnimationTime))
             else
                 pacmanState
+
+        | PacDyingUntil t ->
+            if gameTime >= t then 
+                pacmanState |> WithPacMode (PacDeadUntil (gameTime + PacmanDeadPauseTime))
+            else
+                pacmanState
+
+        | PacDeadUntil _ -> 
+            // TODO: How do we handle the life loss?  Who handles it?
+            pacmanState   // intersection does not apply
+
 
 
 /// State changes on ghosts as a result of collision detection with pacman
@@ -834,7 +881,7 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
         ghostStateList 
             |> WithReturnToNormalityIfTimeOutAt gameTime
             |> WithEdibleGhostsIfPowerPill eaten gameTime
-            |> WithGhostMovement pacmanState gameTime
+            |> WithGhostMovement mazeState pacmanState gameTime
 
     let pacmanState =
         pacmanState |> WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime

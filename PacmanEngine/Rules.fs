@@ -18,3 +18,5 @@ let RegenerationTime = 5.0F<seconds>
 let RegenerationFlashRate = 8.0F
 
 let PacmanDyingAnimationTime = 3.0F<seconds>
+let PacmanDyingFlashRate = 32.0F
+let PacmanDeadPauseTime = 3.0F<seconds>

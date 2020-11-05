@@ -62,7 +62,7 @@ let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
     let DrawPacMan pacmanState =
         let pillMode = false
         let { pos=pos ; direction=facingDirection } = pacmanState
-        DrawPacMan render tilesImage pos facingDirection pillMode gameTime
+        DrawPacManAlive render tilesImage pos facingDirection pillMode gameTime
 
     let DrawGhost ghostState =
         let { pos=pos ; number=ghostNumber } = ghostState

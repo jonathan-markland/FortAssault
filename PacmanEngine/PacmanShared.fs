@@ -207,7 +207,7 @@ let DrawPacTileInt render image x y (tileIndex:int) gameTime =
 
 /// Draw pac man image with top left at pos facing in the direction given,
 /// with appropriate open/closed mouth animation.
-let DrawPacMan render image pos facingDirection pillMode (gameTime:float32<seconds>) =
+let DrawPacManAlive render image pos facingDirection pillMode (gameTime:float32<seconds>) =
 
     let { ptx=x ; pty=y } = pos
 

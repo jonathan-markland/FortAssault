@@ -127,15 +127,15 @@ let SimpleMovementDeltaToGetTo toPoint speed fromPoint =  // TODO: revisit for g
 /// Returns an integer movement delta that, if applied, would 
 /// cause a given object located at 'fromPoint' to move towards a target
 /// located at 'toPoint'.
-let SimpleMovementDeltaI32ToGetTo toPoint speed fromPoint =  // TODO: revisit for generics along with companion
+let SimpleMovementDeltaI32ToGetTo toPoint fromPoint =  // TODO: revisit for generics along with companion
 
-    let inline delta toN speed fromN =
+    let inline delta toN fromN =
         let delta = toN - fromN
-        if delta > speed then speed elif delta < 0<epx> then -speed else 0<epx>
+        if delta >= 1<epx> then 1<epx> elif delta <= -1<epx> then -1<epx> else 0<epx>
 
     {
-        modx = delta toPoint.ptx speed fromPoint.ptx
-        mody = delta toPoint.pty speed fromPoint.pty
+        modx = delta toPoint.ptx fromPoint.ptx
+        mody = delta toPoint.pty fromPoint.pty
     }
 
 /// Returns true if the given point lies within any of the rectangles in a list.
