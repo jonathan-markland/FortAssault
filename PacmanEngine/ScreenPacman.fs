@@ -440,13 +440,14 @@ let private DrawMazeCentred render image cx cy mazeState gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private DrawCorridorFinderResult render cx cy countX countY mazeByteArray pacPosHack =
+/// A debugging facility to render rectangles returned by the CorridorRectangle function.
+/// For debug purposes, pacman's position and direction are used as the reference point
+/// and corridor search direction.
+let private DrawCorridorFinderResult render cx cy countX countY mazeByteArray position facing =
 
     let (x,y) = OriginForMazeOfDimensions cx cy countX countY
 
-    let facing = pacPosHack.PacState2.PacFacingDirection
-    let pos    = pacPosHack.PacPosition
-    let pos    = { ptx=pos.ptx / 16<epx> ; pty=pos.pty/16<epx> }
+    let pos    = { ptx=position.ptx / 16<epx> ; pty=position.pty/16<epx> }
     let origin = { modx=x ; mody=y }
     let r      = CorridorRectangle countX countY mazeByteArray pos facing |> RectangleMovedByDelta origin
 
@@ -478,7 +479,8 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
     //     model.MazeState.MazeTilesCountX 
     //     model.MazeState.MazeTilesCountY
     //     model.MazeState.MazeTiles
-    //     model.PacmanState
+    //     model.PacmanState.PacPosition
+    //     model.PacmanState.PacState2.PacFacingDirection
 
     let (originx,originy) = 
         OriginForMazeOfDimensions 
@@ -508,6 +510,14 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
 
     model.GhostsState
         |> List.iteri (fun i ghostState ->
+
+              // DrawCorridorFinderResult 
+            //     render cx cy 
+            //     model.MazeState.MazeTilesCountX 
+            //     model.MazeState.MazeTilesCountY
+            //     model.MazeState.MazeTiles
+            //     ghostState.GhostPosition
+            //     ghostState.GhostState2.GhostFacingDirection
 
             let pos = ghostState.GhostPosition
                         |> PointWrappedAtMazeEdges model.MazeState
