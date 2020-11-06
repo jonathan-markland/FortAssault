@@ -725,7 +725,7 @@ let ChosenCompassDirectionFrom compass (gameTime:float32<seconds>) =
 
     let n = ((int)(gameTime * 123.0F)) % total   // TODO: do properly with pseudo-random number
 
-    if l <>0 && n < l then FacingLeft
+    if l <> 0 && n < l then FacingLeft
     else if u <> 0 && n < (l + u) then FacingUp
     else if d <> 0 && n < (l + u + d) then FacingDown
     else if r <> 0 && n < (l + u + d + r) then FacingRight
@@ -769,11 +769,18 @@ let private AdvanceGhost2 mazeState (allGhosts:GhostState list) (pacman:PacmanSt
 
                     let compass =
                         match ghost.GhostState2.GhostMode with
-                            | GhostNormal        -> bailoutCompass |> EliminatingSuboptimalDirectionsForNormalGhost mazeState tileXY ghost allGhosts
+                            
+                            | GhostNormal        -> 
+                                bailoutCompass 
+                                    |> EliminatingSuboptimalDirectionsForNormalGhost mazeState tileXY ghost allGhosts
+                            
                             | GhostEdibleUntil _ -> 
                                 let pacRect = pacman.PacPosition |> TileBoundingRectangle
-                                bailoutCompass |> EliminatingSuboptimalDirectionsForEdibleGhost mazeState tileXY pacRect
+                                bailoutCompass 
+                                    |> EliminatingSuboptimalDirectionsForEdibleGhost mazeState tileXY pacRect
+                            
                             | _ -> failwith "Should not be deciding direction for ghost in this state"
+                        
                         |> ButIfEmptyThenRevertCompassTo bailoutCompass
 
                     let (GhostNumber(gn)) = ghost.GhostState2.GhostNumber // TODO: HACK
