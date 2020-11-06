@@ -19,6 +19,10 @@ open Algorithm
 // TODO: gameState |> WithFreezeFrameFor PauseDuration gameTime whereToAfter
 // TODO: Ghosts need to see PAC
 // TODO: Eaten whole maze -- should we exit this screen and let the storyboard handle the next level transition?  WhereToGoOnEverythingEaten
+// TODO: Research - a pure functional pacman maze instead of the array mutability.
+
+
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
