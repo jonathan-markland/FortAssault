@@ -151,6 +151,15 @@ type DirectionSelectionProbability =
         ProbTurn180  : byte
     }
 
+[<Struct>]
+type CompassProbability =
+    {
+        ProbLeft  : byte
+        ProbUp    : byte
+        ProbRight : byte
+        ProbDown  : byte
+    }
+
 type GhostState2 =
     {
         /// This ghost's number, for convenient reference.
@@ -169,8 +178,7 @@ type GhostState2 =
         GhostMode      : GhostMode
 
         /// Array indexable by (GhostFacingDirection |> FacingDirectionToInt)
-        /// then by
-        MemoizedProbabilitiesByFacingDirection : byte [] []
+        MemoizedProbabilitiesByFacingDirection : CompassProbability []
     }
 
 type GhostState =
@@ -187,15 +195,59 @@ let CalculateMemoizedDirectionProbabilities  ghostProbabilities =
     let turn  = ghostProbabilities.ProbTurn90
     let rev   = ghostProbabilities.ProbTurn180
 
-    [|
-        // NB: Order:  left ; up ; right ; down
+    let compassProbabilities  left up right down =
+        {
+            ProbLeft  = left
+            ProbUp    = up
+            ProbRight = right
+            ProbDown  = down
+        }
 
-        [| ahead ; turn ; rev ; turn |]   // FacingLeft
-        [| turn ; ahead ; turn ; rev |]   // FacingUp
-        [| rev ; turn ; ahead ; turn |]   // FacingRight
-        [| turn ; rev ; turn ; ahead |]   // FacingDown
+    [|
+        // NB: Order:        left ; up ; right ; down
+        compassProbabilities  ahead  turn  rev  turn    // FacingLeft
+        compassProbabilities  turn  ahead  turn  rev    // FacingUp
+        compassProbabilities  rev  turn  ahead  turn    // FacingRight
+        compassProbabilities  turn  rev  turn  ahead    // FacingDown
     |]
 
+/// WARNING: Not commutative!  The result field is zero where zero is
+/// indicated in the mask.  The second parameter gives the desired 
+/// values for all directions that are retained.
+let CompassAND mask compassProbabilities =
+
+    let inline  maskedBy m v =  if m=0uy then 0uy else v
+
+    {
+        ProbLeft  = compassProbabilities.ProbLeft  |> maskedBy mask.ProbLeft   
+        ProbUp    = compassProbabilities.ProbUp    |> maskedBy mask.ProbUp     
+        ProbRight = compassProbabilities.ProbRight |> maskedBy mask.ProbRight  
+        ProbDown  = compassProbabilities.ProbDown  |> maskedBy mask.ProbDown   
+    }
+
+/// Obtain the compass probabilities for the ghost, rotated
+/// according to direction it is facing.
+let CompassProbabilitiesForGhost ghost =
+    
+    let i = ghost.GhostState2.GhostFacingDirection |> FacingDirectionToInt
+    
+    ghost.GhostState2.MemoizedProbabilitiesByFacingDirection.[i]
+
+
+
+let EliminatingCompassDirectionsGivenByBitmask bitmaskByte compass =
+
+    System.Diagnostics.Debug.Assert (bitmaskByte <> 0uy)   // Should never have empty directions mask.
+
+    let maskedBy mask probValue =
+        if mask=0uy then 0uy else probValue
+
+    {
+        ProbLeft  = compass.ProbLeft  |> maskedBy (bitmaskByte &&& MazeByteLeft )
+        ProbUp    = compass.ProbUp    |> maskedBy (bitmaskByte &&& MazeByteUp   )
+        ProbRight = compass.ProbRight |> maskedBy (bitmaskByte &&& MazeByteRight)
+        ProbDown  = compass.ProbDown  |> maskedBy (bitmaskByte &&& MazeByteDown )
+    }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  PREDICATES
