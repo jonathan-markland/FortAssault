@@ -738,7 +738,12 @@ let ChosenCompassDirectionFrom compass (gameTime:float32<seconds>) =
 //  Ghost position advance
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private AdvanceGhost2 mazeState (allGhosts:GhostState list) (pacman:PacmanState) pacMask (ghost:GhostState) gameTime =
+let private DecideNewPositionAndDirectionFor 
+    (ghost:GhostState) 
+    mazeState 
+    (allGhosts:GhostState list) 
+    (pacman:PacmanState) 
+    gameTime =
 
     // NB:  Only called for GhostNormal and GhostEdibleUntil cases.
 
@@ -795,9 +800,7 @@ let private AdvanceGhost2 mazeState (allGhosts:GhostState list) (pacman:PacmanSt
 
 
 
-
-
-let AdvanceToHomePosition ghost =
+let MovedTowardsHomePosition ghost =
 
     let delta = 
         ghost.GhostPosition 
@@ -810,18 +813,17 @@ let AdvanceToHomePosition ghost =
     (position , ghost.GhostState2.GhostFacingDirection)
 
 
+
 let private AdvanceGhost mazeState allGhosts pacman ghost gameTime =
 
     let (position , direction) =
         match ghost |> GhostMode with
-            | GhostNormal ->
-                AdvanceGhost2 mazeState allGhosts pacman 0x00 ghost gameTime
-
+            | GhostNormal
             | GhostEdibleUntil _ -> 
-                AdvanceGhost2 mazeState allGhosts pacman 0x0F ghost gameTime
+                DecideNewPositionAndDirectionFor ghost mazeState allGhosts pacman gameTime
 
             | GhostReturningToBase ->
-                AdvanceToHomePosition ghost
+                ghost |> MovedTowardsHomePosition
 
             | GhostRegeneratingUntil _ ->
                 // No movement while re-generating in the base.
