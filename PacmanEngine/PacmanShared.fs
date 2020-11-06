@@ -143,6 +143,14 @@ type GhostMode =
     /// given game time whereupon it returns to GhostNormal.
     | GhostRegeneratingUntil of float32<seconds>
 
+/// The probability of choosing a direction.
+type DirectionSelectionProbability =
+    {
+        ProbAhead    : byte
+        ProbTurn90   : byte
+        ProbTurn180  : byte
+    }
+
 type GhostState2 =
     {
         /// This ghost's number, for convenient reference.
@@ -159,6 +167,10 @@ type GhostState2 =
 
         /// Ghost state.
         GhostMode      : GhostMode
+
+        /// Array indexable by (GhostFacingDirection |> FacingDirectionToInt)
+        /// then by
+        MemoizedProbabilitiesByFacingDirection : byte [] []
     }
 
 type GhostState =
@@ -168,6 +180,22 @@ type GhostState =
         /// Stored position is relative to top left of maze.
         GhostPosition  : Point<int<epx>>
     }
+
+let CalculateMemoizedDirectionProbabilities  ghostProbabilities =
+
+    let ahead = ghostProbabilities.ProbAhead
+    let turn  = ghostProbabilities.ProbTurn90
+    let rev   = ghostProbabilities.ProbTurn180
+
+    [|
+        // NB: Order:  left ; up ; right ; down
+
+        [| ahead ; turn ; rev ; turn |]   // FacingLeft
+        [| turn ; ahead ; turn ; rev |]   // FacingUp
+        [| rev ; turn ; ahead ; turn |]   // FacingRight
+        [| turn ; rev ; turn ; ahead |]   // FacingDown
+    |]
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  PREDICATES

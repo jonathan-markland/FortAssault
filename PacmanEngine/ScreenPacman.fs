@@ -288,6 +288,7 @@ let WithGhostMode mode ghost =
                 GhostHomePosition    = ghost.GhostState2.GhostHomePosition
                 GhostFacingDirection = ghost.GhostState2.GhostFacingDirection
                 GhostMode            = mode
+                MemoizedProbabilitiesByFacingDirection = ghost.GhostState2.MemoizedProbabilitiesByFacingDirection
             }
     }
 
@@ -825,6 +826,7 @@ let private AdvanceGhost mazeState allGhosts pacman ghost gameTime =
                 GhostHomePosition    = ghost.GhostState2.GhostHomePosition
                 GhostMode            = ghost.GhostState2.GhostMode
                 GhostFacingDirection = direction
+                MemoizedProbabilitiesByFacingDirection = ghost.GhostState2.MemoizedProbabilitiesByFacingDirection
             }
     }
 
@@ -1029,6 +1031,16 @@ let NewPacmanScreen whereToOnGameOver scoreAndHiScore =
 
     let unpackedMaze = DefaultMaze |> TextMazeDefinitionUnpacked
 
+    let ghostDirectionProbabilities = // TODO sort out
+        {
+            ProbAhead   = 70uy
+            ProbTurn90  = 20uy
+            ProbTurn180 = 10uy
+        }
+
+    let ghostProbArray = // TODO: sharing the same for all ghosts right now
+        ghostDirectionProbabilities |> CalculateMemoizedDirectionProbabilities
+
     let pacModel =
         {
             ScoreAndHiScore   = scoreAndHiScore
@@ -1036,8 +1048,29 @@ let NewPacmanScreen whereToOnGameOver scoreAndHiScore =
             WhereToOnGameOver = whereToOnGameOver
 
             // TODO: sort out
-            PacmanState = { PacPosition = unpackedMaze.UnpackedPacmanPosition ; PacState2 = { PacFacingDirection = FacingRight ; PacMode = PacAlive ; LivesLeft = 3 } }
-            GhostsState = unpackedMaze.UnpackedGhostPositions |> List.mapi (fun i ghostPos -> { GhostPosition = ghostPos ; GhostState2 = { GhostNumber = GhostNumber(i) ; GhostMode = GhostNormal ; GhostHomePosition = ghostPos ; GhostFacingDirection = FacingUp } })
+            PacmanState =
+                { 
+                    PacPosition = unpackedMaze.UnpackedPacmanPosition
+                    PacState2 = 
+                        { 
+                            PacFacingDirection = FacingRight
+                            PacMode = PacAlive
+                            LivesLeft = 3 
+                        } 
+                }
+
+            GhostsState = unpackedMaze.UnpackedGhostPositions |> List.mapi (fun i ghostPos -> 
+                { 
+                    GhostPosition = ghostPos
+                    GhostState2 = 
+                        { 
+                            GhostNumber = GhostNumber(i)
+                            GhostMode = GhostNormal
+                            GhostHomePosition = ghostPos
+                            GhostFacingDirection = FacingUp 
+                            MemoizedProbabilitiesByFacingDirection = ghostProbArray
+                        } 
+                })
         }
 
     NewGameState NextPacmanScreenState RenderPacmanScreen pacModel
