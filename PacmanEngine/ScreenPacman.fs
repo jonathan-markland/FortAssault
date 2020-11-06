@@ -502,7 +502,7 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
             DrawPacManAlive render tilesImage pos direction pillMode gameTime
 
         | PacDyingUntil _ ->
-            if gameTime |> PulseBetween PacmanDyingFlashRate true false then
+            if gameTime |> PulseActiveAtRate PacmanDyingFlashRate then
                 DrawPacManAlive render tilesImage pos direction false gameTime
             else
                 () // No graphics desired.
@@ -634,8 +634,9 @@ let IsIntersectedByAnyOtherGhostTo selfGhost allGhosts corridorRect =
         if selfGhost |> IsTheSameGhostAs otherGhost then
             false  // We do not "see" ourself down the corridors.
         else
-            let otherGhostRect = otherGhost.GhostPosition |> TileBoundingRectangle
-            otherGhostRect |> RectangleIntersects corridorRect)
+            otherGhost.GhostPosition 
+                |> TileBoundingRectangle
+                |> RectangleIntersects corridorRect)
 
 
 
@@ -851,23 +852,32 @@ let private WithGhostMovement mazeState pacman gameTime allGhosts =
 //  Collisions PAC vs GHOSTS
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+/// If the condition is true, return the transformed 
+/// object, else return the object unchanged.
+let inline UpdateIf condition transformed objekt =   // TODO: move to library
+    if condition then objekt |> transformed else objekt
+
+
+
+/// If, when applied to the object, the condition is true, 
+/// return the transformed object, else return the object unchanged.
+let inline UpdateWhen condition transformed objekt =   // TODO: move to library
+    if objekt |> condition then objekt |> transformed else objekt
+
+
+
 /// State changes on pacman as a result of collision detection with ghosts
 let WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime pacmanState =
 
     match pacmanState.PacState2.PacMode with
 
         | PacAlive ->
-            if pacmanState.PacPosition |> TileIntersectsNormalGhostsIn ghostStateList then
-                pacmanState |> WithPacMode
-                    (PacDyingUntil (gameTime + PacmanDyingAnimationTime))
-            else
-                pacmanState
+            pacmanState |> UpdateIf 
+                (pacmanState.PacPosition |> TileIntersectsNormalGhostsIn ghostStateList)
+                (WithPacMode (PacDyingUntil (gameTime + PacmanDyingAnimationTime)))
 
         | PacDyingUntil t ->
-            if gameTime >= t then 
-                pacmanState |> WithPacMode (PacDeadUntil (gameTime + PacmanDeadPauseTime))
-            else
-                pacmanState
+            pacmanState |> UpdateIf (gameTime >= t) (WithPacMode (PacDeadUntil (gameTime + PacmanDeadPauseTime)))
 
         | PacDeadUntil _ -> 
             // TODO: How do we handle the life loss?  Who handles it?
@@ -893,14 +903,10 @@ let WithStateChangesResultingFromCollisionWithPacman pacmanPos ghosts =
             if ghost |> isEdibleGhostOverlappingPacmanAt pacmanPos then ScoreForEatingGhost else NoScore)
 
     let ghosts = 
-        if score = 0u then
-            ghosts  // no ghosts changed state because none were eaten
-        else
-            ghosts |> List.map (fun ghost ->
-                if ghost |> isEdibleGhostOverlappingPacmanAt pacmanPos then 
-                    ghost |> WithGhostMode GhostReturningToBase
-                else
-                    ghost)
+        ghosts |> 
+            UpdateIf 
+                (score > 0u)
+                (List.map (UpdateWhen (isEdibleGhostOverlappingPacmanAt pacmanPos) (WithGhostMode GhostReturningToBase)))
 
     struct (ghosts , score)
 
@@ -960,19 +966,15 @@ let private WithEdibleGhostsIfPowerPill eaten gameTime ghostStateList =
 let private WithReturnToNormalityIfTimeOutAt gameTime ghostStateList =
     ghostStateList |> List.map (fun ghost ->
         match ghost |> GhostMode with
-
             | GhostNormal ->
                 ghost
 
             | GhostEdibleUntil t
             | GhostRegeneratingUntil t -> 
-                if gameTime >= t then ghost |> WithGhostMode GhostNormal else ghost
+                ghost |> UpdateIf (gameTime >= t) (WithGhostMode GhostNormal)
 
             | GhostReturningToBase ->
-                if ghost |> IsAtHomePosition then
-                    ghost |> WithGhostMode (GhostRegeneratingUntil (gameTime + RegenerationTime)) 
-                else
-                    ghost
+                ghost |> UpdateWhen IsAtHomePosition (WithGhostMode (GhostRegeneratingUntil (gameTime + RegenerationTime)))
     )
 
 

@@ -17,6 +17,10 @@ let inline UnitPulse (rate:float32) (gameTime:float32<seconds>) =
 let PulseBetween (rate:float32) low high (gameTime:float32<seconds>) = 
     if (UnitPulse rate gameTime) = 0 then low else high
 
+/// Returns a boolean value that switches at a given rate.
+let PulseActiveAtRate (rate:float32) (gameTime:float32<seconds>) = 
+    (UnitPulse rate gameTime) = 0
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 // TODO: library?
