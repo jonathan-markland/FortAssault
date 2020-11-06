@@ -17,7 +17,8 @@ open Algorithm
 
 // TODO: Collisiion detection is a little iffy, should have much smaller inner rectangles for ghosts + pac.
 // TODO: gameState |> WithFreezeFrameFor PauseDuration gameTime whereToAfter
-
+// TODO: Ghosts need to see PAC
+// TODO: Eaten whole maze -- should we exit this screen and let the storyboard handle the next level transition?  WhereToGoOnEverythingEaten
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -776,7 +777,7 @@ let private DecideNewPositionAndDirectionFor
                     let compass =
                         match ghost.GhostState2.GhostMode with
                             
-                            | GhostNormal        -> 
+                            | GhostNormal -> 
                                 bailoutCompass 
                                     |> EliminatingSuboptimalDirectionsForNormalGhost mazeState tileXY ghost allGhosts
                             
