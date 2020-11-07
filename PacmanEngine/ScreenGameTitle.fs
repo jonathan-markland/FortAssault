@@ -11,7 +11,6 @@ open StaticResourceAccess
 open InterruptableVideo
 open PacmanShared
 open Input
-open ResourceIDs
 open TitleScreenShared
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -63,12 +62,7 @@ let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private NextGameTitleScreenState gameState keyStateGetter gameTime elapsed =
-    Unchanged gameState
-    
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let NewGameTitleScreen globalScoreboard nextConstructor =
+let NewGameTitleScreen globalScoreboard =
 
     let titleScreenModel =
         {
@@ -82,7 +76,6 @@ let NewGameTitleScreen globalScoreboard nextConstructor =
             Ghost3Memo      = TitleScreenGhost (GhostNumber 3) 80 90
         }
 
-    NewGameState NextGameTitleScreenState RenderGameTitleScreen titleScreenModel
-        |> AsInterruptableVideoThen nextConstructor (WebBrowserKeyCode 90)  // TODO: Fire button constant?
+    NewGameState ModelNeverChanges RenderGameTitleScreen titleScreenModel
 
 

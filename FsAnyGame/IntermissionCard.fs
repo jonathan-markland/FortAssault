@@ -29,11 +29,6 @@ let private RenderIntermissionCard render model _gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private NextIntermissionCardState gameState _keyStateGetter _gameTime _elapsed =
-    Unchanged gameState
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
 let NewIntermissionCard backgroundImage font messageText screenWidth screenHeight =
 
     let intermissionModel =
@@ -45,5 +40,5 @@ let NewIntermissionCard backgroundImage font messageText screenWidth screenHeigh
             ScreenHeightInt  = screenHeight
         }
 
-    NewGameState NextIntermissionCardState RenderIntermissionCard intermissionModel
+    NewGameState ModelNeverChanges RenderIntermissionCard intermissionModel
 

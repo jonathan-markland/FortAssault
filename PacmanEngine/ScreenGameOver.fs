@@ -9,65 +9,70 @@ open ImagesAndFonts
 open ScreenHandler
 open Time
 open PacmanShared
-open ResourceIDs
 open TitleScreenShared
+open StaticResourceAccess
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type GameOverScreenModel =
+type private GameOverScreenModel =
     {
         ScoreAndHiScore : ScoreAndHiScore
+        ScoreText       : string
         HiScoreText     : string
-        WhereAfter      : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        PacLeftMemo     : TitleScreenPacmanState
+        PacRightMemo    : TitleScreenPacmanState
+        Ghost0Memo      : TitleScreenGhostState
+        Ghost1Memo      : TitleScreenGhostState
+        Ghost2Memo      : TitleScreenGhostState
+        Ghost3Memo      : TitleScreenGhostState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let RenderGameOverScreen render (model:GameOverScreenModel) gameTime =
+let private RenderGameOverScreen render (model:GameOverScreenModel) gameTime =
 
-    Rectangle render 0<epx> 0<epx> ScreenWidthInt ScreenHeightInt (SolidColour(0x400000u))
+    Rectangle render 0<epx> 0<epx> ScreenWidthInt ScreenHeightInt (SolidColour(0x300000u))
 
-    Text render GreyFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (ScreenHeightInt / 3) "GAME OVER"
-    Text render GreyFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (ScreenHeightInt / 2) (model.HiScoreText)
+    let msgAt percent message =
+        Text render GreyFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (percent |> PercentOfScreenHeight) message
 
-    // TODO: Do we want a module for any of this artistic stuff, ie: on the title screen too?
+    let tilesImage = 
+        Level1ImageID |> ImageFromID
 
-    // let x50pc = 50 |> PercentOfScreenWidth
-    // 
-    // let y20pc = 20 |> PercentOfScreenHeight
-    // let y50pc = 50 |> PercentOfScreenHeight
-    // let y75pc = 75 |> PercentOfScreenHeight
-    // 
-    // DrawPacMan model.PacRightMemo
-    // DrawPacMan model.PacLeftMemo 
-    // 
-    // DrawGhost  model.Ghost0Memo
-    // DrawGhost  model.Ghost1Memo
-    // DrawGhost  model.Ghost2Memo
-    // DrawGhost  model.Ghost3Memo
+    let pacAt = 
+        DrawPacMan render tilesImage gameTime
 
+    let ghostAt = 
+        DrawGhost render tilesImage gameTime 
+
+    msgAt  10 "PAC MAN"
+    msgAt  20 model.ScoreText
+    msgAt  40 "GAME OVER"
+    msgAt  90 model.HiScoreText
+
+    pacAt  model.PacRightMemo
+    pacAt  model.PacLeftMemo 
+
+    ghostAt  model.Ghost0Memo
+    ghostAt  model.Ghost1Memo
+    ghostAt  model.Ghost2Memo
+    ghostAt  model.Ghost3Memo
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextGameOverScreenState gameState keyStateGetter gameTime _elapsed =
-
-    //let model = ModelFrom gameState
-    //    let input = keyStateGetter |> DecodedInput
-    //
-    //    if input.Fire.JustDown then
-    //        model.WhereAfter model.ScoreAndHiScore gameTime
-    //    else
-        gameState |> Unchanged
-    
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let NewGameOverScreen scoreAndHiScore whereAfter =
+let NewGameOverScreen scoreAndHiScore =
 
     let gameOverModel =
         {
             ScoreAndHiScore = scoreAndHiScore
+            ScoreText       = "SCORE   " + scoreAndHiScore.Score.ToString()
             HiScoreText     = "HI SCORE   " + scoreAndHiScore.HiScore.ToString()
-            WhereAfter      = whereAfter
+            PacLeftMemo     = TitleScreenPac FacingRight 20 40 
+            PacRightMemo    = TitleScreenPac FacingLeft  80 40
+            Ghost0Memo      = TitleScreenGhost (GhostNumber 0) 20 60
+            Ghost1Memo      = TitleScreenGhost (GhostNumber 1) 40 60
+            Ghost2Memo      = TitleScreenGhost (GhostNumber 2) 60 60
+            Ghost3Memo      = TitleScreenGhost (GhostNumber 3) 80 60
         }
 
-    NewGameState NextGameOverScreenState RenderGameOverScreen gameOverModel
+    NewGameState ModelNeverChanges RenderGameOverScreen gameOverModel

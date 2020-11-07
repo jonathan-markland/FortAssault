@@ -1,5 +1,8 @@
 ﻿module Storyboard
 
+open Input
+open InterruptableVideo
+
 open ScreenGameTitle
 open ScreenPacman
 open ScreenGameOver
@@ -29,9 +32,10 @@ let rec private EnterYourNameStory scoreAndHiScore gameTime =
 
 and private GameOverStory scoreAndHiScore =
  
-    NewGameOverScreen 
-        scoreAndHiScore 
-        EnterYourNameStory
+    NewGameOverScreen scoreAndHiScore 
+        |> AsInterruptableVideoThen
+                (EnterYourNameStory scoreAndHiScore)
+                (WebBrowserKeyCode 90)  // TODO: Fire button constant?
 
 and private PacmanStory scoreAndHiScore _gameTime =
 
@@ -44,9 +48,11 @@ and private GameTitleStory gameTime =
     let highestScoreInInitialBoard = 
         HiScoreFromScoreboard globalScoreboard
     
-    NewGameTitleScreen 
-        globalScoreboard
-        (PacmanStory {Score=0u ; HiScore=highestScoreInInitialBoard})
+    NewGameTitleScreen globalScoreboard
+        |> AsInterruptableVideoThen 
+                (PacmanStory {Score=0u ; HiScore=highestScoreInInitialBoard})
+                (WebBrowserKeyCode 90)  // TODO: Fire button constant?
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

@@ -83,3 +83,8 @@ let inline ReplacesModelIn gameState model =
 let inline WithUpdatedModelAndFrameFunc model frameFunc (gameState:SpecificGameState<'Model>) =
     NewGameState frameFunc (gameState.DrawFunc) model
 
+
+/// A FrameFunc for those screens that never change their models.
+let ModelNeverChanges gameState _keyStateGetter _gameTime _elapsed =
+    Unchanged gameState
+
