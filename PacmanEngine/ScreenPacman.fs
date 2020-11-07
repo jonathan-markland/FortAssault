@@ -13,6 +13,8 @@ open Input
 open MazeFilter
 open Rules
 open Algorithm
+open ScreenIntermissions
+
 
 
 // TODO: Collisiion detection is a little iffy, should have much smaller inner rectangles for ghosts + pac.
@@ -269,6 +271,7 @@ let WithPacMode mode pacman =
                 PacMode            = mode
                 PacFacingDirection = pacman.PacState2.PacFacingDirection
                 LivesLeft          = pacman.PacState2.LivesLeft
+                PacHomePosition    = pacman.PacState2.PacHomePosition
             }
     }
 
@@ -512,7 +515,7 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
             else
                 () // No graphics desired.
 
-        | PacDeadUntil _ ->
+        | PacDead ->
             () // No graphics desired.
 
     model.GhostsState
@@ -616,11 +619,8 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
             (eaten , position , direction , scoreIncrement)            
 
 
-        | PacDyingUntil(_deadTime) ->
-            (EatenNothing , position , direction , 0u)
-
-
-        | PacDeadUntil(_endScreenTime) ->
+        | PacDyingUntil _
+        | PacDead ->
             (EatenNothing , position , direction , 0u)
 
 
@@ -857,6 +857,11 @@ let private WithGhostMovement mazeState pacman gameTime allGhosts =
 //  Collisions PAC vs GHOSTS
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let WithLifeLossStateUpdates pacman =
+    pacman  // TODO
+
+
+
 /// If the condition is true, return the transformed 
 /// object, else return the object unchanged.
 let inline UpdateIf condition transformed objekt =   // TODO: move to library
@@ -882,11 +887,10 @@ let WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime pac
                 (WithPacMode (PacDyingUntil (gameTime + PacmanDyingAnimationTime)))
 
         | PacDyingUntil t ->
-            pacmanState |> UpdateIf (gameTime >= t) (WithPacMode (PacDeadUntil (gameTime + PacmanDeadPauseTime)))
+            pacmanState |> UpdateIf (gameTime >= t) WithLifeLossStateUpdates
 
-        | PacDeadUntil _ -> 
-            // TODO: How do we handle the life loss?  Who handles it?
-            pacmanState   // intersection does not apply
+        | PacDead -> 
+            pacmanState
 
 
 
@@ -935,6 +939,7 @@ let WithPacManMovementStateChangesAppliedFrom position direction pacmanState =
                     PacMode            = pacmanState.PacState2.PacMode
                     PacFacingDirection = direction
                     LivesLeft          = pacmanState.PacState2.LivesLeft
+                    PacHomePosition    = pacmanState.PacState2.PacHomePosition
                 }
             PacPosition = position
         }
@@ -1034,6 +1039,7 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
 
     // Repack
 
+    // TODO: let gameState =
     gameState |> WithUpdatedModel
         {
             ScoreAndHiScore   = scoreAndHiScore
@@ -1042,6 +1048,17 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
             GhostsState       = ghostStateList
             WhereToOnGameOver = model.WhereToOnGameOver
         }        
+
+    // Decide next state
+
+    // if pacmanState |> LifeIsOver then
+    // 
+    //     if pacmanState.PacState2.LivesLeft = 1 then 
+    // 
+    //     WithLifeLossIntermissionCard (fun _ -> gameState) gameTime
+    // 
+    // else 
+    //     gameState
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -1073,7 +1090,8 @@ let NewPacmanScreen whereToOnGameOver scoreAndHiScore =
                         { 
                             PacFacingDirection = FacingRight
                             PacMode = PacAlive
-                            LivesLeft = 3 
+                            LivesLeft = InitialLives
+                            PacHomePosition = unpackedMaze.UnpackedPacmanPosition
                         } 
                 }
 

@@ -106,15 +106,15 @@ type PacMode =
     /// Player cannot control during this.
     | PacDyingUntil of float32<seconds>
 
-    /// Pacman is absent from the screen, and the restart logic kicks in at the game time.
-    /// Player cannot control during this.
-    | PacDeadUntil of float32<seconds>
+    /// Signal main loop to decrement lives count and switch to life lost card.
+    | PacDead
 
 type PacState2 =
     {
         PacMode            : PacMode
         PacFacingDirection : FacingDirection
         LivesLeft          : int
+        PacHomePosition    : Point<int<epx>>
     }
 
 type PacmanState =

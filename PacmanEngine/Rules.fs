@@ -6,6 +6,8 @@ let MaxPlayerNameLength = 10
 
 let NoScore = 0u
 
+let InitialLives = 3
+
 // TODO: Could some of these parameters be per-ghost?
 
 let ScoreForEatingDot       = 10u
