@@ -42,12 +42,13 @@ let IsNotHash = ((<>) '#')
 
 
 
-let MazeToFSharpBoxDrawSourceCode isWall (maze:string[]) =
+let MazeToFSharpBoxDrawSourceCode isWall (mazeStrings:string list) =
 
-    let width = maze.[0].Length
+    let width = mazeStrings.Head.Length
 
-    maze |> (StringArrayToMazeByteArray isWall)
-         |> Option.map (fun maze -> maze |> ToFSharpBoxDrawSourceCodeSeq width |> String.concat "\r\n")
+    mazeStrings |> (StringArrayToMazeByteArray isWall)
+         |> Option.map (
+            fun maze -> maze |> ToFSharpBoxDrawSourceCodeSeq width |> String.concat "\r\n")
 
           
 
@@ -57,9 +58,9 @@ let MazeToFSharpBoxDrawSourceCode isWall (maze:string[]) =
 //  Test
 // --------------------------------------------------------------------------------------------------------
 
-let WhenTransformed isWall (maze:string[]) =
+let WhenTransformed isWall (maze:string list) =
 
-    let width = if maze.Length > 0 then maze.[0].Length else 0
+    let width = if maze.Length > 0 then maze.Head.Length else 0
     maze 
         |> (StringArrayToMazeByteArray isWall)
         |> Option.map (ToUnicodeBoxDrawing width)
@@ -72,15 +73,15 @@ let WhenTransformed isWall (maze:string[]) =
         
 [<Fact>]
 let ``Empty input to MazeByteArray yields None`` () =
-    [||] |> StringArrayToMazeByteArray IsHash |> ShouldEqual None
+    [] |> StringArrayToMazeByteArray IsHash |> ShouldEqual None
 
 [<Fact>]
 let ``Array of one empty string input to MazeByteArray yields None`` () =
-    [| "" |] |> StringArrayToMazeByteArray IsHash |> ShouldEqual None
+    [ "" ] |> StringArrayToMazeByteArray IsHash |> ShouldEqual None
 
 [<Fact>]
 let ``Array of two empty string inputs to MazeByteArray yields None`` () =
-    [| "" ; "" |] |> StringArrayToMazeByteArray IsHash |> ShouldEqual None
+    [ "" ; "" ] |> StringArrayToMazeByteArray IsHash |> ShouldEqual None
 
 
 
@@ -92,7 +93,7 @@ let ``Array of two empty string inputs to MazeByteArray yields None`` () =
 let ``MazeByteArray applied to basic maze produces correct pieces viewed via box drawing`` () =
 
     let maze =
-        [|
+        [
             "########"
             "# #    #"
             "# # ## #"
@@ -100,7 +101,7 @@ let ``MazeByteArray applied to basic maze produces correct pieces viewed via box
             "# #### #"
             "#      #"
             "########"
-        |]
+        ]
 
     // Reminder of how to obtain F# source code:  
     let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsHash
@@ -124,7 +125,7 @@ let ``MazeByteArray applied to basic maze produces correct pieces viewed via box
 let ``MazeByteArray applied to comprehensive case maze produces correct pieces viewed via box drawing`` () =
 
     let maze =
-        [|
+        [
             "###############"
             "#             #"
             "# ########### #"
@@ -139,7 +140,7 @@ let ``MazeByteArray applied to comprehensive case maze produces correct pieces v
             "# ########### #"
             "#             #"
             "###############"
-        |]
+        ]
 
     // Reminder of how to obtain F# source code:  
     // let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsHash
@@ -170,7 +171,7 @@ let ``MazeByteArray applied to comprehensive case maze produces correct pieces v
 let ``MazeByteArray applied to maze with holes at edges`` () =
 
     let maze =
-        [|
+        [
             "#### # #"
             "  #     "
             "# # ## #"
@@ -178,7 +179,7 @@ let ``MazeByteArray applied to maze with holes at edges`` () =
             "# #### #"
             "#       "
             "# ## ###"
-        |]
+        ]
 
     // Reminder of how to obtain F# source code:  
     let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsHash
@@ -204,7 +205,7 @@ let ``MazeByteArray applied to maze with holes at edges`` () =
 let ``MazeByteArray applied to basic maze produces correct pieces with inverted logic when viewed via box drawing`` () =
 
     let maze =
-        [|
+        [
             "########"
             "# #    #"
             "# # ## #"
@@ -212,7 +213,7 @@ let ``MazeByteArray applied to basic maze produces correct pieces with inverted 
             "# #### #"
             "#      #"
             "########"
-        |]
+        ]
 
     // Reminder of how to obtain F# source code:  
     // let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsNotHash
@@ -238,7 +239,7 @@ let ``MazeByteArray applied to maze with holes at edges inverted`` () =
     // Some holes allow wrap-around because they align, some don't.
 
     let maze =
-        [|
+        [
             "#### # #"
             "  #     "
             "# # ## #"
@@ -246,7 +247,7 @@ let ``MazeByteArray applied to maze with holes at edges inverted`` () =
             "# #### #"
             "#       "
             "# ## ###"
-        |]
+        ]
 
     // Reminder of how to obtain F# source code:  
     let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsNotHash
@@ -270,7 +271,7 @@ let ``MazeByteArray applied to maze with holes at edges inverted`` () =
 let ``MazeByteArray applied to comprehensive maze produces correct pieces with inverted logic when viewed via box drawing`` () =
 
     let maze =
-        [|
+        [
             "###############"
             "#             #"
             "# ########### #"
@@ -285,7 +286,7 @@ let ``MazeByteArray applied to comprehensive maze produces correct pieces with i
             "# ########### #"
             "#             #"
             "###############"
-        |]
+        ]
 
     // Reminder of how to obtain F# source code:  
     // let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsNotHash
@@ -321,7 +322,7 @@ let ``MazeByteArray applied to comprehensive maze produces correct pieces with i
 [<Fact>]
 let ``The 0 x 0 maze`` () =
 
-    [||] |> WhenTransformed IsHash |> ShouldEqual None
+    [] |> WhenTransformed IsHash |> ShouldEqual None
 
 
 
@@ -329,13 +330,13 @@ let ``The 0 x 0 maze`` () =
 let ``The 0 x 5 maze`` () =
 
     let maze = 
-        [|
+        [
             ""
             ""
             ""
             ""
             ""
-        |]
+        ]
 
     maze |> WhenTransformed IsHash |> ShouldEqual None
 

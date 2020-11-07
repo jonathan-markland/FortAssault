@@ -117,17 +117,17 @@ let MazeByteArray width height isWallAtXY =
 /// Validates that the string array is a non-empty rectangle of text
 /// with the same number of characters on each line.  If so, returns
 /// the dimensions.  Otherwise returns None.
-let IfValidStringRectangleThen f (strings:string[]) =
+let IfValidStringRectangleThen f (strings:string list) =
 
-    let height = strings.Length
-    if height > 0 then
-        let width = strings.[0].Length
-        if width > 0 && strings |> Array.forall (fun str -> str.Length = width) then
-            f width height
-        else
-            None
-    else
-        None
+    match strings with
+        | [] -> None
+        | head::tail -> 
+            let height = strings.Length
+            let width = head.Length
+            if width > 0 && strings |> List.forall (fun str -> str.Length = width) then
+                f width height
+            else
+                None
 
 
 
@@ -136,7 +136,7 @@ let IfValidStringRectangleThen f (strings:string[]) =
 /// starting in the top left corner.  All rows must be the same width for 
 /// this to return a value, and the 'isWallChar' predicate determines which
 /// squares in the input represent wall.
-let StringArrayToMazeByteArray isWallChar (maze:string[]) =
+let StringArrayToMazeByteArray isWallChar (maze:string list) =
 
     maze |> IfValidStringRectangleThen (fun width height ->
         MazeByteArray width height (fun x y -> maze.[y].[x] |> isWallChar)

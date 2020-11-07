@@ -31,7 +31,7 @@ open ScreenIntermissions
 let private PauseDuration = 2.0F<seconds>
 
 let private DefaultMaze =
-    [|
+    [
         "#########.########.#"
         "#@..##......##.....#"
         "#.#....####....#.#.#"
@@ -47,7 +47,7 @@ let private DefaultMaze =
         "#@#.#.#.####.#.#@#.#"
         "#.....#........#...."
         "###.#####.##########"
-    |]
+    ]
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -74,22 +74,23 @@ type private PacmanScreenModel =
 
 type FindResult = InvalidMaze | NotFound | Found of int * int | NotUnique
 
-let FindUnique charToFind (mazeArray:string[]) =
+let FindUnique charToFind mazeArray =
 
     let result =
         mazeArray |> IfValidStringRectangleThen (fun width height ->
 
             let mutable findResult = NotFound
 
-            for y in 0..(height-1) do
+            mazeArray |> List.iteri (fun y row ->
                 for x in 0..(width-1) do
-                    if mazeArray.[y].[x] = charToFind then
+                    if row.[x] = charToFind then
                         findResult <-
                             match findResult with
                                 | NotFound    -> Found(x,y)
                                 | Found _     -> NotUnique
                                 | NotUnique   -> NotUnique
                                 | InvalidMaze -> failwith "unexpected case"  // should never happen
+            )
             Some findResult
         )
 
@@ -106,15 +107,15 @@ type private UnpackedMaze =
         UnpackedGhostPositions : Point<int<epx>> list
     }
 
-let private TextMazeDefinitionUnpacked mazeArray = // TODO: move to a module?
+let private TextMazeDefinitionUnpacked mazeList = // TODO: move to a module?
 
-    let combinedWithDotsAndPillsIn (mazeArray:string[]) (justTheWalls:byte[]) =
+    let combinedWithDotsAndPillsIn (mazeList:string list) (justTheWalls:byte[]) =
 
-        mazeArray |> IfValidStringRectangleThen (fun width height ->
+        mazeList |> IfValidStringRectangleThen (fun width height ->
 
             if (width * height) = justTheWalls.Length then
                 let newArray = Array.create justTheWalls.Length ((byte)TileIndex.Blank)
-                for y in 0..(height-1) do
+                mazeList |> List.iteri (fun y row ->
                     for x in 0..(width-1) do
                         let i = y * width + x
                         let wall = justTheWalls.[i]
@@ -122,7 +123,7 @@ let private TextMazeDefinitionUnpacked mazeArray = // TODO: move to a module?
                             if wall <> 0uy then
                                 wall + ((byte)TileIndex.Blank)
                             else
-                                let ch = mazeArray.[y].[x]
+                                let ch = row.[x]
                                 if ch = '.' then
                                     ((byte) TileIndex.Dot)
                                 else if ch = '@' then
@@ -130,6 +131,7 @@ let private TextMazeDefinitionUnpacked mazeArray = // TODO: move to a module?
                                 else
                                     0uy
                         newArray.[i] <- tileIndex
+                )
                 Some newArray
             else
                 None
@@ -141,23 +143,23 @@ let private TextMazeDefinitionUnpacked mazeArray = // TODO: move to a module?
             | None       -> failwith errorMessage
 
     let justTheWalls =
-        mazeArray 
+        mazeList 
             |> StringArrayToMazeByteArray (fun ch -> ch = '#' || ch = ':') 
             |> unwrap "Failed to unpack walls from maze definition, please check text format input."
 
     let theGhostRails =
-        mazeArray 
+        mazeList 
             |> StringArrayToMazeByteArray (fun ch -> ch <> '#') 
             |> unwrap "Failed to unpack rails from maze definition, please check text format input."
 
     let thePlayersRails =
-        mazeArray 
+        mazeList 
             |> StringArrayToMazeByteArray (fun ch -> ch <> '#' && ch <> ':') 
             |> unwrap "Failed to unpack rails from maze definition, please check text format input."
 
     let theWallsAndPills =
         justTheWalls 
-            |> combinedWithDotsAndPillsIn mazeArray
+            |> combinedWithDotsAndPillsIn mazeList
             |> unwrap "Failed to obtains the dots and pills from maze definition, please check text format input."
 
     let unpackFindResult (ch:char) findResult =
@@ -171,16 +173,16 @@ let private TextMazeDefinitionUnpacked mazeArray = // TODO: move to a module?
     let ghostPositions =
         [1..4] |> List.map (fun n -> 
             let ghostChar = (char) (48 + n)
-            mazeArray |> FindUnique ghostChar |> unpackFindResult ghostChar)
+            mazeList |> FindUnique ghostChar |> unpackFindResult ghostChar)
 
     let pacPosition =
-        mazeArray |> FindUnique '0' |> unpackFindResult '0'
+        mazeList |> FindUnique '0' |> unpackFindResult '0'
 
     {
         UnpackedMazeState =
             {
-                MazeTilesCountX  = mazeArray.[0].Length  // known valid
-                MazeTilesCountY  = mazeArray.Length
+                MazeTilesCountX  = mazeList.[0].Length  // known valid
+                MazeTilesCountY  = mazeList.Length
                 MazeTiles        = theWallsAndPills
                 MazeGhostRails   = theGhostRails
                 MazePlayersRails = thePlayersRails
