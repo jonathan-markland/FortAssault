@@ -58,7 +58,7 @@ and private GameTitleStory gameTime =
 
 let NewPacmanStoryboard _ gameTime =
 
-    globalScoreboard <- InitialScoreboard [ "Damon" ; "Jarvis" ; "Noel" ; "James" ] 10000u 5000u
+    globalScoreboard <- InitialScoreboard [ "Damon" ; "Jarvis" ; "Noel" ; "James" ] 10u 50u
 
     GameTitleStory gameTime
     

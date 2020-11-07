@@ -21,6 +21,8 @@ let PowerPillWarnFlashRate = 12.0F
 let RegenerationTime = 5.0F<seconds>
 let RegenerationFlashRate = 8.0F
 
-let PacmanDyingAnimationTime = 3.0F<seconds>
+let PacmanDyingAnimationTime = 2.0F<seconds>
 let PacmanDyingFlashRate = 32.0F
 let PacmanDeadPauseTime = 3.0F<seconds>
+
+let LifeOverGetReadyPauseTime = 4.0F<seconds>

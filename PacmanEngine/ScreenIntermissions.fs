@@ -1,10 +1,10 @@
 ﻿module ScreenIntermissions
 
-open Time
-open ResourceIDs
-open StaticResourceAccess
 open IntermissionCard
 open FreezeFrame
+open StaticResourceAccess
+open ResourceIDs
+open Rules
 
 
 let WithLifeLossIntermissionCard whereToAfter gameTime =
@@ -12,7 +12,7 @@ let WithLifeLossIntermissionCard whereToAfter gameTime =
     NewIntermissionCard
         (BackgroundImageID |> ImageFromID) 
         (GreyFontID |> FontFromID)
-        "LIFE OVER" 
+        "LIFE OVER    GET READY" 
         ScreenWidthInt ScreenHeightInt 
-            |> WithFreezeFrameFor 4.0F<seconds> gameTime whereToAfter
+            |> WithFreezeFrameFor LifeOverGetReadyPauseTime gameTime whereToAfter
         
