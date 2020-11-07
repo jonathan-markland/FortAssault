@@ -784,9 +784,17 @@ let private DecideNewPositionAndDirectionFor
                     ChosenCompassDirectionFrom compass (gameTime + LanguagePrimitives.Float32WithMeasure<seconds>((float32) gn))
 
     let position = 
-        position 
-            |> PointMovedByDelta (direction |> DirectionToMovementDeltaI32)
-            |> PointWrappedAtMazeEdges mazeState
+
+        let potential =
+            position 
+                |> PointMovedByDelta (direction |> DirectionToMovementDeltaI32)
+                |> PointWrappedAtMazeEdges mazeState
+
+        match ghost.GhostState2.GhostMode with
+            | GhostNormal -> potential
+            | GhostEdibleUntil _ ->
+                if gameTime |> PulseActiveAtRate 20.0F then potential else position  // TODO: better treatment.
+            | _ -> failwith "Should not be deciding direction for ghost in this state"
 
     (position, direction)
 

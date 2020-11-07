@@ -57,12 +57,15 @@ and private PacmanStory (levelNumber:int) (scoreAndHiScore:ScoreAndHiScore) _gam
 
 and private GameTitleStory gameTime =
 
+    let firstLevelForBrandNewGame =
+        0
+
     let scoreAndHiScoreForBrandNewGame = 
         { Score=0u ; HiScore = HiScoreFromScoreboard globalScoreboard }
     
     NewGameTitleScreen globalScoreboard
         |> AsInterruptableVideoThen 
-                (PacmanStory 0 scoreAndHiScoreForBrandNewGame)
+                (PacmanStory firstLevelForBrandNewGame scoreAndHiScoreForBrandNewGame)
                 (WebBrowserKeyCode 90)  // TODO: Fire button constant?
 
 
