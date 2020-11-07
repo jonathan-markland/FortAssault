@@ -10,6 +10,8 @@ open ScreenPotentialEnterYourName
 
 open ScoreboardModel
 
+open ScreenIntermissions
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let mutable private globalScoreboard : ScoreAndName list = []
@@ -30,6 +32,13 @@ let rec private EnterYourNameStory scoreAndHiScore gameTime =
         afterEntry
         gameTime
 
+and private AllEatenStory scoreAndHiScore gameTime =
+ 
+    WithScreenCompleteIntermissionCard
+        scoreAndHiScore
+        (PacmanStory scoreAndHiScore)
+        gameTime
+
 and private GameOverStory scoreAndHiScore =
  
     NewGameOverScreen scoreAndHiScore 
@@ -40,6 +49,7 @@ and private GameOverStory scoreAndHiScore =
 and private PacmanStory scoreAndHiScore _gameTime =
 
     NewPacmanScreen
+        AllEatenStory
         GameOverStory
         scoreAndHiScore
 
@@ -51,6 +61,7 @@ and private GameTitleStory gameTime =
     NewGameTitleScreen globalScoreboard
         |> AsInterruptableVideoThen 
                 (PacmanStory {Score=0u ; HiScore=highestScoreInInitialBoard})
+                // (EnterYourNameStory {Score=100000u ; HiScore=highestScoreInInitialBoard})
                 (WebBrowserKeyCode 90)  // TODO: Fire button constant?
 
 

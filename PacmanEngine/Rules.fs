@@ -26,3 +26,4 @@ let PacmanDyingFlashRate = 32.0F
 let PacmanDeadPauseTime = 3.0F<seconds>
 
 let LifeOverGetReadyPauseTime = 4.0F<seconds>
+let ScreenCompletePauseTime = 5.0F<seconds>

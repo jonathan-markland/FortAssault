@@ -67,6 +67,7 @@ type private PacmanScreenModel =
         PacmanState            : PacmanState
         GhostsState            : GhostState list
         WhereToOnGameOver      : ScoreAndHiScore -> ErasedGameState
+        WhereToOnAllEaten      : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -901,9 +902,10 @@ let private WithCharactersReset model =
     {
         ScoreAndHiScore   = model.ScoreAndHiScore  
         MazeState         = model.MazeState        
-        WhereToOnGameOver = model.WhereToOnGameOver
         PacmanState       = model.PacmanState |> WithPacmanReset
         GhostsState       = model.GhostsState |> List.map WithGhostReset
+        WhereToOnGameOver = model.WhereToOnGameOver
+        WhereToOnAllEaten = model.WhereToOnAllEaten
     }
 
 
@@ -1047,6 +1049,16 @@ let private WithReturnToNormalityIfTimeOutAt gameTime ghostStateList =
 //  Screen state advance on frame
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let IsSomethingPacManNeedsToEat (tile:byte) =
+    (tile = ((byte)TileIndex.Pill1)) || (tile = ((byte)TileIndex.Dot))   // NB: Pill2 is never encoded in the maze itself.
+
+
+
+let private IsAllEaten maze =
+    not  (maze.MazeTiles |> Array.exists (fun tile -> tile |> IsSomethingPacManNeedsToEat))
+
+
+
 let LifeIsOver pacman =
     match pacman.PacState2.PacMode with
         | PacDead -> true
@@ -1066,6 +1078,7 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
             PacmanState            = pacmanState
             GhostsState            = ghostStateList
             WhereToOnGameOver      = _
+            WhereToOnAllEaten      = _
         }
             = model
 
@@ -1105,6 +1118,7 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
             PacmanState       = pacmanState
             GhostsState       = ghostStateList
             WhereToOnGameOver = model.WhereToOnGameOver
+            WhereToOnAllEaten = model.WhereToOnAllEaten
         }        
 
     // Decide next gameState
@@ -1116,12 +1130,16 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
             WithLifeLossIntermissionCard whereToAfterIntermission gameTime  // TODO: There is something bad about this parameter order, that we can't use |>
         else
             model.WhereToOnGameOver scoreAndHiScore
+    
+    else if mazeState |> IsAllEaten then
+        model.WhereToOnAllEaten scoreAndHiScore gameTime  // TODO: Maze flash - but could that be done with a clever external filter?
+    
     else 
         gameState |> WithUpdatedModel model
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewPacmanScreen whereToOnGameOver scoreAndHiScore =
+let NewPacmanScreen whereToOnAllEaten whereToOnGameOver scoreAndHiScore =
 
     let unpackedMaze = DefaultMaze |> TextMazeDefinitionUnpacked
 
@@ -1140,7 +1158,8 @@ let NewPacmanScreen whereToOnGameOver scoreAndHiScore =
             ScoreAndHiScore   = scoreAndHiScore
             MazeState         = unpackedMaze.UnpackedMazeState
             WhereToOnGameOver = whereToOnGameOver
-
+            WhereToOnAllEaten = whereToOnAllEaten
+            
             // TODO: sort out
             PacmanState =
                 { 

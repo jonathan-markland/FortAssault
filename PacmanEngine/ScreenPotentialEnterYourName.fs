@@ -23,7 +23,7 @@ type private PotentialEnterYourNameScreenModel =
         ScoreAndHiScore    : ScoreAndHiScore
         EnterYourNameModel : EnterYourNameModel
         MemoizedText       : string list
-        PacRightMemo       : TitleScreenPacmanState
+        PacMemo       : TitleScreenPacmanState
         WhereToAfterCtor   : ScoreAndName list -> float32<seconds> -> ErasedGameState
     }
 
@@ -40,7 +40,7 @@ let private RenderPotentialEnterYourNameScreen render (model:PotentialEnterYourN
     let pacAt = 
         DrawPacMan render tilesImage gameTime
 
-    pacAt  model.PacRightMemo
+    pacAt  model.PacMemo
 
     Paragraph render GreyFontID CentreAlign MiddleAlign 160<epx> 100<epx> 10<epx> model.MemoizedText
 
@@ -106,7 +106,7 @@ let private NextPotentialEnterYourNameScreenState gameState keyStateGetter gameT
                         ScoreAndHiScore    = model.ScoreAndHiScore  // never changes
                         EnterYourNameModel = enterYourNameModel
                         MemoizedText       = enterYourNameModel |> EnterYourNameModelScreenText
-                        PacRightMemo       = model.PacRightMemo
+                        PacMemo       = model.PacMemo
                         WhereToAfterCtor   = model.WhereToAfterCtor
                     }
 
@@ -126,7 +126,7 @@ let NewPotentialEnterYourNameScreen scoreAndHiScore oldScoreboard whereToAfter g
                 EnterYourNameModel = enterYourNameModel
                 MemoizedText       = enterYourNameModel |> EnterYourNameModelScreenText
                 WhereToAfterCtor   = whereToAfter
-                PacRightMemo       = TitleScreenPac FacingLeft  50 15
+                PacMemo            = TitleScreenPac FacingRight  50 15
             }
 
         NewGameState NextPotentialEnterYourNameScreenState RenderPotentialEnterYourNameScreen screenModel
