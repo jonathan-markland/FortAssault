@@ -11,6 +11,7 @@ open ScreenPotentialEnterYourName
 open ScoreboardModel
 
 open ScreenIntermissions
+open ScoreHiScore
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -32,11 +33,11 @@ let rec private EnterYourNameStory scoreAndHiScore gameTime =
         afterEntry
         gameTime
 
-and private AllEatenStory scoreAndHiScore gameTime =
+and private AllEatenStory levelNumber scoreAndHiScore gameTime =
  
     WithScreenCompleteIntermissionCard
         scoreAndHiScore
-        (PacmanStory scoreAndHiScore)
+        (PacmanStory (levelNumber + 1) scoreAndHiScore)
         gameTime
 
 and private GameOverStory scoreAndHiScore =
@@ -46,9 +47,10 @@ and private GameOverStory scoreAndHiScore =
                 (EnterYourNameStory scoreAndHiScore)
                 (WebBrowserKeyCode 90)  // TODO: Fire button constant?
 
-and private PacmanStory scoreAndHiScore _gameTime =
+and private PacmanStory (levelNumber:int) (scoreAndHiScore:ScoreAndHiScore) _gameTime =
 
     NewPacmanScreen
+        levelNumber
         AllEatenStory
         GameOverStory
         scoreAndHiScore
@@ -60,7 +62,7 @@ and private GameTitleStory gameTime =
     
     NewGameTitleScreen globalScoreboard
         |> AsInterruptableVideoThen 
-                (PacmanStory {Score=0u ; HiScore=highestScoreInInitialBoard})
+                (PacmanStory 0 {Score=0u ; HiScore=highestScoreInInitialBoard})
                 // (EnterYourNameStory {Score=100000u ; HiScore=highestScoreInInitialBoard})
                 (WebBrowserKeyCode 90)  // TODO: Fire button constant?
 

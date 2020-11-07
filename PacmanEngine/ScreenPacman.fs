@@ -33,14 +33,15 @@ type private MazeState =
         MazePlayersRails : byte[]  // not mutated
     }
 
-type private PacmanScreenModel =
+type private PacmanScreenModel =  // TODO: Getting fat with things that don't change per-frame
     {
+        LevelNumber            : int
         ScoreAndHiScore        : ScoreAndHiScore
         MazeState              : MazeState
         PacmanState            : PacmanState
         GhostsState            : GhostState list
         WhereToOnGameOver      : ScoreAndHiScore -> ErasedGameState
-        WhereToOnAllEaten      : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToOnAllEaten      : int -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -875,6 +876,7 @@ let WithGhostReset ghostState =
 /// Returns a model with the characters reset for use after a life loss.
 let private WithCharactersReset model =
     {
+        LevelNumber       = model.LevelNumber
         ScoreAndHiScore   = model.ScoreAndHiScore  
         MazeState         = model.MazeState        
         PacmanState       = model.PacmanState |> WithPacmanReset
@@ -1088,6 +1090,7 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
 
     let model =
         {
+            LevelNumber       = model.LevelNumber
             ScoreAndHiScore   = scoreAndHiScore
             MazeState         = mazeState
             PacmanState       = pacmanState
@@ -1107,18 +1110,20 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
             model.WhereToOnGameOver scoreAndHiScore
     
     else if mazeState |> IsAllEaten then
-        model.WhereToOnAllEaten scoreAndHiScore gameTime  // TODO: Maze flash - but could that be done with a clever external filter?
+        model.WhereToOnAllEaten model.LevelNumber scoreAndHiScore gameTime  // TODO: Maze flash - but could that be done with a clever external filter?
     
     else 
         gameState |> WithUpdatedModel model
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewPacmanScreen whereToOnAllEaten whereToOnGameOver scoreAndHiScore =
+let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiScore =
 
-    let numberOfMazes = AllPacmanMazes.Length
+    let numberOfMazes = 
+        AllPacmanMazes.Length
 
-    let unpackedMaze = AllPacmanMazes.[118] |> TextMazeDefinitionUnpacked
+    let unpackedMaze = 
+        AllPacmanMazes.[levelNumber % numberOfMazes] |> TextMazeDefinitionUnpacked
 
     let ghostDirectionProbabilities = // TODO sort out
         {
@@ -1132,6 +1137,7 @@ let NewPacmanScreen whereToOnAllEaten whereToOnGameOver scoreAndHiScore =
 
     let pacModel =
         {
+            LevelNumber       = levelNumber
             ScoreAndHiScore   = scoreAndHiScore
             MazeState         = unpackedMaze.UnpackedMazeState
             WhereToOnGameOver = whereToOnGameOver
