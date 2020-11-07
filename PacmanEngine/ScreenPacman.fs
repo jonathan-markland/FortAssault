@@ -538,6 +538,15 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
 
             DrawGhost render tilesImage pos number mode gameTime)
 
+    let indent = 20<epx>
+    let indentY = 2<epx>
+
+    Text render GreyFontID LeftAlign  TopAlign    indent indentY (sprintf "SCORE %d" model.ScoreAndHiScore.Score)  // TODO: memoize score to avoid garbage
+    Text render GreyFontID RightAlign TopAlign    (ScreenWidthInt - indent) indentY (sprintf "HISCORE %d" model.ScoreAndHiScore.HiScore)  // TODO: memoize score to avoid garbage
+    Text render GreyFontID RightAlign BottomAlign (ScreenWidthInt - indent) (ScreenHeightInt - indentY) (sprintf "LIVES %d" model.PacmanState.PacState2.LivesLeft)  // TODO: memoize score to avoid garbage
+
+
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  PAC MAN himself:  State advance per frame
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -1101,16 +1110,12 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
     // Decide next gameState
 
     if pacmanState |> LifeIsOver then
-    
-        let constructorPostIntermissionCard =
-            if pacmanState.PacState2.LivesLeft = 1 then
-                fun _gameTime -> model.WhereToOnGameOver scoreAndHiScore
-            else
-                fun _gameTime -> 
-                    model |> WithCharactersReset |> ReplacesModelIn gameState
-    
-        WithLifeLossIntermissionCard constructorPostIntermissionCard gameTime  // TODO: There is something bad about this parameter order, that we can't use |>
-    
+        if pacmanState.PacState2.LivesLeft > 1 then
+            let whereToAfterIntermission =
+                fun _gameTime -> model |> WithCharactersReset |> ReplacesModelIn gameState
+            WithLifeLossIntermissionCard whereToAfterIntermission gameTime  // TODO: There is something bad about this parameter order, that we can't use |>
+        else
+            model.WhereToOnGameOver scoreAndHiScore
     else 
         gameState |> WithUpdatedModel model
 
