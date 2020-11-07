@@ -8,6 +8,9 @@ open Geometry
 open ImagesAndFonts
 open ScreenHandler
 open Time
+open PacmanShared
+open ResourceIDs
+open TitleScreenShared
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -22,10 +25,27 @@ type GameOverScreenModel =
 
 let RenderGameOverScreen render (model:GameOverScreenModel) gameTime =
 
-    Rectangle render 0<epx> 0<epx> ScreenWidthInt ScreenHeightInt (SolidColour(0x000000u))
+    Rectangle render 0<epx> 0<epx> ScreenWidthInt ScreenHeightInt (SolidColour(0x400000u))
 
-    Text render GreyFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (ScreenHeightInt / 2) "GAME OVER"
-    Text render GreyFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (125<epx>) (model.HiScoreText)
+    Text render GreyFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (ScreenHeightInt / 3) "GAME OVER"
+    Text render GreyFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (ScreenHeightInt / 2) (model.HiScoreText)
+
+    // TODO: Do we want a module for any of this artistic stuff, ie: on the title screen too?
+
+    // let x50pc = 50 |> PercentOfScreenWidth
+    // 
+    // let y20pc = 20 |> PercentOfScreenHeight
+    // let y50pc = 50 |> PercentOfScreenHeight
+    // let y75pc = 75 |> PercentOfScreenHeight
+    // 
+    // DrawPacMan model.PacRightMemo
+    // DrawPacMan model.PacLeftMemo 
+    // 
+    // DrawGhost  model.Ghost0Memo
+    // DrawGhost  model.Ghost1Memo
+    // DrawGhost  model.Ghost2Memo
+    // DrawGhost  model.Ghost3Memo
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

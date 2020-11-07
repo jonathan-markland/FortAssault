@@ -11,24 +11,10 @@ open StaticResourceAccess
 open InterruptableVideo
 open PacmanShared
 open Input
-
-// TODO: Possiblity for library?  For convenience?
-let inline PercentOfScreenWidth  x = (ScreenWidthInt * x) / 100
-let inline PercentOfScreenHeight x = (ScreenHeightInt * x) / 100
+open ResourceIDs
+open TitleScreenShared
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-type private TitleScreenPacmanState =
-    {
-        pos       : Point<int<epx>>
-        direction : FacingDirection
-    }
-
-type private TitleScreenGhostState =
-    {
-        pos    : Point<int<epx>>
-        number : GhostNumber
-    }
 
 type private GameTitleScreenModel =
     {
@@ -52,29 +38,22 @@ let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
     let tilesImage = Level1ImageID |> ImageFromID
 
     let x50pc = 50 |> PercentOfScreenWidth
-
     let y20pc = 20 |> PercentOfScreenHeight
     let y50pc = 50 |> PercentOfScreenHeight
     let y75pc = 75 |> PercentOfScreenHeight
 
-    let verticalSpacing = 16<epx>
+    let verticalSpacing = 16<epx>  // TODO: Twice the font height
 
-    let DrawPacMan pacmanState =
-        let pillMode = false
-        let { pos=pos ; direction=facingDirection } = pacmanState
-        DrawPacManAlive render tilesImage pos facingDirection pillMode gameTime
+    let pacAt   = DrawPacMan render tilesImage gameTime
+    let ghostAt = DrawGhost render tilesImage gameTime 
 
-    let DrawGhost ghostState =
-        let { pos=pos ; number=ghostNumber } = ghostState
-        DrawGhost render tilesImage pos ghostNumber GhostNormal gameTime
+    pacAt  model.PacRightMemo
+    pacAt  model.PacLeftMemo 
 
-    DrawPacMan model.PacRightMemo
-    DrawPacMan model.PacLeftMemo 
-
-    DrawGhost  model.Ghost0Memo
-    DrawGhost  model.Ghost1Memo
-    DrawGhost  model.Ghost2Memo
-    DrawGhost  model.Ghost3Memo
+    ghostAt  model.Ghost0Memo
+    ghostAt  model.Ghost1Memo
+    ghostAt  model.Ghost2Memo
+    ghostAt  model.Ghost3Memo
 
     Text render GreyFontID CentreAlign MiddleAlign x50pc y20pc "PAC MAN"
 
@@ -87,30 +66,6 @@ let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 let private NextGameTitleScreenState gameState keyStateGetter gameTime elapsed =
     Unchanged gameState
     
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let private TitleScreenPac facing percentX percentY =
-
-    let cx = percentX |> PercentOfScreenWidth
-    let cy = percentY |> PercentOfScreenHeight
-    let h  = TileSide / 2
-
-    { 
-        pos = { ptx = cx - h ; pty = cy - h }
-        direction = facing
-    }
-
-let private TitleScreenGhost ghostNumber percentX percentY =
-
-    let cx = percentX |> PercentOfScreenWidth
-    let cy = percentY |> PercentOfScreenHeight
-    let h  = TileSide / 2
-
-    { 
-        pos = { ptx = cx - h ; pty = cy - h }
-        number = ghostNumber
-    }
-
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let NewGameTitleScreen globalScoreboard nextConstructor =

@@ -54,7 +54,7 @@ type TileIndex =
     | GhostReturning = 35uy
 
 
-// TODO: Should these be in here?
+// TODO: Should these screen things be in here?
 // This game uses a the following engine-coordinate (epx) space:
 
 let ScreenWidthInt  = 320<epx>  // Must be the same as below!
@@ -62,6 +62,11 @@ let ScreenHeightInt = 256<epx>  // Must be the same as below!
 
 let ScreenWidth  = 320.0F<epx>
 let ScreenHeight = 256.0F<epx>
+
+let inline PercentOfScreenWidth  x = (ScreenWidthInt * x) / 100
+let inline PercentOfScreenHeight x = (ScreenHeightInt * x) / 100
+
+
 
 // Fonts (all screens):
 

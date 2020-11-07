@@ -10,7 +10,7 @@ open FreezeFrame
 let WithLifeLossIntermissionCard whereToAfter gameTime =
 
     NewIntermissionCard
-        (Background2ImageID |> ImageFromID) 
+        (BackgroundImageID |> ImageFromID) 
         (GreyFontID |> FontFromID)
         "LIFE OVER" 
         ScreenWidthInt ScreenHeightInt 

@@ -854,13 +854,56 @@ let private WithGhostMovement mazeState pacman gameTime allGhosts =
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  Collisions PAC vs GHOSTS
+//  Post Life Loss Handling
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let WithLifeLossStateUpdates pacman =
-    pacman  // TODO
+/// Return pacmans position reset, for use after life loss.
+let WithPacmanReset pacmanState =
+    // TODO: If LivesLeft = 1 on entry then this should return None
+    { 
+        PacPosition = pacmanState.PacState2.PacHomePosition
+        PacState2 =
+            { 
+                PacFacingDirection = FacingRight
+                PacMode            = PacAlive
+                LivesLeft          = pacmanState.PacState2.LivesLeft - 1
+                PacHomePosition    = pacmanState.PacState2.PacHomePosition
+            } 
+    }
 
 
+/// Return ghosts position reset, for use after pacman life loss.
+let WithGhostReset ghostState =
+    { 
+        GhostPosition = ghostState.GhostState2.GhostHomePosition
+        GhostState2 = 
+            { 
+                GhostMode            = GhostNormal
+                GhostFacingDirection = FacingUp 
+                GhostNumber          = ghostState.GhostState2.GhostNumber
+                GhostHomePosition    = ghostState.GhostState2.GhostHomePosition
+                MemoizedProbabilitiesByFacingDirection = ghostState.GhostState2.MemoizedProbabilitiesByFacingDirection
+            } 
+    }
+
+
+/// Returns a model with the characters reset for use after a life loss.
+let private WithCharactersReset model =
+    {
+        ScoreAndHiScore   = model.ScoreAndHiScore  
+        MazeState         = model.MazeState        
+        WhereToOnGameOver = model.WhereToOnGameOver
+        PacmanState       = model.PacmanState |> WithPacmanReset
+        GhostsState       = model.GhostsState |> List.map WithGhostReset
+    }
+
+
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Collisions PAC vs GHOSTS
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 /// If the condition is true, return the transformed 
 /// object, else return the object unchanged.
@@ -877,7 +920,7 @@ let inline UpdateWhen condition transformed objekt =   // TODO: move to library
 
 
 /// State changes on pacman as a result of collision detection with ghosts
-let WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime pacmanState =
+let WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime pacmanState =   // TODO: Return indicator of new state, instead of new record
 
     match pacmanState.PacState2.PacMode with
 
@@ -887,7 +930,7 @@ let WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime pac
                 (WithPacMode (PacDyingUntil (gameTime + PacmanDyingAnimationTime)))
 
         | PacDyingUntil t ->
-            pacmanState |> UpdateIf (gameTime >= t) WithLifeLossStateUpdates
+            pacmanState |> UpdateIf (gameTime >= t) (WithPacMode PacDead)
 
         | PacDead -> 
             pacmanState
@@ -895,7 +938,7 @@ let WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime pac
 
 
 /// State changes on ghosts as a result of collision detection with pacman
-let WithStateChangesResultingFromCollisionWithPacman pacmanPos ghosts =
+let WithStateChangesResultingFromCollisionWithPacman pacmanPos ghosts =   // TODO: Return indicator of new state, instead of new record
 
     let isEdibleGhostOverlappingPacmanAt pacmanPos ghost =
 
@@ -995,6 +1038,13 @@ let private WithReturnToNormalityIfTimeOutAt gameTime ghostStateList =
 //  Screen state advance on frame
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let LifeIsOver pacman =
+    match pacman.PacState2.PacMode with
+        | PacDead -> true
+        | _ -> false
+
+
+
 let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
 
     // Unpack
@@ -1039,8 +1089,7 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
 
     // Repack
 
-    // TODO: let gameState =
-    gameState |> WithUpdatedModel
+    let model =
         {
             ScoreAndHiScore   = scoreAndHiScore
             MazeState         = mazeState
@@ -1049,16 +1098,21 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
             WhereToOnGameOver = model.WhereToOnGameOver
         }        
 
-    // Decide next state
+    // Decide next gameState
 
-    // if pacmanState |> LifeIsOver then
-    // 
-    //     if pacmanState.PacState2.LivesLeft = 1 then 
-    // 
-    //     WithLifeLossIntermissionCard (fun _ -> gameState) gameTime
-    // 
-    // else 
-    //     gameState
+    if pacmanState |> LifeIsOver then
+    
+        let constructorPostIntermissionCard =
+            if pacmanState.PacState2.LivesLeft = 1 then
+                fun _gameTime -> model.WhereToOnGameOver scoreAndHiScore
+            else
+                fun _gameTime -> 
+                    model |> WithCharactersReset |> ReplacesModelIn gameState
+    
+        WithLifeLossIntermissionCard constructorPostIntermissionCard gameTime  // TODO: There is something bad about this parameter order, that we can't use |>
+    
+    else 
+        gameState |> WithUpdatedModel model
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
