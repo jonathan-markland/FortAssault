@@ -12,42 +12,15 @@ open PacmanShared
 open Input
 open MazeFilter
 open Rules
-open Algorithm
+open Mazes
 open ScreenIntermissions
 
 
 
 // TODO: Collisiion detection is a little iffy, should have much smaller inner rectangles for ghosts + pac.
-// TODO: gameState |> WithFreezeFrameFor PauseDuration gameTime whereToAfter
 // TODO: Ghosts need to see PAC
-// TODO: Eaten whole maze -- should we exit this screen and let the storyboard handle the next level transition?  WhereToGoOnEverythingEaten
 // TODO: Research - a pure functional pacman maze instead of the array mutability.
 
-
-
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let private PauseDuration = 2.0F<seconds>
-
-let private DefaultMaze =
-    [
-        "#########.########.#"
-        "#@..##......##.....#"
-        "#.#....####....#.#.#"
-        "..#.##########...#.#"
-        "#.#............#.#.#"
-        "#...###.####.#.#@..#"
-        "#.#.#...#12:.#.#####"
-        "..#...#.#34:.#......"
-        "#...###0####.#.#.#.#"
-        "###.#..........#.#.#"
-        "#...#.########.#.#.#"
-        "#.#.#........#.....#"
-        "#@#.#.#.####.#.#@#.#"
-        "#.....#........#...."
-        "###.#####.##########"
-    ]
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -1143,7 +1116,9 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
 
 let NewPacmanScreen whereToOnAllEaten whereToOnGameOver scoreAndHiScore =
 
-    let unpackedMaze = DefaultMaze |> TextMazeDefinitionUnpacked
+    let numberOfMazes = AllPacmanMazes.Length
+
+    let unpackedMaze = AllPacmanMazes.[118] |> TextMazeDefinitionUnpacked
 
     let ghostDirectionProbabilities = // TODO sort out
         {
