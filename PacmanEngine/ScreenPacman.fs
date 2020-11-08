@@ -118,17 +118,17 @@ let private TextMazeDefinitionUnpacked mazeList = // TODO: move to a module?
 
     let justTheWalls =
         mazeList 
-            |> StringArrayToMazeByteArray (fun ch -> ch = '#' || ch = ':') 
+            |> StringArrayToMazeArray (fun ch -> ch = '#' || ch = ':') id 0uy
             |> unwrap "Failed to unpack walls from maze definition, please check text format input."
 
     let theGhostRails =
         mazeList 
-            |> StringArrayToMazeByteArray (fun ch -> ch <> '#') 
+            |> StringArrayToMazeArray (fun ch -> ch <> '#')  id 0uy
             |> unwrap "Failed to unpack rails from maze definition, please check text format input."
 
     let thePlayersRails =
         mazeList 
-            |> StringArrayToMazeByteArray (fun ch -> ch <> '#' && ch <> ':') 
+            |> StringArrayToMazeArray (fun ch -> ch <> '#' && ch <> ':')  id 0uy
             |> unwrap "Failed to unpack rails from maze definition, please check text format input."
 
     let theWallsAndPills =
@@ -386,7 +386,7 @@ let CorridorRectangle tilesHorizontally tilesVertically (mazeByteArray:byte[]) o
 //  DRAWING
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private DrawSpecificMazeCentred render image cx cy countX countY (mazeByteArray:byte[]) gameTime =
+let private DrawSpecificMazeCentred render tilesImage cx cy countX countY (mazeByteArray:byte[]) gameTime =
 
     let (x,y) = OriginForMazeOfDimensions cx cy countX countY
 
@@ -396,7 +396,7 @@ let private DrawSpecificMazeCentred render image cx cy countX countY (mazeByteAr
         for tx in 0..countX - 1 do
             let tileIndex = mazeByteArray.[ty * countX + tx]
             let x' = x + tx * TileSide
-            DrawPacTileInt render image x' y' ((int)tileIndex) gameTime
+            DrawPacTileInt render tilesImage x' y' ((int)tileIndex) gameTime
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

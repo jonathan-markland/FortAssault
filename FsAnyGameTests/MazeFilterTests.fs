@@ -5,6 +5,11 @@ open FsXunit
 open MazeFilter
 
 
+
+let RemoveMazeByteWrapper (MazeByte mazeByte) = mazeByte
+
+
+
 // --------------------------------------------------------------------------------------------------------
 //  Test support
 // --------------------------------------------------------------------------------------------------------
@@ -46,7 +51,7 @@ let MazeToFSharpBoxDrawSourceCode isWall (mazeStrings:string list) =
 
     let width = mazeStrings.Head.Length
 
-    mazeStrings |> (StringArrayToMazeByteArray isWall)
+    mazeStrings |> (StringArrayToMazeArray isWall RemoveMazeByteWrapper 0uy)
          |> Option.map (
             fun maze -> maze |> ToFSharpBoxDrawSourceCodeSeq width |> String.concat "\r\n")
 
@@ -62,7 +67,7 @@ let WhenTransformed isWall (maze:string list) =
 
     let width = if maze.Length > 0 then maze.Head.Length else 0
     maze 
-        |> (StringArrayToMazeByteArray isWall)
+        |> (StringArrayToMazeArray isWall RemoveMazeByteWrapper 0uy)
         |> Option.map (ToUnicodeBoxDrawing width)
 
 
@@ -73,15 +78,15 @@ let WhenTransformed isWall (maze:string list) =
         
 [<Fact>]
 let ``Empty input to MazeByteArray yields None`` () =
-    [] |> StringArrayToMazeByteArray IsHash |> ShouldEqual None
+    [] |> StringArrayToMazeArray IsHash RemoveMazeByteWrapper 0uy |> ShouldEqual None
 
 [<Fact>]
 let ``Array of one empty string input to MazeByteArray yields None`` () =
-    [ "" ] |> StringArrayToMazeByteArray IsHash |> ShouldEqual None
+    [ "" ] |> StringArrayToMazeArray IsHash RemoveMazeByteWrapper 0uy |> ShouldEqual None
 
 [<Fact>]
 let ``Array of two empty string inputs to MazeByteArray yields None`` () =
-    [ "" ; "" ] |> StringArrayToMazeByteArray IsHash |> ShouldEqual None
+    [ "" ; "" ] |> StringArrayToMazeArray IsHash RemoveMazeByteWrapper 0uy |> ShouldEqual None
 
 
 

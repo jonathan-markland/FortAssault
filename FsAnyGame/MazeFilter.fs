@@ -9,7 +9,7 @@
 
 
 [<Struct>]
-type DirectionMasks =
+type private DirectionMasks =  // TODO: Unless MazeFilterIter is exposed publicly this is a much less important feature
     {
         UpMask          : byte
         DownMask        : byte
@@ -19,7 +19,7 @@ type DirectionMasks =
     }
 
 
-let NewDirectionMasks u d l r centralDotIndex =
+let private NewDirectionMasks u d l r centralDotIndex =
     {
         UpMask          = u
         DownMask        = d
@@ -29,12 +29,33 @@ let NewDirectionMasks u d l r centralDotIndex =
     }
 
 
+/// Validates that the string array is a non-empty rectangle of text
+/// with the same number of characters on each line.  If so, returns
+/// the dimensions.  Otherwise returns None.
+let IfValidStringRectangleThen f (strings:string list) =
+
+    match strings with
+        | [] -> None
+        | head::tail -> 
+            let height = strings.Length
+            let width = head.Length
+            if width > 0 && strings |> List.forall (fun str -> str.Length = width) then
+                f width height
+            else
+                None
+
+
+
+type MazeByte = MazeByte of byte
+
+
+
 /// Maze parser general algorithm.
 /// Could be used to deduce four-way "box drawing" characters from 
 /// a plain text matrix using a single character eg: # as a wall marker.
 /// The input maze type is user-definable.  The output is a byte array
 /// with user-definable bit values for the direction bits.
-let MazeFilterIter isWallAtXY width height masks action =
+let private MazeFilterIter isWallAtXY width height masks action =  // TODO: action function is more complex than needed because the values come out in row-primary left-to-right order anyway.
 
     if width > 0 && height > 0 then
 
@@ -83,12 +104,12 @@ let MazeFilterIter isWallAtXY width height masks action =
                         else
                             bits
 
-                    action x y shapeIndex
+                    action x y (MazeByte shapeIndex)
                 else
-                    action x y 0uy  // To completely define the output
+                    action x y (MazeByte 0uy)  // To completely define the output
 
 
-
+// TODO: Is there a bitmask type? [Flags] ?
 let MazeByteUp    = 1uy
 let MazeByteDown  = 2uy
 let MazeByteLeft  = 4uy
@@ -98,13 +119,13 @@ let MazeByteCentralDotIndex = 16uy
 
 /// Parse a 2D resource and return a row-primary byte array of 
 /// maze path direction bitmasks, starting in the top left corner.
-let MazeByteArray width height isWallAtXY =
+let private MazeArrayFromSource width height isWallAtXY (tileMapper:MazeByte -> 'userTile) (userTileDefault:'userTile) =
 
     if width > 0 && height > 0 then
 
         let masks  = NewDirectionMasks MazeByteUp MazeByteDown MazeByteLeft MazeByteRight MazeByteCentralDotIndex
-        let output = Array.zeroCreate<byte> (width * height)
-        let action x y mask = output.[y * width + x] <- mask
+        let output = Array.create<'userTile> (width * height) userTileDefault
+        let action x y mask = output.[y * width + x] <- mask |> tileMapper
 
         MazeFilterIter isWallAtXY width height masks action
 
@@ -114,31 +135,14 @@ let MazeByteArray width height isWallAtXY =
 
 
 
-/// Validates that the string array is a non-empty rectangle of text
-/// with the same number of characters on each line.  If so, returns
-/// the dimensions.  Otherwise returns None.
-let IfValidStringRectangleThen f (strings:string list) =
-
-    match strings with
-        | [] -> None
-        | head::tail -> 
-            let height = strings.Length
-            let width = head.Length
-            if width > 0 && strings |> List.forall (fun str -> str.Length = width) then
-                f width height
-            else
-                None
-
-
-
 /// Parse a textual representation of a maze from an array of equal-length 
 /// strings, and return a row-primary byte array of direction bitmasks, 
 /// starting in the top left corner.  All rows must be the same width for 
 /// this to return a value, and the 'isWallChar' predicate determines which
 /// squares in the input represent wall.
-let StringArrayToMazeByteArray isWallChar (maze:string list) =
+let StringArrayToMazeArray isWallChar (tileMapper:MazeByte -> 'userTile) (userTileDefault:'userTile) (maze:string list) =
 
     maze |> IfValidStringRectangleThen (fun width height ->
-        MazeByteArray width height (fun x y -> maze.[y].[x] |> isWallChar)
+        MazeArrayFromSource width height (fun x y -> maze.[y].[x] |> isWallChar) tileMapper userTileDefault
     )
 
