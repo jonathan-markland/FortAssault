@@ -3,9 +3,13 @@
 open Geometry
 open ImagesAndFonts
 
+// TODO: These sizes really aren't in the right file.
 
 let TileSide = 16<epx>
 let TileSideInt = 16
+
+/// Determines the inner collision-sensitive square within a tile.
+let CollisionSide = 6<epx>
 
 /// These index the PacmanLevel PNG files.
 type TileIndex =

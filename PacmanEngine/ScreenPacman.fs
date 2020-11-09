@@ -17,7 +17,6 @@ open ScreenIntermissions
 
 
 
-// TODO: Collisiion detection is a little iffy, should have much smaller inner rectangles for ghosts + pac.
 // TODO: Ghosts need to see PAC
 // TODO: Research - a pure functional pacman maze instead of the array mutability.
 
@@ -116,19 +115,21 @@ let private TextMazeDefinitionUnpacked mazeList = // TODO: move to a module?
             | Some thing -> thing
             | None       -> failwith errorMessage
 
+    let RemoveMazeByteWrapper (MazeByte mazeByte) = mazeByte // TODO: Decide what type wrapping I'm doing here.  This just restores us to the byte-based system currently in wider use.
+
     let justTheWalls =
         mazeList 
-            |> StringArrayToMazeArray (fun ch -> ch = '#' || ch = ':') id 0uy
+            |> StringArrayToMazeArray (fun ch -> ch = '#' || ch = ':') RemoveMazeByteWrapper 0uy
             |> unwrap "Failed to unpack walls from maze definition, please check text format input."
 
     let theGhostRails =
         mazeList 
-            |> StringArrayToMazeArray (fun ch -> ch <> '#')  id 0uy
+            |> StringArrayToMazeArray (fun ch -> ch <> '#')  RemoveMazeByteWrapper 0uy
             |> unwrap "Failed to unpack rails from maze definition, please check text format input."
 
     let thePlayersRails =
         mazeList 
-            |> StringArrayToMazeArray (fun ch -> ch <> '#' && ch <> ':')  id 0uy
+            |> StringArrayToMazeArray (fun ch -> ch <> '#' && ch <> ':')  RemoveMazeByteWrapper 0uy
             |> unwrap "Failed to unpack rails from maze definition, please check text format input."
 
     let theWallsAndPills =
@@ -216,6 +217,20 @@ let IsDirectionAllowedBy railsByte facingDirection =
     (railsByte &&& (facingDirection |> FacingDirectionToBitMaskByte)) <> 0uy
 
 
+/// Obtain the *inner* collision rectangle given the top left
+/// position of a tile-sized rectangle.
+let CollisionRectangle position =
+    let x = position.ptx
+    let y = position.pty
+    let border = (TileSide - CollisionSide) / 2
+    {
+        Left   = x + border
+        Top    = y + border
+        Right  = (x + TileSide) - border
+        Bottom = (y + TileSide) - border
+    }
+
+
 /// Obtain the bounding rectangle of a tile sized
 /// rectangle with its top left at a given pixel position.
 let TileBoundingRectangle position =
@@ -234,9 +249,9 @@ let inline PacMode pacman =
     pacman.PacState2.PacMode
 
 
-/// Obtain pacman's bounding rectangle.
-let inline PacBoundingRectangle pacman =
-    pacman.PacPosition |> TileBoundingRectangle
+/// Obtain pacman's collision rectangle.
+let inline PacCollisionRectangle pacman =
+    pacman.PacPosition |> CollisionRectangle
 
 
 /// Update pacman's mode.
@@ -259,9 +274,9 @@ let inline GhostMode ghost =
     ghost.GhostState2.GhostMode
 
 
-/// Obtain a ghost's bounding rectangle.
-let inline GhostBoundingRectangle ghost =
-    ghost.GhostPosition |> TileBoundingRectangle
+/// Obtain pacman's collision rectangle.
+let inline GhostCollisionRectangle ghost =
+    ghost.GhostPosition |> CollisionRectangle
 
 
 /// Update the mode of the given ghost.
@@ -284,36 +299,19 @@ let inline IsAtHomePosition ghost =
     ghost.GhostPosition = ghost.GhostState2.GhostHomePosition
 
 
-/// Determine if two pacman-maze-tile sized areas overlap
-/// given the top left positions of both.
-let TilesOverlap tilePos1 tilePos2 =
-
-    let {ptx=left1 ; pty=top1} = tilePos1
-    let {ptx=left2 ; pty=top2} = tilePos2
-
-    let intersects a b =
-        let a' = a + TileSide
-        let b' = b + TileSide
-        not (b >= a' || b' <= a)
-
-    left1 |> intersects left2  &&  top1 |> intersects top2
-
-
 /// Asks whether a pacman-maze-tile sized area overlaps any
 /// of the GhostNormal-state ghosts in the list.  Ghosts in
 /// other states never participate in intersection.
 /// The tilePos denotes the top left corner.
-let TileIntersectsNormalGhostsIn ghostStateList tilePos =
+let IntersectsNormalGhostsIn ghostStateList rect =
 
-    let intersects pos ghost =
-        TilesOverlap pos ghost.GhostPosition
-
-    ghostStateList |> List.exists (fun ghost ->
-        match ghost.GhostState2.GhostMode with
-            | GhostNormal -> ghost |> intersects tilePos
-            | GhostEdibleUntil _
-            | GhostRegeneratingUntil _
-            | GhostReturningToBase -> false)
+    ghostStateList 
+        |> List.exists (fun ghost ->
+            match ghost.GhostState2.GhostMode with
+                | GhostNormal -> ghost |> GhostCollisionRectangle |> RectangleIntersects rect
+                | GhostEdibleUntil _
+                | GhostRegeneratingUntil _
+                | GhostReturningToBase -> false)
 
 
 /// Wrapping function for pacman and ghosts for when 
@@ -924,8 +922,9 @@ let WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime pac
     match pacmanState.PacState2.PacMode with
 
         | PacAlive ->
+            let pacmanRectangle = pacmanState |> PacCollisionRectangle
             pacmanState |> UpdateIf 
-                (pacmanState.PacPosition |> TileIntersectsNormalGhostsIn ghostStateList)
+                (pacmanRectangle |> IntersectsNormalGhostsIn ghostStateList)
                 (WithPacMode (PacDyingUntil (gameTime + PacmanDyingAnimationTime)))
 
         | PacDyingUntil t ->
@@ -939,25 +938,35 @@ let WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime pac
 /// State changes on ghosts as a result of collision detection with pacman
 let WithStateChangesResultingFromCollisionWithPacman pacmanPos ghosts =   // TODO: Return indicator of new state, instead of new record
 
-    let isEdibleGhostOverlappingPacmanAt pacmanPos ghost =
+    let pacmanRectangle = pacmanPos |> PacCollisionRectangle
+
+    let isEdibleGhostOverlappingPacmanAt pacmanRectangle ghost =
 
         match ghost.GhostState2.GhostMode with
-            | GhostEdibleUntil _        -> ghost.GhostPosition |> TilesOverlap pacmanPos
             | GhostNormal
             | GhostReturningToBase      
             | GhostRegeneratingUntil _  -> false
+            | GhostEdibleUntil _ -> 
+                ghost 
+                    |> GhostCollisionRectangle
+                    |> RectangleIntersects pacmanRectangle
 
     // Garbage optimisation:  Scan for intersections and calculate score for eaten ghosts.
 
     let score = 
         ghosts |> List.sumBy (fun ghost ->
-            if ghost |> isEdibleGhostOverlappingPacmanAt pacmanPos then ScoreForEatingGhost else NoScore)
+            if ghost |> isEdibleGhostOverlappingPacmanAt pacmanRectangle then 
+                ScoreForEatingGhost 
+            else 
+                NoScore)
 
     let ghosts = 
         ghosts |> 
             UpdateIf 
                 (score > 0u)
-                (List.map (UpdateWhen (isEdibleGhostOverlappingPacmanAt pacmanPos) (WithGhostMode GhostReturningToBase)))
+                (List.map (UpdateWhen 
+                                (isEdibleGhostOverlappingPacmanAt pacmanRectangle) 
+                                (WithGhostMode GhostReturningToBase)))
 
     struct (ghosts , score)
 
@@ -1092,7 +1101,7 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
         pacmanState |> WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime
 
     let struct (ghostStateList , scoreIncrement) =
-        ghostStateList |> WithStateChangesResultingFromCollisionWithPacman pacmanState.PacPosition
+        ghostStateList |> WithStateChangesResultingFromCollisionWithPacman pacmanState
 
     let scoreAndHiScore =
         scoreAndHiScore |> ScoreIncrementedBy scoreIncrement
