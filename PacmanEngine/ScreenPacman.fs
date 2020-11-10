@@ -316,6 +316,7 @@ let IntersectsNormalGhostsIn ghostStateList rect =
                 | GhostReturningToBase -> false)
 
 
+
 /// Wrapping function for pacman and ghosts for when 
 /// passages exit the sides of the grid.
 let private PointWrappedAtMazeEdges mazeState point =
@@ -613,6 +614,9 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
 //  Algorithms
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+// TODO: Use PointWrappedAtMazeEdges when determining who sees who?   (Tiny edge case improvement).
+
+
 let IsTheSameGhostAs ghost otherGhost =
     ghost.GhostState2.GhostNumber = otherGhost.GhostState2.GhostNumber
 
@@ -642,29 +646,63 @@ let IsStraightRail rail =
 
 let private EliminatingSuboptimalDirectionsForNormalGhost mazeState tileXY pacRect ghost allGhosts compass =
 
-    let possiblyEliminated probability direction =
-        if probability = 0uy then
-            0uy
-        else
-            let corridorRect = 
-                CorridorRectangle 
-                    mazeState.MazeTilesCountX
-                    mazeState.MazeTilesCountY
-                    mazeState.MazeTiles
-                    tileXY
-                    direction
+    let corridorRect direction = 
+        CorridorRectangle 
+            mazeState.MazeTilesCountX
+            mazeState.MazeTilesCountY
+            mazeState.MazeTiles
+            tileXY
+            direction
 
-            if corridorRect |> IsIntersectedByAnyOtherGhostTo ghost allGhosts then
-                0uy
-            else
-                probability   // TODO: If pac seen then set the pac direction flag.   // If Pac was seen then preferentially select that direction from the "bail out" compass.
+    // TODO: We call corridorRect for 0-probability directions (which will never be chosen)
+    //       and don't even read the rectangle.
 
-    {
-        ProbLeft  = possiblyEliminated  compass.ProbLeft   FacingLeft
-        ProbUp    = possiblyEliminated  compass.ProbUp     FacingUp
-        ProbRight = possiblyEliminated  compass.ProbRight  FacingRight
-        ProbDown  = possiblyEliminated  compass.ProbDown   FacingDown
-    }
+    let corridorFacingLeft  = corridorRect FacingLeft
+    let corridorFacingUp    = corridorRect FacingUp
+    let corridorFacingRight = corridorRect FacingRight
+    let corridorFacingDown  = corridorRect FacingDown
+
+    let leftOnly  prob = { ProbLeft=prob ; ProbUp=0uy  ; ProbRight=0uy  ; ProbDown=0uy  }
+    let upOnly    prob = { ProbLeft=0uy  ; ProbUp=prob ; ProbRight=0uy  ; ProbDown=0uy  }
+    let rightOnly prob = { ProbLeft=0uy  ; ProbUp=0uy  ; ProbRight=prob ; ProbDown=0uy  }
+    let downOnly  prob = { ProbLeft=0uy  ; ProbUp=0uy  ; ProbRight=0uy  ; ProbDown=prob }
+    
+    let lookForPacman prob corridorRect singleDirectionWithProbability acc =
+        match acc with
+            | Some _directionWherePacmanIsAlreadySeen -> acc
+            | None ->
+                if prob = 0uy then
+                    None
+                else if pacRect |> RectangleIntersects corridorRect then
+                    Some (singleDirectionWithProbability prob)
+                else
+                    None
+
+    let seenPac =
+        None
+            |> lookForPacman  compass.ProbLeft   corridorFacingLeft   leftOnly  
+            |> lookForPacman  compass.ProbUp     corridorFacingUp     upOnly    
+            |> lookForPacman  compass.ProbRight  corridorFacingRight  rightOnly 
+            |> lookForPacman  compass.ProbDown   corridorFacingDown   downOnly  
+
+    match seenPac with
+        | Some directionTowardsPacman -> directionTowardsPacman
+        | None ->
+
+            let possiblyEliminated prob corridorRect direction =
+                if prob = 0uy then
+                    0uy
+                else if corridorRect |> IsIntersectedByAnyOtherGhostTo ghost allGhosts then
+                    0uy
+                else
+                    prob
+
+            {
+                ProbLeft  = possiblyEliminated  compass.ProbLeft   corridorFacingLeft   FacingLeft
+                ProbUp    = possiblyEliminated  compass.ProbUp     corridorFacingUp     FacingUp
+                ProbRight = possiblyEliminated  compass.ProbRight  corridorFacingRight  FacingRight
+                ProbDown  = possiblyEliminated  compass.ProbDown   corridorFacingDown   FacingDown
+            }
 
 
 
@@ -703,7 +741,7 @@ let ButIfEmptyThenRevertCompassTo bailoutCompass compass =
 
 
 
-let ChosenCompassDirectionFrom compass rand =
+let ChosenCompassDirectionFrom compass (XorShift32State(rand)) =
 
     let l = ((uint32) compass.ProbLeft)
     let u = ((uint32) compass.ProbUp)
@@ -782,9 +820,6 @@ let private DecideNewPositionAndDirectionFor
                         
                         |> ButIfEmptyThenRevertCompassTo bailoutCompass
 
-                    let (XorShift32State(rand)) = rand
-                    let (GhostNumber(gnum)) = ghost.GhostState2.GhostNumber
-                    let rand = rand + ((uint32) gnum)
                     ChosenCompassDirectionFrom compass rand
 
     let position = 
@@ -848,7 +883,11 @@ let private AdvanceGhost mazeState allGhosts pacman ghost rand gameTime =
 
 let private WithGhostMovement mazeState pacman rand gameTime allGhosts =
 
-    allGhosts |> List.map (fun ghost -> AdvanceGhost mazeState allGhosts pacman ghost rand gameTime)
+    let mutable rand = rand  // TODO: remove
+
+    allGhosts |> List.map (fun ghost -> 
+        rand <- rand |> XorShift32
+        AdvanceGhost mazeState allGhosts pacman ghost rand gameTime)
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
