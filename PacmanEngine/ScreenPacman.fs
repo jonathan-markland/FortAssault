@@ -15,10 +15,10 @@ open Rules
 open Mazes
 open ScreenIntermissions
 open Random
+open GhostDirectionChoosing
 
 
 
-// TODO: Ghosts need to see PAC
 // TODO: Research - a pure functional pacman maze instead of the array mutability.
 
 
@@ -103,6 +103,14 @@ type private UnpackedMaze =
     }
 
 let private TextMazeDefinitionUnpacked mazeList = // TODO: move to a module?
+
+    // TODO: The test framework must run this over all of the included mazes
+    //       and see that it doesn't throw the exceptions.
+
+    // TODO: The rails might return the "central dot"
+
+    // TODO: Have I been too hasty assuming the characters will never encounter
+    //       rails with a direction byte mask 0uy?
 
     let combinedWithDotsAndPillsIn (mazeList:string list) (justTheWalls:byte[]) =
 
@@ -311,7 +319,7 @@ let WithGhostMode mode ghost =
                 GhostHomePosition    = ghost.GhostState2.GhostHomePosition
                 GhostFacingDirection = ghost.GhostState2.GhostFacingDirection
                 GhostMode            = mode
-                MemoizedProbabilitiesByFacingDirection = ghost.GhostState2.MemoizedProbabilitiesByFacingDirection
+                GhostDirectionChoiceProbabilities = ghost.GhostState2.GhostDirectionChoiceProbabilities
             }
     }
 
@@ -664,7 +672,7 @@ let IsStraightRail rail =
 
     
 
-let private EliminatingSuboptimalDirectionsForNormalGhost mazeState tileXY pacRect ghost allGhosts compass =
+let private EliminatingSuboptimalDirectionsForNormalGhost ghost mazeState tileXY pacRect allGhosts directionChoices =
 
     let corridorRect direction = 
         CorridorRectangle 
@@ -700,10 +708,10 @@ let private EliminatingSuboptimalDirectionsForNormalGhost mazeState tileXY pacRe
 
     let seenPac =
         None
-            |> lookForPacman  compass.ProbLeft   corridorFacingLeft   leftOnly  
-            |> lookForPacman  compass.ProbUp     corridorFacingUp     upOnly    
-            |> lookForPacman  compass.ProbRight  corridorFacingRight  rightOnly 
-            |> lookForPacman  compass.ProbDown   corridorFacingDown   downOnly  
+            |> lookForPacman  directionChoices.ProbLeft   corridorFacingLeft   leftOnly  
+            |> lookForPacman  directionChoices.ProbUp     corridorFacingUp     upOnly    
+            |> lookForPacman  directionChoices.ProbRight  corridorFacingRight  rightOnly 
+            |> lookForPacman  directionChoices.ProbDown   corridorFacingDown   downOnly  
 
     match seenPac with
         | Some directionTowardsPacman -> directionTowardsPacman
@@ -718,15 +726,15 @@ let private EliminatingSuboptimalDirectionsForNormalGhost mazeState tileXY pacRe
                     prob
 
             {
-                ProbLeft  = possiblyEliminated  compass.ProbLeft   corridorFacingLeft   FacingLeft
-                ProbUp    = possiblyEliminated  compass.ProbUp     corridorFacingUp     FacingUp
-                ProbRight = possiblyEliminated  compass.ProbRight  corridorFacingRight  FacingRight
-                ProbDown  = possiblyEliminated  compass.ProbDown   corridorFacingDown   FacingDown
+                ProbLeft  = possiblyEliminated  directionChoices.ProbLeft   corridorFacingLeft   FacingLeft
+                ProbUp    = possiblyEliminated  directionChoices.ProbUp     corridorFacingUp     FacingUp
+                ProbRight = possiblyEliminated  directionChoices.ProbRight  corridorFacingRight  FacingRight
+                ProbDown  = possiblyEliminated  directionChoices.ProbDown   corridorFacingDown   FacingDown
             }
 
 
 
-let private EliminatingSuboptimalDirectionsForEdibleGhost mazeState tileXY pacRect compass =
+let private EliminatingSuboptimalDirectionsForEdibleGhost mazeState tileXY pacRect directionChoices =
 
     let possiblyEliminated probability direction =
         if probability = 0uy then
@@ -746,29 +754,39 @@ let private EliminatingSuboptimalDirectionsForEdibleGhost mazeState tileXY pacRe
                 probability
 
     {
-        ProbLeft  = possiblyEliminated  compass.ProbLeft   FacingLeft
-        ProbUp    = possiblyEliminated  compass.ProbUp     FacingUp
-        ProbRight = possiblyEliminated  compass.ProbRight  FacingRight
-        ProbDown  = possiblyEliminated  compass.ProbDown   FacingDown
+        ProbLeft  = possiblyEliminated  directionChoices.ProbLeft   FacingLeft
+        ProbUp    = possiblyEliminated  directionChoices.ProbUp     FacingUp
+        ProbRight = possiblyEliminated  directionChoices.ProbRight  FacingRight
+        ProbDown  = possiblyEliminated  directionChoices.ProbDown   FacingDown
     }
 
 
-let CompassEmpty compass = 
-    (compass.ProbLeft ||| compass.ProbUp ||| compass.ProbDown ||| compass.ProbRight) = 0uy
+
+/// Returns true if no directions are available according to 
+/// individual direction probabilities.
+let NoDirectionsAvailable directionChoices = 
+    (directionChoices.ProbLeft 
+        ||| directionChoices.ProbUp 
+        ||| directionChoices.ProbDown 
+        ||| directionChoices.ProbRight) = 0uy
 
 
-let ChosenCompassDirectionFrom compass (XorShift32State(rand)) =
 
-    let l = ((uint32) compass.ProbLeft)
-    let u = ((uint32) compass.ProbUp)
-    let d = ((uint32) compass.ProbDown)
-    let r = ((uint32) compass.ProbRight)
+/// Returns a direction chosen from those which have non-zero probability.
+/// The choice is pseudo-random, weighted on the probability values of the
+/// direction choices.
+let DirectionChosenRandomlyFrom directionChoices (XorShift32State(rand)) =
 
-    let total = l + u + r + d
+    let l = ((uint32) directionChoices.ProbLeft)
+    let u = ((uint32) directionChoices.ProbUp)
+    let d = ((uint32) directionChoices.ProbDown)
+    let r = ((uint32) directionChoices.ProbRight)
 
-    System.Diagnostics.Debug.Assert (total <> 0u)
+    let probTotal = l + u + r + d
 
-    let n = rand % total
+    System.Diagnostics.Debug.Assert (probTotal <> 0u)  // There must always be one direction.
+
+    let n = rand % probTotal
 
     if l <> 0u && n < l then FacingLeft
     else if u <> 0u && n < (l + u) then FacingUp
@@ -782,6 +800,21 @@ let ChosenCompassDirectionFrom compass (XorShift32State(rand)) =
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Ghost position advance
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let EliminatingDirectionChoicesGivenByBitmask bitmaskByte directionChoices =
+
+    System.Diagnostics.Debug.Assert (bitmaskByte <> 0uy)   // Should never have empty directions mask.
+
+    let maskedBy mask probValue =
+        if mask=0uy then 0uy else probValue
+
+    {
+        ProbLeft  = directionChoices.ProbLeft  |> maskedBy (bitmaskByte &&& MazeByteLeft )
+        ProbUp    = directionChoices.ProbUp    |> maskedBy (bitmaskByte &&& MazeByteUp   )
+        ProbRight = directionChoices.ProbRight |> maskedBy (bitmaskByte &&& MazeByteRight)
+        ProbDown  = directionChoices.ProbDown  |> maskedBy (bitmaskByte &&& MazeByteDown )
+    }
+
 
 let private DecideNewPositionAndDirectionFor 
     (ghost:GhostState) 
@@ -813,30 +846,30 @@ let private DecideNewPositionAndDirectionFor
                     direction
 
                 else
-                    let bailoutCompass = 
+                    let defaultDirectionChoices = 
                         ghost 
-                            |> CompassProbabilitiesForGhost 
-                            |> EliminatingCompassDirectionsGivenByBitmask railsBitmask
+                            |> GhostDirectionChoiceProbabilities 
+                            |> EliminatingDirectionChoicesGivenByBitmask railsBitmask
 
-                    let compass =
+                    let directionChoices =
 
                         let pacRect = pacman.PacPosition |> TileBoundingRectangle
 
                         match ghost.GhostState2.GhostMode with
                             
                             | GhostNormal -> 
-                                bailoutCompass 
-                                    |> EliminatingSuboptimalDirectionsForNormalGhost mazeState tileXY pacRect ghost allGhosts
+                                defaultDirectionChoices 
+                                    |> EliminatingSuboptimalDirectionsForNormalGhost ghost mazeState tileXY pacRect allGhosts
                             
                             | GhostEdibleUntil _ -> 
-                                bailoutCompass 
+                                defaultDirectionChoices 
                                     |> EliminatingSuboptimalDirectionsForEdibleGhost mazeState tileXY pacRect
                             
                             | _ -> failwith "Should not be deciding direction for ghost in this state"
                         
-                        |> UpdateToValueWhen CompassEmpty bailoutCompass
+                        |> UpdateToValueWhen NoDirectionsAvailable defaultDirectionChoices
 
-                    ChosenCompassDirectionFrom compass rand
+                    DirectionChosenRandomlyFrom directionChoices rand
 
     let position = 
 
@@ -892,7 +925,7 @@ let private AdvanceGhost mazeState allGhosts pacman ghost rand gameTime =
                 GhostHomePosition    = ghost.GhostState2.GhostHomePosition
                 GhostMode            = ghost.GhostState2.GhostMode
                 GhostFacingDirection = direction
-                MemoizedProbabilitiesByFacingDirection = ghost.GhostState2.MemoizedProbabilitiesByFacingDirection
+                GhostDirectionChoiceProbabilities = ghost.GhostState2.GhostDirectionChoiceProbabilities
             }
     }
 
@@ -935,7 +968,7 @@ let WithGhostReset ghostState =
                 GhostFacingDirection = FacingUp 
                 GhostNumber          = ghostState.GhostState2.GhostNumber
                 GhostHomePosition    = ghostState.GhostState2.GhostHomePosition
-                MemoizedProbabilitiesByFacingDirection = ghostState.GhostState2.MemoizedProbabilitiesByFacingDirection
+                GhostDirectionChoiceProbabilities = ghostState.GhostState2.GhostDirectionChoiceProbabilities
             } 
     }
 
@@ -1233,7 +1266,7 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiSc
                             GhostMode = GhostNormal
                             GhostHomePosition = ghostPos
                             GhostFacingDirection = FacingUp 
-                            MemoizedProbabilitiesByFacingDirection = ghostProbArray
+                            GhostDirectionChoiceProbabilities = ghostProbArray
                         } 
                 })
         }

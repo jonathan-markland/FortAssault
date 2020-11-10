@@ -346,3 +346,86 @@ let ``The 0 x 5 maze`` () =
     maze |> WhenTransformed IsHash |> ShouldEqual None
 
 
+
+[<Fact>]
+let ``Getting walls from the 5 x 5 completely empty maze`` () =
+
+    let maze = 
+        [
+            "     "
+            "     "
+            "     "
+            "     "
+            "     "
+        ]
+
+    maze |> WhenTransformed IsHash |> ShouldEqual (Some maze)
+
+
+[<Fact>]
+let ``Getting rails from the 5 x 5 completely empty maze`` () =
+
+    let maze = 
+        [
+            "     "
+            "     "
+            "     "
+            "     "
+            "     "
+        ]
+
+    // Reminder of how to obtain F# source code:  
+    // let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsNotHash
+
+    let expected =
+        [
+            "┌┬┬┬┐"
+            "├┼┼┼┤"
+            "├┼┼┼┤"
+            "├┼┼┼┤"
+            "└┴┴┴┘"
+        ]
+
+    maze |> WhenTransformed IsNotHash |> ShouldEqual (Some expected)
+
+
+[<Fact>]
+let ``Getting rails from the 1 x 5 completely empty maze`` () =
+
+    let maze = 
+        [
+            " "
+            " "
+            " "
+            " "
+            " "
+        ]
+
+    // Reminder of how to obtain F# source code:  
+    // let fssrc = maze |> MazeToFSharpBoxDrawSourceCode IsNotHash
+
+    let expected =
+        [
+            "╷"
+            "│"
+            "│"
+            "│"
+            "╵"
+        ]
+
+    maze |> WhenTransformed IsNotHash |> ShouldEqual (Some expected)
+
+
+[<Fact>]
+let ``Getting walls from the 1 x 1 completely empty maze`` () =
+
+    [" "] |> WhenTransformed IsHash |> ShouldEqual (Some [" "])
+
+
+[<Fact>]
+let ``Getting rails from the 1 x 1 completely empty maze`` () =
+
+    [" "] |> WhenTransformed IsNotHash |> ShouldEqual (Some ["●"])
+
+
+

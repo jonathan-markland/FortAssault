@@ -6,20 +6,7 @@ open Time
 open DrawingShapes
 open MazeFilter
 open Rules
-
-// TODO: library?
-
-/// Returns an integer value that switches between 0 and 1, at a given rate.
-let inline UnitPulse (rate:float32) (gameTime:float32<seconds>) = 
-    ((int)(gameTime * rate)) &&& 1
-
-/// Returns a value that switches between a given low and high, at a given rate.
-let PulseBetween (rate:float32) low high (gameTime:float32<seconds>) = 
-    if (UnitPulse rate gameTime) = 0 then low else high
-
-/// Returns a boolean value that switches at a given rate.
-let PulseActiveAtRate (rate:float32) (gameTime:float32<seconds>) = 
-    (UnitPulse rate gameTime) = 0
+open GhostDirectionChoosing
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -82,16 +69,14 @@ let KeyStatesToDirection u d l r defaultDirection =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-
 type GhostNumber = 
     /// Zero-based ghost number index type
     GhostNumber of int
 
-let SnapsPerSecond        = 8.0F
-let EyesTwitchesPerSecond = 2.0F
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  DATA MODELS
+//  PAC MAN DATA MODEL
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 type PacMode = 
@@ -128,6 +113,10 @@ type PacmanState =
     // Reminder: "Pill mode" is NOT a state of pacman himself.  If any of the ghosts
     //           are running down their "edible mode" timers, than pacman is in pill mode.
 
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  GHOST DATA MODEL
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 type GhostMode =
@@ -147,29 +136,6 @@ type GhostMode =
     /// given game time whereupon it returns to GhostNormal.
     | GhostRegeneratingUntil of float32<seconds>
 
-/// The probability of turning through an angle with respect
-/// to the current direction of travel.
-[<Struct>]
-type TurnProbability =
-    {
-        ProbAhead    : byte
-        ProbTurn90   : byte
-        ProbTurn180  : byte
-    }
-
-/// The probabilities associated with choosing 
-/// a particular direction of travel.  These will
-/// be zero if the direction CANNOT be chosen (wall)
-/// or has been filtered out.
-[<Struct>]
-type DirectionChoiceProbabilities =
-    {
-        ProbLeft  : byte
-        ProbUp    : byte
-        ProbRight : byte
-        ProbDown  : byte
-    }
-
 type GhostState2 =
     {
         /// This ghost's number, for convenient reference.
@@ -187,8 +153,9 @@ type GhostState2 =
         /// Ghost state.
         GhostMode      : GhostMode
 
+        /// The direction choice traits for this ghost.
         /// Array indexable by (GhostFacingDirection |> FacingDirectionToInt)
-        MemoizedProbabilitiesByFacingDirection : DirectionChoiceProbabilities []
+        GhostDirectionChoiceProbabilities : DirectionChoiceProbabilities []
     }
 
 type GhostState =
@@ -199,65 +166,17 @@ type GhostState =
         GhostPosition  : Point<int<epx>>
     }
 
-let CalculateMemoizedDirectionProbabilities  ghostProbabilities =
 
-    let ahead = ghostProbabilities.ProbAhead
-    let turn  = ghostProbabilities.ProbTurn90
-    let rev   = ghostProbabilities.ProbTurn180
 
-    let compassProbabilities  left up right down =
-        {
-            ProbLeft  = left
-            ProbUp    = up
-            ProbRight = right
-            ProbDown  = down
-        }
-
-    [|
-        // NB: Order:        left ; up ; right ; down
-        compassProbabilities  ahead  turn  rev  turn    // FacingLeft
-        compassProbabilities  turn  ahead  turn  rev    // FacingUp
-        compassProbabilities  rev  turn  ahead  turn    // FacingRight
-        compassProbabilities  turn  rev  turn  ahead    // FacingDown
-    |]
-
-/// WARNING: Not commutative!  The result field is zero where zero is
-/// indicated in the mask.  The second parameter gives the desired 
-/// values for all directions that are retained.
-let CompassAND mask compassProbabilities =
-
-    let inline  maskedBy m v =  if m=0uy then 0uy else v
-
-    {
-        ProbLeft  = compassProbabilities.ProbLeft  |> maskedBy mask.ProbLeft   
-        ProbUp    = compassProbabilities.ProbUp    |> maskedBy mask.ProbUp     
-        ProbRight = compassProbabilities.ProbRight |> maskedBy mask.ProbRight  
-        ProbDown  = compassProbabilities.ProbDown  |> maskedBy mask.ProbDown   
-    }
-
-/// Obtain the compass probabilities for the ghost, rotated
-/// according to direction it is facing.
-let CompassProbabilitiesForGhost ghost =
+/// Obtain the ghost's direction choice probabilities, for the
+/// direction the ghost is facing.
+let GhostDirectionChoiceProbabilities ghost =
     
     let i = ghost.GhostState2.GhostFacingDirection |> FacingDirectionToInt
     
-    ghost.GhostState2.MemoizedProbabilitiesByFacingDirection.[i]
+    ghost.GhostState2.GhostDirectionChoiceProbabilities.[i]
 
 
-
-let EliminatingCompassDirectionsGivenByBitmask bitmaskByte compass =
-
-    System.Diagnostics.Debug.Assert (bitmaskByte <> 0uy)   // Should never have empty directions mask.
-
-    let maskedBy mask probValue =
-        if mask=0uy then 0uy else probValue
-
-    {
-        ProbLeft  = compass.ProbLeft  |> maskedBy (bitmaskByte &&& MazeByteLeft )
-        ProbUp    = compass.ProbUp    |> maskedBy (bitmaskByte &&& MazeByteUp   )
-        ProbRight = compass.ProbRight |> maskedBy (bitmaskByte &&& MazeByteRight)
-        ProbDown  = compass.ProbDown  |> maskedBy (bitmaskByte &&& MazeByteDown )
-    }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  PREDICATES
