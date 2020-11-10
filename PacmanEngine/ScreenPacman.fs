@@ -258,9 +258,6 @@ let TileBoundingRectangle position =
     }
 
 
-/// Obtain the mode of pacman.
-let inline PacMode pacman =
-    pacman.PacState2.PacMode
 
 
 /// Obtain pacman's collision rectangle.
@@ -275,9 +272,9 @@ let WithPacMode mode pacman =
         PacState2 =
             {
                 PacMode            = mode
-                PacFacingDirection = pacman.PacState2.PacFacingDirection
-                LivesLeft          = pacman.PacState2.LivesLeft
-                PacHomePosition    = pacman.PacState2.PacHomePosition
+                PacFacingDirection = pacman |> Facing
+                LivesLeft          = pacman |> LivesLeft
+                PacStartPosition   = pacman.PacState2.PacStartPosition
             }
     }
 
@@ -477,7 +474,7 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
     //     model.MazeState.MazeTilesCountY
     //     model.MazeState.MazeTiles
     //     model.PacmanState.PacPosition
-    //     model.PacmanState.PacState2.PacFacingDirection
+    //     model.PacmanState |> Facing
 
     let (originx,originy) = 
         OriginForMazeOfDimensions 
@@ -489,9 +486,9 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
                 |> PointWrappedAtMazeEdges model.MazeState
                 |> OffsetByOrigin originx originy 
     
-    let direction = model.PacmanState.PacState2.PacFacingDirection
+    let direction = model.PacmanState |> Facing
 
-    match model.PacmanState.PacState2.PacMode with
+    match model.PacmanState |> PacMode with
         | PacAlive ->
             let drawPacMode = if model.GhostsState |> InPillMode then DrawPacPillMode else DrawPacNormal
             DrawPacManAlive render tilesImage pos direction drawPacMode gameTime
@@ -532,7 +529,7 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
     Text render GreyFontID LeftAlign  TopAlign    indent indentY (sprintf "SCORE %d" model.ScoreAndHiScore.Score)  // TODO: memoize score to avoid garbage
     Text render GreyFontID RightAlign TopAlign    (ScreenWidthInt - indent) indentY (sprintf "HISCORE %d" model.ScoreAndHiScore.HiScore)  // TODO: memoize score to avoid garbage
     Text render GreyFontID LeftAlign  BottomAlign indent (ScreenHeightInt - indentY) (sprintf "FRAME %d" model.LevelNumber)  // TODO: memoize score to avoid garbage
-    Text render GreyFontID RightAlign BottomAlign (ScreenWidthInt - indent) (ScreenHeightInt - indentY) (sprintf "LIVES %d" model.PacmanState.PacState2.LivesLeft)  // TODO: memoize score to avoid garbage
+    Text render GreyFontID RightAlign BottomAlign (ScreenWidthInt - indent) (ScreenHeightInt - indentY) (sprintf "LIVES %d" (model.PacmanState |> LivesLeft))  // TODO: memoize score to avoid garbage
 
 
 
@@ -551,8 +548,8 @@ type PacHasEaten =
 let private AdvancePacMan keyStateGetter mazeState pacmanState =
     
     let position  = pacmanState.PacPosition
-    let direction = pacmanState.PacState2.PacFacingDirection
-    let mode      = pacmanState.PacState2.PacMode
+    let direction = pacmanState |> Facing
+    let mode      = pacmanState |> PacMode
 
     match mode with
 
@@ -931,13 +928,13 @@ let private WithGhostMovement mazeState pacman rand gameTime allGhosts =
 let WithPacmanReset pacmanState =
     // TODO: If LivesLeft = 1 on entry then this should return None
     { 
-        PacPosition = pacmanState.PacState2.PacHomePosition
+        PacPosition = pacmanState.PacState2.PacStartPosition
         PacState2 =
             { 
                 PacFacingDirection = FacingRight
                 PacMode            = PacAlive
-                LivesLeft          = pacmanState.PacState2.LivesLeft - 1
-                PacHomePosition    = pacmanState.PacState2.PacHomePosition
+                LivesLeft          = (pacmanState |> LivesLeft) - 1
+                PacStartPosition    = pacmanState.PacState2.PacStartPosition
             } 
     }
 
@@ -981,7 +978,7 @@ let private WithCharactersReset model =
 /// State changes on pacman as a result of collision detection with ghosts
 let WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime pacmanState =   // TODO: Return indicator of new state, instead of new record
 
-    match pacmanState.PacState2.PacMode with
+    match pacmanState |> PacMode with
 
         | PacAlive ->
             let pacmanRectangle = pacmanState |> PacCollisionRectangle
@@ -1040,7 +1037,7 @@ let WithStateChangesResultingFromCollisionWithPacman pacmanPos ghosts =   // TOD
 /// State update for pacman position and direction.
 let WithPacManMovementStateChangesAppliedFrom position direction pacmanState =
 
-    if direction = pacmanState.PacState2.PacFacingDirection then
+    if direction = (pacmanState |> Facing) then
         {
             PacState2 = pacmanState.PacState2  // unchanged
             PacPosition = position
@@ -1049,10 +1046,10 @@ let WithPacManMovementStateChangesAppliedFrom position direction pacmanState =
         {
             PacState2 =
                 {
-                    PacMode            = pacmanState.PacState2.PacMode
+                    PacMode            = pacmanState |> PacMode
                     PacFacingDirection = direction
-                    LivesLeft          = pacmanState.PacState2.LivesLeft
-                    PacHomePosition    = pacmanState.PacState2.PacHomePosition
+                    LivesLeft          = pacmanState |> LivesLeft
+                    PacStartPosition   = pacmanState.PacState2.PacStartPosition
                 }
             PacPosition = position
         }
@@ -1118,13 +1115,6 @@ let private IsAllEaten maze =
 
 
 
-let LifeIsOver pacman =
-    match pacman.PacState2.PacMode with
-        | PacDead -> true
-        | _ -> false
-
-
-
 let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
 
     // Unpack
@@ -1186,12 +1176,12 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
     // Decide next gameState
 
     if pacmanState |> LifeIsOver then
-        if pacmanState.PacState2.LivesLeft > 1 then
+        if pacmanState |> GameIsOver then
+            model.WhereToOnGameOver scoreAndHiScore
+        else
             let whereToAfterIntermission =
                 fun _gameTime -> model |> WithCharactersReset |> ReplacesModelIn gameState
             WithLifeLossIntermissionCard whereToAfterIntermission gameTime  // TODO: There is something bad about this parameter order, that we can't use |>
-        else
-            model.WhereToOnGameOver scoreAndHiScore
     
     else if mazeState |> IsAllEaten then
         model.WhereToOnAllEaten model.LevelNumber scoreAndHiScore gameTime  // TODO: Maze flash - but could that be done with a clever external filter?
@@ -1236,7 +1226,7 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiSc
                             PacFacingDirection = FacingRight
                             PacMode = PacAlive
                             LivesLeft = InitialLives
-                            PacHomePosition = unpackedMaze.UnpackedPacmanPosition
+                            PacStartPosition = unpackedMaze.UnpackedPacmanPosition
                         } 
                 }
 

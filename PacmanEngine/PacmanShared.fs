@@ -79,6 +79,9 @@ type GhostNumber =
 //  PAC MAN DATA MODEL
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+// Reminder: "Pill mode" is NOT a state of pacman himself.  If any of the ghosts
+//           are running down their "edible mode" timers, than pacman is in pill mode.
+
 type PacMode = 
 
     /// Pacman is alive and controlled by player.
@@ -94,14 +97,20 @@ type PacMode =
     /// Signal main loop to decrement lives count and switch to life lost card.
     | PacDead
 
+
+
+/// Pacman state that's less likely to change per frame.
 type PacState2 =
     {
         PacMode            : PacMode
         PacFacingDirection : FacingDirection
         LivesLeft          : int
-        PacHomePosition    : Point<int<epx>>
+        PacStartPosition    : Point<int<epx>>
     }
 
+
+
+/// Pacman state that very likely to change per frame.
 type PacmanState =
     {
         PacState2          : PacState2
@@ -110,8 +119,29 @@ type PacmanState =
         PacPosition        : Point<int<epx>>
     }
 
-    // Reminder: "Pill mode" is NOT a state of pacman himself.  If any of the ghosts
-    //           are running down their "edible mode" timers, than pacman is in pill mode.
+
+
+/// Pacman mode property.
+let inline PacMode pacman =
+    pacman.PacState2.PacMode
+
+/// Pacman's direction property.
+let inline Facing pacman =
+    pacman.PacState2.PacFacingDirection
+
+/// Pacman life is over property.
+let inline LifeIsOver pacman =
+    match pacman |> PacMode with
+        | PacDead -> true
+        | _ -> false
+
+/// The number of lives pacman has remaining.
+let inline LivesLeft pacman =
+    pacman.PacState2.LivesLeft
+
+/// Is the game over for pacman?
+let inline GameIsOver pacman =
+    pacman |> LivesLeft <= 1 
 
 
 
@@ -136,6 +166,9 @@ type GhostMode =
     /// given game time whereupon it returns to GhostNormal.
     | GhostRegeneratingUntil of float32<seconds>
 
+
+
+/// Ghost state that's less likely to change per frame.
 type GhostState2 =
     {
         /// This ghost's number, for convenient reference.
@@ -158,6 +191,9 @@ type GhostState2 =
         GhostDirectionChoiceProbabilities : DirectionChoiceProbabilities []
     }
 
+
+
+/// Ghost state that's very likely to change per frame.
 type GhostState =
     {
         GhostState2    : GhostState2
