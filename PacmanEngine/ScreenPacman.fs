@@ -13,28 +13,29 @@ open Input
 open MazeFilter
 open Rules
 open Mazes
+open MazeState
 open ScreenIntermissions
 open Random
 open GhostDirectionChoosing
 open Update
 open Keys
+open MazeUnpacker
 
 
 let ScreenRandomSeed = 0x33033u
 
+// TODO: Possibly treat corners the same as straight lines for ghost decision points,
+//       with a completely separate probability setting for turn about.
+
+// TODO: The ghosts that are less decisive may get trapped in the base because the
+//       base rails are a square network.  This is only an issue for the early stage.
+
+// TODO: Strong typing instead of "byte" all other the place.  Some work was started
+//       in the library allowing the user to StringArrayToMazeArray tileMapper parameter.
 
 // TODO: Research - a pure functional pacman maze instead of the array mutability.
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-type private MazeState =
-    {
-        MazeTilesCountX  : int
-        MazeTilesCountY  : int
-        MazeTiles        : byte[]  // content mutated by pacman eating things   // TODO: strong type wrapper for bytes
-        MazeGhostRails   : byte[]  // not mutated
-        MazePlayersRails : byte[]  // not mutated
-    }
 
 type private PacmanScreenModel =  // TODO: Getting fat with things that don't change per-frame
     {
@@ -47,146 +48,6 @@ type private PacmanScreenModel =  // TODO: Getting fat with things that don't ch
         WhereToOnGameOver      : ScoreAndHiScore -> ErasedGameState
         WhereToOnAllEaten      : int -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
     }
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-type FindResult = InvalidMaze | NotFound | Found of int * int | NotUnique
-
-let FindUnique charToFind mazeArray =
-
-    let result =
-        mazeArray |> IfValidStringRectangleThen (fun width height ->
-
-            let mutable findResult = NotFound
-
-            mazeArray |> List.iteri (fun y row ->
-                for x in 0..(width-1) do
-                    if row.[x] = charToFind then
-                        findResult <-
-                            match findResult with
-                                | NotFound    -> Found(x,y)
-                                | Found _     -> NotUnique
-                                | NotUnique   -> NotUnique
-                                | InvalidMaze -> failwith "unexpected case"  // should never happen
-            )
-            Some findResult
-        )
-
-    match result with
-        | Some findResult -> findResult
-        | None -> InvalidMaze
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-type private UnpackedMaze =
-    {
-        UnpackedMazeState      : MazeState
-        UnpackedPacmanPosition : Point<int<epx>>
-        UnpackedGhostPositions : Point<int<epx>> list
-    }
-
-let private TextMazeDefinitionUnpacked mazeList = // TODO: move to a module?
-
-    // TODO: The test framework must run this over all of the included mazes
-    //       and see that it doesn't throw the exceptions.
-
-    // TODO: The rails might return the "central dot"
-
-    // TODO: Have I been too hasty assuming the characters will never encounter
-    //       rails with a direction byte mask 0uy?
-
-    let combinedWithDotsAndPillsIn (mazeList:string list) (justTheWalls:byte[]) =
-
-        mazeList |> IfValidStringRectangleThen (fun width height ->
-
-            if (width * height) = justTheWalls.Length then
-                let newArray = Array.create justTheWalls.Length ((byte)TileIndex.Blank)
-                mazeList |> List.iteri (fun y row ->
-                    for x in 0..(width-1) do
-                        let i = y * width + x
-                        let wall = justTheWalls.[i]
-                        let tileIndex =
-                            if wall <> 0uy then
-                                wall + ((byte)TileIndex.Blank)
-                            else
-                                let ch = row.[x]
-                                if ch = '.' then
-                                    ((byte) TileIndex.Dot)
-                                else if ch = '@' then
-                                    ((byte) TileIndex.Pill1)
-                                else
-                                    0uy
-                        newArray.[i] <- tileIndex
-                )
-                Some newArray
-            else
-                None
-        )        
-
-    let unwrap errorMessage opt =
-        match opt with
-            | Some thing -> thing
-            | None       -> failwith errorMessage
-
-    let RemoveMazeByteWrapper (MazeByte mazeByte) = mazeByte // TODO: Decide what type wrapping I'm doing here.  This just restores us to the byte-based system currently in wider use.
-
-    let justTheWalls =
-        mazeList 
-            |> StringArrayToMazeArray (fun ch -> ch = '#' || ch = ':') RemoveMazeByteWrapper 0uy
-            |> unwrap "Failed to unpack walls from maze definition, please check text format input."
-
-    let theGhostRails =
-        mazeList 
-            |> StringArrayToMazeArray (fun ch -> ch <> '#')  RemoveMazeByteWrapper 0uy
-            |> unwrap "Failed to unpack rails from maze definition, please check text format input."
-
-    let thePlayersRails =
-        mazeList 
-            |> StringArrayToMazeArray (fun ch -> ch <> '#' && ch <> ':')  RemoveMazeByteWrapper 0uy
-            |> unwrap "Failed to unpack rails from maze definition, please check text format input."
-
-    let theWallsAndPills =
-        justTheWalls 
-            |> combinedWithDotsAndPillsIn mazeList
-            |> unwrap "Failed to obtains the dots and pills from maze definition, please check text format input."
-
-    let unpackFindResult (ch:char) findResult =
-        match findResult with
-            | InvalidMaze -> failwith "Invalid maze definition"
-            | NotFound    -> failwith (sprintf "Could not find char '%s' in the maze definition." (ch.ToString()))
-            | NotUnique   -> failwith (sprintf "Char '%s' is not unique in the maze definition." (ch.ToString()))
-            | Found(x,y)  -> 
-                { ptx = x * TileSide ; pty = y * TileSide }
-
-    let ghostPositions =
-        [1..4] |> List.map (fun n -> 
-            let ghostChar = (char) (48 + n)
-            mazeList |> FindUnique ghostChar |> unpackFindResult ghostChar)
-
-    let pacPosition =
-        mazeList |> FindUnique '0' |> unpackFindResult '0'
-
-    {
-        UnpackedMazeState =
-            {
-                MazeTilesCountX  = mazeList.[0].Length  // known valid
-                MazeTilesCountY  = mazeList.Length
-                MazeTiles        = theWallsAndPills
-                MazeGhostRails   = theGhostRails
-                MazePlayersRails = thePlayersRails
-            }
-        UnpackedPacmanPosition = pacPosition
-        UnpackedGhostPositions = ghostPositions
-    }
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let private OriginForMazeOfDimensions cx cy (countX:int) (countY:int) =
-
-    let x = cx - ((countX * TileSide) / 2)
-    let y = cy - ((countY * TileSide) / 2)
-
-    (x,y)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Support functions
@@ -279,12 +140,6 @@ let WithPacMode mode pacman =
     }
 
     
-
-/// Obtain the mode of the given ghost.
-let inline GhostMode ghost =
-    ghost.GhostState2.GhostMode
-
-
 /// Obtain pacman's collision rectangle.
 let inline GhostCollisionRectangle ghost =
     ghost.GhostPosition |> CollisionRectangle
@@ -296,18 +151,18 @@ let WithGhostMode mode ghost =
         GhostPosition = ghost.GhostPosition
         GhostState2   =
             {
-                GhostNumber          = ghost.GhostState2.GhostNumber
-                GhostHomePosition    = ghost.GhostState2.GhostHomePosition
-                GhostFacingDirection = ghost.GhostState2.GhostFacingDirection
                 GhostMode            = mode
-                GhostDirectionChoiceProbabilities = ghost.GhostState2.GhostDirectionChoiceProbabilities
+                GhostTag             = ghost |> Tag
+                GhostBasePosition    = ghost |> BasePosition
+                GhostFacingDirection = ghost |> GlideDirection
+                GhostDirectionChoiceProbabilities = ghost |> Traits
             }
     }
 
 
 /// Asks whether the given ghost is at its base home position.
 let inline IsAtHomePosition ghost =
-    ghost.GhostPosition = ghost.GhostState2.GhostHomePosition
+    ghost.GhostPosition = (ghost |> BasePosition)
 
 
 /// Asks whether a pacman-maze-tile sized area overlaps any
@@ -318,7 +173,7 @@ let IntersectsNormalGhostsIn ghostStateList rect =
 
     ghostStateList 
         |> List.exists (fun ghost ->
-            match ghost.GhostState2.GhostMode with
+            match ghost |> GhostMode with
                 | GhostNormal -> ghost |> GhostCollisionRectangle |> RectangleIntersects rect
                 | GhostEdibleUntil _
                 | GhostRegeneratingUntil _
@@ -391,6 +246,15 @@ let CorridorRectangle tilesHorizontally tilesVertically (mazeByteArray:byte[]) o
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  DRAWING
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let private OriginForMazeOfDimensions cx cy (countX:int) (countY:int) =
+
+    let x = cx - ((countX * TileSide) / 2)
+    let y = cy - ((countY * TileSide) / 2)
+
+    (x,y)
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let private DrawSpecificMazeCentred render tilesImage cx cy countX countY (mazeByteArray:byte[]) gameTime =
@@ -511,15 +375,15 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
             //     model.MazeState.MazeTilesCountY
             //     model.MazeState.MazeTiles
             //     ghostState.GhostPosition
-            //     ghostState.GhostState2.GhostFacingDirection
+            //     ghostState |> GlideDirection
 
             let pos =
                 ghostState.GhostPosition
                     |> PointWrappedAtMazeEdges model.MazeState
                     |> OffsetByOrigin originx originy
                         
-            let number = ghostState.GhostState2.GhostNumber
-            let mode   = ghostState.GhostState2.GhostMode
+            let number = ghostState |> Tag
+            let mode   = ghostState |> GhostMode
 
             DrawGhost render tilesImage pos number mode gameTime)
 
@@ -624,12 +488,6 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 // TODO: Use PointWrappedAtMazeEdges when determining who sees who?   (Tiny edge case improvement).
-
-
-let IsTheSameGhostAs ghost otherGhost =
-    ghost.GhostState2.GhostNumber = otherGhost.GhostState2.GhostNumber
-
-
 
 let IsIntersectedByAnyOtherGhostTo selfGhost allGhosts corridorRect =
 
@@ -808,7 +666,7 @@ let private DecideNewPositionAndDirectionFor
     // NB:  Only called for GhostNormal and GhostEdibleUntil cases.
 
     let position  = ghost.GhostPosition
-    let direction = ghost.GhostState2.GhostFacingDirection
+    let direction = ghost |> GlideDirection
     let tile      = TileIndexOf position
     let rails     = mazeState.MazeGhostRails
 
@@ -836,7 +694,7 @@ let private DecideNewPositionAndDirectionFor
 
                         let pacRect = pacman.PacPosition |> TileBoundingRectangle
 
-                        match ghost.GhostState2.GhostMode with
+                        match ghost |> GhostMode with
                             
                             | GhostNormal -> 
                                 defaultDirectionChoices 
@@ -859,7 +717,7 @@ let private DecideNewPositionAndDirectionFor
                 |> PointMovedByDelta (direction |> DirectionToMovementDeltaI32)
                 |> PointWrappedAtMazeEdges mazeState
 
-        match ghost.GhostState2.GhostMode with
+        match ghost |> GhostMode with
             | GhostNormal -> potential
             | GhostEdibleUntil _ ->
                 if gameTime |> PulseActiveAtRate 20.0F then potential else position  // TODO: better treatment.
@@ -873,13 +731,13 @@ let MovedTowardsHomePosition ghost =
 
     let delta = 
         ghost.GhostPosition 
-            |> SimpleMovementDeltaI32ToGetTo ghost.GhostState2.GhostHomePosition
+            |> SimpleMovementDeltaI32ToGetTo (ghost |> BasePosition)
 
     let position = 
         ghost.GhostPosition 
             |> PointMovedByDelta delta
 
-    (position , ghost.GhostState2.GhostFacingDirection)
+    (position , ghost |> GlideDirection)
 
 
 
@@ -896,17 +754,17 @@ let private AdvanceGhost mazeState allGhosts pacman ghost rand gameTime =
 
             | GhostRegeneratingUntil _ ->
                 // No movement while re-generating in the base.
-                (ghost.GhostPosition , ghost.GhostState2.GhostFacingDirection) 
+                (ghost.GhostPosition , ghost |> GlideDirection) 
 
     {
         GhostPosition = position
         GhostState2 =
             {
-                GhostNumber          = ghost.GhostState2.GhostNumber
-                GhostHomePosition    = ghost.GhostState2.GhostHomePosition
-                GhostMode            = ghost.GhostState2.GhostMode
+                GhostTag             = ghost |> Tag
+                GhostBasePosition    = ghost |> BasePosition
+                GhostMode            = ghost |> GhostMode
                 GhostFacingDirection = direction
-                GhostDirectionChoiceProbabilities = ghost.GhostState2.GhostDirectionChoiceProbabilities
+                GhostDirectionChoiceProbabilities = ghost |> Traits
             }
     }
 
@@ -942,14 +800,14 @@ let WithPacmanReset pacmanState =
 /// Return ghosts position reset, for use after pacman life loss.
 let WithGhostReset ghostState =
     { 
-        GhostPosition = ghostState.GhostState2.GhostHomePosition
+        GhostPosition = ghostState |> BasePosition
         GhostState2 = 
             { 
                 GhostMode            = GhostNormal
                 GhostFacingDirection = FacingUp 
-                GhostNumber          = ghostState.GhostState2.GhostNumber
-                GhostHomePosition    = ghostState.GhostState2.GhostHomePosition
-                GhostDirectionChoiceProbabilities = ghostState.GhostState2.GhostDirectionChoiceProbabilities
+                GhostTag             = ghostState |> Tag
+                GhostBasePosition    = ghostState |> BasePosition
+                GhostDirectionChoiceProbabilities = ghostState |> Traits
             } 
     }
 
@@ -1001,7 +859,7 @@ let WithStateChangesResultingFromCollisionWithPacman pacmanPos ghosts =   // TOD
 
     let isEdibleGhostOverlappingPacmanAt pacmanRectangle ghost =
 
-        match ghost.GhostState2.GhostMode with
+        match ghost |> GhostMode with
             | GhostNormal
             | GhostReturningToBase      
             | GhostRegeneratingUntil _  -> false
@@ -1105,16 +963,6 @@ let private WithReturnToNormalityIfTimeOutAt gameTime ghostStateList =
 //  Screen state advance on frame
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let IsSomethingPacManNeedsToEat (tile:byte) =
-    (tile = ((byte)TileIndex.Pill1)) || (tile = ((byte)TileIndex.Dot))   // NB: Pill2 is never encoded in the maze itself.
-
-
-
-let private IsAllEaten maze =
-    not  (maze.MazeTiles |> Array.exists (fun tile -> tile |> IsSomethingPacManNeedsToEat))
-
-
-
 let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
 
     // Unpack
@@ -1199,15 +1047,33 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiSc
     let unpackedMaze = 
         AllPacmanMazes.[levelNumber % numberOfMazes] |> TextMazeDefinitionUnpacked
 
-    let ghostDirectionProbabilities = // TODO sort out
-        {
-            ProbAhead   = 70uy
-            ProbTurn90  = 20uy
-            ProbTurn180 = 10uy
-        }
-
-    let ghostProbArray = // TODO: sharing the same for all ghosts right now
-        ghostDirectionProbabilities |> CalculateMemoizedDirectionProbabilities
+    let ghostMovementTraitsArray =
+        [|
+            // Blue
+            {
+                ProbAhead   = 50uy
+                ProbTurn90  = 20uy
+                ProbTurn180 = 30uy
+            }
+            // Green
+            {
+                ProbAhead   = 80uy
+                ProbTurn90  = 15uy
+                ProbTurn180 =  5uy
+            }
+            // Pink
+            {
+                ProbAhead   = 80uy
+                ProbTurn90  = 15uy
+                ProbTurn180 =  5uy
+            }
+            // Red
+            {
+                ProbAhead   = 90uy
+                ProbTurn90  =  9uy
+                ProbTurn180 =  1uy  // TODO: Cannot have a zero prob for anything at the moment, because ghosts can get trapped in one-ways, unless additional logic is introduced elsewhere.
+            }
+        |]
 
     let screenModel =
         {
@@ -1235,11 +1101,13 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiSc
                     GhostPosition = ghostPos
                     GhostState2 = 
                         { 
-                            GhostNumber = GhostNumber(i)
+                            GhostTag = GhostNumber(i)
                             GhostMode = GhostNormal
-                            GhostHomePosition = ghostPos
+                            GhostBasePosition = ghostPos
                             GhostFacingDirection = FacingUp 
-                            GhostDirectionChoiceProbabilities = ghostProbArray
+                            GhostDirectionChoiceProbabilities = 
+                                ghostMovementTraitsArray.[i % ghostMovementTraitsArray.Length] 
+                                    |> CalculateMemoizedDirectionProbabilities
                         } 
                 })
         }

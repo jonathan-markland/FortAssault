@@ -125,7 +125,7 @@ type PacmanState =
 let inline PacMode pacman =
     pacman.PacState2.PacMode
 
-/// Pacman's direction property.
+/// Pacman's direction-facing property.
 let inline Facing pacman =
     pacman.PacState2.PacFacingDirection
 
@@ -177,18 +177,18 @@ type GhostState2 =
     {
         /// This ghost's number, for convenient reference.
         /// May be used to determine behaviours.
-        GhostNumber    : GhostNumber
+        GhostTag : GhostNumber
 
         /// Ghost position at start of screen, used to 
         /// return to base after being eaten.
         /// Stored position is relative to top left of maze.
-        GhostHomePosition : Point<int<epx>>
+        GhostBasePosition : Point<int<epx>>
 
         /// Travel direction
         GhostFacingDirection : FacingDirection
 
         /// Ghost state.
-        GhostMode      : GhostMode
+        GhostMode : GhostMode
 
         /// The direction choice traits for this ghost.
         /// Array indexable by (GhostFacingDirection |> FacingDirectionToInt)
@@ -208,11 +208,37 @@ type GhostState =
 
 
 
+/// Ghost's mode property.
+let inline GhostMode ghost =
+    ghost.GhostState2.GhostMode
+
+/// The position of this ghost's square in the base.
+let inline BasePosition ghost =
+    ghost.GhostState2.GhostBasePosition
+
+/// The direction the ghost is going.
+let inline GlideDirection ghost =
+    ghost.GhostState2.GhostFacingDirection
+
+/// This ghost's tag number.  Used as identity.
+let inline Tag ghost =
+    ghost.GhostState2.GhostTag
+
+/// Direction choice traits
+let inline Traits ghost =
+    ghost.GhostState2.GhostDirectionChoiceProbabilities
+
+/// Asks whether this ghost is the same instance as another.
+let inline IsTheSameGhostAs ghost otherGhost =
+    (ghost |> Tag) = (otherGhost |> Tag)
+
+
+
 /// Obtain the ghost's direction choice probabilities, for the
 /// direction the ghost is facing.
 let GhostDirectionChoiceProbabilities ghost =
     
-    let i = ghost.GhostState2.GhostFacingDirection |> FacingDirectionToInt
+    let i = ghost |> GlideDirection |> FacingDirectionToInt
     
     ghost.GhostState2.GhostDirectionChoiceProbabilities.[i]
 
