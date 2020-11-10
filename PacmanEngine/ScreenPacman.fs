@@ -274,7 +274,7 @@ let WithPacMode mode pacman =
                 PacMode            = mode
                 PacFacingDirection = pacman |> Facing
                 LivesLeft          = pacman |> LivesLeft
-                PacStartPosition   = pacman.PacState2.PacStartPosition
+                PacStartPosition   = pacman |> StartPosition
             }
     }
 
@@ -928,13 +928,13 @@ let private WithGhostMovement mazeState pacman rand gameTime allGhosts =
 let WithPacmanReset pacmanState =
     // TODO: If LivesLeft = 1 on entry then this should return None
     { 
-        PacPosition = pacmanState.PacState2.PacStartPosition
+        PacPosition = pacmanState |> StartPosition
         PacState2 =
             { 
                 PacFacingDirection = FacingRight
                 PacMode            = PacAlive
                 LivesLeft          = (pacmanState |> LivesLeft) - 1
-                PacStartPosition    = pacmanState.PacState2.PacStartPosition
+                PacStartPosition   = pacmanState |> StartPosition
             } 
     }
 
@@ -1049,7 +1049,7 @@ let WithPacManMovementStateChangesAppliedFrom position direction pacmanState =
                     PacMode            = pacmanState |> PacMode
                     PacFacingDirection = direction
                     LivesLeft          = pacmanState |> LivesLeft
-                    PacStartPosition   = pacmanState.PacState2.PacStartPosition
+                    PacStartPosition   = pacmanState |> StartPosition
                 }
             PacPosition = position
         }

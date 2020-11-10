@@ -105,7 +105,7 @@ type PacState2 =
         PacMode            : PacMode
         PacFacingDirection : FacingDirection
         LivesLeft          : int
-        PacStartPosition    : Point<int<epx>>
+        PacStartPosition   : Point<int<epx>>
     }
 
 
@@ -128,6 +128,10 @@ let inline PacMode pacman =
 /// Pacman's direction property.
 let inline Facing pacman =
     pacman.PacState2.PacFacingDirection
+
+/// Pacman's start position property.
+let inline StartPosition pacman =
+    pacman.PacState2.PacStartPosition
 
 /// Pacman life is over property.
 let inline LifeIsOver pacman =
