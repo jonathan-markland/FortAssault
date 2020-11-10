@@ -22,6 +22,26 @@ open Random
 // TODO: Research - a pure functional pacman maze instead of the array mutability.
 
 
+// TODO: Move these to a library? Are the really generally useful?
+
+/// If the condition is true, return the transformed 
+/// object, else return the object unchanged.
+let inline UpdateIf condition transformed objekt =   // TODO: move to library
+    if condition then objekt |> transformed else objekt
+
+
+
+/// If, when applied to the object, the condition is true, 
+/// return the transformed object, else return the object unchanged.
+let inline UpdateWhen condition transformed objekt =   // TODO: move to library
+    if objekt |> condition then objekt |> transformed else objekt
+
+
+let inline UpdateToValueWhen condition value objekt =   // TODO: move to library
+    if objekt |> condition then value else objekt
+
+
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 type private MazeState =
@@ -733,12 +753,8 @@ let private EliminatingSuboptimalDirectionsForEdibleGhost mazeState tileXY pacRe
     }
 
 
-
-let ButIfEmptyThenRevertCompassTo bailoutCompass compass =
-
-    let v = compass.ProbLeft ||| compass.ProbUp ||| compass.ProbDown ||| compass.ProbRight
-    if v = 0uy then bailoutCompass else compass
-
+let CompassEmpty compass = 
+    (compass.ProbLeft ||| compass.ProbUp ||| compass.ProbDown ||| compass.ProbRight) = 0uy
 
 
 let ChosenCompassDirectionFrom compass (XorShift32State(rand)) =
@@ -818,7 +834,7 @@ let private DecideNewPositionAndDirectionFor
                             
                             | _ -> failwith "Should not be deciding direction for ghost in this state"
                         
-                        |> ButIfEmptyThenRevertCompassTo bailoutCompass
+                        |> UpdateToValueWhen CompassEmpty bailoutCompass
 
                     ChosenCompassDirectionFrom compass rand
 
@@ -944,22 +960,6 @@ let private WithCharactersReset model =
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Collisions PAC vs GHOSTS
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-// TODO: Move these to a library? Are the really generally useful?
-
-/// If the condition is true, return the transformed 
-/// object, else return the object unchanged.
-let inline UpdateIf condition transformed objekt =   // TODO: move to library
-    if condition then objekt |> transformed else objekt
-
-
-
-/// If, when applied to the object, the condition is true, 
-/// return the transformed object, else return the object unchanged.
-let inline UpdateWhen condition transformed objekt =   // TODO: move to library
-    if objekt |> condition then objekt |> transformed else objekt
-
-
 
 /// State changes on pacman as a result of collision detection with ghosts
 let WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime pacmanState =   // TODO: Return indicator of new state, instead of new record
