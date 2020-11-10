@@ -57,10 +57,14 @@ let inline IsWithinRangeOf a triggerDistance b =
     (abs (a-b)) < triggerDistance
 
 /// Return true if points a and b are within a given distance from each other.
-let inline IsWithinRegionOf a triggerDistance b =
-    let { ptx=ax ; pty=ay } = a
-    let { ptx=bx ; pty=by } = b
-    (abs (ax-bx)) < triggerDistance && (abs (ay-by)) < triggerDistance
+let inline IsWithinRegionOf pointA triggerDistance pointB =
+    let { ptx=x1 ; pty=y1 } = pointA
+    let { ptx=x2 ; pty=y2 } = pointB
+    (abs (x1-x2)) < triggerDistance && (abs (y1-y2)) < triggerDistance
+
+let inline OffsetByOrigin originx originy point =
+    let { ptx=x ; pty=y } = point
+    { ptx=x + originx ; pty=y + originy }
 
 /// Return y value given x, where x specifies a point on a line.
 let InterpolateLineSegment (x1:float32) (y1:float32) (x2:float32) (y2:float32) (x:float32) =

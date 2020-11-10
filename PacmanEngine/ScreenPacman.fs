@@ -14,6 +14,7 @@ open MazeFilter
 open Rules
 open Mazes
 open ScreenIntermissions
+open Random
 
 
 
@@ -34,6 +35,7 @@ type private MazeState =
 
 type private PacmanScreenModel =  // TODO: Getting fat with things that don't change per-frame
     {
+        Random                 : XorShift32State
         LevelNumber            : int
         ScoreAndHiScore        : ScoreAndHiScore
         MazeState              : MazeState
@@ -338,9 +340,6 @@ let private PointWrappedAtMazeEdges mazeState point =
     { ptx=x ; pty=y }
 
 
-let OffsetByOrigin originx originy point =
-    let { ptx=x ; pty=y } = point
-    { ptx=x + originx ; pty=y + originy }
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -428,11 +427,11 @@ let private DrawMazeCentred render image cx cy mazeState gameTime =
 /// A debugging facility to render rectangles returned by the CorridorRectangle function.
 /// For debug purposes, pacman's position and direction are used as the reference point
 /// and corridor search direction.
-let private DrawCorridorFinderResult render cx cy countX countY mazeByteArray position facing =
+let private DrawCorridorFinderResult render centreX centreY countX countY mazeByteArray position facing =
 
-    let (x,y) = OriginForMazeOfDimensions cx cy countX countY
+    let (x,y) = OriginForMazeOfDimensions centreX centreY countX countY
 
-    let pos    = { ptx=position.ptx / 16<epx> ; pty=position.pty/16<epx> }
+    let pos    = { ptx=position.ptx / TileSide ; pty=position.pty / TileSide }
     let origin = { modx=x ; mody=y }
     let r      = CorridorRectangle countX countY mazeByteArray pos facing |> RectangleMovedByDelta origin
 
@@ -496,7 +495,7 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
     model.GhostsState
         |> List.iteri (fun i ghostState ->
 
-              // DrawCorridorFinderResult 
+            // DrawCorridorFinderResult 
             //     render cx cy 
             //     model.MazeState.MazeTilesCountX 
             //     model.MazeState.MazeTilesCountY
@@ -504,12 +503,13 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
             //     ghostState.GhostPosition
             //     ghostState.GhostState2.GhostFacingDirection
 
-            let pos = ghostState.GhostPosition
-                        |> PointWrappedAtMazeEdges model.MazeState
-                        |> OffsetByOrigin originx originy
+            let pos =
+                ghostState.GhostPosition
+                    |> PointWrappedAtMazeEdges model.MazeState
+                    |> OffsetByOrigin originx originy
                         
             let number = ghostState.GhostState2.GhostNumber
-            let mode = ghostState.GhostState2.GhostMode
+            let mode   = ghostState.GhostState2.GhostMode
 
             DrawGhost render tilesImage pos number mode gameTime)
 
@@ -703,23 +703,23 @@ let ButIfEmptyThenRevertCompassTo bailoutCompass compass =
 
 
 
-let ChosenCompassDirectionFrom compass (gameTime:float32<seconds>) =
+let ChosenCompassDirectionFrom compass rand =
 
-    let l = ((int) compass.ProbLeft)
-    let u = ((int) compass.ProbUp)
-    let d = ((int) compass.ProbDown)
-    let r = ((int) compass.ProbRight)
+    let l = ((uint32) compass.ProbLeft)
+    let u = ((uint32) compass.ProbUp)
+    let d = ((uint32) compass.ProbDown)
+    let r = ((uint32) compass.ProbRight)
 
     let total = l + u + r + d
 
-    System.Diagnostics.Debug.Assert (total <> 0)
+    System.Diagnostics.Debug.Assert (total <> 0u)
 
-    let n = ((int)(gameTime * 123.0F)) % total   // TODO: do properly with pseudo-random number
+    let n = rand % total
 
-    if l <> 0 && n < l then FacingLeft
-    else if u <> 0 && n < (l + u) then FacingUp
-    else if d <> 0 && n < (l + u + d) then FacingDown
-    else if r <> 0 && n < (l + u + d + r) then FacingRight
+    if l <> 0u && n < l then FacingLeft
+    else if u <> 0u && n < (l + u) then FacingUp
+    else if d <> 0u && n < (l + u + d) then FacingDown
+    else if r <> 0u && n < (l + u + d + r) then FacingRight
     else failwith "It should never be the case there are *no* exits from a decision point!"
 
 
@@ -734,6 +734,7 @@ let private DecideNewPositionAndDirectionFor
     mazeState 
     (allGhosts:GhostState list) 
     (pacman:PacmanState) 
+    (rand:XorShift32State)
     gameTime =
 
     // NB:  Only called for GhostNormal and GhostEdibleUntil cases.
@@ -779,8 +780,10 @@ let private DecideNewPositionAndDirectionFor
                         
                         |> ButIfEmptyThenRevertCompassTo bailoutCompass
 
-                    let (GhostNumber(gn)) = ghost.GhostState2.GhostNumber // TODO: HACK
-                    ChosenCompassDirectionFrom compass (gameTime + LanguagePrimitives.Float32WithMeasure<seconds>((float32) gn))
+                    let (XorShift32State(rand)) = rand
+                    let (GhostNumber(gnum)) = ghost.GhostState2.GhostNumber
+                    let rand = rand + ((uint32) gnum)
+                    ChosenCompassDirectionFrom compass rand
 
     let position = 
 
@@ -813,13 +816,13 @@ let MovedTowardsHomePosition ghost =
 
 
 
-let private AdvanceGhost mazeState allGhosts pacman ghost gameTime =
+let private AdvanceGhost mazeState allGhosts pacman ghost rand gameTime =
 
     let (position , direction) =
         match ghost |> GhostMode with
             | GhostNormal
             | GhostEdibleUntil _ -> 
-                DecideNewPositionAndDirectionFor ghost mazeState allGhosts pacman gameTime
+                DecideNewPositionAndDirectionFor ghost mazeState allGhosts pacman rand gameTime
 
             | GhostReturningToBase ->
                 ghost |> MovedTowardsHomePosition
@@ -841,9 +844,9 @@ let private AdvanceGhost mazeState allGhosts pacman ghost gameTime =
     }
 
 
-let private WithGhostMovement mazeState pacman gameTime allGhosts =
+let private WithGhostMovement mazeState pacman rand gameTime allGhosts =
 
-    allGhosts |> List.map (fun ghost -> AdvanceGhost mazeState allGhosts pacman ghost gameTime)
+    allGhosts |> List.map (fun ghost -> AdvanceGhost mazeState allGhosts pacman ghost rand gameTime)
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -883,6 +886,7 @@ let WithGhostReset ghostState =
 /// Returns a model with the characters reset for use after a life loss.
 let private WithCharactersReset model =
     {
+        Random            = model.Random
         LevelNumber       = model.LevelNumber
         ScoreAndHiScore   = model.ScoreAndHiScore  
         MazeState         = model.MazeState        
@@ -1070,12 +1074,13 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
     let model = ModelFrom gameState
 
     let {
-            ScoreAndHiScore        = scoreAndHiScore
-            MazeState              = mazeState
-            PacmanState            = pacmanState
-            GhostsState            = ghostStateList
-            WhereToOnGameOver      = _
-            WhereToOnAllEaten      = _
+            Random            = rand
+            ScoreAndHiScore   = scoreAndHiScore
+            MazeState         = mazeState
+            PacmanState       = pacmanState
+            GhostsState       = ghostStateList
+            WhereToOnGameOver = _
+            WhereToOnAllEaten = _
         }
             = model
 
@@ -1095,7 +1100,7 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
         ghostStateList 
             |> WithReturnToNormalityIfTimeOutAt gameTime
             |> WithEdibleGhostsIfPowerPill eaten gameTime
-            |> WithGhostMovement mazeState pacmanState gameTime
+            |> WithGhostMovement mazeState pacmanState rand gameTime
 
     let pacmanState =
         pacmanState |> WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime
@@ -1110,6 +1115,7 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
 
     let model =
         {
+            Random            = model.Random |> XorShift32
             LevelNumber       = model.LevelNumber
             ScoreAndHiScore   = scoreAndHiScore
             MazeState         = mazeState
@@ -1157,6 +1163,7 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiSc
 
     let pacModel =
         {
+            Random            = XorShift32State 0x33033u
             LevelNumber       = levelNumber
             ScoreAndHiScore   = scoreAndHiScore
             MazeState         = unpackedMaze.UnpackedMazeState
