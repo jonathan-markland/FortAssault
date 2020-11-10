@@ -14,6 +14,7 @@ open Rules
 open Input
 open PacmanShared
 open TitleScreenShared
+open Keys
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -48,9 +49,9 @@ let private RenderPotentialEnterYourNameScreen render (model:PotentialEnterYourN
 
 let private ModelUpdatedAccordingToInput model keyStateGetter =
 
-    let fire  = keyStateGetter (WebBrowserKeyCode 90)
-    let left  = keyStateGetter (WebBrowserKeyCode 37)
-    let right = keyStateGetter (WebBrowserKeyCode 39)
+    let fire  = keyStateGetter KeyFire
+    let left  = keyStateGetter KeyLeft
+    let right = keyStateGetter KeyRight
 
     if fire.JustDown then
         Some (model |> EnterYourNameModelWithInputApplied SelectLetter)

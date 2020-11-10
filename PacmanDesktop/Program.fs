@@ -6,6 +6,7 @@ open PacmanImageFiles
 open Input
 open DesktopGameFramework
 open Storyboard
+open Keys
 
 
 let PacmanRetroScreenWidthPixels  =  320 
@@ -23,11 +24,11 @@ let main argv =
 
     let keysNeeded =
         [
-            (SDL.SDL_Scancode.SDL_SCANCODE_LEFT  , WebBrowserKeyCode 37)
-            (SDL.SDL_Scancode.SDL_SCANCODE_RIGHT , WebBrowserKeyCode 39)
-            (SDL.SDL_Scancode.SDL_SCANCODE_UP    , WebBrowserKeyCode 38)
-            (SDL.SDL_Scancode.SDL_SCANCODE_DOWN  , WebBrowserKeyCode 40)
-            (SDL.SDL_Scancode.SDL_SCANCODE_Z     , WebBrowserKeyCode 90)
+            (SDL.SDL_Scancode.SDL_SCANCODE_LEFT  , KeyLeft)
+            (SDL.SDL_Scancode.SDL_SCANCODE_RIGHT , KeyRight)
+            (SDL.SDL_Scancode.SDL_SCANCODE_UP    , KeyUp)
+            (SDL.SDL_Scancode.SDL_SCANCODE_DOWN  , KeyDown)
+            (SDL.SDL_Scancode.SDL_SCANCODE_Z     , KeyFire)
         ]
 
     let stubGlobalStateConstructor () = Ok ()  // Feature not used

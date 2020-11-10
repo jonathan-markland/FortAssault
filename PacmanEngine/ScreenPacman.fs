@@ -16,31 +16,14 @@ open Mazes
 open ScreenIntermissions
 open Random
 open GhostDirectionChoosing
+open Update
+open Keys
 
+
+let ScreenRandomSeed = 0x33033u
 
 
 // TODO: Research - a pure functional pacman maze instead of the array mutability.
-
-
-// TODO: Move these to a library? Are the really generally useful?
-
-/// If the condition is true, return the transformed 
-/// object, else return the object unchanged.
-let inline UpdateIf condition transformed objekt =   // TODO: move to library
-    if condition then objekt |> transformed else objekt
-
-
-
-/// If, when applied to the object, the condition is true, 
-/// return the transformed object, else return the object unchanged.
-let inline UpdateWhen condition transformed objekt =   // TODO: move to library
-    if objekt |> condition then objekt |> transformed else objekt
-
-
-let inline UpdateToValueWhen condition value objekt =   // TODO: move to library
-    if objekt |> condition then value else objekt
-
-
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -209,11 +192,12 @@ let private OriginForMazeOfDimensions cx cy (countX:int) (countY:int) =
 //  Support functions
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+/// Obtain key states as boolean values.
 let KeysFrom keyStateGetter =
-    let up    = (keyStateGetter (WebBrowserKeyCode 38)).Held
-    let down  = (keyStateGetter (WebBrowserKeyCode 40)).Held
-    let left  = (keyStateGetter (WebBrowserKeyCode 37)).Held
-    let right = (keyStateGetter (WebBrowserKeyCode 39)).Held
+    let up    = (keyStateGetter KeyUp).Held
+    let down  = (keyStateGetter KeyDown).Held
+    let left  = (keyStateGetter KeyLeft).Held
+    let right = (keyStateGetter KeyRight).Held
     struct (up, down, left, right)
 
 /// Asks whether the given pacman or ghost position is aligned
@@ -1235,16 +1219,15 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiSc
     let ghostProbArray = // TODO: sharing the same for all ghosts right now
         ghostDirectionProbabilities |> CalculateMemoizedDirectionProbabilities
 
-    let pacModel =
+    let screenModel =
         {
-            Random            = XorShift32State 0x33033u
+            Random            = XorShift32State ScreenRandomSeed
             LevelNumber       = levelNumber
             ScoreAndHiScore   = scoreAndHiScore
             MazeState         = unpackedMaze.UnpackedMazeState
             WhereToOnGameOver = whereToOnGameOver
             WhereToOnAllEaten = whereToOnAllEaten
             
-            // TODO: sort out
             PacmanState =
                 { 
                     PacPosition = unpackedMaze.UnpackedPacmanPosition
@@ -1271,5 +1254,5 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiSc
                 })
         }
 
-    NewGameState NextPacmanScreenState RenderPacmanScreen pacModel
+    NewGameState NextPacmanScreenState RenderPacmanScreen screenModel
 

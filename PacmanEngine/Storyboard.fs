@@ -3,6 +3,8 @@
 open Input
 open InterruptableVideo
 
+open Keys
+
 open ScreenGameTitle
 open ScreenPacman
 open ScreenGameOver
@@ -45,7 +47,7 @@ and private GameOverStory scoreAndHiScore =
     NewGameOverScreen scoreAndHiScore 
         |> AsInterruptableVideoThen
                 (EnterYourNameStory scoreAndHiScore)
-                (WebBrowserKeyCode 90)  // TODO: Fire button constant?
+                KeyFire
 
 and private PacmanStory (levelNumber:int) (scoreAndHiScore:ScoreAndHiScore) _gameTime =
 
@@ -66,7 +68,7 @@ and private GameTitleStory gameTime =
     NewGameTitleScreen globalScoreboard
         |> AsInterruptableVideoThen 
                 (PacmanStory firstLevelForBrandNewGame scoreAndHiScoreForBrandNewGame)
-                (WebBrowserKeyCode 90)  // TODO: Fire button constant?
+                KeyFire
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
