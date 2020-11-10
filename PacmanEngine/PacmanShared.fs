@@ -147,16 +147,22 @@ type GhostMode =
     /// given game time whereupon it returns to GhostNormal.
     | GhostRegeneratingUntil of float32<seconds>
 
-/// The probability of choosing a direction.
-type DirectionSelectionProbability =
+/// The probability of turning through an angle with respect
+/// to the current direction of travel.
+[<Struct>]
+type TurnProbability =
     {
         ProbAhead    : byte
         ProbTurn90   : byte
         ProbTurn180  : byte
     }
 
+/// The probabilities associated with choosing 
+/// a particular direction of travel.  These will
+/// be zero if the direction CANNOT be chosen (wall)
+/// or has been filtered out.
 [<Struct>]
-type CompassProbability =
+type DirectionChoiceProbabilities =
     {
         ProbLeft  : byte
         ProbUp    : byte
@@ -182,7 +188,7 @@ type GhostState2 =
         GhostMode      : GhostMode
 
         /// Array indexable by (GhostFacingDirection |> FacingDirectionToInt)
-        MemoizedProbabilitiesByFacingDirection : CompassProbability []
+        MemoizedProbabilitiesByFacingDirection : DirectionChoiceProbabilities []
     }
 
 type GhostState =
