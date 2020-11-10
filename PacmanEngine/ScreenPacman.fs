@@ -640,7 +640,7 @@ let IsStraightRail rail =
 
     
 
-let private EliminatingSuboptimalDirectionsForNormalGhost mazeState tileXY ghost allGhosts compass =
+let private EliminatingSuboptimalDirectionsForNormalGhost mazeState tileXY pacRect ghost allGhosts compass =
 
     let possiblyEliminated probability direction =
         if probability = 0uy then
@@ -765,14 +765,16 @@ let private DecideNewPositionAndDirectionFor
                             |> EliminatingCompassDirectionsGivenByBitmask railsBitmask
 
                     let compass =
+
+                        let pacRect = pacman.PacPosition |> TileBoundingRectangle
+
                         match ghost.GhostState2.GhostMode with
                             
                             | GhostNormal -> 
                                 bailoutCompass 
-                                    |> EliminatingSuboptimalDirectionsForNormalGhost mazeState tileXY ghost allGhosts
+                                    |> EliminatingSuboptimalDirectionsForNormalGhost mazeState tileXY pacRect ghost allGhosts
                             
                             | GhostEdibleUntil _ -> 
-                                let pacRect = pacman.PacPosition |> TileBoundingRectangle
                                 bailoutCompass 
                                     |> EliminatingSuboptimalDirectionsForEdibleGhost mazeState tileXY pacRect
                             
