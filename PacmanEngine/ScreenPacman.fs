@@ -481,12 +481,12 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
 
     match model.PacmanState.PacState2.PacMode with
         | PacAlive ->
-            let pillMode = InPillMode model.GhostsState
-            DrawPacManAlive render tilesImage pos direction pillMode gameTime
+            let drawPacMode = if model.GhostsState |> InPillMode then DrawPacPillMode else DrawPacNormal
+            DrawPacManAlive render tilesImage pos direction drawPacMode gameTime
 
         | PacDyingUntil _ ->
             if gameTime |> PulseActiveAtRate PacmanDyingFlashRate then
-                DrawPacManAlive render tilesImage pos direction false gameTime
+                DrawPacManAlive render tilesImage pos direction DrawPacZapped gameTime
             else
                 () // No graphics desired.
 

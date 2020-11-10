@@ -31,7 +31,7 @@ type TitleScreenGhostState =
 let DrawPacMan render tilesImage gameTime pacmanState =
     let pillMode = false
     let { pos=pos ; direction=facingDirection } = pacmanState
-    DrawPacManAlive render tilesImage pos facingDirection pillMode gameTime
+    DrawPacManAlive render tilesImage pos facingDirection DrawPacNormal gameTime
 
 /// Intended for title screens, game over screen, not gameplay.
 let DrawGhost render tilesImage gameTime ghostState =

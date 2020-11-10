@@ -296,9 +296,11 @@ let DrawPacTileInt render image x y (tileIndex:int) gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+type PacDrawType = DrawPacNormal | DrawPacPillMode | DrawPacZapped
+
 /// Draw pac man image with top left at pos facing in the direction given,
 /// with appropriate open/closed mouth animation.
-let DrawPacManAlive render image pos facingDirection pillMode (gameTime:float32<seconds>) =
+let DrawPacManAlive render image pos facingDirection pacDrawType (gameTime:float32<seconds>) =
 
     let { ptx=x ; pty=y } = pos
 
@@ -309,12 +311,18 @@ let DrawPacManAlive render image pos facingDirection pillMode (gameTime:float32<
                 | FacingUp    -> TileIndex.PacUp1
                 | FacingDown  -> TileIndex.PacDown1)
 
-    let pillModeFactor = if pillMode then 2.0F else 1.0F
-
     let pacImageIndex = 
-        gameTime |> PulseBetween 
-            (SnapsPerSecond * pillModeFactor)
-            pacDirectionalImageIndex (pacDirectionalImageIndex + 4) 
+
+        let imageWithSnapSpeedTimes pillModeFactor =
+            gameTime |> PulseBetween 
+                (SnapsPerSecond * pillModeFactor)
+                pacDirectionalImageIndex (pacDirectionalImageIndex + 4) 
+
+        match pacDrawType with
+            | DrawPacNormal   -> imageWithSnapSpeedTimes 1.0F
+            | DrawPacPillMode -> imageWithSnapSpeedTimes 2.0F
+            | DrawPacZapped ->
+                pacDirectionalImageIndex
 
     DrawPacTileInt render image x y pacImageIndex gameTime
 
