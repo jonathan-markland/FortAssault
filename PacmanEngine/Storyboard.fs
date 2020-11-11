@@ -60,7 +60,7 @@ and private PacmanStory (levelNumber:int) (scoreAndHiScore:ScoreAndHiScore) _gam
 and private GameTitleStory gameTime =
 
     let firstLevelForBrandNewGame =
-        125
+        155 // 125 -- with dead ends
 
     let scoreAndHiScoreForBrandNewGame = 
         { Score=0u ; HiScore = HiScoreFromScoreboard globalScoreboard }

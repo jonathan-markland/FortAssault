@@ -29,13 +29,20 @@ let ReverseFacing facingDirection =
         | FacingDown  -> FacingUp
 
 let TurnCorner railsBitmask entryDirection =
-    let inline where mask alt1 alt2 rails = if (rails &&& mask) <> 0uy then alt1 else alt2
+    
+    let inline where mask1 alt1 mask2 alt2 rails = 
+        if (rails &&& mask1) <> 0uy then 
+            alt1 
+        else if (rails &&& mask2) <> 0uy then
+            alt2
+        else
+            failwith "Rails bitmask was not a 90 degree corner!"
+
     match entryDirection with
         | FacingLeft
-        | FacingRight -> railsBitmask |> where MazeByteUp FacingUp FacingDown
+        | FacingRight -> railsBitmask |> where MazeByteUp FacingUp MazeByteDown FacingDown
         | FacingUp
-        | FacingDown  -> railsBitmask |> where MazeByteLeft FacingLeft FacingRight
-    
+        | FacingDown  -> railsBitmask |> where MazeByteLeft FacingLeft MazeByteRight FacingRight
 
 let SingleBitInByteToFacingDirection b =
     if b=MazeByteLeft then FacingLeft

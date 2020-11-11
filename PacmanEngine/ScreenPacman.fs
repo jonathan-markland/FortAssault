@@ -274,20 +274,20 @@ let private DrawSpecificMazeCentred render tilesImage cx cy countX countY (mazeB
 
 let private DrawMazeCentred render image cx cy mazeState gameTime =
 
-    DrawSpecificMazeCentred 
-        render image cx cy 
-        mazeState.MazeTilesCountX
-        mazeState.MazeTilesCountY
-        mazeState.MazeTiles
-        gameTime
-
-    // To show the ghost rails:
     // DrawSpecificMazeCentred 
     //     render image cx cy 
     //     mazeState.MazeTilesCountX
     //     mazeState.MazeTilesCountY
-    //     mazeState.MazeGhostRails
+    //     mazeState.MazeTiles
     //     gameTime
+
+    // To show the ghost rails:
+    DrawSpecificMazeCentred 
+        render image cx cy 
+        mazeState.MazeTilesCountX
+        mazeState.MazeTilesCountY
+        mazeState.MazeGhostRails
+        gameTime
 
     // To show the player rails:
     // DrawSpecificMazeCentred 
@@ -513,9 +513,9 @@ let IsCornerRail rail =
     System.Diagnostics.Debug.Assert (rail <> 0uy)   // Should never have empty rails.
 
     let downRight = (MazeByteDown ||| MazeByteRight)
-    let upRight   = (MazeByteUp ||| MazeByteRight)
+    let upRight   = (MazeByteUp   ||| MazeByteRight)
     let downLeft  = (MazeByteDown ||| MazeByteLeft)
-    let upLeft    = (MazeByteUp ||| MazeByteLeft)
+    let upLeft    = (MazeByteUp   ||| MazeByteLeft)
 
     (rail = downRight) || (rail = upRight) || (rail = downLeft) || (rail = upLeft)
 
@@ -708,11 +708,11 @@ let private DecideNewPositionAndDirectionFor
 
                 else if railsBitmask |> IsCornerRail then
                     let (XorShift32State(r)) = rand
-                    let p = (byte) (r % 100u)
-                    if p < (ghost |> TurnProb) then
-                        direction |> TurnCorner railsBitmask
-                    else
-                        direction |> ReverseFacing
+                    // let p = (byte) (r % 100u)
+                    //if p < (ghost |> TurnProb) then
+                    // direction |> TurnCorner railsBitmask
+                    //else
+                    direction |> ReverseFacing
 
                 else
                     let defaultDirectionChoices = 
