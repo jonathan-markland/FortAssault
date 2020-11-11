@@ -21,14 +21,9 @@ let FacingDirectionToBitMaskByte facingDirection =  // TODO: Type model for the 
         | FacingUp    -> MazeByteUp
         | FacingDown  -> MazeByteDown
 
-let ReverseFacing facingDirection =
-    match facingDirection with
-        | FacingLeft  -> FacingRight
-        | FacingRight -> FacingLeft
-        | FacingUp    -> FacingDown
-        | FacingDown  -> FacingUp
+type CornerChoice = ChooseBetweenUpDown | ChooseBetweenLeftRight
 
-let TurnCorner railsBitmask entryDirection =
+let private CornerHandler railsBitmask cornerChoice =
     
     let inline where mask1 alt1 mask2 alt2 rails = 
         if (rails &&& mask1) <> 0uy then 
@@ -38,11 +33,23 @@ let TurnCorner railsBitmask entryDirection =
         else
             failwith "Rails bitmask was not a 90 degree corner!"
 
+    match cornerChoice with
+        | ChooseBetweenUpDown   -> railsBitmask |> where MazeByteUp   FacingUp   MazeByteDown  FacingDown
+        | ChooseBetweenLeftRight-> railsBitmask |> where MazeByteLeft FacingLeft MazeByteRight FacingRight
+
+let ReverseCornerDir railsBitmask entryDirection =
     match entryDirection with
+        | FacingUp  
+        | FacingDown -> CornerHandler railsBitmask ChooseBetweenUpDown
         | FacingLeft
-        | FacingRight -> railsBitmask |> where MazeByteUp FacingUp MazeByteDown FacingDown
-        | FacingUp
-        | FacingDown  -> railsBitmask |> where MazeByteLeft FacingLeft MazeByteRight FacingRight
+        | FacingRight-> CornerHandler railsBitmask ChooseBetweenLeftRight
+
+let TurnCorner railsBitmask entryDirection =
+    match entryDirection with
+        | FacingUp  
+        | FacingDown -> CornerHandler railsBitmask ChooseBetweenLeftRight
+        | FacingLeft
+        | FacingRight-> CornerHandler railsBitmask ChooseBetweenUpDown
 
 let SingleBitInByteToFacingDirection b =
     if b=MazeByteLeft then FacingLeft
@@ -207,7 +214,12 @@ type GhostState2 =
         /// Stored position is relative to top left of maze.
         GhostBasePosition : Point<int<epx>>
 
-        /// Travel direction
+        /// Initial travel direction, must be set correctly
+        /// with respect to rails.
+        GhostInitialDirection : FacingDirection
+
+        /// Travel direction, must be set correctly
+        /// with respect to rails.
         GhostFacingDirection : FacingDirection
 
         /// Ghost state.
@@ -241,6 +253,10 @@ let inline GhostMode ghost =
 /// The position of this ghost's square in the base.
 let inline BasePosition ghost =
     ghost.GhostState2.GhostBasePosition
+
+/// The initial direction the ghost is going, starting in the base.
+let inline InitialDirection ghost =
+    ghost.GhostState2.GhostInitialDirection
 
 /// The direction the ghost is going.
 let inline GlideDirection ghost =
