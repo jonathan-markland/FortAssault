@@ -21,6 +21,22 @@ let FacingDirectionToBitMaskByte facingDirection =  // TODO: Type model for the 
         | FacingUp    -> MazeByteUp
         | FacingDown  -> MazeByteDown
 
+let ReverseFacing facingDirection =
+    match facingDirection with
+        | FacingLeft  -> FacingRight
+        | FacingRight -> FacingLeft
+        | FacingUp    -> FacingDown
+        | FacingDown  -> FacingUp
+
+let TurnCorner railsBitmask entryDirection =
+    let inline where mask alt1 alt2 rails = if (rails &&& mask) <> 0uy then alt1 else alt2
+    match entryDirection with
+        | FacingLeft
+        | FacingRight -> railsBitmask |> where MazeByteUp FacingUp FacingDown
+        | FacingUp
+        | FacingDown  -> railsBitmask |> where MazeByteLeft FacingLeft FacingRight
+    
+
 let SingleBitInByteToFacingDirection b =
     if b=MazeByteLeft then FacingLeft
     else if b=MazeByteRight then FacingRight
@@ -190,9 +206,12 @@ type GhostState2 =
         /// Ghost state.
         GhostMode : GhostMode
 
+        /// Probability (out of 100) of turning a corner versus doubling back.
+        GhostCornerProbTurn : byte
+
         /// The direction choice traits for this ghost.
         /// Array indexable by (GhostFacingDirection |> FacingDirectionToInt)
-        GhostDirectionChoiceProbabilities : DirectionChoiceProbabilities []
+        GhostThreeOrFourWayProbabilities : DirectionChoiceProbabilities []
     }
 
 
@@ -220,13 +239,17 @@ let inline BasePosition ghost =
 let inline GlideDirection ghost =
     ghost.GhostState2.GhostFacingDirection
 
+/// The probability (out of 100) of the ghost turning the corner.
+let inline TurnProb ghost =
+    ghost.GhostState2.GhostCornerProbTurn
+
 /// This ghost's tag number.  Used as identity.
 let inline Tag ghost =
     ghost.GhostState2.GhostTag
 
 /// Direction choice traits
 let inline Traits ghost =
-    ghost.GhostState2.GhostDirectionChoiceProbabilities
+    ghost.GhostState2.GhostThreeOrFourWayProbabilities
 
 /// Asks whether this ghost is the same instance as another.
 let inline IsTheSameGhostAs ghost otherGhost =
@@ -240,7 +263,7 @@ let GhostDirectionChoiceProbabilities ghost =
     
     let i = ghost |> GlideDirection |> FacingDirectionToInt
     
-    ghost.GhostState2.GhostDirectionChoiceProbabilities.[i]
+    ghost.GhostState2.GhostThreeOrFourWayProbabilities.[i]
 
 
 

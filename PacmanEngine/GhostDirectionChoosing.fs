@@ -1,12 +1,31 @@
 ﻿module GhostDirectionChoosing
 
+
 /// The probability of turning through an angle with respect
 /// to the current direction of travel.
 [<Struct>]
 type TurnProbability =
     {
+        /// When at a 90 degree corner, the probability 
+        /// of carrying on around the corner, out of 100.
+        CornerProbTurn : byte
+
+        /// When at a 3 or 4 way, the probability 
+        /// of going ahead.  (Unless not available in
+        /// which case this value is removed from the 
+        /// probability total).
         ProbAhead    : byte
+
+        /// When at a 3 or 4 way, the probability 
+        /// of turning 90 degrees.  (Unless not available in
+        /// which case this value is removed from the 
+        /// probability total).
         ProbTurn90   : byte
+
+        /// When at a 3 or 4 way, the probability 
+        /// of turning back.  (Unless not available in
+        /// which case this value is removed from the 
+        /// probability total).
         ProbTurn180  : byte
     }
 

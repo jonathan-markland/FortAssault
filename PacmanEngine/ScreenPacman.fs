@@ -155,7 +155,8 @@ let WithGhostMode mode ghost =
                 GhostTag             = ghost |> Tag
                 GhostBasePosition    = ghost |> BasePosition
                 GhostFacingDirection = ghost |> GlideDirection
-                GhostDirectionChoiceProbabilities = ghost |> Traits
+                GhostCornerProbTurn  = ghost |> TurnProb
+                GhostThreeOrFourWayProbabilities = ghost |> Traits
             }
     }
 
@@ -501,15 +502,33 @@ let IsIntersectedByAnyOtherGhostTo selfGhost allGhosts corridorRect =
 
 
 
+let IsDeadEndRail rail =
+
+    System.Diagnostics.Debug.Assert (rail <> 0uy)   // Should never have empty rails.
+
+    (rail = MazeByteLeft) || (rail = MazeByteRight) || (rail = MazeByteUp) || (rail = MazeByteDown)
+
+let IsCornerRail rail =
+
+    System.Diagnostics.Debug.Assert (rail <> 0uy)   // Should never have empty rails.
+
+    let downRight = (MazeByteDown ||| MazeByteRight)
+    let upRight   = (MazeByteUp ||| MazeByteRight)
+    let downLeft  = (MazeByteDown ||| MazeByteLeft)
+    let upLeft    = (MazeByteUp ||| MazeByteLeft)
+
+    (rail = downRight) || (rail = upRight) || (rail = downLeft) || (rail = upLeft)
+
 let IsStraightRail rail =
 
     System.Diagnostics.Debug.Assert (rail <> 0uy)   // Should never have empty rails.
 
     let horizontalRail = (MazeByteLeft ||| MazeByteRight)
     let verticalRail   = (MazeByteUp ||| MazeByteDown)
-    (rail = horizontalRail)  ||  (rail = verticalRail)
 
+    (rail = horizontalRail)  ||  (rail = verticalRail)
     
+
 
 let private EliminatingSuboptimalDirectionsForNormalGhost ghost mazeState tileXY pacRect allGhosts directionChoices =
 
@@ -684,6 +703,17 @@ let private DecideNewPositionAndDirectionFor
                 if railsBitmask |> IsStraightRail then
                     direction
 
+                else if railsBitmask |> IsDeadEndRail then
+                    direction |> ReverseFacing
+
+                else if railsBitmask |> IsCornerRail then
+                    let (XorShift32State(r)) = rand
+                    let p = (byte) (r % 100u)
+                    if p < (ghost |> TurnProb) then
+                        direction |> TurnCorner railsBitmask
+                    else
+                        direction |> ReverseFacing
+
                 else
                     let defaultDirectionChoices = 
                         ghost 
@@ -763,8 +793,9 @@ let private AdvanceGhost mazeState allGhosts pacman ghost rand gameTime =
                 GhostTag             = ghost |> Tag
                 GhostBasePosition    = ghost |> BasePosition
                 GhostMode            = ghost |> GhostMode
+                GhostCornerProbTurn  = ghost |> TurnProb
                 GhostFacingDirection = direction
-                GhostDirectionChoiceProbabilities = ghost |> Traits
+                GhostThreeOrFourWayProbabilities = ghost |> Traits
             }
     }
 
@@ -807,7 +838,8 @@ let WithGhostReset ghostState =
                 GhostFacingDirection = FacingUp 
                 GhostTag             = ghostState |> Tag
                 GhostBasePosition    = ghostState |> BasePosition
-                GhostDirectionChoiceProbabilities = ghostState |> Traits
+                GhostCornerProbTurn  = ghostState |> TurnProb
+                GhostThreeOrFourWayProbabilities = ghostState |> Traits
             } 
     }
 
@@ -1051,24 +1083,28 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiSc
         [|
             // Blue
             {
+                CornerProbTurn = 85uy
                 ProbAhead   = 50uy
                 ProbTurn90  = 20uy
                 ProbTurn180 = 30uy
             }
             // Green
             {
+                CornerProbTurn = 85uy
                 ProbAhead   = 80uy
                 ProbTurn90  = 15uy
                 ProbTurn180 =  5uy
             }
             // Pink
             {
+                CornerProbTurn = 85uy
                 ProbAhead   = 80uy
                 ProbTurn90  = 15uy
                 ProbTurn180 =  5uy
             }
             // Red
             {
+                CornerProbTurn = 100uy
                 ProbAhead   = 90uy
                 ProbTurn90  =  9uy
                 ProbTurn180 =  1uy  // TODO: Cannot have a zero prob for anything at the moment, because ghosts can get trapped in one-ways, unless additional logic is introduced elsewhere.
@@ -1097,16 +1133,22 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiSc
                 }
 
             GhostsState = unpackedMaze.UnpackedGhostPositions |> List.mapi (fun i ghostPos -> 
+                let n = i % ghostMovementTraitsArray.Length
                 { 
                     GhostPosition = ghostPos
+
                     GhostState2 = 
                         { 
                             GhostTag = GhostNumber(i)
                             GhostMode = GhostNormal
                             GhostBasePosition = ghostPos
                             GhostFacingDirection = FacingUp 
-                            GhostDirectionChoiceProbabilities = 
-                                ghostMovementTraitsArray.[i % ghostMovementTraitsArray.Length] 
+                            
+                            GhostCornerProbTurn = 
+                                ghostMovementTraitsArray.[n].CornerProbTurn
+
+                            GhostThreeOrFourWayProbabilities = 
+                                ghostMovementTraitsArray.[n] 
                                     |> CalculateMemoizedDirectionProbabilities
                         } 
                 })
