@@ -73,7 +73,12 @@ and private GameTitleStory gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+open ProbabilityTable // TODO: remove
+
 let NewPacmanStoryboard _ gameTime =
+
+    let table = MovementProbabilitiesTable ()
+    table |> List.iter (fun row -> printf "%A" row)
 
     globalScoreboard <- InitialScoreboard [ "Damon" ; "Jarvis" ; "Noel" ; "James" ] 2500u 2500u
 
