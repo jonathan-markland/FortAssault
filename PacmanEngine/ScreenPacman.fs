@@ -91,7 +91,13 @@ let TileIndexOf position =  // TODO: strongly type the return value
         None
 
 
+/// Decide the initial facing directions for the ghosts from the rails.
+/// This means these initial directions would not require "correcting"
+/// in case they face into a wall.
 let InitialFacingDirectionFor ghostPos (mazeGhostRails:byte[]) tileCountX =
+
+    // TODO: However, the "ProbabilityTable" idea performs "correction" as part of the deal.
+
     match TileIndexOf ghostPos with
         | None -> failwith "Cannot determine initial direction for ghost because initial ghost position is not precisely aligned"
         | Some (txi, tyi) ->
