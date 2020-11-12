@@ -110,10 +110,10 @@ let private MazeFilterIter isWallAtXY width height masks action =  // TODO: acti
 
 
 // TODO: Is there a bitmask type? [Flags] ?
-let MazeByteUp    = 1uy
-let MazeByteDown  = 2uy
-let MazeByteLeft  = 4uy
-let MazeByteRight = 8uy
+let MazeByteLeft  = 8uy
+let MazeByteUp    = 4uy
+let MazeByteRight = 2uy
+let MazeByteDown  = 1uy
 let MazeByteCentralDotIndex = 16uy
 
 
