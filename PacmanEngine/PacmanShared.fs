@@ -12,7 +12,7 @@ open GhostDirectionChoosing
 
 // TODO: library?
 
-type FacingDirection = FacingRight | FacingDown | FacingLeft | FacingUp
+type FacingDirection = FacingLeft | FacingUp | FacingRight | FacingDown
 
 let FacingDirectionToBitMaskByte facingDirection =  // TODO: Type model for the bitmask
     match facingDirection with
