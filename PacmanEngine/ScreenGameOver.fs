@@ -31,7 +31,8 @@ type private GameOverScreenModel =
 
 let private RenderGameOverScreen render (model:GameOverScreenModel) gameTime =
 
-    Rectangle render 0<epx> 0<epx> ScreenWidthInt ScreenHeightInt (SolidColour(0x300000u))
+    let backgroundImage = Background3ImageID |> ImageFromID
+    Image1to1 render 0<epx> 0<epx> backgroundImage
 
     let msgAt percent message =
         Text render GreyFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (percent |> PercentOfScreenHeight) message

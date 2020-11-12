@@ -24,6 +24,11 @@ open MazeUnpacker
 
 let ScreenRandomSeed = 0x33033u
 
+// TODO: BUG: Frame 145:  If pacman stays still, the ghosts don't get him coming from the top.
+
+// TODO: Extra Lives to be credited at the end of the screen, by comparison to the 
+//       score at the start of the level. 
+
 // TODO: Possibly treat corners the same as straight lines for ghost decision points,
 //       with a completely separate probability setting for turn about.
 
@@ -322,7 +327,7 @@ let private DrawMazeCentred render image cx cy mazeState gameTime =
 /// A debugging facility to render rectangles returned by the CorridorRectangle function.
 /// For debug purposes, pacman's position and direction are used as the reference point
 /// and corridor search direction.
-let private DrawCorridorFinderResult render centreX centreY countX countY mazeByteArray position facing =
+let private DrawCorridorFinderResult render centreX centreY countX countY mazeByteArray position facing colour =
 
     let (x,y) = OriginForMazeOfDimensions centreX centreY countX countY
 
@@ -332,7 +337,7 @@ let private DrawCorridorFinderResult render centreX centreY countX countY mazeBy
 
     let shape =
         DrawingShapes.DrawFilledRectangle (
-            r.Left, r.Top, (r |> RectangleWidth), (r |> RectangleHeight), (DrawingShapes.SolidColour 0xFF00FFu))
+            r.Left, r.Top, (r |> RectangleWidth), (r |> RectangleHeight), colour)
 
     render shape
 
@@ -360,6 +365,7 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
     //     model.MazeState.MazeTiles
     //     model.PacmanState.PacPosition
     //     model.PacmanState |> Facing
+    //     (DrawingShapes.SolidColour 0xFF00FFu)
 
     let (originx,originy) = 
         OriginForMazeOfDimensions 
@@ -390,13 +396,16 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
     model.GhostsState
         |> List.iteri (fun i ghostState ->
 
+            // let (GhostNumber(gn)) = ghostState |> Tag
+            // let colour = DrawingShapes.SolidColour ([| 0xFF0000u ; 0xFFFF00u ; 0x00FFFFu ; 0xFFFFFFu |].[gn])
             // DrawCorridorFinderResult 
             //     render cx cy 
             //     model.MazeState.MazeTilesCountX 
             //     model.MazeState.MazeTilesCountY
             //     model.MazeState.MazeTiles
             //     ghostState.GhostPosition
-            //     ghostState |> GlideDirection
+            //     (ghostState |> GlideDirection)
+            //     colour
 
             let pos =
                 ghostState.GhostPosition

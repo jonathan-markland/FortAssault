@@ -81,6 +81,7 @@ let GreyFontID                  = FontID(0)
 let BackgroundImageID           = ImageID(0)
 let Level1ImageID               = ImageID(1)
 let Background2ImageID          = ImageID(2)
+let Background3ImageID          = ImageID(3)
 
     
 
