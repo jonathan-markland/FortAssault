@@ -16,7 +16,7 @@ let RemoveMazeByteWrapper (MazeByte mazeByte) = mazeByte
 
 let ToUnicodeBoxDrawing width (output:byte[]) =
 
-    let unicodeBoxDrawing = " ╵╷│╴┘┐┤╶└┌├─┴┬┼●"
+    let unicodeBoxDrawing = " ╷╶┌╵│└├╴┐─┬┘┤┴┼●"
 
     let boxDrawOutput = 
         output 
