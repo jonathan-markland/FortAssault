@@ -7,7 +7,7 @@ open ScoreHiScore
 open Geometry
 open ImagesAndFonts
 open ScreenHandler
-open Time
+open Directions
 open PacmanShared
 open TitleScreenShared
 open StaticResourceAccess

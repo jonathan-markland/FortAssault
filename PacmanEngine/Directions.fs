@@ -1,5 +1,6 @@
 ﻿module Directions
 
+open Geometry
 open MazeFilter
 
 type FacingDirection = FacingLeft | FacingUp | FacingRight | FacingDown
@@ -18,3 +19,13 @@ let FacingDirectionToInt facingDirection =
         | FacingRight -> 2
         | FacingDown  -> 3
 
+let inline DirectionToMovementDelta zero i facingDirection =
+    match facingDirection with
+        | FacingLeft  -> { modx = -i    ; mody =  zero }
+        | FacingRight -> { modx =  i    ; mody =  zero }
+        | FacingUp    -> { modx =  zero ; mody = -i    }
+        | FacingDown  -> { modx =  zero ; mody =  i    }
+        
+let DirectionToMovementDeltaI32 =
+    DirectionToMovementDelta 0<epx> 1<epx> 
+        

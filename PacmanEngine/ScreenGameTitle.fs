@@ -8,9 +8,8 @@ open ImagesAndFonts
 open Time
 open ScoreboardModel
 open StaticResourceAccess
-open InterruptableVideo
 open PacmanShared
-open Input
+open Directions
 open TitleScreenShared
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

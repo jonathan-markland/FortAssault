@@ -16,7 +16,8 @@ open Mazes
 open MazeState
 open ScreenIntermissions
 open Random
-open GhostDirectionChoosing
+open Directions
+open GhostAI
 open Update
 open Keys
 open MazeUnpacker
@@ -186,8 +187,7 @@ let WithGhostMode mode ghost =
                 GhostBasePosition     = ghost |> BasePosition
                 GhostInitialDirection = ghost |> InitialDirection
                 GhostFacingDirection  = ghost |> GlideDirection
-                GhostCornerProbTurn   = ghost |> TurnProb
-                GhostThreeOrFourWayProbabilities = ghost |> Traits
+                GhostAITable          = AIFor ghost
             }
     }
 
@@ -537,34 +537,6 @@ let IsIntersectedByAnyOtherGhostTo selfGhost allGhosts corridorRect =
 
 
 
-let IsDeadEndRail rail =
-
-    System.Diagnostics.Debug.Assert (rail <> 0uy)   // Should never have empty rails.
-
-    (rail = MazeByteLeft) || (rail = MazeByteRight) || (rail = MazeByteUp) || (rail = MazeByteDown)
-
-let IsCornerRail rail =
-
-    System.Diagnostics.Debug.Assert (rail <> 0uy)   // Should never have empty rails.
-
-    let downRight = (MazeByteDown ||| MazeByteRight)
-    let upRight   = (MazeByteUp   ||| MazeByteRight)
-    let downLeft  = (MazeByteDown ||| MazeByteLeft)
-    let upLeft    = (MazeByteUp   ||| MazeByteLeft)
-
-    (rail = downRight) || (rail = upRight) || (rail = downLeft) || (rail = upLeft)
-
-let IsStraightRail rail =
-
-    System.Diagnostics.Debug.Assert (rail <> 0uy)   // Should never have empty rails.
-
-    let horizontalRail = (MazeByteLeft ||| MazeByteRight)
-    let verticalRail   = (MazeByteUp ||| MazeByteDown)
-
-    (rail = horizontalRail)  ||  (rail = verticalRail)
-    
-
-
 let private EliminatingSuboptimalDirectionsForNormalGhost ghost mazeState tileXY pacRect allGhosts directionChoices =
 
     let corridorRect direction = 
@@ -735,45 +707,30 @@ let private DecideNewPositionAndDirectionFor
                 let railsBitmask = rails.[i]
                 let tileXY = { ptx=txi ; pty=tyi }
 
-                if railsBitmask |> IsStraightRail then
-                    direction
+                let ai = AIFor ghost
+                let defaultDirectionChoices =
+                    ai |> GetDirectionProbabilities direction railsBitmask
+                       // TODO: Should no longer be needed:   |> EliminatingDirectionChoicesGivenByBitmask railsBitmask 
 
-                else if railsBitmask |> IsDeadEndRail then
-                    railsBitmask |> SingleBitInByteToFacingDirection
+                let directionChoices =
 
-                else if railsBitmask |> IsCornerRail then
-                    let (XorShift32State(r)) = rand
-                    let p = (byte) (r % 100u)
-                    if p < (ghost |> TurnProb) then
-                        direction |> TurnCorner railsBitmask
-                    else
-                        direction |> ReverseCornerDir railsBitmask
+                    let pacRect = pacman.PacPosition |> TileBoundingRectangle
 
-                else
-                    let defaultDirectionChoices = 
-                        ghost 
-                            |> GhostDirectionChoiceProbabilities 
-                            |> EliminatingDirectionChoicesGivenByBitmask railsBitmask
-
-                    let directionChoices =
-
-                        let pacRect = pacman.PacPosition |> TileBoundingRectangle
-
-                        match ghost |> GhostMode with
+                    match ghost |> GhostMode with
                             
-                            | GhostNormal -> 
-                                defaultDirectionChoices 
-                                    |> EliminatingSuboptimalDirectionsForNormalGhost ghost mazeState tileXY pacRect allGhosts
+                        | GhostNormal -> 
+                            defaultDirectionChoices 
+                                |> EliminatingSuboptimalDirectionsForNormalGhost ghost mazeState tileXY pacRect allGhosts
                             
-                            | GhostEdibleUntil _ -> 
-                                defaultDirectionChoices 
-                                    |> EliminatingSuboptimalDirectionsForEdibleGhost mazeState tileXY pacRect
+                        | GhostEdibleUntil _ -> 
+                            defaultDirectionChoices 
+                                |> EliminatingSuboptimalDirectionsForEdibleGhost mazeState tileXY pacRect
                             
-                            | _ -> failwith "Should not be deciding direction for ghost in this state"
+                        | _ -> failwith "Should not be deciding direction for ghost in this state"
                         
-                        |> UpdateToValueWhen NoDirectionsAvailable defaultDirectionChoices
+                    |> UpdateToValueWhen NoDirectionsAvailable defaultDirectionChoices
 
-                    DirectionChosenRandomlyFrom directionChoices rand
+                DirectionChosenRandomlyFrom directionChoices rand
 
     let position = 
 
@@ -828,10 +785,9 @@ let private AdvanceGhost mazeState allGhosts pacman ghost rand gameTime =
                 GhostTag              = ghost |> Tag
                 GhostBasePosition     = ghost |> BasePosition
                 GhostMode             = ghost |> GhostMode
-                GhostCornerProbTurn   = ghost |> TurnProb
                 GhostInitialDirection = ghost |> InitialDirection
                 GhostFacingDirection  = direction
-                GhostThreeOrFourWayProbabilities = ghost |> Traits
+                GhostAITable          = AIFor ghost
             }
     }
 
@@ -865,18 +821,17 @@ let WithPacmanReset pacmanState =
 
 
 /// Return ghosts position reset, for use after pacman life loss.
-let WithGhostReset ghostState =
+let WithGhostReset ghost =
     { 
-        GhostPosition = ghostState |> BasePosition
+        GhostPosition = ghost |> BasePosition
         GhostState2 = 
             { 
                 GhostMode             = GhostNormal
-                GhostInitialDirection = ghostState |> InitialDirection
-                GhostFacingDirection  = ghostState |> InitialDirection
-                GhostTag              = ghostState |> Tag
-                GhostBasePosition     = ghostState |> BasePosition
-                GhostCornerProbTurn   = ghostState |> TurnProb
-                GhostThreeOrFourWayProbabilities = ghostState |> Traits
+                GhostInitialDirection = ghost |> InitialDirection
+                GhostFacingDirection  = ghost |> InitialDirection
+                GhostTag              = ghost |> Tag
+                GhostBasePosition     = ghost |> BasePosition
+                GhostAITable          = AIFor ghost
             } 
     }
 

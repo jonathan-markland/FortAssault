@@ -12,7 +12,7 @@ open Time
 open StaticResourceAccess
 open Rules
 open Input
-open PacmanShared
+open Directions
 open TitleScreenShared
 open Keys
 

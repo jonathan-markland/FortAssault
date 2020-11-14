@@ -3,7 +3,7 @@
 open Geometry
 open PacmanShared
 open ResourceIDs
-open DrawingShapes
+open Directions
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Models

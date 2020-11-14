@@ -249,6 +249,10 @@ type DirectionChoiceProbabilities =
 
 
 
+type GhostAI = GhostAI of DirectionChoiceProbabilities []
+
+
+
 let GhostMovementTable ghostMoveTraits =
 
     let substitutedWith ghostMoveTraits probClasses =
@@ -357,12 +361,14 @@ let GhostMovementTable ghostMoveTraits =
     probabilitiesTemplate 
         |> List.map (substitutedWith ghostMoveTraits)
         |> List.toArray
+        |> GhostAI
         // TODO: Validate that the probabilities do NOT violate the rails.
 
 
 
-let GetDirectionProbabilities facingDirection railsBitmask (table:DirectionChoiceProbabilities[]) =
+let GetDirectionProbabilities facingDirection railsBitmask ghostAI =
 
+    let (GhostAI(table)) = ghostAI
     System.Diagnostics.Debug.Assert (railsBitmask >= 1uy && railsBitmask <= 15uy)
     let dirInt = facingDirection |> FacingDirectionToInt
     System.Diagnostics.Debug.Assert (dirInt >= 0 && dirInt <= 3)

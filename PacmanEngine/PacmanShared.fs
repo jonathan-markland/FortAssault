@@ -4,75 +4,11 @@ open ResourceIDs
 open Geometry
 open Time
 open DrawingShapes
-open MazeFilter
 open Rules
-open GhostDirectionChoosing
 open Directions
+open GhostAI
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-// TODO: library?
-
-type CornerChoice = ChooseBetweenUpDown | ChooseBetweenLeftRight
-
-let private CornerHandler railsBitmask cornerChoice =
-    
-    let inline where mask1 alt1 mask2 alt2 rails = 
-        if (rails &&& mask1) <> 0uy then 
-            alt1 
-        else if (rails &&& mask2) <> 0uy then
-            alt2
-        else
-            failwith "Rails bitmask was not a 90 degree corner!"
-
-    match cornerChoice with
-        | ChooseBetweenUpDown   -> railsBitmask |> where MazeByteUp   FacingUp   MazeByteDown  FacingDown
-        | ChooseBetweenLeftRight-> railsBitmask |> where MazeByteLeft FacingLeft MazeByteRight FacingRight
-
-let ReverseCornerDir railsBitmask entryDirection =
-    match entryDirection with
-        | FacingUp  
-        | FacingDown -> CornerHandler railsBitmask ChooseBetweenUpDown
-        | FacingLeft
-        | FacingRight-> CornerHandler railsBitmask ChooseBetweenLeftRight
-
-let TurnCorner railsBitmask entryDirection =
-    match entryDirection with
-        | FacingUp  
-        | FacingDown -> CornerHandler railsBitmask ChooseBetweenLeftRight
-        | FacingLeft
-        | FacingRight-> CornerHandler railsBitmask ChooseBetweenUpDown
-
-let SingleBitInByteToFacingDirection b =
-    if b=MazeByteLeft then FacingLeft
-    else if b=MazeByteRight then FacingRight
-    else if b=MazeByteUp then FacingUp
-    else if b=MazeByteDown then FacingDown
-    else failwith "Byte passed that wasn't a single bit representing a direction"
-
-type Angle = ZeroAngle | ClockwiseTurn90 | AboutTurn180 | AntiClockwiseTurn90
-
-let IntToAngle i = 
-    match i with
-        | 0 -> ZeroAngle
-        | 1 -> ClockwiseTurn90
-        | 2 -> AboutTurn180
-        | 3 -> AntiClockwiseTurn90
-        | _ -> failwith "Invalid integer value for conversion to type Angle"
-
-let AngleBetween current previous =
-    let d = (current |> FacingDirectionToInt) - (previous |> FacingDirectionToInt)
-    (d &&& 3) |> IntToAngle
-
-let inline DirectionToMovementDelta zero i facingDirection =
-    match facingDirection with
-        | FacingLeft  -> { modx = -i    ; mody =  zero }
-        | FacingRight -> { modx =  i    ; mody =  zero }
-        | FacingUp    -> { modx =  zero ; mody = -i    }
-        | FacingDown  -> { modx =  zero ; mody =  i    }
-
-let DirectionToMovementDeltaI32 =
-    DirectionToMovementDelta 0<epx> 1<epx> 
 
 let KeyStatesToDirection u d l r defaultDirection =
     // These are to be exclusive.
@@ -201,7 +137,7 @@ type GhostState2 =
 
         /// Initial travel direction, must be set correctly
         /// with respect to rails.
-        GhostInitialDirection : FacingDirection
+        GhostInitialDirection : FacingDirection  // TODO: no longer needed now we have self-correction in the AI
 
         /// Travel direction, must be set correctly
         /// with respect to rails.
@@ -210,12 +146,8 @@ type GhostState2 =
         /// Ghost state.
         GhostMode : GhostMode
 
-        /// Probability (out of 100) of turning a corner versus doubling back.
-        GhostCornerProbTurn : byte
-
         /// The direction choice traits for this ghost.
-        /// Array indexable by (GhostFacingDirection |> FacingDirectionToInt)
-        GhostThreeOrFourWayProbabilities : DirectionChoiceProbabilities []
+        GhostAITable : GhostAI
     }
 
 
@@ -247,32 +179,17 @@ let inline InitialDirection ghost =
 let inline GlideDirection ghost =
     ghost.GhostState2.GhostFacingDirection
 
-/// The probability (out of 100) of the ghost turning the corner.
-let inline TurnProb ghost =
-    ghost.GhostState2.GhostCornerProbTurn
-
 /// This ghost's tag number.  Used as identity.
 let inline Tag ghost =
     ghost.GhostState2.GhostTag
 
-/// Direction choice traits
-let inline Traits ghost =
-    ghost.GhostState2.GhostThreeOrFourWayProbabilities
+/// Ghost AI
+let inline AIFor ghost =
+    ghost.GhostState2.GhostAITable
 
 /// Asks whether this ghost is the same instance as another.
 let inline IsTheSameGhostAs ghost otherGhost =
     (ghost |> Tag) = (otherGhost |> Tag)
-
-
-
-/// Obtain the ghost's direction choice probabilities, for the
-/// direction the ghost is facing.
-let GhostDirectionChoiceProbabilities ghost =
-    
-    let i = ghost |> GlideDirection |> FacingDirectionToInt
-    
-    ghost.GhostState2.GhostThreeOrFourWayProbabilities.[i]
-
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
