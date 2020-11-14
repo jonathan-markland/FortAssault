@@ -5,6 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="GhostMoveTraits.fs" />
     <Compile Include="Keys.fs" />
     <Compile Include="GhostDirectionChoosing.fs" />
     <Compile Include="Mazes.fs" />
