@@ -320,10 +320,10 @@ let GhostMovementTable ghostMoveTraits =
             { PCLeft=Never     ; PCUp=Correct   ; PCRight=Correct   ; PCDown=Never     } // '└' 22.  6 Corners | Entry facing right
             { PCLeft=Never     ; PCUp=Back90    ; PCRight=Turn90    ; PCDown=Never     } // '└' 23.  6 Corners | Entry facing down
             
-            { PCLeft=Never     ; PCUp=OnwardT   ; PCRight=TurnAwayT ; PCDown=BackT     } // '├' 24.  7 Three-ways | Entry facing left
-            { PCLeft=Never     ; PCUp=Correct   ; PCRight=Correct   ; PCDown=Correct   } // '├' 25.  7 Three-ways | Entry facing up
-            { PCLeft=Never     ; PCUp=BackT     ; PCRight=TurnAwayT ; PCDown=OnwardT   } // '├' 26.  7 Three-ways | Entry facing right
-            { PCLeft=Never     ; PCUp=TurnIntoT ; PCRight=TurnBackT ; PCDown=TurnIntoT } // '├' 27.  7 Three-ways | Entry facing down
+            { PCLeft=Never     ; PCUp=TurnIntoT ; PCRight=TurnBackT ; PCDown=TurnIntoT } // '├' 24.  7 Three-ways | Entry facing left
+            { PCLeft=Never     ; PCUp=OnwardT   ; PCRight=TurnAwayT ; PCDown=BackT     } // '├' 25.  7 Three-ways | Entry facing up
+            { PCLeft=Never     ; PCUp=Correct   ; PCRight=Correct   ; PCDown=Correct   } // '├' 26.  7 Three-ways | Entry facing right
+            { PCLeft=Never     ; PCUp=BackT     ; PCRight=TurnAwayT ; PCDown=OnwardT   } // '├' 27.  7 Three-ways | Entry facing down
             
             { PCLeft=OnlyWay   ; PCUp=Never     ; PCRight=Never     ; PCDown=Never     } // '╴' 28.  8 Single direction | Entry facing left
             { PCLeft=OnlyWay   ; PCUp=Never     ; PCRight=Never     ; PCDown=Never     } // '╴' 29.  8 Single direction | Entry facing up
@@ -340,20 +340,20 @@ let GhostMovementTable ghostMoveTraits =
             { PCLeft=Back180   ; PCUp=Never     ; PCRight=Onward180 ; PCDown=Never     } // '─' 38. 10 Straights | Entry facing right
             { PCLeft=Correct   ; PCUp=Never     ; PCRight=Correct   ; PCDown=Never     } // '─' 39. 10 Straights | Entry facing down
             
-            { PCLeft=BackT     ; PCUp=Never     ; PCRight=OnwardT   ; PCDown=TurnAwayT } // '┬' 40. 11 Three-ways | Entry facing left
-            { PCLeft=Correct   ; PCUp=Never     ; PCRight=Correct   ; PCDown=Correct   } // '┬' 41. 11 Three-ways | Entry facing up
-            { PCLeft=OnwardT   ; PCUp=Never     ; PCRight=BackT     ; PCDown=TurnAwayT } // '┬' 42. 11 Three-ways | Entry facing right
-            { PCLeft=TurnIntoT ; PCUp=Never     ; PCRight=TurnIntoT ; PCDown=TurnBackT } // '┬' 43. 11 Three-ways | Entry facing down
+            { PCLeft=OnwardT   ; PCUp=Never     ; PCRight=BackT     ; PCDown=TurnAwayT } // '┬' 40. 11 Three-ways | Entry facing left
+            { PCLeft=TurnIntoT ; PCUp=Never     ; PCRight=TurnIntoT ; PCDown=TurnBackT } // '┬' 41. 11 Three-ways | Entry facing up
+            { PCLeft=BackT     ; PCUp=Never     ; PCRight=OnwardT   ; PCDown=TurnAwayT } // '┬' 42. 11 Three-ways | Entry facing right
+            { PCLeft=Correct   ; PCUp=Never     ; PCRight=Correct   ; PCDown=Correct   } // '┬' 43. 11 Three-ways | Entry facing down
             
             { PCLeft=Correct   ; PCUp=Correct   ; PCRight=Never     ; PCDown=Never     } // '┘' 44. 12 Corners | Entry facing left
             { PCLeft=Correct   ; PCUp=Correct   ; PCRight=Never     ; PCDown=Never     } // '┘' 45. 12 Corners | Entry facing up
             { PCLeft=Back90    ; PCUp=Turn90    ; PCRight=Never     ; PCDown=Never     } // '┘' 46. 12 Corners | Entry facing right
             { PCLeft=Turn90    ; PCUp=Back90    ; PCRight=Never     ; PCDown=Never     } // '┘' 47. 12 Corners | Entry facing down
             
-            { PCLeft=TurnAwayT ; PCUp=BackT     ; PCRight=Never     ; PCDown=OnwardT   } // '┤' 48. 13 Three-ways | Entry facing left
-            { PCLeft=Correct   ; PCUp=Correct   ; PCRight=Never     ; PCDown=Correct   } // '┤' 49. 13 Three-ways | Entry facing up
-            { PCLeft=TurnAwayT ; PCUp=OnwardT   ; PCRight=Never     ; PCDown=BackT     } // '┤' 50. 13 Three-ways | Entry facing right
-            { PCLeft=TurnBackT ; PCUp=TurnIntoT ; PCRight=Never     ; PCDown=TurnIntoT } // '┤' 51. 13 Three-ways | Entry facing down
+            { PCLeft=Correct   ; PCUp=Correct   ; PCRight=Never     ; PCDown=Correct   } // '┤' 48. 13 Three-ways | Entry facing left
+            { PCLeft=TurnAwayT ; PCUp=OnwardT   ; PCRight=Never     ; PCDown=BackT     } // '┤' 49. 13 Three-ways | Entry facing up
+            { PCLeft=TurnBackT ; PCUp=TurnIntoT ; PCRight=Never     ; PCDown=TurnIntoT } // '┤' 50. 13 Three-ways | Entry facing right
+            { PCLeft=TurnAwayT ; PCUp=BackT     ; PCRight=Never     ; PCDown=OnwardT   } // '┤' 51. 13 Three-ways | Entry facing down
             
             { PCLeft=OnwardT   ; PCUp=TurnAwayT ; PCRight=BackT     ; PCDown=Never     } // '┴' 52. 14 Three-ways | Entry facing left
             { PCLeft=Correct   ; PCUp=Correct   ; PCRight=Correct   ; PCDown=Never     } // '┴' 53. 14 Three-ways | Entry facing up
@@ -384,7 +384,7 @@ let GetDirectionProbabilities facingDirection railsBitmask ghostAI =
     // System.Diagnostics.Trace.WriteLine (index.ToString())
 
     // TODO: remove
-    if [10;11;16;18;21;22;25;32;35;37;39;41;44;45;46;49;53] |> List.contains index then
+    if [10;11;16;18;21;22;26;32;35;37;39;43;44;45;48;53] |> List.contains index then
         System.Diagnostics.Trace.WriteLine (sprintf "Correction index %d" index)
 
     table.[index]
