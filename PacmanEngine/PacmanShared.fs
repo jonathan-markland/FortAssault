@@ -151,10 +151,6 @@ type GhostState2 =
         /// Stored position is relative to top left of maze.
         GhostBasePosition : Point<int<epx>>
 
-        /// Initial travel direction, must be set correctly
-        /// with respect to rails.
-        GhostInitialDirection : FacingDirection  // TODO: no longer needed now we have self-correction in the AI
-
         /// Travel direction, must be set correctly
         /// with respect to rails.
         GhostFacingDirection : FacingDirection
@@ -186,10 +182,6 @@ let inline GhostMode ghost =
 /// The position of this ghost's square in the base.
 let inline BasePosition ghost =
     ghost.GhostState2.GhostBasePosition
-
-/// The initial direction the ghost is going, starting in the base.
-let inline InitialDirection ghost =
-    ghost.GhostState2.GhostInitialDirection
 
 /// The direction the ghost is going.
 let inline GlideDirection ghost =

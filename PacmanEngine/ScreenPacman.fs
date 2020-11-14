@@ -92,30 +92,6 @@ let TileIndexOf position =  // TODO: strongly type the return value
         None
 
 
-/// Decide the initial facing directions for the ghosts from the rails.
-/// This means these initial directions would not require "correcting"
-/// in case they face into a wall.
-let InitialFacingDirectionFor ghostPos (mazeGhostRails:byte[]) tileCountX =
-
-    // TODO: However, the "ProbabilityTable" idea performs "correction" as part of the deal.
-
-    match TileIndexOf ghostPos with
-        | None -> failwith "Cannot determine initial direction for ghost because initial ghost position is not precisely aligned"
-        | Some (txi, tyi) ->
-            let i = tyi * tileCountX + txi
-            let rails = mazeGhostRails.[i]
-            if (rails &&& MazeByteRight) <> 0uy then
-                FacingRight
-            else if (rails &&& MazeByteLeft) <> 0uy then
-                FacingLeft
-            else if (rails &&& MazeByteUp) <> 0uy then
-                FacingUp
-            else if (rails &&& MazeByteDown) <> 0uy then
-                FacingDown
-            else 
-                failwith "Cannot determine initial direction for ghost because rails are not set on the initial tile"
-
-
 /// The railsByte defines permissable directions, and we return
 /// true if movement in the given direction is allowed by the railsByte.
 let IsDirectionAllowedBy railsByte facingDirection =
@@ -185,7 +161,6 @@ let WithGhostMode mode ghost =
                 GhostMode             = mode
                 GhostTag              = ghost |> Tag
                 GhostBasePosition     = ghost |> BasePosition
-                GhostInitialDirection = ghost |> InitialDirection
                 GhostFacingDirection  = ghost |> GlideDirection
                 GhostAITable          = AIFor ghost
             }
@@ -773,7 +748,6 @@ let private AdvanceGhost mazeState allGhosts pacman ghost rand gameTime =
                 GhostTag              = ghost |> Tag
                 GhostBasePosition     = ghost |> BasePosition
                 GhostMode             = ghost |> GhostMode
-                GhostInitialDirection = ghost |> InitialDirection
                 GhostFacingDirection  = direction
                 GhostAITable          = AIFor ghost
             }
@@ -815,8 +789,7 @@ let WithGhostReset ghost =
         GhostState2 = 
             { 
                 GhostMode             = GhostNormal
-                GhostInitialDirection = ghost |> InitialDirection
-                GhostFacingDirection  = ghost |> InitialDirection
+                GhostFacingDirection  = FacingUp  // Arbitrary choice.  Since we're directly over a tile, the direction choose will correct this.
                 GhostTag              = ghost |> Tag
                 GhostBasePosition     = ghost |> BasePosition
                 GhostAITable          = AIFor ghost
@@ -1095,12 +1068,6 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiSc
                 let ghostMovementTraits = 
                     ghostMovementTraitsArray.[i % ghostMovementTraitsArray.Length]
 
-                let facing = 
-                    InitialFacingDirectionFor 
-                        ghostPos 
-                        unpackedMaze.UnpackedMazeState.MazeGhostRails 
-                        unpackedMaze.UnpackedMazeState.MazeTilesCountX
-
                 { 
                     GhostPosition = ghostPos
 
@@ -1109,8 +1076,7 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiSc
                             GhostTag              = GhostNumber(i)
                             GhostMode             = GhostNormal
                             GhostBasePosition     = ghostPos
-                            GhostInitialDirection = facing
-                            GhostFacingDirection  = facing
+                            GhostFacingDirection  = FacingUp  // Arbitrary choice.  Since we're directly over a tile, the direction chooser can correct this.
                             GhostAITable          = ghostMovementTraits |> GhostMovementTable
                         } 
                 })
