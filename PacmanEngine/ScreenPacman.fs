@@ -666,21 +666,6 @@ let DirectionChosenRandomlyFrom directionChoices (XorShift32State(rand)) =
 //  Ghost position advance
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let EliminatingDirectionChoicesGivenByBitmask bitmaskByte directionChoices =
-
-    System.Diagnostics.Debug.Assert (bitmaskByte <> 0uy)   // Should never have empty directions mask.
-
-    let maskedBy mask probValue =
-        if mask=0uy then 0uy else probValue
-
-    {
-        ProbLeft  = directionChoices.ProbLeft  |> maskedBy (bitmaskByte &&& MazeByteLeft )
-        ProbUp    = directionChoices.ProbUp    |> maskedBy (bitmaskByte &&& MazeByteUp   )
-        ProbRight = directionChoices.ProbRight |> maskedBy (bitmaskByte &&& MazeByteRight)
-        ProbDown  = directionChoices.ProbDown  |> maskedBy (bitmaskByte &&& MazeByteDown )
-    }
-
-
 let private DecideNewPositionAndDirectionFor 
     (ghost:GhostState) 
     mazeState 
@@ -707,10 +692,8 @@ let private DecideNewPositionAndDirectionFor
                 let railsBitmask = rails.[i]
                 let tileXY = { ptx=txi ; pty=tyi }
 
-                let ai = AIFor ghost
                 let defaultDirectionChoices =
-                    ai |> GetDirectionProbabilities direction railsBitmask
-                       // TODO: Should no longer be needed:   |> EliminatingDirectionChoicesGivenByBitmask railsBitmask 
+                    (AIFor ghost) |> GetDirectionProbabilities direction railsBitmask
 
                 let directionChoices =
 

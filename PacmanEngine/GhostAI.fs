@@ -7,6 +7,8 @@ open Directions
 /// Decision making probability traits for a ghost.
 type GhostMoveTraits =
     {
+        Description : string
+
         /// The probability of turning through a 90-degree corner.
         Turn90 : int
 
@@ -57,6 +59,8 @@ let GetGhostMoveTraits () =
 
     let charger =   // Never turns back!
         {
+            Description = "Charger"
+
             // Corner
             Turn90 = 100
             Back90 = 0
@@ -82,6 +86,8 @@ let GetGhostMoveTraits () =
 
     let standard =
         {
+            Description = "Standard"
+
             // Corner
             Turn90 = 95
             Back90 = 5
@@ -107,6 +113,8 @@ let GetGhostMoveTraits () =
 
     let ditherer =
         {
+            Description = "Ditherer"
+    
             // Corner
             Turn90 = 60
             Back90 = 40
@@ -292,10 +300,10 @@ let GhostMovementTable ghostMoveTraits =
             { PCLeft=Never     ; PCUp=Never     ; PCRight=OnlyWay   ; PCDown=Never     } // '╶'  6.  2 Single direction | Entry facing right
             { PCLeft=Never     ; PCUp=Never     ; PCRight=OnlyWay   ; PCDown=Never     } // '╶'  7.  2 Single direction | Entry facing down
             
-            { PCLeft=Never     ; PCUp=Never     ; PCRight=Turn90    ; PCDown=Back90    } // '┌'  8.  3 Corners | Entry facing left
-            { PCLeft=Never     ; PCUp=Never     ; PCRight=Correct   ; PCDown=Correct   } // '┌'  9.  3 Corners | Entry facing up
+            { PCLeft=Never     ; PCUp=Never     ; PCRight=Back90    ; PCDown=Turn90    } // '┌'  8.  3 Corners | Entry facing left
+            { PCLeft=Never     ; PCUp=Never     ; PCRight=Turn90    ; PCDown=Back90    } // '┌'  9.  3 Corners | Entry facing up
             { PCLeft=Never     ; PCUp=Never     ; PCRight=Correct   ; PCDown=Correct   } // '┌' 10.  3 Corners | Entry facing right
-            { PCLeft=Never     ; PCUp=Never     ; PCRight=Back90    ; PCDown=Turn90    } // '┌' 11.  3 Corners | Entry facing down
+            { PCLeft=Never     ; PCUp=Never     ; PCRight=Correct   ; PCDown=Correct   } // '┌' 11.  3 Corners | Entry facing down
             
             { PCLeft=Never     ; PCUp=OnlyWay   ; PCRight=Never     ; PCDown=Never     } // '╵' 12.  4 Single direction | Entry facing left
             { PCLeft=Never     ; PCUp=OnlyWay   ; PCRight=Never     ; PCDown=Never     } // '╵' 13.  4 Single direction | Entry facing up
@@ -322,10 +330,10 @@ let GhostMovementTable ghostMoveTraits =
             { PCLeft=OnlyWay   ; PCUp=Never     ; PCRight=Never     ; PCDown=Never     } // '╴' 30.  8 Single direction | Entry facing right
             { PCLeft=OnlyWay   ; PCUp=Never     ; PCRight=Never     ; PCDown=Never     } // '╴' 31.  8 Single direction | Entry facing down
             
-            { PCLeft=Back90    ; PCUp=Never     ; PCRight=Never     ; PCDown=Turn90    } // '┐' 32.  9 Corners | Entry facing left
-            { PCLeft=Correct   ; PCUp=Never     ; PCRight=Never     ; PCDown=Correct   } // '┐' 33.  9 Corners | Entry facing up
-            { PCLeft=Correct   ; PCUp=Never     ; PCRight=Never     ; PCDown=Correct   } // '┐' 34.  9 Corners | Entry facing right
-            { PCLeft=Turn90    ; PCUp=Never     ; PCRight=Never     ; PCDown=Back90    } // '┐' 35.  9 Corners | Entry facing down
+            { PCLeft=Correct   ; PCUp=Never     ; PCRight=Never     ; PCDown=Correct   } // '┐' 32.  9 Corners | Entry facing left
+            { PCLeft=Turn90    ; PCUp=Never     ; PCRight=Never     ; PCDown=Back90    } // '┐' 33.  9 Corners | Entry facing up
+            { PCLeft=Back90    ; PCUp=Never     ; PCRight=Never     ; PCDown=Turn90    } // '┐' 34.  9 Corners | Entry facing right
+            { PCLeft=Correct   ; PCUp=Never     ; PCRight=Never     ; PCDown=Correct   } // '┐' 35.  9 Corners | Entry facing down
             
             { PCLeft=Onward180 ; PCUp=Never     ; PCRight=Back180   ; PCDown=Never     } // '─' 36. 10 Straights | Entry facing left
             { PCLeft=Correct   ; PCUp=Never     ; PCRight=Correct   ; PCDown=Never     } // '─' 37. 10 Straights | Entry facing up
@@ -337,10 +345,10 @@ let GhostMovementTable ghostMoveTraits =
             { PCLeft=OnwardT   ; PCUp=Never     ; PCRight=BackT     ; PCDown=TurnAwayT } // '┬' 42. 11 Three-ways | Entry facing right
             { PCLeft=TurnIntoT ; PCUp=Never     ; PCRight=TurnIntoT ; PCDown=TurnBackT } // '┬' 43. 11 Three-ways | Entry facing down
             
-            { PCLeft=Turn90    ; PCUp=Back90    ; PCRight=Never     ; PCDown=Never     } // '┘' 44. 12 Corners | Entry facing left
+            { PCLeft=Correct   ; PCUp=Correct   ; PCRight=Never     ; PCDown=Never     } // '┘' 44. 12 Corners | Entry facing left
             { PCLeft=Correct   ; PCUp=Correct   ; PCRight=Never     ; PCDown=Never     } // '┘' 45. 12 Corners | Entry facing up
-            { PCLeft=Correct   ; PCUp=Correct   ; PCRight=Never     ; PCDown=Never     } // '┘' 46. 12 Corners | Entry facing right
-            { PCLeft=Back90    ; PCUp=Turn90    ; PCRight=Never     ; PCDown=Never     } // '┘' 47. 12 Corners | Entry facing down
+            { PCLeft=Back90    ; PCUp=Turn90    ; PCRight=Never     ; PCDown=Never     } // '┘' 46. 12 Corners | Entry facing right
+            { PCLeft=Turn90    ; PCUp=Back90    ; PCRight=Never     ; PCDown=Never     } // '┘' 47. 12 Corners | Entry facing down
             
             { PCLeft=TurnAwayT ; PCUp=BackT     ; PCRight=Never     ; PCDown=OnwardT   } // '┤' 48. 13 Three-ways | Entry facing left
             { PCLeft=Correct   ; PCUp=Correct   ; PCRight=Never     ; PCDown=Correct   } // '┤' 49. 13 Three-ways | Entry facing up
@@ -372,6 +380,12 @@ let GetDirectionProbabilities facingDirection railsBitmask ghostAI =
     System.Diagnostics.Debug.Assert (railsBitmask >= 1uy && railsBitmask <= 15uy)
     let dirInt = facingDirection |> FacingDirectionToInt
     System.Diagnostics.Debug.Assert (dirInt >= 0 && dirInt <= 3)
-    let index = dirInt ||| (int)((railsBitmask - 1uy) <<< 2)
+    let index = dirInt ||| ((int)((railsBitmask - 1uy)) <<< 2)
+    // System.Diagnostics.Trace.WriteLine (index.ToString())
+
+    // TODO: remove
+    if [10;11;16;18;21;22;25;32;35;37;39;41;44;45;46;49;53] |> List.contains index then
+        System.Diagnostics.Trace.WriteLine (sprintf "Correction index %d" index)
+
     table.[index]
 
