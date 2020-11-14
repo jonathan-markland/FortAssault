@@ -665,40 +665,58 @@ let private DecideNewPositionAndDirectionFor
             | Some (txi, tyi) ->  // Ghost precisely on the tile at (txi,tyi).  This is a decision point.
                 let i = tyi * mazeState.MazeTilesCountX + txi
                 let railsBitmask = rails.[i]
-                let tileXY = { ptx=txi ; pty=tyi }
 
-                let defaultDirectionChoices =
-                    (AIFor ghost) |> GetDirectionProbabilities direction railsBitmask
+                if railsBitmask <> MazeByteCentralDotIndex then
 
-                let directionChoices =
+                    let defaultDirectionChoices =
+                        (AIFor ghost) |> GetDirectionProbabilities direction railsBitmask
 
-                    let pacRect = pacman.PacPosition |> TileBoundingRectangle
+                    let directionChoices =
 
-                    match ghost |> GhostMode with
+                        let pacRect = pacman.PacPosition |> TileBoundingRectangle
+                        let tileXY = { ptx=txi ; pty=tyi }
+
+                        match ghost |> GhostMode with
                             
-                        | GhostNormal -> 
-                            defaultDirectionChoices 
-                                |> EliminatingSuboptimalDirectionsForNormalGhost ghost mazeState tileXY pacRect allGhosts
+                            | GhostNormal -> 
+                                defaultDirectionChoices 
+                                    |> EliminatingSuboptimalDirectionsForNormalGhost ghost mazeState tileXY pacRect allGhosts
                             
-                        | GhostEdibleUntil _ -> 
-                            defaultDirectionChoices 
-                                |> EliminatingSuboptimalDirectionsForEdibleGhost mazeState tileXY pacRect
+                            | GhostEdibleUntil _ -> 
+                                defaultDirectionChoices 
+                                    |> EliminatingSuboptimalDirectionsForEdibleGhost mazeState tileXY pacRect
                             
-                        | _ -> failwith "Should not be deciding direction for ghost in this state"
+                            | _ -> failwith "Should not be deciding direction for ghost in this state"
                         
-                    |> UpdateToValueWhen NoDirectionsAvailable defaultDirectionChoices
+                        |> UpdateToValueWhen NoDirectionsAvailable defaultDirectionChoices
 
-                let newDirection = DirectionChosenRandomlyFrom directionChoices rand
+                    let newDirection = DirectionChosenRandomlyFrom directionChoices rand
                 
-                let mask = newDirection |> FacingDirectionToBitMaskByte
-                assert ((mask &&& railsBitmask) <> 0uy)  // This decision function should never decide a direction inconsistent with the rails.
+                    let mask = newDirection |> FacingDirectionToBitMaskByte
+                    assert ((mask &&& railsBitmask) <> 0uy)  // This decision function should never decide a direction inconsistent with the rails.
 
-                newDirection
+                    newDirection
+
+                else
+                    direction  // arbitrary anyway, since we're trapped.
 
     let position = 
-        position 
-            |> PointMovedByDelta (direction |> DirectionToMovementDeltaI32)
-            |> PointWrappedAtMazeEdges mazeState
+
+        let areTrapped =
+            match tile with
+                | None -> false  // because we're between tiles
+                | Some (txi, tyi) ->  // Ghost precisely on the tile at (txi,tyi).  This is a decision point.
+                    let i = tyi * mazeState.MazeTilesCountX + txi
+                    let railsBitmask = rails.[i]
+                    railsBitmask = MazeByteCentralDotIndex
+
+        if not areTrapped then
+            position 
+                |> PointMovedByDelta (direction |> DirectionToMovementDeltaI32)
+                |> PointWrappedAtMazeEdges mazeState
+        else
+            position
+
 
     (position, direction)
 
