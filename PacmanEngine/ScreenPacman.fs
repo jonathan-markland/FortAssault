@@ -1071,36 +1071,14 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiSc
     let unpackedMaze = 
         AllPacmanMazes.[levelNumber % numberOfMazes] |> TextMazeDefinitionUnpacked
 
+    let (charger, standard, ditherer) = GetGhostMoveTraits ()
+
     let ghostMovementTraitsArray =
         [|
-            // Blue
-            {
-                CornerProbTurn = 85uy
-                ProbAhead   = 50uy
-                ProbTurn90  = 20uy
-                ProbTurn180 = 30uy
-            }
-            // Green
-            {
-                CornerProbTurn = 85uy
-                ProbAhead   = 80uy
-                ProbTurn90  = 15uy
-                ProbTurn180 =  5uy
-            }
-            // Pink
-            {
-                CornerProbTurn = 85uy
-                ProbAhead   = 80uy
-                ProbTurn90  = 15uy
-                ProbTurn180 =  5uy
-            }
-            // Red
-            {
-                CornerProbTurn = 100uy
-                ProbAhead   = 50uy
-                ProbTurn90  = 50uy
-                ProbTurn180 =  0uy
-            }
+            standard  // Blue
+            ditherer  // Green
+            standard  // Pink
+            charger   // Red
         |]
 
     let screenModel =
@@ -1126,7 +1104,8 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiSc
 
             GhostsState = unpackedMaze.UnpackedGhostPositions |> List.mapi (fun i ghostPos -> 
                 
-                let n = i % ghostMovementTraitsArray.Length
+                let ghostMovementTraits = 
+                    ghostMovementTraitsArray.[i % ghostMovementTraitsArray.Length]
 
                 let facing = 
                     InitialFacingDirectionFor 
@@ -1144,13 +1123,7 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiSc
                             GhostBasePosition     = ghostPos
                             GhostInitialDirection = facing
                             GhostFacingDirection  = facing
-                           
-                            GhostCornerProbTurn = 
-                                ghostMovementTraitsArray.[n].CornerProbTurn
-
-                            GhostThreeOrFourWayProbabilities = 
-                                ghostMovementTraitsArray.[n] 
-                                    |> CalculateMemoizedDirectionProbabilities
+                            GhostAITable          = ghostMovementTraits |> GhostMovementTable
                         } 
                 })
         }

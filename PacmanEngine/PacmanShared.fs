@@ -20,6 +20,22 @@ let KeyStatesToDirection u d l r defaultDirection =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+type Angle = ZeroAngle | ClockwiseTurn90 | AboutTurn180 | AntiClockwiseTurn90
+
+let IntToAngle i = 
+    match i with
+        | 0 -> ZeroAngle
+        | 1 -> ClockwiseTurn90
+        | 2 -> AboutTurn180
+        | 3 -> AntiClockwiseTurn90
+        | _ -> failwith "Invalid integer value for conversion to type Angle"
+
+let AngleBetween current previous =
+    let d = (current |> FacingDirectionToInt) - (previous |> FacingDirectionToInt)
+    (d &&& 3) |> IntToAngle
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 type GhostNumber = 
     /// Zero-based ghost number index type
     GhostNumber of int
