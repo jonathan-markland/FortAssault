@@ -153,8 +153,9 @@ type ProbabilityClass =
     /// rails, and so we could not determine an entry
     /// direction.  So, we bail and randomly select
     /// the alternatives with equal weighting.
-    /// (State should never happen unless initialisation
-    /// is inconsistent with the rail directions).
+    /// (Initial heading could be inconsistent with the
+    /// rails at the start of a level, or after ghost
+    /// returns to base).
     /// Will not appear on a row with anything else other
     /// than Correct or Never.
     /// This is handled by the system as probability=1.
@@ -381,9 +382,11 @@ let GetDirectionProbabilities facingDirection railsBitmask ghostAI =
     let dirInt = facingDirection |> FacingDirectionToInt
     System.Diagnostics.Debug.Assert (dirInt >= 0 && dirInt <= 3)
     let index = dirInt ||| ((int)((railsBitmask - 1uy)) <<< 2)
-    // System.Diagnostics.Trace.WriteLine (index.ToString())
 
-    // TODO: remove
+    // Debug tracing where corrections are made.
+    // Will happen where ghosts heading is inconsistent with the rails,
+    // which itself, can only happen at the start of a level (initial
+    // heading inconsistent; or after a return-to-base).
     if [10;11;16;18;21;22;26;32;35;37;39;43;44;45;48;53] |> List.contains index then
         System.Diagnostics.Trace.WriteLine (sprintf "Correction index %d" index)
 

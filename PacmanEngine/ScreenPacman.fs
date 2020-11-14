@@ -713,20 +713,17 @@ let private DecideNewPositionAndDirectionFor
                         
                     |> UpdateToValueWhen NoDirectionsAvailable defaultDirectionChoices
 
-                DirectionChosenRandomlyFrom directionChoices rand
+                let newDirection = DirectionChosenRandomlyFrom directionChoices rand
+                
+                let mask = newDirection |> FacingDirectionToBitMaskByte
+                assert ((mask &&& railsBitmask) <> 0uy)  // This decision function should never decide a direction inconsistent with the rails.
+
+                newDirection
 
     let position = 
-
-        let potential =
-            position 
-                |> PointMovedByDelta (direction |> DirectionToMovementDeltaI32)
-                |> PointWrappedAtMazeEdges mazeState
-
-        match ghost |> GhostMode with
-            | GhostNormal -> potential
-            | GhostEdibleUntil _ ->
-                if gameTime |> PulseActiveAtRate 20.0F then potential else position  // TODO: better treatment.
-            | _ -> failwith "Should not be deciding direction for ghost in this state"
+        position 
+            |> PointMovedByDelta (direction |> DirectionToMovementDeltaI32)
+            |> PointWrappedAtMazeEdges mazeState
 
     (position, direction)
 
@@ -749,17 +746,25 @@ let MovedTowardsHomePosition ghost =
 let private AdvanceGhost mazeState allGhosts pacman ghost rand gameTime =
 
     let (position , direction) =
+        (ghost.GhostPosition , ghost |> GlideDirection)
+
+    let (position , direction) =
         match ghost |> GhostMode with
-            | GhostNormal
-            | GhostEdibleUntil _ -> 
+            | GhostNormal ->
                 DecideNewPositionAndDirectionFor ghost mazeState allGhosts pacman rand gameTime
+
+            | GhostEdibleUntil _ -> 
+                if gameTime |> PulseActiveAtRate 20.0F then
+                    DecideNewPositionAndDirectionFor ghost mazeState allGhosts pacman rand gameTime
+                else
+                    (position , direction)
 
             | GhostReturningToBase ->
                 ghost |> MovedTowardsHomePosition
 
             | GhostRegeneratingUntil _ ->
                 // No movement while re-generating in the base.
-                (ghost.GhostPosition , ghost |> GlideDirection) 
+                (position , direction)
 
     {
         GhostPosition = position
