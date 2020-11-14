@@ -5,16 +5,15 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="GhostMoveTraits.fs" />
+    <Compile Include="Directions.fs" />
+    <Compile Include="GhostAI.fs" />
     <Compile Include="Keys.fs" />
-    <Compile Include="GhostDirectionChoosing.fs" />
     <Compile Include="Mazes.fs" />
     <Compile Include="Rules.fs" />
     <Compile Include="PacmanImageFiles.fs" />
     <Compile Include="ResourceIDs.fs" />
     <Compile Include="MazeState.fs" />
     <Compile Include="MazeUnpacker.fs" />
-    <Compile Include="ProbabilityTable.fs" />
     <Compile Include="PacmanShared.fs" />
     <Compile Include="TitleScreenShared.fs" />
     <Compile Include="ScreenIntermissions.fs" />

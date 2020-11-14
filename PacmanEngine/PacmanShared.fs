@@ -7,19 +7,11 @@ open DrawingShapes
 open MazeFilter
 open Rules
 open GhostDirectionChoosing
+open Directions
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 // TODO: library?
-
-type FacingDirection = FacingLeft | FacingUp | FacingRight | FacingDown
-
-let FacingDirectionToBitMaskByte facingDirection =  // TODO: Type model for the bitmask
-    match facingDirection with
-        | FacingLeft  -> MazeByteLeft
-        | FacingRight -> MazeByteRight
-        | FacingUp    -> MazeByteUp
-        | FacingDown  -> MazeByteDown
 
 type CornerChoice = ChooseBetweenUpDown | ChooseBetweenLeftRight
 
@@ -57,13 +49,6 @@ let SingleBitInByteToFacingDirection b =
     else if b=MazeByteUp then FacingUp
     else if b=MazeByteDown then FacingDown
     else failwith "Byte passed that wasn't a single bit representing a direction"
-
-let FacingDirectionToInt facingDirection =
-    match facingDirection with
-        | FacingLeft  -> 0
-        | FacingUp    -> 1
-        | FacingRight -> 2
-        | FacingDown  -> 3
 
 type Angle = ZeroAngle | ClockwiseTurn90 | AboutTurn180 | AntiClockwiseTurn90
 

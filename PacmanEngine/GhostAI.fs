@@ -1,4 +1,7 @@
-﻿module GhostMoveTraits
+﻿module GhostAI
+
+open MazeFilter
+open Directions
 
 
 /// Decision making probability traits for a ghost.
@@ -202,7 +205,6 @@ type ProbabilityClassesForDirections =
         PCUp    : ProbabilityClass
         PCRight : ProbabilityClass
         PCDown  : ProbabilityClass
-        // TODO: A string field for debugging to show where this came from.
     } 
 
 
@@ -256,6 +258,19 @@ let GhostMovementTable ghostMoveTraits =
             ProbRight = probClasses.PCRight |> ProbClassToValue ghostMoveTraits
             ProbDown  = probClasses.PCDown  |> ProbClassToValue ghostMoveTraits
         } 
+
+    // The following table is designed for the following bitmask ordering and enum.
+    // This will not be changed!
+
+    assert (MazeByteLeft  = 8uy)
+    assert (MazeByteUp    = 4uy)
+    assert (MazeByteRight = 2uy)
+    assert (MazeByteDown  = 1uy)
+
+    assert ((FacingLeft  |> FacingDirectionToInt) = 0)
+    assert ((FacingUp    |> FacingDirectionToInt) = 1)
+    assert ((FacingRight |> FacingDirectionToInt) = 2)
+    assert ((FacingDown  |> FacingDirectionToInt) = 3)
 
     // The following array is indexed by:
     // (rails bitmask (1-based) << 2 | Ghost's facing direction enumeration)
@@ -342,6 +357,15 @@ let GhostMovementTable ghostMoveTraits =
     probabilitiesTemplate 
         |> List.map (substitutedWith ghostMoveTraits)
         |> List.toArray
+        // TODO: Validate that the probabilities do NOT violate the rails.
 
 
+
+let GetDirectionProbabilities facingDirection railsBitmask (table:DirectionChoiceProbabilities[]) =
+
+    System.Diagnostics.Debug.Assert (railsBitmask >= 1uy && railsBitmask <= 15uy)
+    let dirInt = facingDirection |> FacingDirectionToInt
+    System.Diagnostics.Debug.Assert (dirInt >= 0 && dirInt <= 3)
+    let index = dirInt ||| (int)((railsBitmask - 1uy) <<< 2)
+    table.[index]
 
