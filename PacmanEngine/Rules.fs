@@ -1,18 +1,26 @@
 ﻿module Rules
 
 open Time
+open ScoreHiScore
 
 let MaxPlayerNameLength = 10
 
 let NoScore = 0u
 
-let InitialLives = 3
+let InitialLives = 3u
+
+type BetweenScreenStatus =
+    {
+        ScoreAndHiScore : ScoreAndHiScore
+        Lives           : uint32
+    }
 
 // TODO: Could some of these parameters be per-ghost?
 
 let ScoreForEatingDot       = 10u
 let ScoreForEatingPowerPill = 250u
 let ScoreForEatingGhost     = 500u
+let ScoreDeltaForExtraLife  = 10000u
 
 let PowerPillTime = 12.0F<seconds>
 let PowerPillWarnTime = 4.0F<seconds>  // Must be less than PowerPillTime

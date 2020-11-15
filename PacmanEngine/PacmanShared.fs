@@ -71,7 +71,7 @@ type PacState2 =
     {
         PacMode            : PacMode
         PacFacingDirection : FacingDirection
-        LivesLeft          : int
+        LivesLeft          : uint32
         PacStartPosition   : Point<int<epx>>
     }
 
@@ -112,7 +112,7 @@ let inline LivesLeft pacman =
 
 /// Is the game over for pacman?
 let inline GameIsOver pacman =
-    pacman |> LivesLeft <= 1 
+    pacman |> LivesLeft <= 1u
 
 
 

@@ -53,7 +53,8 @@ let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
     ghostAt  model.Ghost2Memo
     ghostAt  model.Ghost3Memo
 
-    Text render GreyFontID CentreAlign MiddleAlign x50pc y20pc "PAC MAN"
+    let largeFont = (GreyFontID |> FontFromID) |> MagnifiedFont 1 2
+    TextX render largeFont CentreAlign MiddleAlign x50pc y20pc "PAC MAN"
 
     Paragraph render GreyFontID CentreAlign MiddleAlign x50pc y50pc verticalSpacing model.ScoreboardMemo
 

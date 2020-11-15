@@ -1,6 +1,6 @@
 ﻿module Storyboard
 
-open Input
+open Rules
 open InterruptableVideo
 
 open Keys
@@ -35,11 +35,11 @@ let rec private EnterYourNameStory scoreAndHiScore gameTime =
         afterEntry
         gameTime
 
-and private AllEatenStory levelNumber scoreAndHiScore gameTime =
+and private AllEatenStory levelNumber betweenScreenStatus gameTime =
  
     WithScreenCompleteIntermissionCard
-        scoreAndHiScore
-        (PacmanStory (levelNumber + 1) scoreAndHiScore)
+        betweenScreenStatus
+        (PacmanStory (levelNumber + 1) betweenScreenStatus)
         gameTime
 
 and private GameOverStory scoreAndHiScore =
@@ -49,25 +49,28 @@ and private GameOverStory scoreAndHiScore =
                 (EnterYourNameStory scoreAndHiScore)
                 KeyFire
 
-and private PacmanStory (levelNumber:int) (scoreAndHiScore:ScoreAndHiScore) _gameTime =
+and private PacmanStory (levelNumber:int) betweenScreenStatus _gameTime =
 
     NewPacmanScreen
         levelNumber
         AllEatenStory
         GameOverStory
-        scoreAndHiScore
+        betweenScreenStatus
 
 and private GameTitleStory gameTime =
 
     let firstLevelForBrandNewGame =
-        450 // 125 -- with dead ends
+        0 // 125 -- with dead ends
 
-    let scoreAndHiScoreForBrandNewGame = 
-        { Score=0u ; HiScore = HiScoreFromScoreboard globalScoreboard }
+    let betweenScreenStatus = 
+        {
+            ScoreAndHiScore = { Score=0u ; HiScore = HiScoreFromScoreboard globalScoreboard }
+            Lives = InitialLives
+        }
     
     NewGameTitleScreen globalScoreboard
         |> AsInterruptableVideoThen 
-                (PacmanStory firstLevelForBrandNewGame scoreAndHiScoreForBrandNewGame)
+                (PacmanStory firstLevelForBrandNewGame betweenScreenStatus)
                 KeyFire
 
 

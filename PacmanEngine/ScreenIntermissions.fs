@@ -6,6 +6,7 @@ open StaticResourceAccess
 open ResourceIDs
 open Rules
 open ScoreHiScore
+        
 
 
 let WithLifeLossIntermissionCard whereToAfter gameTime =
@@ -19,12 +20,12 @@ let WithLifeLossIntermissionCard whereToAfter gameTime =
         
 
 
-let WithScreenCompleteIntermissionCard scoreAndHiScore whereToAfter gameTime =
+let WithScreenCompleteIntermissionCard betweenScreenStatus whereToAfter gameTime =
 
     NewIntermissionCard
         (BackgroundImageID |> ImageFromID) 
         (GreyFontID |> FontFromID)
-        (sprintf "SCREEN COMPLETE  SCORE %d" scoreAndHiScore.Score)
+        (sprintf "SCREEN COMPLETE  SCORE %d" betweenScreenStatus.ScoreAndHiScore.Score)
         ScreenWidthInt ScreenHeightInt 
             |> WithFreezeFrameFor ScreenCompletePauseTime gameTime whereToAfter
         

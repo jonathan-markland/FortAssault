@@ -1,5 +1,6 @@
 ﻿module ScreenPacman
 
+open Rules
 open Time
 open DrawingFunctions
 open ScoreHiScore
@@ -52,7 +53,7 @@ type private PacmanScreenModel =  // TODO: Getting fat with things that don't ch
         PacmanState            : PacmanState
         GhostsState            : GhostState list
         WhereToOnGameOver      : ScoreAndHiScore -> ErasedGameState
-        WhereToOnAllEaten      : int -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToOnAllEaten      : int -> BetweenScreenStatus -> float32<seconds> -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -794,7 +795,7 @@ let WithPacmanReset pacmanState =
             { 
                 PacFacingDirection = FacingRight
                 PacMode            = PacAlive
-                LivesLeft          = (pacmanState |> LivesLeft) - 1
+                LivesLeft          = (pacmanState |> LivesLeft) - 1u
                 PacStartPosition   = pacmanState |> StartPosition
             } 
     }
@@ -852,6 +853,25 @@ let WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime pac
 
         | PacDead -> 
             pacmanState
+
+
+/// State changes on pacman because of (possible) score increment
+let WithStateChangesResultingFromNewScore scoreAndHiScore scoreIncrement pacmanState =
+    
+    if scoreIncrement > 0u then
+        let newScore = scoreAndHiScore.Score
+        let oldScore = newScore - scoreIncrement
+        let a = oldScore / ScoreDeltaForExtraLife
+        let b = newScore / ScoreDeltaForExtraLife
+        if b > a then
+            {
+                pacmanState with 
+                    PacState2 = { pacmanState.PacState2 with LivesLeft = pacmanState.PacState2.LivesLeft + 1u }
+            }
+        else
+            pacmanState
+    else
+        pacmanState
 
 
 
@@ -983,11 +1003,8 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
         }
             = model
 
-    let eaten , position , direction , scoreIncrement =
+    let eaten , position , direction , scoreIncrement1 =
         AdvancePacMan keyStateGetter mazeState pacmanState
-
-    let scoreAndHiScore =
-        scoreAndHiScore |> ScoreIncrementedBy scoreIncrement
 
     let pacmanState =
         pacmanState |> WithPacManMovementStateChangesAppliedFrom position direction
@@ -1004,11 +1021,17 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
     let pacmanState =
         pacmanState |> WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime
 
-    let struct (ghostStateList , scoreIncrement) =
+    let struct (ghostStateList , scoreIncrement2) =
         ghostStateList |> WithStateChangesResultingFromCollisionWithPacman pacmanState
+
+    let scoreIncrement =
+        scoreIncrement1 + scoreIncrement2
 
     let scoreAndHiScore =
         scoreAndHiScore |> ScoreIncrementedBy scoreIncrement
+
+    let pacmanState =
+        pacmanState |> WithStateChangesResultingFromNewScore scoreAndHiScore scoreIncrement
 
     // Repack
 
@@ -1035,14 +1058,19 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
             WithLifeLossIntermissionCard whereToAfterIntermission gameTime  // TODO: There is something bad about this parameter order, that we can't use |>
     
     else if mazeState |> IsAllEaten then
-        model.WhereToOnAllEaten model.LevelNumber scoreAndHiScore gameTime  // TODO: Maze flash - but could that be done with a clever external filter?
+        let betweenScreenStatus = 
+            {
+                ScoreAndHiScore = model.ScoreAndHiScore
+                Lives           = model.PacmanState.PacState2.LivesLeft
+            }
+        model.WhereToOnAllEaten model.LevelNumber betweenScreenStatus gameTime  // TODO: Maze flash - but could that be done with a clever external filter?
     
     else 
         gameState |> WithUpdatedModel model
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiScore =
+let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver (betweenScreenStatus:BetweenScreenStatus) =
 
     let numberOfMazes = 
         AllPacmanMazes.Length
@@ -1064,7 +1092,7 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiSc
         {
             Random            = XorShift32State ScreenRandomSeed
             LevelNumber       = levelNumber
-            ScoreAndHiScore   = scoreAndHiScore
+            ScoreAndHiScore   = betweenScreenStatus.ScoreAndHiScore
             MazeState         = unpackedMaze.UnpackedMazeState
             WhereToOnGameOver = whereToOnGameOver
             WhereToOnAllEaten = whereToOnAllEaten
@@ -1076,7 +1104,7 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver scoreAndHiSc
                         { 
                             PacFacingDirection = FacingRight
                             PacMode = PacAlive
-                            LivesLeft = InitialLives
+                            LivesLeft = betweenScreenStatus.Lives
                             PacStartPosition = unpackedMaze.UnpackedPacmanPosition
                         } 
                 }
