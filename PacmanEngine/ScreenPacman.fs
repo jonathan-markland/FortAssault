@@ -12,7 +12,6 @@ open ImagesAndFonts
 open PacmanShared
 open Input
 open MazeFilter
-open Rules
 open Mazes
 open MazeState
 open ScreenIntermissions
@@ -513,9 +512,12 @@ let IsIntersectedByAnyOtherGhostTo selfGhost allGhosts corridorRect =
 
 
 
-let private EliminatingSuboptimalDirectionsForNormalGhost ghost mazeState tileXY pacRect allGhosts directionChoices =
+let private EliminatingSuboptimalDirectionsForNormalGhost 
+    ghost mazeState tileXY pacPos allGhosts directionChoices =
 
-    let corridorRect direction = 
+    let pacRect = pacPos |> TileBoundingRectangle
+
+    let corridorRectInDirection direction = 
         CorridorRectangle 
             mazeState.MazeTilesCountX
             mazeState.MazeTilesCountY
@@ -523,59 +525,40 @@ let private EliminatingSuboptimalDirectionsForNormalGhost ghost mazeState tileXY
             tileXY
             direction
 
-    // TODO: We call corridorRect for 0-probability directions (which will never be chosen)
-    //       and don't even read the rectangle.
+    let consider 
+        facingDirection 
+        (probsForSingleDirection:DirectionChoiceProbabilities) 
+        (exceptFacingDirection:DirectionChoiceProbabilities -> DirectionChoiceProbabilities) 
+        (directionsAcc:DirectionChoiceProbabilities) =
+        
+        if (directionsAcc |> ProbOfDirection facingDirection) <> 0uy then
+            
+            let corridorRectangle = 
+                corridorRectInDirection facingDirection  // TODO: corridorRect should be option type
+            
+            if pacRect |> RectangleIntersects corridorRectangle then  // TODO: Could we have RectangleIntersectsOptional
+                probsForSingleDirection  // chase pacman
+            
+            else if corridorRectangle |> IsIntersectedByAnyOtherGhostTo ghost allGhosts then
+                directionsAcc |> exceptFacingDirection   // avoid buddy
+            
+            else
+                directionsAcc
+        else
+            directionsAcc
 
-    let corridorFacingLeft  = corridorRect FacingLeft
-    let corridorFacingUp    = corridorRect FacingUp
-    let corridorFacingRight = corridorRect FacingRight
-    let corridorFacingDown  = corridorRect FacingDown
-
-    let leftOnly  prob = { ProbLeft=prob ; ProbUp=0uy  ; ProbRight=0uy  ; ProbDown=0uy  }
-    let upOnly    prob = { ProbLeft=0uy  ; ProbUp=prob ; ProbRight=0uy  ; ProbDown=0uy  }
-    let rightOnly prob = { ProbLeft=0uy  ; ProbUp=0uy  ; ProbRight=prob ; ProbDown=0uy  }
-    let downOnly  prob = { ProbLeft=0uy  ; ProbUp=0uy  ; ProbRight=0uy  ; ProbDown=prob }
-    
-    let lookForPacman prob corridorRect singleDirectionWithProbability acc =
-        match acc with
-            | Some _directionWherePacmanIsAlreadySeen -> acc
-            | None ->
-                if prob = 0uy then
-                    None
-                else if pacRect |> RectangleIntersects corridorRect then
-                    Some (singleDirectionWithProbability prob)
-                else
-                    None
-
-    let seenPac =
-        None
-            |> lookForPacman  directionChoices.ProbLeft   corridorFacingLeft   leftOnly  
-            |> lookForPacman  directionChoices.ProbUp     corridorFacingUp     upOnly    
-            |> lookForPacman  directionChoices.ProbRight  corridorFacingRight  rightOnly 
-            |> lookForPacman  directionChoices.ProbDown   corridorFacingDown   downOnly  
-
-    match seenPac with
-        | Some directionTowardsPacman -> directionTowardsPacman
-        | None ->
-
-            let possiblyEliminated prob corridorRect direction =
-                if prob = 0uy then
-                    0uy
-                else if corridorRect |> IsIntersectedByAnyOtherGhostTo ghost allGhosts then
-                    0uy
-                else
-                    prob
-
-            {
-                ProbLeft  = possiblyEliminated  directionChoices.ProbLeft   corridorFacingLeft   FacingLeft
-                ProbUp    = possiblyEliminated  directionChoices.ProbUp     corridorFacingUp     FacingUp
-                ProbRight = possiblyEliminated  directionChoices.ProbRight  corridorFacingRight  FacingRight
-                ProbDown  = possiblyEliminated  directionChoices.ProbDown   corridorFacingDown   FacingDown
-            }
+    directionChoices
+        |> consider FacingLeft  LeftOnly  ExceptLeft
+        |> consider FacingUp    UpOnly    ExceptUp
+        |> consider FacingRight RightOnly ExceptRight
+        |> consider FacingDown  DownOnly  ExceptDown
 
 
 
-let private EliminatingSuboptimalDirectionsForEdibleGhost mazeState tileXY pacRect directionChoices =
+let private EliminatingSuboptimalDirectionsForEdibleGhost 
+    mazeState tileXY pacPos directionChoices =
+
+    let pacRect = pacPos |> TileBoundingRectangle
 
     let possiblyEliminated probability direction =
         if probability = 0uy then
@@ -590,7 +573,7 @@ let private EliminatingSuboptimalDirectionsForEdibleGhost mazeState tileXY pacRe
                     direction
 
             if corridorRect |> RectangleIntersects pacRect then
-                0uy
+                0uy  // run away
             else
                 probability
 
@@ -672,20 +655,20 @@ let private DecideNewPositionAndDirectionFor
                     let defaultDirectionChoices =
                         (AIFor ghost) |> GetDirectionProbabilities direction railsBitmask
 
-                    let directionChoices =
+                    let directionChoices = 
 
-                        let pacRect = pacman.PacPosition |> TileBoundingRectangle
+                        let pacPos = pacman.PacPosition
                         let tileXY = { ptx=txi ; pty=tyi }
-
+                         
                         match ghost |> GhostMode with
                             
                             | GhostNormal -> 
                                 defaultDirectionChoices 
-                                    |> EliminatingSuboptimalDirectionsForNormalGhost ghost mazeState tileXY pacRect allGhosts
+                                    |> EliminatingSuboptimalDirectionsForNormalGhost ghost mazeState tileXY pacPos allGhosts
                             
                             | GhostEdibleUntil _ -> 
                                 defaultDirectionChoices 
-                                    |> EliminatingSuboptimalDirectionsForEdibleGhost mazeState tileXY pacRect
+                                    |> EliminatingSuboptimalDirectionsForEdibleGhost mazeState tileXY pacPos
                             
                             | _ -> failwith "Should not be deciding direction for ghost in this state"
                         

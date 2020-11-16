@@ -256,6 +256,24 @@ type DirectionChoiceProbabilities =
         ProbDown  : byte
     }
 
+/// Obtains the probability of going in the direction specified.
+let ProbOfDirection direction directions =
+    match direction with
+        | FacingLeft  -> directions.ProbLeft
+        | FacingUp    -> directions.ProbUp
+        | FacingRight -> directions.ProbRight
+        | FacingDown  -> directions.ProbDown
+
+let LeftOnly  = { ProbLeft=1uy  ; ProbUp=0uy  ; ProbRight=0uy  ; ProbDown=0uy  }
+let UpOnly    = { ProbLeft=0uy  ; ProbUp=1uy  ; ProbRight=0uy  ; ProbDown=0uy  }
+let RightOnly = { ProbLeft=0uy  ; ProbUp=0uy  ; ProbRight=1uy  ; ProbDown=0uy  }
+let DownOnly  = { ProbLeft=0uy  ; ProbUp=0uy  ; ProbRight=0uy  ; ProbDown=1uy  }
+
+let ExceptLeft  directions = { directions with ProbLeft  = 0uy }
+let ExceptUp    directions = { directions with ProbUp    = 0uy }
+let ExceptRight directions = { directions with ProbRight = 0uy }
+let ExceptDown  directions = { directions with ProbDown  = 0uy }
+
 
 
 type GhostAI = GhostAI of DirectionChoiceProbabilities []
