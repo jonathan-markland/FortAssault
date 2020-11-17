@@ -27,12 +27,6 @@ let ScreenRandomSeed = 0x33033u
 
 // TODO: BUG: Frame 145:  If pacman stays still, the ghosts don't get him coming from the top.
 
-// TODO: Extra Lives to be credited at the end of the screen, by comparison to the 
-//       score at the start of the level. 
-
-// TODO: Possibly treat corners the same as straight lines for ghost decision points,
-//       with a completely separate probability setting for turn about.
-
 // TODO: The ghosts that are less decisive may get trapped in the base because the
 //       base rails are a square network.  This is only an issue for the early stage.
 
@@ -61,7 +55,7 @@ type private PacmanScreenModel =  // TODO: Getting fat with things that don't ch
 
 /// Expansion of pacman's bounding rectangle to allow ghosts to still
 /// see pacman if he slips around a corner.  (Ghosts have no memory).
-let ExpandedToAccountForLackOfGhostMemory = 
+let ExpandedToSlightlyCompensateForLackOfGhostMemory = 
     InflateRectangle TileSide
 
 /// Obtain key states as boolean values.
@@ -344,7 +338,7 @@ let private DrawCorridorFinderResult render centreX centreY countX countY mazeBy
 let private DrawBoundingRectangle render fillColour pacPosition =
 
     let pacRect = 
-        pacPosition |> TileBoundingRectangle |> ExpandedToAccountForLackOfGhostMemory
+        pacPosition |> TileBoundingRectangle |> ExpandedToSlightlyCompensateForLackOfGhostMemory
 
     render
         (DrawingShapes.DrawFilledRectangle (
@@ -558,7 +552,8 @@ let HasMoreThanOnePossibleDirection directionProbs =
 let private WithAdjustmentsForNormalGhost 
     ghost mazeState tileXY pacPos allGhosts directionChoices =
 
-    let pacRect = pacPos |> TileBoundingRectangle |> ExpandedToAccountForLackOfGhostMemory
+    let fatPacRect = 
+        pacPos |> TileBoundingRectangle |> ExpandedToSlightlyCompensateForLackOfGhostMemory
 
     let corridorRectInDirection direction = 
         CorridorRectangle 
@@ -568,8 +563,7 @@ let private WithAdjustmentsForNormalGhost
             tileXY
             direction
 
-    let consider 
-        facingDirection 
+    let consider facingDirection 
         (probsForSingleDirection:DirectionChoiceProbabilities) 
         (exceptFacingDirection:DirectionChoiceProbabilities -> DirectionChoiceProbabilities) 
         (directionsAcc:DirectionChoiceProbabilities) =
@@ -580,7 +574,7 @@ let private WithAdjustmentsForNormalGhost
             let corridorRectangle = 
                 corridorRectInDirection facingDirection
             
-            if pacRect |> RectangleIntersects corridorRectangle then  // TODO: Could we have RectangleIntersectsOptional
+            if fatPacRect |> RectangleIntersects corridorRectangle then
                 probsForSingleDirection  // chase pacman
             
             else if corridorRectangle |> IsIntersectedByAnyOtherGhostTo ghost allGhosts then

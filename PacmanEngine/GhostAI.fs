@@ -57,7 +57,7 @@ type GhostMoveTraits =
 /// levels of decisiveness.
 let GetGhostMoveTraits () =
 
-    let charger =   // Never turns back!
+    let charger =   // Never turns back!  TODO: This means not even if he sees pacman.
         {
             Description = "Charger"
 
