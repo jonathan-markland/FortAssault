@@ -59,6 +59,11 @@ type private PacmanScreenModel =  // TODO: Getting fat with things that don't ch
 //  Support functions
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+/// Expansion of pacman's bounding rectangle to allow ghosts to still
+/// see pacman if he slips around a corner.  (Ghosts have no memory).
+let ExpandedToAccountForLackOfGhostMemory = 
+    InflateRectangle TileSide
+
 /// Obtain key states as boolean values.
 let KeysFrom keyStateGetter =
     let up    = (keyStateGetter KeyUp).Held
@@ -218,19 +223,30 @@ let private PointWrappedAtMazeEdges mazeState point =
 //  CORRIDOR DETERMINATION
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+/// Return a zero thickness rectangle that lies along the edge
+/// of the given rectangle at the side indicated by the direction.
+let EdgeRectangleFacing direction rectangle =
+    match direction with
+        | FacingLeft   -> { rectangle with Right  = rectangle.Left   }
+        | FacingUp     -> { rectangle with Bottom = rectangle.Top    }
+        | FacingRight  -> { rectangle with Left   = rectangle.Right  }
+        | FacingDown   -> { rectangle with Top    = rectangle.Bottom }
+
+
+
 /// Returns the corridor rectangle starting from a given maze tile 'originTile',
 /// where originTile is a 2D array index into the tiles matrix.  Takes the actual
 /// maze, not the rails as the mazeByteArray.
-let CorridorRectangle tilesHorizontally tilesVertically (mazeByteArray:byte[]) originTile direction =  // TODO: originTile's unit is not clear
+let CorridorRectangle tilesHorizontally tilesVertically (mazeByteArray:byte[]) originTile direction =  // TODO: originTile's unit is not clear (it's the array indices)
 
     let stepDelta =
         direction |> DirectionToMovementDelta 0 1
 
-    let isWall (t:byte) =
+    let isWallTileType (t:byte) =
         t >= ((byte)TileIndex.Wall0) && t <= ((byte)TileIndex.Wall15)
     
-    let hasNoExitInDirectionOfTravel pos =  // Not strictly correct, will cause inclusion of the wall square hit, but that is benign for our purposes.
-        isWall (mazeByteArray.[pos.pty * tilesHorizontally + pos.ptx])
+    let isWall pos =  // Not strictly correct, will cause inclusion of the wall square hit, but that is benign for our purposes.
+        isWallTileType (mazeByteArray.[pos.pty * tilesHorizontally + pos.ptx])
 
     let noSquareExistsAt pos =
         pos.ptx < 0 || pos.pty < 0 || pos.ptx >= tilesHorizontally || pos.pty >= tilesVertically
@@ -242,14 +258,15 @@ let CorridorRectangle tilesHorizontally tilesVertically (mazeByteArray:byte[]) o
         
         let nextPosition = position |> PointMovedByDelta stepDelta
 
-        if noSquareExistsAt nextPosition || position |> hasNoExitInDirectionOfTravel then
+        if noSquareExistsAt nextPosition || nextPosition |> isWall then
             accumulator
         else
             let r = boundingRectangleOfSquareAt nextPosition
             let union = TightestBoundingRectangleOf r accumulator
             stepper  stepDelta nextPosition union
 
-    stepper stepDelta originTile (boundingRectangleOfSquareAt originTile)
+    let initialRectangle = (boundingRectangleOfSquareAt originTile) |> EdgeRectangleFacing direction
+    stepper stepDelta originTile initialRectangle
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  DRAWING
@@ -324,6 +341,17 @@ let private DrawCorridorFinderResult render centreX centreY countX countY mazeBy
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let private DrawBoundingRectangle render fillColour pacPosition =
+
+    let pacRect = 
+        pacPosition |> TileBoundingRectangle |> ExpandedToAccountForLackOfGhostMemory
+
+    render
+        (DrawingShapes.DrawFilledRectangle (
+            pacRect.Left, pacRect.Top, (pacRect |> RectangleWidth), (pacRect |> RectangleHeight), fillColour))
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
 
     let backgroundImage = BackgroundImageID |> ImageFromID
@@ -332,6 +360,12 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
     let tilesImage = Level1ImageID |> ImageFromID
 
     let cx,cy = (ScreenWidthInt / 2) , (ScreenHeightInt / 2) 
+
+    let (originx,originy) = 
+        OriginForMazeOfDimensions 
+            cx cy 
+            model.MazeState.MazeTilesCountX 
+            model.MazeState.MazeTilesCountY
 
     DrawMazeCentred 
         render tilesImage 
@@ -348,17 +382,13 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
     //     model.PacmanState |> Facing
     //     (DrawingShapes.SolidColour 0xFF00FFu)
 
-    let (originx,originy) = 
-        OriginForMazeOfDimensions 
-            cx cy 
-            model.MazeState.MazeTilesCountX 
-            model.MazeState.MazeTilesCountY
-
     let pos = model.PacmanState.PacPosition 
                 |> PointWrappedAtMazeEdges model.MazeState
                 |> OffsetByOrigin originx originy 
     
     let direction = model.PacmanState |> Facing
+
+    // DrawBoundingRectangle render (DrawingShapes.SolidColour 0xCC0000u) pos
 
     match model.PacmanState |> PacMode with
         | PacAlive ->
@@ -377,8 +407,14 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
     model.GhostsState
         |> List.iteri (fun i ghostState ->
 
+            let pos =
+                ghostState.GhostPosition
+                    |> PointWrappedAtMazeEdges model.MazeState
+                    |> OffsetByOrigin originx originy
+            
             // let (GhostNumber(gn)) = ghostState |> Tag
             // let colour = DrawingShapes.SolidColour ([| 0xFF0000u ; 0xFFFF00u ; 0x00FFFFu ; 0xFFFFFFu |].[gn])
+            // // DrawBoundingRectangle render colour pos
             // DrawCorridorFinderResult 
             //     render cx cy 
             //     model.MazeState.MazeTilesCountX 
@@ -388,11 +424,6 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
             //     (ghostState |> GlideDirection)
             //     colour
 
-            let pos =
-                ghostState.GhostPosition
-                    |> PointWrappedAtMazeEdges model.MazeState
-                    |> OffsetByOrigin originx originy
-                        
             let number = ghostState |> Tag
             let mode   = ghostState |> GhostMode
 
@@ -512,10 +543,22 @@ let IsIntersectedByAnyOtherGhostTo selfGhost allGhosts corridorRect =
 
 
 
-let private EliminatingSuboptimalDirectionsForNormalGhost 
+let HasMoreThanOnePossibleDirection directionProbs =
+    let test prob = if prob > 0uy then 1 else 0
+    let l = test directionProbs.ProbLeft
+    let u = test directionProbs.ProbUp
+    let r = test directionProbs.ProbRight
+    let d = test directionProbs.ProbDown
+    (l + u + r + d) > 1
+
+
+/// Adjust the probability values in the input directionChoices
+/// with regard to environmental factors that surround this 'normal'
+/// mode ghost.
+let private WithAdjustmentsForNormalGhost 
     ghost mazeState tileXY pacPos allGhosts directionChoices =
 
-    let pacRect = pacPos |> TileBoundingRectangle
+    let pacRect = pacPos |> TileBoundingRectangle |> ExpandedToAccountForLackOfGhostMemory
 
     let corridorRectInDirection direction = 
         CorridorRectangle 
@@ -531,10 +574,11 @@ let private EliminatingSuboptimalDirectionsForNormalGhost
         (exceptFacingDirection:DirectionChoiceProbabilities -> DirectionChoiceProbabilities) 
         (directionsAcc:DirectionChoiceProbabilities) =
         
-        if (directionsAcc |> ProbOfDirection facingDirection) <> 0uy then
+        if  (directionsAcc |> HasMoreThanOnePossibleDirection)  &&
+            (directionsAcc |> ProbOfDirection facingDirection) <> 0uy then
             
             let corridorRectangle = 
-                corridorRectInDirection facingDirection  // TODO: corridorRect should be option type
+                corridorRectInDirection facingDirection
             
             if pacRect |> RectangleIntersects corridorRectangle then  // TODO: Could we have RectangleIntersectsOptional
                 probsForSingleDirection  // chase pacman
@@ -555,7 +599,10 @@ let private EliminatingSuboptimalDirectionsForNormalGhost
 
 
 
-let private EliminatingSuboptimalDirectionsForEdibleGhost 
+/// Adjust the probability values in the input directionChoices
+/// with regard to environmental factors that surround this 'edible'
+/// mode ghost.
+let private WithAdjustmentsForEdibleGhost 
     mazeState tileXY pacPos directionChoices =
 
     let pacRect = pacPos |> TileBoundingRectangle
@@ -664,11 +711,11 @@ let private DecideNewPositionAndDirectionFor
                             
                             | GhostNormal -> 
                                 defaultDirectionChoices 
-                                    |> EliminatingSuboptimalDirectionsForNormalGhost ghost mazeState tileXY pacPos allGhosts
+                                    |> WithAdjustmentsForNormalGhost ghost mazeState tileXY pacPos allGhosts
                             
                             | GhostEdibleUntil _ -> 
                                 defaultDirectionChoices 
-                                    |> EliminatingSuboptimalDirectionsForEdibleGhost mazeState tileXY pacPos
+                                    |> WithAdjustmentsForEdibleGhost mazeState tileXY pacPos
                             
                             | _ -> failwith "Should not be deciding direction for ghost in this state"
                         
@@ -762,7 +809,7 @@ let private WithGhostMovement mazeState pacman rand gameTime allGhosts =
 
     allGhosts |> List.map (fun ghost -> 
         rand <- rand |> XorShift32
-        AdvanceGhost mazeState allGhosts pacman ghost rand gameTime)
+        AdvanceGhost mazeState allGhosts pacman ghost rand gameTime)  // TODO: Consider: the new position of the ghost doesn't get taken into account when processing the rest.  They still see the old positions.
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

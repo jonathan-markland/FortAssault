@@ -83,7 +83,7 @@ let IsPointWithinRectangle rectangle point =
 
 /// Returns true if the rectangles r1 and r2 intersect.
 let RectangleIntersects r1 r2 =
-    not (r1.Left > r2.Right || r1.Right < r2.Left || r1.Top > r2.Bottom || r1.Bottom < r2.Top)
+    not (r1.Left >= r2.Right || r1.Right <= r2.Left || r1.Top >= r2.Bottom || r1.Bottom <= r2.Top)
 
 /// Return the tightest bounding rectangle of the two given rectangles.
 let TightestBoundingRectangleOf r1 r2 =
@@ -110,6 +110,16 @@ let inline RectangleMovedByDelta delta r =
         Top    = r.Top    + delta.mody
         Right  = r.Right  + delta.modx
         Bottom = r.Bottom + delta.mody
+    }
+
+/// Return a new rectangle that is the existing rectangle
+/// with a border added around all sides.
+let inline InflateRectangle border r =
+    {
+        Left   = r.Left   - border
+        Top    = r.Top    - border
+        Right  = r.Right  + border
+        Bottom = r.Bottom + border
     }
 
 /// Returns a floating point movement delta that, if applied, would 
