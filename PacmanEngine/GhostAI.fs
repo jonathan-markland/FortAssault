@@ -218,7 +218,15 @@ type ProbabilityClassesForDirections =
 
 
 
+[<Struct>]
+type DirectionProbability = DirectionProbability of byte
+
+let inline dp (i:int) = DirectionProbability ((byte) i)
+
+
+
 let ProbClassToValue ghostMoveTraits probClass =
+    
     let i = 
         match probClass with
             | Never     -> 0
@@ -238,8 +246,12 @@ let ProbClassToValue ghostMoveTraits probClass =
             | Back4     -> ghostMoveTraits.Back4    
 
     let b = (byte) i
-    if ((int) b) <> i then failwith "Out of range probability value -- must fit a byte"
-    b
+    
+    if ((int) b) <> i then 
+        failwith "Out of range probability value -- must fit a byte"
+    else
+        DirectionProbability b
+
 
 
 
@@ -250,11 +262,19 @@ let ProbClassToValue ghostMoveTraits probClass =
 [<Struct>]
 type DirectionChoiceProbabilities =
     {
-        ProbLeft  : byte
-        ProbUp    : byte
-        ProbRight : byte
-        ProbDown  : byte
+        ProbLeft  : DirectionProbability
+        ProbUp    : DirectionProbability
+        ProbRight : DirectionProbability
+        ProbDown  : DirectionProbability
     }
+
+let HasMoreThanOnePossibleDirection directionProbs =
+    let test (DirectionProbability(prob)) = if prob > 0uy then 1 else 0
+    let l = test directionProbs.ProbLeft
+    let u = test directionProbs.ProbUp
+    let r = test directionProbs.ProbRight
+    let d = test directionProbs.ProbDown
+    (l + u + r + d) > 1
 
 /// Obtains the probability of going in the direction specified.
 let ProbOfDirection direction directions =
@@ -264,15 +284,15 @@ let ProbOfDirection direction directions =
         | FacingRight -> directions.ProbRight
         | FacingDown  -> directions.ProbDown
 
-let LeftOnly  = { ProbLeft=1uy  ; ProbUp=0uy  ; ProbRight=0uy  ; ProbDown=0uy  }
-let UpOnly    = { ProbLeft=0uy  ; ProbUp=1uy  ; ProbRight=0uy  ; ProbDown=0uy  }
-let RightOnly = { ProbLeft=0uy  ; ProbUp=0uy  ; ProbRight=1uy  ; ProbDown=0uy  }
-let DownOnly  = { ProbLeft=0uy  ; ProbUp=0uy  ; ProbRight=0uy  ; ProbDown=1uy  }
+let LeftOnly  = { ProbLeft=dp 1  ; ProbUp=dp 0  ; ProbRight=dp 0  ; ProbDown=dp 0 }
+let UpOnly    = { ProbLeft=dp 0  ; ProbUp=dp 1  ; ProbRight=dp 0  ; ProbDown=dp 0 }
+let RightOnly = { ProbLeft=dp 0  ; ProbUp=dp 0  ; ProbRight=dp 1  ; ProbDown=dp 0 }
+let DownOnly  = { ProbLeft=dp 0  ; ProbUp=dp 0  ; ProbRight=dp 0  ; ProbDown=dp 1 }
 
-let ExceptLeft  directions = { directions with ProbLeft  = 0uy }
-let ExceptUp    directions = { directions with ProbUp    = 0uy }
-let ExceptRight directions = { directions with ProbRight = 0uy }
-let ExceptDown  directions = { directions with ProbDown  = 0uy }
+let ExceptLeft  directions = { directions with ProbLeft  = dp 0 }
+let ExceptUp    directions = { directions with ProbUp    = dp 0 }
+let ExceptRight directions = { directions with ProbRight = dp 0 }
+let ExceptDown  directions = { directions with ProbDown  = dp 0 }
 
 
 

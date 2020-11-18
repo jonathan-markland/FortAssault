@@ -537,15 +537,6 @@ let IsIntersectedByAnyOtherGhostTo selfGhost allGhosts corridorRect =
 
 
 
-let HasMoreThanOnePossibleDirection directionProbs =
-    let test prob = if prob > 0uy then 1 else 0
-    let l = test directionProbs.ProbLeft
-    let u = test directionProbs.ProbUp
-    let r = test directionProbs.ProbRight
-    let d = test directionProbs.ProbDown
-    (l + u + r + d) > 1
-
-
 /// Adjust the probability values in the input directionChoices
 /// with regard to environmental factors that surround this 'normal'
 /// mode ghost.
@@ -569,7 +560,7 @@ let private WithAdjustmentsForNormalGhost
         (directionsAcc:DirectionChoiceProbabilities) =
         
         if  (directionsAcc |> HasMoreThanOnePossibleDirection)  &&
-            (directionsAcc |> ProbOfDirection facingDirection) <> 0uy then
+            (directionsAcc |> ProbOfDirection facingDirection) <> (dp 0) then
             
             let corridorRectangle = 
                 corridorRectInDirection facingDirection
@@ -602,8 +593,8 @@ let private WithAdjustmentsForEdibleGhost
     let pacRect = pacPos |> TileBoundingRectangle
 
     let possiblyEliminated probability direction =
-        if probability = 0uy then
-            0uy
+        if probability = (dp 0) then
+            probability
         else
             let corridorRect = 
                 CorridorRectangle 
@@ -614,7 +605,7 @@ let private WithAdjustmentsForEdibleGhost
                     direction
 
             if corridorRect |> RectangleIntersects pacRect then
-                0uy  // run away
+                dp 0  // run away
             else
                 probability
 
@@ -630,10 +621,11 @@ let private WithAdjustmentsForEdibleGhost
 /// Returns true if no directions are available according to 
 /// individual direction probabilities.
 let NoDirectionsAvailable directionChoices = 
-    (directionChoices.ProbLeft 
-        ||| directionChoices.ProbUp 
-        ||| directionChoices.ProbDown 
-        ||| directionChoices.ProbRight) = 0uy
+    let (DirectionProbability(l)) = directionChoices.ProbLeft 
+    let (DirectionProbability(u)) = directionChoices.ProbUp 
+    let (DirectionProbability(r)) = directionChoices.ProbDown 
+    let (DirectionProbability(d)) = directionChoices.ProbRight
+    (l ||| u ||| r ||| d) = 0uy
 
 
 
@@ -642,10 +634,15 @@ let NoDirectionsAvailable directionChoices =
 /// direction choices.
 let DirectionChosenRandomlyFrom directionChoices (XorShift32State(rand)) =
 
-    let l = ((uint32) directionChoices.ProbLeft)
-    let u = ((uint32) directionChoices.ProbUp)
-    let d = ((uint32) directionChoices.ProbDown)
-    let r = ((uint32) directionChoices.ProbRight)
+    let (DirectionProbability(dpl)) = directionChoices.ProbLeft 
+    let (DirectionProbability(dpu)) = directionChoices.ProbUp 
+    let (DirectionProbability(dpr)) = directionChoices.ProbRight
+    let (DirectionProbability(dpd)) = directionChoices.ProbDown
+
+    let l = ((uint32) dpl)
+    let u = ((uint32) dpu)
+    let r = ((uint32) dpr)
+    let d = ((uint32) dpd)
 
     let probTotal = l + u + r + d
 
