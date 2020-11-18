@@ -63,25 +63,25 @@ let GetGhostMoveTraits () =
 
             // Corner
             Turn90 = 100
-            Back90 = 0
+            Back90 = 1      // NB: If we make this 0 then he will never turn to "get" pacman
 
             /// Straight
             Onward180 = 100
-            Back180 = 0
+            Back180 = 0  // NB: 0 to avoid bouncing when "seeing" other ghosts on straight sections.
 
             /// 3-way that has a straight-ahead option
             OnwardT    = 80
             TurnAwayT  = 20
-            BackT      = 0
+            BackT      = 1    // NB: If we make this 0 then he will never turn to "get" pacman
 
             /// 3-way without a straight-ahead option
             TurnIntoT = 50
-            TurnBackT = 0
+            TurnBackT = 1     // NB: If we make this 0 then he will never turn to "get" pacman
 
             /// 4-way
             Onward4 = 80
             Turn4   = 10
-            Back4   = 0
+            Back4   = 1       // NB: If we make this 0 then he will never turn to "get" pacman
         }
 
     let standard =
@@ -94,7 +94,7 @@ let GetGhostMoveTraits () =
 
             /// Straight
             Onward180 = 99
-            Back180 = 1
+            Back180 = 0  // NB: 0 to avoid bouncing when "seeing" other ghosts on straight sections.
 
             /// 3-way that has a straight-ahead option
             OnwardT    = 70
@@ -121,7 +121,7 @@ let GetGhostMoveTraits () =
 
             /// Straight
             Onward180 = 95
-            Back180 = 5
+            Back180 = 0  // NB: 0 to avoid bouncing when "seeing" other ghosts on straight sections.
 
             /// 3-way that has a straight-ahead option
             OnwardT    = 30
@@ -397,16 +397,18 @@ let GetDirectionProbabilities facingDirection railsBitmask ghostAI =
 
     let (GhostAI(table)) = ghostAI
     System.Diagnostics.Debug.Assert (railsBitmask >= 1uy && railsBitmask <= 15uy)
+    
     let dirInt = facingDirection |> FacingDirectionToInt
     System.Diagnostics.Debug.Assert (dirInt >= 0 && dirInt <= 3)
+
     let index = dirInt ||| ((int)((railsBitmask - 1uy)) <<< 2)
 
     // Debug tracing where corrections are made.
     // Will happen where ghosts heading is inconsistent with the rails,
     // which itself, can only happen at the start of a level (initial
     // heading inconsistent; or after a return-to-base).
-    if [10;11;16;18;21;22;26;32;35;37;39;43;44;45;48;53] |> List.contains index then
-        System.Diagnostics.Trace.WriteLine (sprintf "Correction index %d" index)
+    // if [10;11;16;18;21;22;26;32;35;37;39;43;44;45;48;53] |> List.contains index then
+    //     System.Diagnostics.Trace.WriteLine (sprintf "Correction index %d" index)
 
     table.[index]
 

@@ -1,6 +1,5 @@
 ﻿module ScreenGameOver
 
-open DrawingShapes
 open DrawingFunctions
 open ResourceIDs
 open ScoreHiScore
