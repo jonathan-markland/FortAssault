@@ -95,7 +95,7 @@ let TileIndexOf position =  // TODO: strongly type the return value
 /// true if movement in the given direction is allowed by the railsByte.
 let IsDirectionAllowedBy railsByte facingDirection =
 
-    (railsByte &&& (facingDirection |> FacingDirectionToBitMaskByte)) <> 0uy
+    (railsByte |> MazeAndMaskedWith (facingDirection |> FacingDirectionToBitMaskByte)) <> MazeByteEmpty
 
 
 /// Obtain the *inner* collision rectangle given the top left
@@ -715,7 +715,7 @@ let private DecideNewPositionAndDirectionFor
                     let newDirection = DirectionChosenRandomlyFrom directionChoices rand
                 
                     let mask = newDirection |> FacingDirectionToBitMaskByte
-                    assert ((mask &&& railsBitmask) <> 0uy)  // This decision function should never decide a direction inconsistent with the rails.
+                    assert ((mask |> MazeAndMaskedWith railsBitmask) <> MazeByteEmpty)  // This decision function should never decide a direction inconsistent with the rails.
 
                     newDirection
 

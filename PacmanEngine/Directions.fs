@@ -5,7 +5,7 @@ open MazeFilter
 
 type FacingDirection = FacingLeft | FacingUp | FacingRight | FacingDown
 
-let FacingDirectionToBitMaskByte facingDirection =  // TODO: Type model for the bitmask "byte"
+let FacingDirectionToBitMaskByte facingDirection = // TODO: rename
     match facingDirection with
         | FacingLeft  -> MazeByteLeft
         | FacingRight -> MazeByteRight

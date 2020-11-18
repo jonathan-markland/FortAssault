@@ -313,10 +313,10 @@ let GhostMovementTable ghostMoveTraits =
     // The following table is designed for the following bitmask ordering and enum.
     // This will not be changed!
 
-    assert (MazeByteLeft  = 8uy)
-    assert (MazeByteUp    = 4uy)
-    assert (MazeByteRight = 2uy)
-    assert (MazeByteDown  = 1uy)
+    assert (MazeByteLeft  = MazeByte 8uy)
+    assert (MazeByteUp    = MazeByte 4uy)
+    assert (MazeByteRight = MazeByte 2uy)
+    assert (MazeByteDown  = MazeByte 1uy)
 
     assert ((FacingLeft  |> FacingDirectionToInt) = 0)
     assert ((FacingUp    |> FacingDirectionToInt) = 1)
