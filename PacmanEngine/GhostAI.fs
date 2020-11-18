@@ -416,12 +416,13 @@ let GhostMovementTable ghostMoveTraits =
 let GetDirectionProbabilities facingDirection railsBitmask ghostAI =
 
     let (GhostAI(table)) = ghostAI
-    System.Diagnostics.Debug.Assert (railsBitmask >= 1uy && railsBitmask <= 15uy)
+    System.Diagnostics.Debug.Assert (railsBitmask |> IsNonEmpty4way)
     
     let dirInt = facingDirection |> FacingDirectionToInt
     System.Diagnostics.Debug.Assert (dirInt >= 0 && dirInt <= 3)
 
-    let index = dirInt ||| ((int)((railsBitmask - 1uy)) <<< 2)
+    let (MazeByte railsAsByte) = railsBitmask
+    let index = dirInt ||| ((int)((railsAsByte - 1uy)) <<< 2)
 
     // Debug tracing where corrections are made.
     // Will happen where ghosts heading is inconsistent with the rails,

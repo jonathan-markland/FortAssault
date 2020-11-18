@@ -49,6 +49,12 @@ let inline MazeAndMaskedWith (MazeByte lhs) (MazeByte rhs) =
     System.Diagnostics.Debug.Assert ((rhs &&& MazeByteAll4Mask) = rhs)   // This should probably be in the 4-way flags range.
     MazeByte (lhs &&& rhs)
     
+let inline IsNonEmpty4way (MazeByte b) =
+    b >= 1uy && b <= 15uy
+
+let inline IsValidRailBitmaskValue (MazeByte b) =
+    b >= 0uy && b <= 16uy
+
 
 
 /// Validates that the string array is a non-empty rectangle of text

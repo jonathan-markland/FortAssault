@@ -472,7 +472,7 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
                         match tile with
                             | None -> direction // disallow, not perfectly aligned
                             | Some (txi, tyi) ->
-                                let i = tyi * mazeState.MazeTilesCountX + txi
+                                let i = tyi * mazeState.MazeTilesCountX + txi // TODO: not keen on these formulae
                                 if directionImpliedByKeys 
                                     |> IsDirectionAllowedBy mazeState.MazePlayersRails.[i] then
                                     directionImpliedByKeys

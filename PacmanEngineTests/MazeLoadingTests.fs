@@ -4,6 +4,7 @@ open Xunit
 open FsXunit
 open MazeUnpacker
 open MazeState
+open MazeFilter
 
 
 
@@ -34,14 +35,11 @@ let ShouldLoadOk maze =
     ghostRails.Length |> ShouldEqual (20 * 15)
     playerRails.Length |> ShouldEqual (20 * 15)
 
-    let isValidRailBitmaskValue v =
-        (v >= 0uy && v <= 16uy)
-
     let checkRailsFor where =
         Array.iteri 
             (fun i bitmask -> 
                 bitmask 
-                    |> isValidRailBitmaskValue 
+                    |> IsValidRailBitmaskValue 
                     |> ShouldBeTrueWhenDoing (sprintf "Examining %s rails bitmask at index [%d]" where i))
 
     ghostRails |> checkRailsFor "ghost"

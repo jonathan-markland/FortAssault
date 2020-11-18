@@ -96,12 +96,12 @@ let TextMazeDefinitionUnpacked mazeList =
 
     let theGhostRails =
         mazeList 
-            |> StringArrayToMazeArray (fun ch -> ch <> '#')  RemoveMazeByteWrapper 0uy
+            |> StringArrayToMazeArray (fun ch -> ch <> '#')  id MazeByteEmpty
             |> unwrap "Failed to unpack rails from maze definition, please check text format input."
 
     let thePlayersRails =
         mazeList 
-            |> StringArrayToMazeArray (fun ch -> ch <> '#' && ch <> ':')  RemoveMazeByteWrapper 0uy
+            |> StringArrayToMazeArray (fun ch -> ch <> '#' && ch <> ':')  id MazeByteEmpty
             |> unwrap "Failed to unpack rails from maze definition, please check text format input."
 
     let theWallsAndPills =
