@@ -46,10 +46,10 @@ let private RenderGameOverScreen render (model:GameOverScreenModel) gameTime =
     let ghostAt = 
         DrawGhost render tilesImage gameTime 
 
-    msgAt  10 "PAC MAN"
-    msgAt  20 model.ScoreText
-    msgAt  40 "GAME OVER"
-    msgAt  90 model.HiScoreText
+    msgAt  20 "PAC MAN"
+    msgAt  30 "GAME OVER"
+    msgAt  45 model.ScoreText
+    msgAt  55 model.HiScoreText
 
     pacAt  model.PacRightMemo
     pacAt  model.PacLeftMemo 
@@ -68,12 +68,12 @@ let NewGameOverScreen scoreAndHiScore =
             ScoreAndHiScore = scoreAndHiScore
             ScoreText       = "SCORE   " + scoreAndHiScore.Score.ToString()
             HiScoreText     = "HI SCORE   " + scoreAndHiScore.HiScore.ToString()
-            PacLeftMemo     = TitleScreenPac FacingRight 20 40 
-            PacRightMemo    = TitleScreenPac FacingLeft  80 40
-            Ghost0Memo      = TitleScreenGhost (GhostNumber 0) 20 60
-            Ghost1Memo      = TitleScreenGhost (GhostNumber 1) 40 60
-            Ghost2Memo      = TitleScreenGhost (GhostNumber 2) 60 60
-            Ghost3Memo      = TitleScreenGhost (GhostNumber 3) 80 60
+            PacLeftMemo     = TitleScreenPac FacingRight 20 50 
+            PacRightMemo    = TitleScreenPac FacingLeft  80 50
+            Ghost0Memo      = TitleScreenGhost (GhostNumber 0) 20 75
+            Ghost1Memo      = TitleScreenGhost (GhostNumber 1) 40 75
+            Ghost2Memo      = TitleScreenGhost (GhostNumber 2) 60 75
+            Ghost3Memo      = TitleScreenGhost (GhostNumber 3) 80 75
         }
 
     NewGameState ModelNeverChanges RenderGameOverScreen gameOverModel
