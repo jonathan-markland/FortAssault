@@ -289,10 +289,17 @@ let UpOnly    = { ProbLeft=dp 0  ; ProbUp=dp 1  ; ProbRight=dp 0  ; ProbDown=dp 
 let RightOnly = { ProbLeft=dp 0  ; ProbUp=dp 0  ; ProbRight=dp 1  ; ProbDown=dp 0 }
 let DownOnly  = { ProbLeft=dp 0  ; ProbUp=dp 0  ; ProbRight=dp 0  ; ProbDown=dp 1 }
 
-let ExceptLeft  directions = { directions with ProbLeft  = dp 0 }
-let ExceptUp    directions = { directions with ProbUp    = dp 0 }
-let ExceptRight directions = { directions with ProbRight = dp 0 }
-let ExceptDown  directions = { directions with ProbDown  = dp 0 }
+let inline QuarterProb (DirectionProbability(n)) = 
+    DirectionProbability (
+        if n = 0uy then
+            0uy
+        else 
+            max (n / 4uy) 1uy)
+
+let WithReducedLeft  directions = { directions with ProbLeft  = QuarterProb directions.ProbLeft  }
+let WithReducedUp    directions = { directions with ProbUp    = QuarterProb directions.ProbUp    }
+let WithReducedRight directions = { directions with ProbRight = QuarterProb directions.ProbRight }
+let WithReducedDown  directions = { directions with ProbDown  = QuarterProb directions.ProbDown  }
 
 
 

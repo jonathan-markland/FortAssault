@@ -556,7 +556,7 @@ let private WithAdjustmentsForNormalGhost
 
     let consider facingDirection 
         (probsForSingleDirection:DirectionChoiceProbabilities) 
-        (exceptFacingDirection:DirectionChoiceProbabilities -> DirectionChoiceProbabilities) 
+        (reduceProbabilityInDirection:DirectionChoiceProbabilities -> DirectionChoiceProbabilities) 
         (directionsAcc:DirectionChoiceProbabilities) =
         
         if  (directionsAcc |> HasMoreThanOnePossibleDirection)  &&
@@ -569,7 +569,7 @@ let private WithAdjustmentsForNormalGhost
                 probsForSingleDirection  // chase pacman
             
             else if corridorRectangle |> IsIntersectedByAnyOtherGhostTo ghost allGhosts then
-                directionsAcc |> exceptFacingDirection   // avoid buddy
+                reduceProbabilityInDirection directionsAcc    // avoid buddy
             
             else
                 directionsAcc
@@ -577,10 +577,10 @@ let private WithAdjustmentsForNormalGhost
             directionsAcc
 
     directionChoices
-        |> consider FacingLeft  LeftOnly  ExceptLeft
-        |> consider FacingUp    UpOnly    ExceptUp
-        |> consider FacingRight RightOnly ExceptRight
-        |> consider FacingDown  DownOnly  ExceptDown
+        |> consider FacingLeft  LeftOnly  WithReducedLeft
+        |> consider FacingUp    UpOnly    WithReducedUp
+        |> consider FacingRight RightOnly WithReducedRight
+        |> consider FacingDown  DownOnly  WithReducedDown
 
 
 
