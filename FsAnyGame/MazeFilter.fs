@@ -49,9 +49,12 @@ let inline MazeAndMaskedWith (MazeByte lhs) (MazeByte rhs) =
     System.Diagnostics.Debug.Assert ((rhs &&& MazeByteAll4Mask) = rhs)   // This should probably be in the 4-way flags range.
     MazeByte (lhs &&& rhs)
     
+/// Returns true if the MazeByte is a 4-way (non-empty, and not the central column).
 let inline IsNonEmpty4way (MazeByte b) =
     b >= 1uy && b <= 15uy
 
+// TODO: revisit constructor permissions
+/// Returns true if the MazeByte is a valid since, as it stands, it could have been constructed anywhere!
 let inline IsValidRailBitmaskValue (MazeByte b) =
     b >= 0uy && b <= 16uy
 
@@ -109,10 +112,10 @@ let private MazeFilterIter isWallAtXY width height action =
             for x in 0..w do
                 if isWallAtXY x y then
                     
-                    let l = setIfExitAt (x-1) y MazeByteLeft
-                    let u = setIfExitAt x (y-1) MazeByteUp
-                    let r = setIfExitAt (x+1) y MazeByteRight
-                    let d = setIfExitAt x (y+1) MazeByteDown
+                    let l = setIfExitAt (x-1)  y    MazeByteLeft
+                    let u = setIfExitAt  x    (y-1) MazeByteUp
+                    let r = setIfExitAt (x+1)  y    MazeByteRight
+                    let d = setIfExitAt  x    (y+1) MazeByteDown
 
                     let l' = edgeMask (x=0) l u d vertical
                     let u' = edgeMask (y=0) u l r horizontal

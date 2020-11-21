@@ -1,4 +1,4 @@
-module Tests
+﻿module Tests
 
 open Xunit
 open FsXunit
@@ -157,3 +157,75 @@ let ``Maze load fails without ghost 1 being specified`` () =
     ]
         |> WhenInputTo ShouldLoadOk
         |> ShouldFailWithExceptionMessageWhere ((=) "Could not find char '1' in the maze definition.")
+
+
+
+
+let ToUnicodeBoxDrawing width (output:byte[]) =
+
+    let unicodeBoxDrawing = " ╷╶┌╵│└├╴┐─┬┘┤┴┼●"
+
+    let boxDrawOutput = 
+        output 
+            |> Array.map (fun n -> if n < 17uy then unicodeBoxDrawing.[int n] else ' ') 
+            |> Array.chunkBySize width
+            |> Array.toList
+            |> List.map (fun arr -> new System.String(arr))
+
+    boxDrawOutput
+
+[<Fact>]
+let ``Fudge generate unicode`` () =
+
+    let write (s:string) = System.Diagnostics.Trace.WriteLine(s)
+
+    let indicesRequired = [0;
+        1;
+        2;
+        3;
+        28;
+        280;
+        351;
+        460;
+        513;
+        549;
+        555;
+        556;
+        246;
+        249;
+        250;
+        251;
+        ]
+
+    Mazes.AllPacmanMazes 
+        |> Array.iteri 
+            (fun i maze -> 
+                if indicesRequired |> List.contains i then
+                    write $"\t// {i}"
+                    write "\t["
+                    maze |> List.iter (fun s -> write ($"\t\t\"{s}\""))
+                    write "\t]"
+            )
+
+
+    // Mazes.AllPacmanMazes 
+    //     |> Array.iteri 
+    //         (fun i maze -> 
+    // 
+    //             let {
+    //                     UnpackedMazeState      = unpackedMazeState
+    //                     UnpackedPacmanPosition = pacmanPosition
+    //                     UnpackedGhostPositions = ghostPositions
+    // 
+    //                 } = maze |> TextMazeDefinitionUnpacked
+    // 
+    //             write ($"[{i}]")
+    //             unpackedMazeState.MazeTiles 
+    //                 |> ToUnicodeBoxDrawing unpackedMazeState.MazeTilesCountX
+    //                 |> List.iter write 
+    // 
+    //             write ""
+    //         )
+
+    write "All done"
+

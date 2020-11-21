@@ -46,9 +46,6 @@ let private FindUnique charToFind mazeArray =
 
 let TextMazeDefinitionUnpacked mazeList =
 
-    // TODO: The test framework must run this over all of the included mazes
-    //       and see that it doesn't throw the exceptions.
-
     // TODO: The rails might return the "central dot"
 
     // TODO: Have I been too hasty assuming the characters will never encounter
