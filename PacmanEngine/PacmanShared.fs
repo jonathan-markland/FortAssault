@@ -293,9 +293,9 @@ let DrawGhost render image pos (GhostNumber(ghostNumber)) ghostMode (gameTime:fl
 
             | GhostEdibleUntil t ->
                 if (t - gameTime) < PowerPillWarnTime then
-                    gameTime |> PulseBetween PowerPillWarnFlashRate pale normal
+                    gameTime |> PulseBetween PowerPillWarnFlashRate normal dark
                 else
-                    pale
+                    gameTime |> PulseBetween EdibleFlashRate pale dark
 
             | GhostReturningToBase ->
                 dark

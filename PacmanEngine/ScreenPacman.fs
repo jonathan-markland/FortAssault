@@ -55,8 +55,10 @@ type private PacmanScreenModel =  // TODO: Getting fat with things that don't ch
 
 /// Expansion of pacman's bounding rectangle to allow ghosts to still
 /// see pacman if he slips around a corner.  (Ghosts have no memory).
-let ExpandedToSlightlyCompensateForLackOfGhostMemory = 
-    InflateRectangle TileSide
+// TODO : This idea did not work because it cause inaccuracies in direction choice
+//        as a result of spotting pacman at close range.
+// let ExpandedToSlightlyCompensateForLackOfGhostMemory = 
+//     InflateRectangle TileSide
 
 /// Obtain key states as boolean values.
 let KeysFrom keyStateGetter =
@@ -127,6 +129,10 @@ let TileBoundingRectangle position =
 
 
 
+/// Obtain pacman's tightest bounding rectangle.
+let inline PacBoundingRectangle pacman =
+    pacman.PacPosition |> TileBoundingRectangle
+
 /// Obtain pacman's collision rectangle.
 let inline PacCollisionRectangle pacman =
     pacman.PacPosition |> CollisionRectangle
@@ -145,8 +151,13 @@ let WithPacMode mode pacman =
             }
     }
 
+
+
+/// Obtain ghost's tightest bounding rectangle.
+let inline GhostBoundingRectangle ghost =
+    ghost.GhostPosition |> TileBoundingRectangle
     
-/// Obtain pacman's collision rectangle.
+/// Obtain ghost's collision rectangle.
 let inline GhostCollisionRectangle ghost =
     ghost.GhostPosition |> CollisionRectangle
 
@@ -335,14 +346,13 @@ let private DrawCorridorFinderResult render centreX centreY countX countY mazeBy
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private DrawBoundingRectangle render fillColour pacPosition =
+let private DrawBoundingRectangle render fillColour position toBoundingRectangle =
 
-    let pacRect = 
-        pacPosition |> TileBoundingRectangle |> ExpandedToSlightlyCompensateForLackOfGhostMemory
+    let r = position |> toBoundingRectangle
 
     render
         (DrawingShapes.DrawFilledRectangle (
-            pacRect.Left, pacRect.Top, (pacRect |> RectangleWidth), (pacRect |> RectangleHeight), fillColour))
+            r.Left, r.Top, (r |> RectangleWidth), (r |> RectangleHeight), fillColour))
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -382,7 +392,7 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
     
     let direction = model.PacmanState |> Facing
 
-    // DrawBoundingRectangle render (DrawingShapes.SolidColour 0xCC0000u) pos
+    // DrawBoundingRectangle render (DrawingShapes.SolidColour 0xCC0000u) pos PacBoundingRectangle
 
     match model.PacmanState |> PacMode with
         | PacAlive ->
@@ -408,7 +418,7 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
             
             // let (GhostNumber(gn)) = ghostState |> Tag
             // let colour = DrawingShapes.SolidColour ([| 0xFF0000u ; 0xFFFF00u ; 0x00FFFFu ; 0xFFFFFFu |].[gn])
-            // // DrawBoundingRectangle render colour pos
+            // // DrawBoundingRectangle render colour pos GhostBoundingRectangle
             // DrawCorridorFinderResult 
             //     render cx cy 
             //     model.MazeState.MazeTilesCountX 
@@ -531,8 +541,8 @@ let IsIntersectedByAnyOtherGhostTo selfGhost allGhosts corridorRect =
         if selfGhost |> IsTheSameGhostAs otherGhost then
             false  // We do not "see" ourself down the corridors.
         else
-            otherGhost.GhostPosition 
-                |> TileBoundingRectangle
+            otherGhost 
+                |> GhostBoundingRectangle
                 |> RectangleIntersects corridorRect)
 
 
@@ -543,8 +553,8 @@ let IsIntersectedByAnyOtherGhostTo selfGhost allGhosts corridorRect =
 let private WithAdjustmentsForNormalGhost 
     ghost mazeState tileXY pacPos allGhosts directionChoices =
 
-    let fatPacRect = 
-        pacPos |> TileBoundingRectangle |> ExpandedToSlightlyCompensateForLackOfGhostMemory
+    let pacRect = 
+        pacPos |> PacBoundingRectangle
 
     let corridorRectInDirection direction = 
         CorridorRectangle 
@@ -565,7 +575,7 @@ let private WithAdjustmentsForNormalGhost
             let corridorRectangle = 
                 corridorRectInDirection facingDirection
             
-            if fatPacRect |> RectangleIntersects corridorRectangle then
+            if pacRect |> RectangleIntersects corridorRectangle then
                 probsForSingleDirection  // chase pacman
             
             else if corridorRectangle |> IsIntersectedByAnyOtherGhostTo ghost allGhosts then
@@ -590,7 +600,7 @@ let private WithAdjustmentsForNormalGhost
 let private WithAdjustmentsForEdibleGhost 
     mazeState tileXY pacPos directionChoices =
 
-    let pacRect = pacPos |> TileBoundingRectangle
+    let pacRect = pacPos |> PacBoundingRectangle
 
     let possiblyEliminated probability direction =
         if probability = (dp 0) then
@@ -695,18 +705,17 @@ let private DecideNewPositionAndDirectionFor
 
                     let directionChoices = 
 
-                        let pacPos = pacman.PacPosition
                         let tileXY = { ptx=txi ; pty=tyi }
                          
                         match ghost |> GhostMode with
                             
                             | GhostNormal -> 
                                 defaultDirectionChoices 
-                                    |> WithAdjustmentsForNormalGhost ghost mazeState tileXY pacPos allGhosts
+                                    |> WithAdjustmentsForNormalGhost ghost mazeState tileXY pacman allGhosts
                             
                             | GhostEdibleUntil _ -> 
                                 defaultDirectionChoices 
-                                    |> WithAdjustmentsForEdibleGhost mazeState tileXY pacPos
+                                    |> WithAdjustmentsForEdibleGhost mazeState tileXY pacman
                             
                             | _ -> failwith "Should not be deciding direction for ghost in this state"
                         
