@@ -30,18 +30,71 @@ let ScreenRandomSeed = 0x33033u
 // TODO: Research - a pure functional pacman maze instead of the array mutability.
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Memoization of status panel strings to avoid garbage
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+[<Struct>]
+type MostRecentStatusPanel =
+    {
+        MostRecentScore      : uint32
+        MostRecentHiScore    : uint32
+        MostRecentLevelIndex : int
+        MostRecentLives      : uint32
+    }
+
+type MemoizedStatusPanelStrings =
+    {
+        /// The values corresponding to the memoized strings.
+        MostRecentStatusPanel    : MostRecentStatusPanel
+
+        MemoizedScoreString      : string
+        MemoizedHiScoreString    : string
+        MemoizedLevelIndexString : string
+        MemoizedLivesString      : string
+    }
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Pacman screen model
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 type private PacmanScreenModel =  // TODO: Getting fat with things that don't change per-frame
     {
-        Random                 : XorShift32State
-        LevelNumber            : int
-        ScoreAndHiScore        : ScoreAndHiScore
-        MazeState              : MazeState
-        PacmanState            : PacmanState
-        GhostsState            : GhostState list
-        WhereToOnGameOver      : ScoreAndHiScore -> ErasedGameState
-        WhereToOnAllEaten      : int -> BetweenScreenStatus -> float32<seconds> -> ErasedGameState
+        Random                     : XorShift32State
+        LevelIndex                 : int
+        ScoreAndHiScore            : ScoreAndHiScore
+        MazeState                  : MazeState
+        PacmanState                : PacmanState
+        GhostsState                : GhostState list
+        MemoizedStatusPanelStrings : MemoizedStatusPanelStrings
+        WhereToOnGameOver          : ScoreAndHiScore -> ErasedGameState
+        WhereToOnAllEaten          : int -> BetweenScreenStatus -> float32<seconds> -> ErasedGameState
     }
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Memoization of score panel strings
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let private NewStatusPanelValues score hiScore levelIndex livesLeft =
+    {
+        MostRecentScore      = score
+        MostRecentHiScore    = hiScore
+        MostRecentLevelIndex = levelIndex
+        MostRecentLives      = livesLeft
+    }
+
+let NewMemoizedStatusPanel panel =
+    {
+        MostRecentStatusPanel    = panel
+        MemoizedScoreString      = sprintf "SCORE %d"   panel.MostRecentScore     
+        MemoizedHiScoreString    = sprintf "HISCORE %d" panel.MostRecentHiScore   
+        MemoizedLevelIndexString = sprintf "FRAME %d"   (panel.MostRecentLevelIndex + 1)
+        MemoizedLivesString      = sprintf "LIVES %d"   panel.MostRecentLives     
+    }
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Support functions
@@ -430,10 +483,10 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
     let indent = 20<epx>
     let indentY = 2<epx>
 
-    Text render GreyFontID LeftAlign  TopAlign    indent indentY (sprintf "SCORE %d" model.ScoreAndHiScore.Score)  // TODO: memoize score to avoid garbage
-    Text render GreyFontID RightAlign TopAlign    (ScreenWidthInt - indent) indentY (sprintf "HISCORE %d" model.ScoreAndHiScore.HiScore)  // TODO: memoize score to avoid garbage
-    Text render GreyFontID LeftAlign  BottomAlign indent (ScreenHeightInt - indentY) (sprintf "FRAME %d" model.LevelNumber)  // TODO: memoize score to avoid garbage
-    Text render GreyFontID RightAlign BottomAlign (ScreenWidthInt - indent) (ScreenHeightInt - indentY) (sprintf "LIVES %d" (model.PacmanState |> LivesLeft))  // TODO: memoize score to avoid garbage
+    Text render GreyFontID LeftAlign  TopAlign     indent                     indentY                      model.MemoizedStatusPanelStrings.MemoizedScoreString
+    Text render GreyFontID RightAlign TopAlign     (ScreenWidthInt - indent)  indentY                      model.MemoizedStatusPanelStrings.MemoizedHiScoreString
+    Text render GreyFontID LeftAlign  BottomAlign  indent                     (ScreenHeightInt - indentY)  model.MemoizedStatusPanelStrings.MemoizedLevelIndexString
+    Text render GreyFontID RightAlign BottomAlign  (ScreenWidthInt - indent)  (ScreenHeightInt - indentY)  model.MemoizedStatusPanelStrings.MemoizedLivesString
 
 
 
@@ -842,15 +895,24 @@ let WithGhostReset ghost =
 
 /// Returns a model with the characters reset for use after a life loss.
 let private WithCharactersReset model =
+
+    let panel =
+        NewStatusPanelValues 
+            model.ScoreAndHiScore.Score 
+            model.ScoreAndHiScore.HiScore 
+            model.LevelIndex 
+            (model.PacmanState |> LivesLeft)
+
     {
-        Random            = model.Random
-        LevelNumber       = model.LevelNumber
-        ScoreAndHiScore   = model.ScoreAndHiScore  
-        MazeState         = model.MazeState        
-        PacmanState       = model.PacmanState |> WithPacmanReset
-        GhostsState       = model.GhostsState |> List.map WithGhostReset
-        WhereToOnGameOver = model.WhereToOnGameOver
-        WhereToOnAllEaten = model.WhereToOnAllEaten
+        Random                     = model.Random
+        LevelIndex                 = model.LevelIndex
+        ScoreAndHiScore            = model.ScoreAndHiScore  
+        MazeState                  = model.MazeState        
+        PacmanState                = model.PacmanState |> WithPacmanReset
+        GhostsState                = model.GhostsState |> List.map WithGhostReset
+        MemoizedStatusPanelStrings = panel |> NewMemoizedStatusPanel
+        WhereToOnGameOver          = model.WhereToOnGameOver
+        WhereToOnAllEaten          = model.WhereToOnAllEaten
     }
 
 
@@ -1057,18 +1119,33 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
     let pacmanState =
         pacmanState |> WithStateChangesResultingFromNewScore scoreAndHiScore scoreIncrement
 
+    let memoizedStatusPanel =
+        
+        let potentialNewPanel = 
+            NewStatusPanelValues 
+                scoreAndHiScore.Score 
+                scoreAndHiScore.HiScore 
+                model.LevelIndex 
+                (pacmanState |> LivesLeft)
+
+        if potentialNewPanel = model.MemoizedStatusPanelStrings.MostRecentStatusPanel then
+            model.MemoizedStatusPanelStrings
+        else
+            potentialNewPanel |> NewMemoizedStatusPanel
+
     // Repack
 
     let model =
         {
-            Random            = model.Random |> XorShift32
-            LevelNumber       = model.LevelNumber
-            ScoreAndHiScore   = scoreAndHiScore
-            MazeState         = mazeState
-            PacmanState       = pacmanState
-            GhostsState       = ghostStateList
-            WhereToOnGameOver = model.WhereToOnGameOver
-            WhereToOnAllEaten = model.WhereToOnAllEaten
+            Random                     = model.Random |> XorShift32
+            LevelIndex                 = model.LevelIndex
+            ScoreAndHiScore            = scoreAndHiScore
+            MazeState                  = mazeState
+            PacmanState                = pacmanState
+            GhostsState                = ghostStateList
+            MemoizedStatusPanelStrings = memoizedStatusPanel
+            WhereToOnGameOver          = model.WhereToOnGameOver
+            WhereToOnAllEaten          = model.WhereToOnAllEaten
         }        
 
     // Decide next gameState
@@ -1088,7 +1165,7 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
                 Lives           = model.PacmanState.PacState2.LivesLeft
             }
         let whereToAfterFreezeFrame gameTime =
-            model.WhereToOnAllEaten model.LevelNumber betweenScreenStatus gameTime  // TODO: Maze flash - but could that be done with a clever external filter?
+            model.WhereToOnAllEaten model.LevelIndex betweenScreenStatus gameTime  // TODO: Maze flash - but could that be done with a clever external filter?
         gameState |> WithDrawingOnlyFor ScreenCompletePauseTime gameTime whereToAfterFreezeFrame
     else 
         gameState |> WithUpdatedModel model
@@ -1116,7 +1193,7 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver (betweenScre
     let screenModel =
         {
             Random            = XorShift32State ScreenRandomSeed
-            LevelNumber       = levelNumber
+            LevelIndex        = levelNumber
             ScoreAndHiScore   = betweenScreenStatus.ScoreAndHiScore
             MazeState         = unpackedMaze.UnpackedMazeState
             WhereToOnGameOver = whereToOnGameOver
@@ -1151,7 +1228,18 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver (betweenScre
                             GhostAITable          = ghostMovementTraits |> GhostMovementTable
                         } 
                 })
+
+            MemoizedStatusPanelStrings =
+                NewMemoizedStatusPanel
+                    (NewStatusPanelValues 
+                        betweenScreenStatus.ScoreAndHiScore.Score 
+                        betweenScreenStatus.ScoreAndHiScore.HiScore
+                        levelNumber
+                        betweenScreenStatus.Lives)
         }
 
     NewGameState NextPacmanScreenState RenderPacmanScreen screenModel
+
+
+
 

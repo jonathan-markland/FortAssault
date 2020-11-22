@@ -60,7 +60,7 @@ and private PacmanStory (levelNumber:int) betweenScreenStatus _gameTime =
 and private GameTitleStory gameTime =
 
     let firstLevelForBrandNewGame =
-        7 //574 // 561 125 -- with dead ends
+        0
 
     let betweenScreenStatus = 
         {
