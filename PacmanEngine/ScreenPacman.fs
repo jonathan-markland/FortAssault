@@ -21,17 +21,11 @@ open GhostAI
 open Update
 open Keys
 open MazeUnpacker
+open FreezeFrame
+open Mechanics
 
 
 let ScreenRandomSeed = 0x33033u
-
-// TODO: BUG: Frame 145:  If pacman stays still, the ghosts don't get him coming from the top.
-
-// TODO: The ghosts that are less decisive may get trapped in the base because the
-//       base rails are a square network.  This is only an issue for the early stage.
-
-// TODO: Strong typing instead of "byte" all other the place.  Some work was started
-//       in the library allowing the user to StringArrayToMazeArray tileMapper parameter.
 
 // TODO: Research - a pure functional pacman maze instead of the array mutability.
 
@@ -242,16 +236,16 @@ let EdgeRectangleFacing direction rectangle =
 /// Returns the corridor rectangle starting from a given maze tile 'originTile',
 /// where originTile is a 2D array index into the tiles matrix.  Takes the actual
 /// maze, not the rails as the mazeByteArray.
-let CorridorRectangle tilesHorizontally tilesVertically (mazeByteArray:byte[]) originTile direction =  // TODO: originTile's unit is not clear (it's the array indices)
+let CorridorRectangle tilesHorizontally tilesVertically (mazeArray:MazeTile[]) originTile direction =  // TODO: originTile's unit is not clear (it's the array indices)
 
     let stepDelta =
         direction |> DirectionToMovementDelta 0 1
 
-    let isWallTileType (t:byte) =
+    let isWallTileType (MazeTile(t)) =
         t >= ((byte)TileIndex.Wall0) && t <= ((byte)TileIndex.Wall15)
     
     let isWall pos =  // Not strictly correct, will cause inclusion of the wall square hit, but that is benign for our purposes.
-        isWallTileType (mazeByteArray.[pos.pty * tilesHorizontally + pos.ptx])
+        isWallTileType (mazeArray.[pos.pty * tilesHorizontally + pos.ptx])
 
     let noSquareExistsAt pos =
         pos.ptx < 0 || pos.pty < 0 || pos.ptx >= tilesHorizontally || pos.pty >= tilesVertically
@@ -286,7 +280,7 @@ let private OriginForMazeOfDimensions cx cy (countX:int) (countY:int) =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private DrawSpecificMazeCentred render tilesImage cx cy countX countY (mazeByteArray:byte[]) gameTime =
+let private DrawSpecificMazeCentred render tilesImage cx cy countX countY (mazeArray:MazeTile []) gameTime =
 
     let (x,y) = OriginForMazeOfDimensions cx cy countX countY
 
@@ -294,9 +288,9 @@ let private DrawSpecificMazeCentred render tilesImage cx cy countX countY (mazeB
         let y' = y + ty * TileSide
 
         for tx in 0..countX - 1 do
-            let tileIndex = mazeByteArray.[ty * countX + tx]
+            let (MazeTile(tileIndex)) = mazeArray.[ty * countX + tx]
             let x' = x + tx * TileSide
-            DrawPacTileInt render tilesImage x' y' ((int)tileIndex) gameTime
+            DrawPacTileInt render tilesImage x' y' (int tileIndex) gameTime
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -495,7 +489,7 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
                     | Some (txi, tyi) ->
                         let i = tyi * mazeState.MazeTilesCountX + txi
 
-                        let tileType = mazeState.MazeTiles.[i]
+                        let (MazeTile tileType) = mazeState.MazeTiles.[i]
                         if tileType = ((byte) TileIndex.Dot) then
                             (EatenDot i) , ScoreForEatingDot
 
@@ -973,7 +967,7 @@ let private WithDotsRemovedFromArrayWhere eaten mazeState =
         | EatenNothing -> mazeState
         | EatenDot tileIndex
         | EatenPowerPill tileIndex ->
-            mazeState.MazeTiles.[tileIndex] <- ((byte) TileIndex.Blank)  // mutable
+            mazeState.MazeTiles.[tileIndex] <- MazeTile ((byte) TileIndex.Blank)  // mutable
             mazeState
 
 
@@ -1093,8 +1087,9 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
                 ScoreAndHiScore = model.ScoreAndHiScore
                 Lives           = model.PacmanState.PacState2.LivesLeft
             }
-        model.WhereToOnAllEaten model.LevelNumber betweenScreenStatus gameTime  // TODO: Maze flash - but could that be done with a clever external filter?
-    
+        let whereToAfterFreezeFrame gameTime =
+            model.WhereToOnAllEaten model.LevelNumber betweenScreenStatus gameTime  // TODO: Maze flash - but could that be done with a clever external filter?
+        gameState |> WithDrawingOnlyFor ScreenCompletePauseTime gameTime whereToAfterFreezeFrame
     else 
         gameState |> WithUpdatedModel model
 

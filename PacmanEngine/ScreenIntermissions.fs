@@ -27,5 +27,5 @@ let WithScreenCompleteIntermissionCard betweenScreenStatus whereToAfter gameTime
         (GreyFontID |> FontFromID)
         (sprintf "SCREEN COMPLETE  SCORE %d" betweenScreenStatus.ScoreAndHiScore.Score)
         ScreenWidthInt ScreenHeightInt 
-            |> WithFreezeFrameFor ScreenCompletePauseTime gameTime whereToAfter
+            |> WithFreezeFrameFor ScreenCompleteStatusCardTime gameTime whereToAfter
         

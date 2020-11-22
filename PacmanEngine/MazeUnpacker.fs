@@ -51,16 +51,16 @@ let TextMazeDefinitionUnpacked mazeList =
     // TODO: Have I been too hasty assuming the characters will never encounter
     //       rails with a direction byte mask 0uy?
 
-    let combinedWithDotsAndPillsIn (mazeList:string list) (justTheWalls:byte[]) =
+    let combinedWithDotsAndPillsIn (mazeList:string list) (justTheWalls:MazeTile[]) =
 
         mazeList |> IfValidStringRectangleThen (fun width height ->
 
             if (width * height) = justTheWalls.Length then
-                let newArray = Array.create justTheWalls.Length ((byte)TileIndex.Blank)
+                let newArray = Array.create justTheWalls.Length (MazeTile (byte TileIndex.Blank))
                 mazeList |> List.iteri (fun y row ->
                     for x in 0..(width-1) do
                         let i = y * width + x
-                        let wall = justTheWalls.[i]
+                        let (MazeTile wall) = justTheWalls.[i]
                         let tileIndex =
                             if wall <> 0uy then
                                 wall + ((byte)TileIndex.Blank)
@@ -72,7 +72,7 @@ let TextMazeDefinitionUnpacked mazeList =
                                     ((byte) TileIndex.Pill1)
                                 else
                                     0uy
-                        newArray.[i] <- tileIndex
+                        newArray.[i] <- MazeTile tileIndex
                 )
                 Some newArray
             else
@@ -86,9 +86,11 @@ let TextMazeDefinitionUnpacked mazeList =
 
     let RemoveMazeByteWrapper (MazeByte mazeByte) = mazeByte // TODO: Decide what type wrapping I'm doing here.  This just restores us to the byte-based system currently in wider use.
 
+    let mazeByteToMazeTile (MazeByte(b)) = MazeTile b   // TODO: This system rule should be stated somewhere more globally.
+
     let justTheWalls =
         mazeList 
-            |> StringArrayToMazeArray (fun ch -> ch = '#' || ch = ':') RemoveMazeByteWrapper 0uy
+            |> StringArrayToMazeArray (fun ch -> ch = '#' || ch = ':') mazeByteToMazeTile (MazeTile 0uy)
             |> unwrap "Failed to unpack walls from maze definition, please check text format input."
 
     let theGhostRails =

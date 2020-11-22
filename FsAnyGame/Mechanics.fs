@@ -74,7 +74,8 @@ let FunctionThatGetsPositionOfMovingObject
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 /// Unit-Space is where some external range has been 
-/// normalized to a floating point value between 0.0F and 1.0F
+/// normalized to a floating point value between 0.0F and 1.0F,
+/// where 0.0F maps to the start of the range, and 1.0F the end.
 [<Measure>]
 type unitspace
 
@@ -90,7 +91,7 @@ let inline SlowingDown (tu:float32<unitspace>) =
     tu |> InReverse |> SpeedingUp |> InReverse
 
 /// Use f1 for the first half of the animation period, then use f2.
-/// But, lie to f1 and f2 so they thinks they are being used for a full period.
+/// But, lie to f1 and f2 so they think they are being used for a full period.
 let inline HalfAndHalf f1 f2 (tu:float32<unitspace>) =
     if tu < 0.5F<unitspace> then
         tu |> (*) 2.0F |> f1
