@@ -1,1 +1,5 @@
+
+[ ] Must handle 500 errors (etc) on the loading of the static resource files.
 [ ] The Index.html files have some duplicate .js code for dealing with the images.  Share or translate to F#/Fable.
+[ ] Must stamp the file names with hash codes to avoid browser caching denying updates to the user.
+
