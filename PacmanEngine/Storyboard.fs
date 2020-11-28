@@ -13,6 +13,7 @@ open PacmanGetReadyOverlay
 
 open ScoreboardModel
 
+open FreezeFrame
 open ScreenIntermissions
 open ScoreHiScore
 
@@ -43,12 +44,10 @@ and private AllEatenStory levelNumber betweenScreenStatus gameTime =
         (PacmanStory (levelNumber + 1) betweenScreenStatus)
         gameTime
 
-and private GameOverStory scoreAndHiScore =
+and private GameOverStory scoreAndHiScore gameTime =
  
     NewGameOverScreen scoreAndHiScore 
-        |> AsInterruptableVideoThen
-                (EnterYourNameStory scoreAndHiScore)
-                KeyFire
+        |> WithDrawingOnlyFor GameOverPauseTime gameTime (EnterYourNameStory scoreAndHiScore)
 
 and private PacmanStory (levelNumber:int) betweenScreenStatus _gameTime =
 
@@ -84,7 +83,7 @@ and private GameTitleStory gameTime =
 
 let NewPacmanStoryboard _ gameTime =
 
-    globalScoreboard <- InitialScoreboard [ "Damon" ; "Jarvis" ; "Noel" ; "James" ] 2500u 2500u
+    globalScoreboard <- InitialScoreboard [ "DAMON" ; "JARVIS" ; "NOELLE" ; "PAT" ] 1000u 2000u
 
     GameTitleStory gameTime
     

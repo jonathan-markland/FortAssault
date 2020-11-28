@@ -69,7 +69,7 @@ type private PacmanScreenModel =  // TODO: Getting fat with things that don't ch
         PacmanState                : PacmanState
         GhostsState                : GhostState list
         MemoizedStatusPanelStrings : MemoizedStatusPanelStrings
-        WhereToOnGameOver          : ScoreAndHiScore -> ErasedGameState
+        WhereToOnGameOver          : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
         WhereToOnAllEaten          : int -> BetweenScreenStatus -> float32<seconds> -> ErasedGameState
     }
 
@@ -1153,7 +1153,7 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
 
     if pacmanState |> LifeIsOver then
         if pacmanState |> GameIsOver then
-            model.WhereToOnGameOver scoreAndHiScore
+            model.WhereToOnGameOver scoreAndHiScore gameTime
         else
             let nextLifeGameStateConstructor =
                 fun _gameTime -> model |> WithCharactersReset |> ReplacesModelIn gameState

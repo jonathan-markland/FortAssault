@@ -84,9 +84,7 @@ let TextMazeDefinitionUnpacked mazeList =
             | Some thing -> thing
             | None       -> failwith errorMessage
 
-    let RemoveMazeByteWrapper (MazeByte mazeByte) = mazeByte // TODO: Decide what type wrapping I'm doing here.  This just restores us to the byte-based system currently in wider use.
-
-    let mazeByteToMazeTile (MazeByte(b)) = MazeTile b   // TODO: This system rule should be stated somewhere more globally.
+    let mazeByteToMazeTile (MazeByte(b)) = MazeTile b   // TODO: This is a Pacman system rule that should be stated somewhere more globally.
 
     let justTheWalls =
         mazeList 

@@ -39,6 +39,7 @@ let GetReadyCardTime = 2.0F<seconds>
 let LifeOverGetReadyPauseTime = 4.0F<seconds>
 let ScreenCompletePauseTime = 3.0F<seconds>
 let ScreenCompleteStatusCardTime = 6.0F<seconds>
+let GameOverPauseTime = 5.0F<seconds>
 
 let SnapsPerSecond        = 8.0F
 let EyesTwitchesPerSecond = 2.0F
