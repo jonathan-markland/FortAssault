@@ -22,7 +22,6 @@ open Update
 open Keys
 open MazeUnpacker
 open FreezeFrame
-open Mechanics
 open PacmanGetReadyOverlay
 
 
