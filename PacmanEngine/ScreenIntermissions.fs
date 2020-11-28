@@ -14,7 +14,7 @@ let WithLifeLossIntermissionCard whereToAfter gameTime =
     NewIntermissionCard
         (BackgroundImageID |> ImageFromID) 
         (GreyFontID |> FontFromID)
-        "LIFE OVER    GET READY" 
+        "LIFE OVER" 
         ScreenWidthInt ScreenHeightInt 
             |> WithFreezeFrameFor LifeOverGetReadyPauseTime gameTime whereToAfter
         

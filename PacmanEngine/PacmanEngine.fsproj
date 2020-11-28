@@ -16,6 +16,7 @@
     <Compile Include="MazeUnpacker.fs" />
     <Compile Include="PacmanShared.fs" />
     <Compile Include="TitleScreenShared.fs" />
+    <Compile Include="PacmanGetReadyOverlay.fs" />
     <Compile Include="ScreenIntermissions.fs" />
     <Compile Include="ScreenPacman.fs" />
     <Compile Include="ScreenGameOver.fs" />

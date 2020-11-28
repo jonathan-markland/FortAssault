@@ -9,6 +9,7 @@ open ScreenGameTitle
 open ScreenPacman
 open ScreenGameOver
 open ScreenPotentialEnterYourName
+open PacmanGetReadyOverlay
 
 open ScoreboardModel
 
@@ -51,11 +52,16 @@ and private GameOverStory scoreAndHiScore =
 
 and private PacmanStory (levelNumber:int) betweenScreenStatus _gameTime =
 
-    NewPacmanScreen
-        levelNumber
-        AllEatenStory
-        GameOverStory
-        betweenScreenStatus
+    let newGame _gameTime =
+        NewPacmanScreen
+            levelNumber
+            AllEatenStory
+            GameOverStory
+            betweenScreenStatus
+
+    let messageOverlay = NewPacmanGetReadyOverlay ()
+
+    FreezeForGetReady newGame messageOverlay GetReadyCardTime _gameTime
 
 and private GameTitleStory gameTime =
 

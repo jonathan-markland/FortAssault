@@ -89,7 +89,7 @@ type PacmanState =
 
 
 /// Pacman mode property.
-let inline PacMode pacman =
+let inline GetPacMode pacman =
     pacman.PacState2.PacMode
 
 /// Pacman's direction-facing property.
@@ -102,7 +102,7 @@ let inline StartPosition pacman =
 
 /// Pacman life is over property.
 let inline LifeIsOver pacman =
-    match pacman |> PacMode with
+    match pacman |> GetPacMode with
         | PacDead -> true
         | _ -> false
 
@@ -176,7 +176,7 @@ type GhostState =
 
 
 /// Ghost's mode property.
-let inline GhostMode ghost =
+let inline GetGhostMode ghost =
     ghost.GhostState2.GhostMode
 
 /// The position of this ghost's square in the base.

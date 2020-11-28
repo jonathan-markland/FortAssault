@@ -23,6 +23,7 @@ open Keys
 open MazeUnpacker
 open FreezeFrame
 open Mechanics
+open PacmanGetReadyOverlay
 
 
 let ScreenRandomSeed = 0x33033u
@@ -237,7 +238,7 @@ let IntersectsNormalGhostsIn ghostStateList rect =
 
     ghostStateList 
         |> List.exists (fun ghost ->
-            match ghost |> GhostMode with
+            match ghost |> GetGhostMode with
                 | GhostNormal -> ghost |> GhostCollisionRectangle |> RectangleIntersects rect
                 | GhostEdibleUntil _
                 | GhostRegeneratingUntil _
@@ -441,7 +442,7 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
 
     // DrawBoundingRectangle render (DrawingShapes.SolidColour 0xCC0000u) pos PacBoundingRectangle
 
-    match model.PacmanState |> PacMode with
+    match model.PacmanState |> GetPacMode with
         | PacAlive ->
             let drawPacMode = if model.GhostsState |> InPillMode then DrawPacPillMode else DrawPacNormal
             DrawPacManAlive render tilesImage pos direction drawPacMode gameTime
@@ -476,7 +477,7 @@ let private RenderPacmanScreen render (model:PacmanScreenModel) gameTime =
             //     colour
 
             let number = ghostState |> Tag
-            let mode   = ghostState |> GhostMode
+            let mode   = ghostState |> GetGhostMode
 
             DrawGhost render tilesImage pos number mode gameTime)
 
@@ -506,7 +507,7 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
     
     let position  = pacmanState.PacPosition
     let direction = pacmanState |> Facing
-    let mode      = pacmanState |> PacMode
+    let mode      = pacmanState |> GetPacMode
 
     match mode with
 
@@ -754,7 +755,7 @@ let private DecideNewPositionAndDirectionFor
 
                         let tileXY = { ptx=txi ; pty=tyi }
                          
-                        match ghost |> GhostMode with
+                        match ghost |> GetGhostMode with
                             
                             | GhostNormal -> 
                                 defaultDirectionChoices 
@@ -820,7 +821,7 @@ let private AdvanceGhost mazeState allGhosts pacman ghost rand gameTime =
         (ghost.GhostPosition , ghost |> GlideDirection)
 
     let (position , direction) =
-        match ghost |> GhostMode with
+        match ghost |> GetGhostMode with
             | GhostNormal ->
                 DecideNewPositionAndDirectionFor ghost mazeState allGhosts pacman rand gameTime
 
@@ -843,7 +844,7 @@ let private AdvanceGhost mazeState allGhosts pacman ghost rand gameTime =
             {
                 GhostTag              = ghost |> Tag
                 GhostBasePosition     = ghost |> BasePosition
-                GhostMode             = ghost |> GhostMode
+                GhostMode             = ghost |> GetGhostMode
                 GhostFacingDirection  = direction
                 GhostAITable          = AIFor ghost
             }
@@ -926,7 +927,7 @@ let private WithCharactersReset model =
 /// State changes on pacman as a result of collision detection with ghosts
 let WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime pacmanState =   // TODO: Return indicator of new state, instead of new record
 
-    match pacmanState |> PacMode with
+    match pacmanState |> GetPacMode with
 
         | PacAlive ->
             let pacmanRectangle = pacmanState |> PacCollisionRectangle
@@ -968,7 +969,7 @@ let WithStateChangesResultingFromCollisionWithPacman pacmanPos ghosts =   // TOD
 
     let isEdibleGhostOverlappingPacmanAt pacmanRectangle ghost =
 
-        match ghost |> GhostMode with
+        match ghost |> GetGhostMode with
             | GhostNormal
             | GhostReturningToBase      
             | GhostRegeneratingUntil _  -> false
@@ -1013,7 +1014,7 @@ let WithPacManMovementStateChangesAppliedFrom position direction pacmanState =
         {
             PacState2 =
                 {
-                    PacMode            = pacmanState |> PacMode
+                    PacMode            = pacmanState |> GetPacMode
                     PacFacingDirection = direction
                     LivesLeft          = pacmanState |> LivesLeft
                     PacStartPosition   = pacmanState |> StartPosition
@@ -1041,7 +1042,7 @@ let private WithEdibleGhostsIfPowerPill eaten gameTime ghostStateList =
         | EatenDot _ -> ghostStateList
         | EatenPowerPill _ ->
             ghostStateList |> List.map (fun ghost ->
-                match ghost |> GhostMode with
+                match ghost |> GetGhostMode with
                     | GhostNormal
                     | GhostEdibleUntil _ -> ghost |> WithGhostMode (GhostEdibleUntil (gameTime + PowerPillTime))
                     | GhostReturningToBase
@@ -1052,7 +1053,7 @@ let private WithEdibleGhostsIfPowerPill eaten gameTime ghostStateList =
 /// State update for ghosts based on timeouts.
 let private WithReturnToNormalityIfTimeOutAt gameTime ghostStateList =
     ghostStateList |> List.map (fun ghost ->
-        match ghost |> GhostMode with
+        match ghost |> GetGhostMode with
             | GhostNormal ->
                 ghost
 
@@ -1154,9 +1155,17 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
         if pacmanState |> GameIsOver then
             model.WhereToOnGameOver scoreAndHiScore
         else
-            let whereToAfterIntermission =
+            let nextLifeGameStateConstructor =
                 fun _gameTime -> model |> WithCharactersReset |> ReplacesModelIn gameState
-            WithLifeLossIntermissionCard whereToAfterIntermission gameTime  // TODO: There is something bad about this parameter order, that we can't use |>
+            
+            let afterIntermissionCard gameTime = 
+                FreezeForGetReady 
+                    (nextLifeGameStateConstructor) 
+                    (NewPacmanGetReadyOverlay ())
+                    GetReadyCardTime 
+                    gameTime
+
+            WithLifeLossIntermissionCard afterIntermissionCard gameTime
     
     else if mazeState |> IsAllEaten then
         let betweenScreenStatus = 
