@@ -1,0 +1,1 @@
+[ ] The Index.html files have some duplicate .js code for dealing with the images.  Share or translate to F#/Fable.
