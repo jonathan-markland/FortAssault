@@ -64,6 +64,6 @@ let FreezeForGetReady newGame messageOverlay duration gameTime =
         }
 
     NewGameState NextFreezeForGetReadyState RenderFreezeForGetReady model
-        |> WithFreezeFrameFor duration gameTime newGame
+        |> WithFreezeFrameFor duration gameTime (newGame |> AdaptedToIgnoreOutgoingStateParameter)
         
 

@@ -88,7 +88,7 @@ let private NextMapBeforeBeachLandingScreenState gameState keyStateGetter gameTi
         NewAlliedFleetLocation model.Location input PermissableTravelLocationRectangles
 
     if alliedLocation |> IsPointWithinRectangle BeachLandingTriggerRectangle then
-        gameState |> WithFreezeFrameFor PauseTimeOnceEngaged gameTime model.BeachLandingCtor
+        gameState |> WithFreezeFrameFor PauseTimeOnceEngaged gameTime (model.BeachLandingCtor |> AdaptedToIgnoreOutgoingStateParameter)
 
     else
         gameState |> WithUpdatedModel

@@ -88,3 +88,17 @@ let inline WithUpdatedModelAndFrameFunc model frameFunc (gameState:SpecificGameS
 let ModelNeverChanges gameState _keyStateGetter _gameTime _elapsed =
     Unchanged gameState
 
+
+/// Freeze a game state by wrapping it.   It will see no further model updates.  
+/// Allow its drawing handler to see the elapsing (current) game time.
+let WithoutAnyFurtherUpdates (gameState:ErasedGameState) =
+    let drawFunc render _model gameTime = gameState.Draw render gameTime
+    NewGameState ModelNeverChanges drawFunc ()
+
+
+/// Completely freeze a game state by wrapping it.  It will see no further model updates.  
+/// Its drawing handler will see the same time from now on.
+let FrozenInTimeAt gameTime (gameState:ErasedGameState) =
+    let drawSameFrame render _ _ = gameState.Draw render gameTime
+    NewGameState ModelNeverChanges drawSameFrame ()
+

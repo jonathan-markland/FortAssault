@@ -7,7 +7,7 @@ let MaxPlayerNameLength = 10
 
 let NoScore = 0u
 
-let InitialLives = 3u
+let InitialLives = 1u // TODO
 
 type BetweenScreenStatus =
     {
