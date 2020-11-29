@@ -1,4 +1,4 @@
-﻿module ScreenHandler
+﻿module ScreenHandler  // TODO: This name isn't really right -- "GameState" ?
 
 open Time
 open DrawingShapes

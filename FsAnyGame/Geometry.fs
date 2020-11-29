@@ -41,6 +41,10 @@ type Rectangle<'t> =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let inline InvertVector (p:Point<'t>) = { ptx = -p.ptx ; pty = -p.pty }
+
+let inline ApplyToPoint f (p:Point<'t>) = { ptx = f p.ptx ; pty = f p.pty }
+
 let inline PointMult factor (p:Point<'t>) = { ptx = p.ptx * factor ; pty = p.pty * factor }
     
 let inline RectangleWidth  (r:Rectangle<'t>) = r.Right - r.Left

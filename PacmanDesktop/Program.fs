@@ -11,8 +11,8 @@ open Keys
 
 let PacmanRetroScreenWidthPixels  =  320 
 let PacmanRetroScreenHeightPixels =  256
-let PacmanWindowWidthPixels       = PacmanRetroScreenWidthPixels  * 3 
-let PacmanWindowHeightPixels      = PacmanRetroScreenHeightPixels * 3
+let PacmanWindowWidthPixels       = PacmanRetroScreenWidthPixels  * 2 
+let PacmanWindowHeightPixels      = PacmanRetroScreenHeightPixels * 2
 
 
 let ProcessExitFail    = 1
