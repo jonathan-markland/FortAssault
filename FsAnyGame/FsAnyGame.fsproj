@@ -30,6 +30,7 @@
     <Compile Include="CaptureRendering.fs" />
     <Compile Include="FlickBook.fs" />
     <Compile Include="ScreenHandler.fs" />
+    <Compile Include="BlankScreen.fs" />
     <Compile Include="FreezeFrame.fs" />
     <Compile Include="InterruptableVideo.fs" />
     <Compile Include="IntermissionCard.fs" />
