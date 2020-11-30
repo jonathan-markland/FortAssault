@@ -47,30 +47,33 @@ Pac Man Screenshots
 
 ![Game screenshot](/ReadmeImages/Pacman2.png)
 
-Browser versions
-================
+Building and running browser versions
+=====================================
 These are in the <game name>Web folders.
 
 It's all node.js / npm stack, so you need these installed.
 
 build_production.bat
+--------------------
 
-	Builds the bundle.js in the wwwroot folder.
-	Everything else needed is already in the wwwroot folder,
-	although I accept this is probably not standard usage.
-	The wwwroot folder is self-contained and could become
-	become part of another larger web site.
+Builds the bundle.js in the wwwroot folder.
+Everything else needed is already in the wwwroot folder,
+although I accept this is probably not standard usage.
+The wwwroot folder is self-contained and could become
+become part of another larger web site.
 	
 serve_production.bat
+--------------------
 
-	Serves the wwwroot folder at http://localhost:8080
+Serves the wwwroot folder at http://localhost:8080
 
 serve_development.bat
+---------------------
 
-	Uses WebPack to serve partially from wwwroot, but the
-	Fable compiler's output is served from Webpack's RAM.
-	This supports live recompiling and refreshing of the
-	browser if the F# code changes.  Also at http://localhost:8080
+Uses WebPack to serve partially from wwwroot, but the
+Fable compiler's output is served from Webpack's RAM.
+This supports live recompiling and refreshing of the
+browser if the F# code changes.  Also at http://localhost:8080
 	
 Notes
 -----
@@ -93,11 +96,10 @@ Requires SDL2 libraries from distro provider, eg: Ubuntu:
 	cd FsFortAssaultDesktopLinux
 	dotnet run
 
-Build Desktop Windows Version
------------------------------
+Build desktop version on Windows
+--------------------------------
 I just use Visual Studio 2019, Community Edition.
 I provide SDL2.dll and other DLLs.
-
 Set '<game name>Desktop' as the startup project.
 
 
@@ -124,6 +126,8 @@ development purposes.  You must set this back to 'RunGameNormally' for release.
 
 Manual Test assistance
 ----------------------
+For Fort Assault:
+
 SHORT_PLAYTHROUGH : A special mode for testing, enabled by inserting the following
 into FsFortAssaultEngine.fsproj:
 
