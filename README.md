@@ -1,8 +1,8 @@
 
-Fort Assault
-============
+Retro Games
+===========
 
-Retro remake of a fairly well-known 1980s computer game.
+Retro remakes for various 1980s computer games.
 
 ![Main screen](/ReadmeImages/Image1.jpg)
 
@@ -20,7 +20,7 @@ Technology:
     - In the browser (F# / Fable / Web Canvas / HTML)
 	- TODO:  F#-Bolero in-browser solution
 
-In other words, one game, one language, its goes many places.
+In other words, retro games, one language, go many places.
 
 This is a research project also:
 
@@ -29,8 +29,8 @@ This is a research project also:
 	- Distill desktop and web mini-frameworks from this
 	- Use in other similar games
 
-Screenshots
-===========
+Fort Assault Screenshots
+========================
 
 ![Game screenshot](/ReadmeImages/Image2.jpg)
 
@@ -40,44 +40,43 @@ Screenshots
 
 ![Game screenshot](/ReadmeImages/Image5.jpg)
 
-Browser version
-===============
-This is in the FortAssaultWeb folder.
+Browser versions
+================
+These are in the <game name>Web folders.
 
-It's all node.js / npm stack, so you need these.
+It's all node.js / npm stack, so you need these installed.
 
-To start the server:
+build_production.bat
 
-	cd root-of-repository-folder
-	npm start
+	Builds the bundle.js in the wwwroot folder.
+	Everything else needed is already in the wwwroot folder,
+	although I accept this is probably not standard usage.
+	The wwwroot folder is self-contained and could become
+	become part of another larger web site.
+	
+serve_production.bat
 
-Then navigate to http://localhost:8080
+	Serves the wwwroot folder at http://localhost:8080
 
-The file 'webpack.config.js' contains a link to the F#
-project that contains the entry point for the web version.
+serve_development.bat
 
-Build the production website
-----------------------------
-To obtain the production web site file set, run this command
-from the solution root folder:
-
-	npx webpack --mode production
-
-The production web site ends up in the "wwwroot" folder as
-specified by the webpack.config.js file.
-
+	Uses WebPack to serve partially from wwwroot, but the
+	Fable compiler's output is served from Webpack's RAM.
+	This supports live recompiling and refreshing of the
+	browser if the F# code changes.  Also at http://localhost:8080
+	
 Notes
 -----
 NB: The image files in wwwroot/Images are the ones that the
 Desktop version links to, so that there is only one image set.
 
-On the F# side, the 'web' code can be built by both the .Net
+On the F# side, the 'web' code can be compiled by both the .Net
 compiler and the Fable compiler, but you cannot run the .DLL
 file made by the .Net compiler as it expects to interface
 with Javascript.
 
-Build Desktop Linux Version
----------------------------
+Building desktop version on Linux
+---------------------------------
 Requires SDL2 libraries from distro provider, eg: Ubuntu:
 
 	sudo apt-get install libsdl2-dev
@@ -90,8 +89,9 @@ Requires SDL2 libraries from distro provider, eg: Ubuntu:
 Build Desktop Windows Version
 -----------------------------
 I just use Visual Studio 2019, Community Edition.
+I provide SDL2.dll and other DLLs.
 
-Set 'FsFortAssaultDesktop' as the startup project.
+Set '<game name>Desktop' as the startup project.
 
 
 Architecture
