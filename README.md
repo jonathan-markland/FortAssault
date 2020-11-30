@@ -43,9 +43,9 @@ Fort Assault Screenshots
 Pac Man Screenshots
 ===================
 
-![Game screenshot](/ReadmeImages/Pacman1.jpg)
+![Game screenshot](/ReadmeImages/Pacman1.png)
 
-![Game screenshot](/ReadmeImages/Pacman2.jpg)
+![Game screenshot](/ReadmeImages/Pacman2.png)
 
 Browser versions
 ================
