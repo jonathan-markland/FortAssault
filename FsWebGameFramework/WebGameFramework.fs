@@ -258,7 +258,7 @@ let FrameworkWebMain
         let tickCount = tickCount + 1u
                 
         let gameTime = 
-            (float32 tickCount) / 50.0F |> InSeconds
+            (float32 tickCount) / 50.0F |> InSeconds  // TODO: Revisit parameterisation of frame rate.
                 
         gameState.Draw renderFunction gameTime
 
@@ -270,7 +270,7 @@ let FrameworkWebMain
 
         ClearKeyJustPressedFlags mutableKeyStateStore
 
-        window.setTimeout((mainLoop nextGameState tickCount), 20) |> ignore
+        window.setTimeout((mainLoop nextGameState tickCount), 20) |> ignore   // TODO: Revisit parameterisation of frame rate.
 
     mainLoop gameState 0u ()
     

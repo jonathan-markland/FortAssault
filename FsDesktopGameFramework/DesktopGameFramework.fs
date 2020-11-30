@@ -152,14 +152,14 @@ let private MainLoopProcessing
     let mutable tickCount = 1u
     
     let GetGameTime () = 
-        (float32 tickCount) / 50.0F |> InSeconds
+        (float32 tickCount) / 50.0F |> InSeconds     // TODO: Revisit parameterisation of frame rate.
 
     let mutable gameState : ErasedGameState =
         initialGameStateConstructor (GetGameTime ())
 
     // 20ms timer installed so that the main event loop receives 'SDL.SDL_EventType.SDL_USEREVENT' every 20ms (1/50th second)
     let timerID =
-        SDL.SDL_AddTimer(20u, new SDL.SDL_TimerCallback(TimerCallback), 0n)
+        SDL.SDL_AddTimer(20u, new SDL.SDL_TimerCallback(TimerCallback), 0n)  //   // TODO: Revisit parameterisation of frame rate.
             
     if timerID = 0 then
         failwith "Failed to install the gameplay timer."
