@@ -84,7 +84,7 @@ let private NextMapPostPassageScreenState gameState keyStateGetter gameTime _ela
     let enemyLocation  = NewEnemyFleetLocation model.EnemyFleetCentre alliedLocation
 
     if alliedLocation |> IsWithinRegionOf enemyLocation EnemyEngagementDistance then
-        gameState |> WithFreezeFrameFor PauseTimeOnceEngaged gameTime model.BattleCtor
+        gameState |> WithFreezeFrameFor PauseTimeOnceEngaged gameTime (model.BattleCtor |> AdaptedToIgnoreOutgoingStateParameter)
 
     else
         gameState |> WithUpdatedModel

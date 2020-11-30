@@ -1172,8 +1172,9 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
                 ScoreAndHiScore = model.ScoreAndHiScore
                 Lives           = model.PacmanState.PacState2.LivesLeft
             }
-        let whereToAfterFreezeFrame gameTime =
+        let whereToAfterFreezeFrame _outgoingGameState gameTime =
             model.WhereToOnAllEaten model.LevelIndex betweenScreenStatus gameTime  // TODO: Maze flash - but could that be done with a clever external filter?
+
         gameState |> WithDrawingOnlyFor ScreenCompletePauseTime gameTime whereToAfterFreezeFrame
     else 
         gameState |> WithUpdatedModel model

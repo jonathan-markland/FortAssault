@@ -16,7 +16,7 @@ let WithLifeLossIntermissionCard whereToAfter gameTime =
         (GreyFontID |> FontFromID)
         "LIFE OVER" 
         ScreenWidthInt ScreenHeightInt 
-            |> WithFreezeFrameFor LifeOverGetReadyPauseTime gameTime whereToAfter
+            |> WithFreezeFrameFor LifeOverGetReadyPauseTime gameTime (whereToAfter |> AdaptedToIgnoreOutgoingStateParameter)
         
 
 
@@ -27,5 +27,5 @@ let WithScreenCompleteIntermissionCard betweenScreenStatus whereToAfter gameTime
         (GreyFontID |> FontFromID)
         (sprintf "SCREEN COMPLETE  SCORE %d" betweenScreenStatus.ScoreAndHiScore.Score)
         ScreenWidthInt ScreenHeightInt 
-            |> WithFreezeFrameFor ScreenCompleteStatusCardTime gameTime whereToAfter
+            |> WithFreezeFrameFor ScreenCompleteStatusCardTime gameTime (whereToAfter |> AdaptedToIgnoreOutgoingStateParameter)
         

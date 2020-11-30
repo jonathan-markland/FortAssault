@@ -134,14 +134,20 @@ let private NextInitialMapScreenState gameState keyStateGetter gameTime elapsed 
     if alliedLocation |> IsPointWithinRectangle SecretPassageTriggerRectangle then
         
         let whereToAfter = 
-            model.SecretPassageCtor |> WithFortAssaultIntermissionCard
+            model.SecretPassageCtor 
+                |> AdaptedToIgnoreOutgoingStateParameter
+                |> WithFortAssaultIntermissionCard
+                |> AdaptedToIgnoreOutgoingStateParameter
 
         gameState |> WithFreezeFrameFor PauseDuration gameTime whereToAfter
 
     elif alliedLocation |> IsWithinRegionOf enemyLocation EnemyEngagementDistance then
         
         let whereeToAfter = 
-            model.EngageEnemyCtor |> WithFortAssaultIntermissionCard
+            model.EngageEnemyCtor 
+                |> AdaptedToIgnoreOutgoingStateParameter
+                |> WithFortAssaultIntermissionCard
+                |> AdaptedToIgnoreOutgoingStateParameter
 
         gameState |> WithFreezeFrameFor PauseDuration gameTime whereeToAfter
     

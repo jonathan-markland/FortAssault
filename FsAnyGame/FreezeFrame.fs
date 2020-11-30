@@ -11,7 +11,7 @@ type private FreezeFrameModel =
         FrozenGameState   : ErasedGameState
         TimeFiddler       : float32<seconds> -> float32<seconds>
         UnfreezeGameTime  : float32<seconds>
-        PostFreezeCtor    : float32<seconds> -> ErasedGameState
+        PostFreezeCtor    : ErasedGameState -> float32<seconds> -> ErasedGameState
     }
 
 
@@ -22,20 +22,32 @@ let private RenderFreezeFrame render model (gameTime:float32<seconds>) =
 
 
 
-let private NextFreezeFrameState gameState keyStateGetter gameTime elapsed =
+let private NextFreezeFrameState gameState _keyStateGetter gameTime _elapsed =
     
     let model = ModelFrom gameState
     
     if gameTime < model.UnfreezeGameTime then
         Unchanged gameState
     else
-        model.PostFreezeCtor gameTime
+        model.PostFreezeCtor (model.FrozenGameState |> WithoutAnyFurtherUpdates) gameTime
+
+
+
+let AdaptedToIgnoreOutgoingStateParameter (func:float32<seconds> -> ErasedGameState) =
+    let adapter (_outgoingState:ErasedGameState) (gameTime:float32<seconds>) =
+        func gameTime
+    adapter
+
+
+
+// TODO: Review this for ScreenHandler.FrozenInTimeAt and ScreenHandler.WithoutAnyFurtherUpdates
 
 
 
 /// The outgoingGameState is frozen at the current gameTime.
 /// The returned ErasedGameState will hold that image for the duration specified
-/// before calling the 'whereToAfter' constructor to establish the next state.
+/// before calling the 'whereToAfter' constructor, quoting the most recent
+/// state, to establish the caller's desired next state.
 let WithFreezeFrameFor duration gameTime whereToAfter outgoingGameState =
 
     let freezeModel =

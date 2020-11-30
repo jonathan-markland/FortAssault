@@ -794,8 +794,8 @@ let private NextTankBattleScreenState gameState keyStateGetter gameTime elapsed 
                     model.Constants.TankCompletedCourseSuccessfully 
                     gameTime 
 
-            let afterIntermission _gameTime =
-                gameState |> WithUpdatedModel tankModel 
+            let afterIntermission _outgoingGameState _gameTime =
+                gameState |> WithUpdatedModel tankModel  
                 
             WithFortAssaultIntermissionCard afterIntermission gameTime
             

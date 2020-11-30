@@ -17,6 +17,14 @@ open FreezeFrame
 open ScreenIntermissions
 open ScoreHiScore
 
+
+open ResourceIDs
+open SlideTransitions
+open Mechanics
+open Time
+open ScreenHandler
+
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let mutable private globalScoreboard : ScoreAndName list = []
@@ -46,10 +54,17 @@ and private AllEatenStory levelNumber betweenScreenStatus gameTime =
 
 and private GameOverStory scoreAndHiScore gameTime =
  
-    NewGameOverScreen scoreAndHiScore 
-        |> WithDrawingOnlyFor GameOverPauseTime gameTime (EnterYourNameStory scoreAndHiScore)
+    let slideInEnterYourName outgoingGameState gameTime = 
+        NewSlideTransition 
+            outgoingGameState
+            (EnterYourNameStory scoreAndHiScore gameTime) ComingFromLeft
+            ScreenWidthInt ScreenHeightInt
+            SpeedingUpMotion 1.0F<seconds> gameTime 
 
-and private PacmanStory (levelNumber:int) betweenScreenStatus _gameTime =
+    NewGameOverScreen scoreAndHiScore 
+        |> WithDrawingOnlyFor GameOverPauseTime gameTime slideInEnterYourName
+
+and private PacmanStory (levelNumber:int) betweenScreenStatus (gameTime:float32<seconds>) =
 
     let newGame _gameTime =
         NewPacmanScreen
@@ -60,7 +75,7 @@ and private PacmanStory (levelNumber:int) betweenScreenStatus _gameTime =
 
     let messageOverlay = NewPacmanGetReadyOverlay ()
 
-    FreezeForGetReady newGame messageOverlay GetReadyCardTime _gameTime
+    FreezeForGetReady newGame messageOverlay GetReadyCardTime gameTime
 
 and private GameTitleStory gameTime =
 
@@ -79,11 +94,11 @@ and private GameTitleStory gameTime =
                 KeyFire
 
 
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let NewPacmanStoryboard _ gameTime =
 
-    globalScoreboard <- InitialScoreboard [ "DAMON" ; "JARVIS" ; "NOELLE" ; "PAT" ] 1000u 2000u
-
-    GameTitleStory gameTime
+    globalScoreboard <- InitialScoreboard [ "DAMON" ; "JARVIS" ; "NOELLE" ; "PAT" ] 2500u 2500u
     
+    GameTitleStory gameTime
