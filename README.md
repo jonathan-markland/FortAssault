@@ -40,6 +40,13 @@ Fort Assault Screenshots
 
 ![Game screenshot](/ReadmeImages/Image5.jpg)
 
+Pac Man Screenshots
+===================
+
+![Game screenshot](/ReadmeImages/Pacman1.jpg)
+
+![Game screenshot](/ReadmeImages/Pacman2.jpg)
+
 Browser versions
 ================
 These are in the <game name>Web folders.
