@@ -265,3 +265,6 @@ __pycache__/
 *.pyc
 
 .fable/
+
+# The bundles can be generated with build_production.bat
+**/wwwroot/bundle.js

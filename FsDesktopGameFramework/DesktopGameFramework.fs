@@ -12,6 +12,7 @@ open Time
 open Geometry
 open DrawingShapes
 open ImagesAndFonts
+open ScreenHandler
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -80,39 +81,6 @@ let private LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (re
         Fonts    = fontsArray
     }
 
-
-(* TODO: We are missing validation of fonts which must be done in the shared framework - OLD CODE:
-
-let MakeNumCapsFontFromBMP (bmpSourceImage:ImageFileMetadata) =
-
-    let numGlyphs = 37
-
-    let { ImageHandle=_ ; TextureHandle=_ ; SourceRect=r } = bmpSourceImage
-
-    if r.w % numGlyphs = 0 then
-        Some(
-            {
-                EngineImageMetadata : EngineImageMetadata
-                HostImageObject     : HostImageObject
-            }
-
-
-            {
-                FontImageWithHostObject  = bmpSourceImage
-                CharWidth  = r.w / numGlyphs
-                CharHeight = r.h
-            })
-    else
-        None
-
-let unwrapFont fileName opt =
-    match opt with
-        | Some(font) -> font
-        | None -> failwith (sprintf "Game could not start because font '%s' file has incorrect content." fileName)
-
-
-*)
-
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 /// Render game drawing command to the screen.
@@ -176,11 +144,7 @@ let private MainLoopProcessing
     renderer 
     backingTexture 
     gameResources 
-    gameStaticData 
     initialGameStateConstructor 
-    initGameGlobals 
-    gameRenderer 
-    gameFrameAdvanceFunction 
     listOfKeysNeeded =
 
     SetStaticImageAndFontResourceArrays gameResources.GameBMPs gameResources.Fonts
@@ -188,17 +152,14 @@ let private MainLoopProcessing
     let mutable tickCount = 1u
     
     let GetGameTime () = 
-        (float32 tickCount) / 50.0F |> InSeconds
+        (float32 tickCount) / 50.0F |> InSeconds     // TODO: Revisit parameterisation of frame rate.
 
-    let initScreenState = 
+    let mutable gameState : ErasedGameState =
         initialGameStateConstructor (GetGameTime ())
-
-    let mutable screenState = 
-        (struct (initScreenState , initGameGlobals))
 
     // 20ms timer installed so that the main event loop receives 'SDL.SDL_EventType.SDL_USEREVENT' every 20ms (1/50th second)
     let timerID =
-        SDL.SDL_AddTimer(20u, new SDL.SDL_TimerCallback(TimerCallback), 0n)
+        SDL.SDL_AddTimer(20u, new SDL.SDL_TimerCallback(TimerCallback), 0n)  //   // TODO: Revisit parameterisation of frame rate.
             
     if timerID = 0 then
         failwith "Failed to install the gameplay timer."
@@ -221,7 +182,7 @@ let private MainLoopProcessing
         // DEBUG: force clean the drawing texture.  This may help observe artefacts where tiles don't join.
         // renderFunction (DrawFilledRectangle(0.0F<wu>, 0.0F<wu>, 320.0F<wu>, 256.0F<wu>, SolidColour(0xFF00FFu)))
 
-        gameRenderer renderFunction screenState gameTime
+        gameState.Draw renderFunction gameTime
         SetSdlRenderTargetToScreen renderer
         RenderCopyToFullSdlTarget renderer backingTexture
         SdlPresent renderer
@@ -229,16 +190,14 @@ let private MainLoopProcessing
         let frameElapsedTime =
             gameTime - lastGameTime  // TODO: Why calculate this.  Web version just passes constant.
 
-        let nextScreenState = 
-            gameFrameAdvanceFunction 
-                gameStaticData 
-                screenState 
+        let nextGameState = 
+            gameState.Frame
                 keyStateGetter
-                gameTime 
+                gameTime
                 frameElapsedTime  // TODO: Didn't like passing this really.
 
         tickCount <- tickCount + 1u
-        screenState <- nextScreenState
+        gameState <- nextGameState
 
         mutableKeyStateStore |> ClearKeyJustPressedFlags
 
@@ -285,11 +244,9 @@ let FrameworkDesktopMain
     gameResourceImages 
     gameFontResourceImages
     listOfKeysNeeded 
-    (gameStaticDataConstructor  : unit -> Result<'gameStaticData,string>)
     (gameGlobalStateConstructor : unit -> Result<'gameGlobalState,string>)
-    (gameplayStartConstructor   : 'gameStaticData -> float32<seconds> -> 'gameScreenModel)
-    gameRenderer 
-    gameFrameAdvanceFunction : string option =
+    (gameplayStartConstructor   : 'gameGlobalState -> float32<seconds> -> ErasedGameState)
+        : string option =
 
         let runGame () =
 
@@ -312,9 +269,6 @@ let FrameworkDesktopMain
                             let gameResources = 
                                 LoadGameImagesAndFonts gameResourceImages gameFontResourceImages renderer path   // TODO:  Minor: We don't actually free the imageSet handles.
 
-                            let gameStaticDataResult =
-                                gameStaticDataConstructor ()
-
                             let gameGlobalStateResult = 
                                 gameGlobalStateConstructor ()
 
@@ -326,23 +280,14 @@ let FrameworkDesktopMain
                             gameGlobalStateResult
                                 |> Result.map (fun gameGlobalState ->
 
-                                    gameStaticDataResult
-                                        |> Result.map (fun gameStaticData ->
+                                    MainLoopProcessing 
+                                        renderer 
+                                        backingTexture 
+                                        gameResources 
+                                        (gameplayStartConstructor gameGlobalState)
+                                        listOfKeysNeeded
 
-                                            MainLoopProcessing 
-                                                renderer 
-                                                backingTexture 
-                                                gameResources 
-                                                gameStaticData 
-                                                (gameplayStartConstructor gameStaticData)
-                                                gameGlobalState
-                                                gameRenderer 
-                                                gameFrameAdvanceFunction
-                                                listOfKeysNeeded
-
-                                            None
-                                        )
-                                        |> errorResultToOption
+                                    None
                                 )
                                 |> errorResultToOption
 

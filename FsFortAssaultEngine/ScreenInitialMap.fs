@@ -11,12 +11,22 @@ open ScorePanel
 open MapScreenSharedDetail
 open Rules
 open StaticResourceAccess
+open InputEventData
+open FreezeFrame
+open ScreenHandler
+open ScreenIntermission
+open ImagesAndFonts
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let DefaultAlliedFleetLocation = { ptx=290.0F<epx> ; pty=15.0F<epx> }
+let private PauseDuration = 2.0F<seconds>
+
+let private DefaultAlliedFleetLocation = { ptx=290.0F<epx> ; pty=15.0F<epx> }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 /// These are permitted to overlap other rectangles, including the trigger rectangles.
-let PermissableTravelLocationRectangles =
+let private PermissableTravelLocationRectangles =
     [
         {
             Left   =  38.0F<epx>
@@ -60,52 +70,27 @@ let PermissableTravelLocationRectangles =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type AlliedState =
-    | MapInPlay of fleetLocation:PointF32
-    | FleetEngagedOnMap of fleetLocation:PointF32 * pauseStartTime:float32<seconds> * stateAfterPause:AlliedState
-    | ScreenOverEngagedSecretPassage
-    | ScreenOverEngagedEnemyAtSea
-
-type InitialMapScreenModel =
+type private InitialMapScreenModel =
     {
-        ScoreAndHiScore:      ScoreAndHiScore
-        EnemyFleetCentre:     PointF32
-        AlliedState:          AlliedState
-        NumShips:             uint32
+        ScoreAndHiScore     : ScoreAndHiScore
+        AlliedFleetCentre   : Point<float32<epx>>
+        EnemyFleetCentre    : Point<float32<epx>>
+        SecretPassageCtor   : float32<seconds> -> ErasedGameState
+        EngageEnemyCtor     : float32<seconds> -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let AlliesVersusSecretPassageOrEnemy alliesLocation enemyLocation gameTime =
-
-    if alliesLocation |> IsPointWithinRectangle SecretPassageTriggerRectangle then
-        FleetEngagedOnMap(alliesLocation, gameTime, ScreenOverEngagedSecretPassage)
-
-    elif alliesLocation |> IsWithinRegionOf enemyLocation EnemyEngagementDistance then
-        FleetEngagedOnMap(alliesLocation, gameTime, ScreenOverEngagedEnemyAtSea)
-
-    else
-        MapInPlay(alliesLocation)
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let RenderInitialMapScreen render (model:InitialMapScreenModel) =
+let private RenderInitialMapScreen render (model:InitialMapScreenModel) _gameTime =
 
     let imgMap = ImageMap |> ImageFromID
 
     Image1to1 render 0<epx> 0<epx> imgMap
 
-    // PermissableTravelLocationRectangles |> List.iteri (fun i r ->
-    //     render (DrawFilledRectangle(r.Left, r.Top, r |> RectangleWidth, r |> RectangleHeight, i |> AlternateOf 0xEE0000u 0x00FF00u)))
+    // DrawDebugRectangles render PermissableTravelLocationRectangles
 
-    match model.AlliedState with
-        | MapInPlay(location)
-        | FleetEngagedOnMap(location, _, _) ->
-            CentreImage render location.ptx location.pty (ImageAlliedFleetSymbol |> ImageFromID)
-            CentreImage render model.EnemyFleetCentre.ptx model.EnemyFleetCentre.pty (ImageEnemyFleetSymbol |> ImageFromID)
-        | ScreenOverEngagedEnemyAtSea
-        | ScreenOverEngagedSecretPassage ->
-            ()
+    CentreImage render model.AlliedFleetCentre.ptx model.AlliedFleetCentre.pty (ImageAlliedFleetSymbol |> ImageFromID)
+    CentreImage render model.EnemyFleetCentre.ptx  model.EnemyFleetCentre.pty  (ImageEnemyFleetSymbol  |> ImageFromID)
 
     let mapHeight = imgMap.ImageMetadata.ImageHeight
 
@@ -115,8 +100,8 @@ let RenderInitialMapScreen render (model:InitialMapScreenModel) =
         {
             ScoreAndHiScore  = model.ScoreAndHiScore
             ShipsPending     = 0u
-            ShipsThrough     = model.NumShips
-            Tanks            = model.NumShips |> ToTankCountFromShipCount
+            ShipsThrough     = NumShipsAtInitialEngagement
+            Tanks            = NumShipsAtInitialEngagement |> ToTankCountFromShipCount
             Damage           = 0u
             MaxDamage        = 0u
             PlaneIntel       = None
@@ -125,62 +110,69 @@ let RenderInitialMapScreen render (model:InitialMapScreenModel) =
 
     DrawScorePanel render mapHeight scorePanel
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    #if SHORT_PLAYTHROUGH
+    Text render RedFontID CentreAlign MiddleAlign 160<epx> 10<epx> "WARNING  SHORT PLAY VERSION"
+    #endif
 
-let NewInitialMapScreen numShips scoreAndHiScore =
-    {
-        ScoreAndHiScore  = scoreAndHiScore
-        AlliedState      = MapInPlay(DefaultAlliedFleetLocation)
-        EnemyFleetCentre = DefaultEnemyFleetLocation
-        NumShips         = numShips
-    }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextInitialMapScreenState oldState input gameTime =
+let private NextInitialMapScreenState gameState keyStateGetter gameTime elapsed =
 
-    match oldState.AlliedState with
+    let input = keyStateGetter |> DecodedInput
 
-        | MapInPlay(alliedLocation) ->
+    let model = ModelFrom gameState
+    let alliedLocation = model.AlliedFleetCentre
+    let enemyLocation  = model.EnemyFleetCentre
+
+    let alliedLocation =
+        NewAlliedFleetLocation alliedLocation input PermissableTravelLocationRectangles
+
+    let enemyLocation =
+        NewEnemyFleetLocation enemyLocation alliedLocation
+
+    if alliedLocation |> IsPointWithinRectangle SecretPassageTriggerRectangle then
+        
+        let whereToAfter = 
+            model.SecretPassageCtor 
+                |> AdaptedToIgnoreOutgoingStateParameter
+                |> WithFortAssaultIntermissionCard
+                |> AdaptedToIgnoreOutgoingStateParameter
+
+        gameState |> WithFreezeFrameFor PauseDuration gameTime whereToAfter
+
+    elif alliedLocation |> IsWithinRegionOf enemyLocation EnemyEngagementDistance then
+        
+        let whereeToAfter = 
+            model.EngageEnemyCtor 
+                |> AdaptedToIgnoreOutgoingStateParameter
+                |> WithFortAssaultIntermissionCard
+                |> AdaptedToIgnoreOutgoingStateParameter
+
+        gameState |> WithFreezeFrameFor PauseDuration gameTime whereeToAfter
     
-            let alliedLocation =
-                NewAlliedFleetLocation alliedLocation input PermissableTravelLocationRectangles
-
-            let enemyLocation =
-                NewEnemyFleetLocation oldState.EnemyFleetCentre alliedLocation
-
-            let allies =
-                AlliesVersusSecretPassageOrEnemy alliedLocation enemyLocation gameTime
-
+    else
+        gameState |> WithUpdatedModel
             {
-                ScoreAndHiScore  = oldState.ScoreAndHiScore
-                AlliedState      = allies
-                EnemyFleetCentre = enemyLocation
-                NumShips         = oldState.NumShips
+                ScoreAndHiScore     = model.ScoreAndHiScore
+                AlliedFleetCentre   = alliedLocation
+                EnemyFleetCentre    = enemyLocation
+                SecretPassageCtor   = model.SecretPassageCtor
+                EngageEnemyCtor     = model.EngageEnemyCtor
             }
 
-        | FleetEngagedOnMap(_, pauseStartTime, stateAfterPause) ->
-
-            let elapsed = gameTime - pauseStartTime
-            if elapsed > PauseTimeOnceEngaged then
-                { oldState with AlliedState = stateAfterPause }
-            else
-                oldState
-
-        | ScreenOverEngagedEnemyAtSea
-        | ScreenOverEngagedSecretPassage ->
-        
-            oldState   // Ideology:  Never risk the logic rest of the logic when the screen is over.
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  Query functions for Storyboard
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type InitialMapAfterFrameCase = StayOnInitialMapScreen | FromInitialMapGoToSecretPassage | FromInitialMapGoToSeaBattle
+let NewInitialMapScreen secretPassageCtor engageEnemyCtor scoreAndHiScore =
 
-let InitialMapTransition state =
-    match state.AlliedState with
-        | MapInPlay _
-        | FleetEngagedOnMap _            -> StayOnInitialMapScreen
-        | ScreenOverEngagedSecretPassage -> FromInitialMapGoToSecretPassage
-        | ScreenOverEngagedEnemyAtSea    -> FromInitialMapGoToSeaBattle
+    let mapModel =
+        {
+            ScoreAndHiScore   = scoreAndHiScore
+            AlliedFleetCentre = DefaultAlliedFleetLocation
+            EnemyFleetCentre  = DefaultEnemyFleetLocation
+            SecretPassageCtor = secretPassageCtor
+            EngageEnemyCtor   = engageEnemyCtor
+        }
+
+    NewGameState NextInitialMapScreenState RenderInitialMapScreen mapModel
+

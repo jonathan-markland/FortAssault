@@ -17,6 +17,8 @@ open Algorithm
 open FinalBossAndTankBattleShared
 open ImagesAndFonts
 open StaticResourceAccess
+open ScreenHandler
+open ScreenIntermission
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -47,9 +49,9 @@ let ReachedFortTileCount            = 4   // Count includes the extra lead-in/le
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let Imgs = Array.map ImageFromID
+let private Imgs = Array.map ImageFromID
 
-let ExplosionFlickBookType () =  // TODO: Made into a function because of Fable static-initializer-order problem
+let private ExplosionFlickBookType () =  // TODO: Made into a function because of Fable static-initializer-order problem
     {
         FlickBookDuration       = ExplosionDuration
         FlickBookImages         = Imgs [| ImageShipExplode0 ; ImageShipExplode1 ; ImageShipExplode2 ; ImageShipExplode3 |]
@@ -57,7 +59,7 @@ let ExplosionFlickBookType () =  // TODO: Made into a function because of Fable 
         VisibilityAfterEnd      = Hidden
     }
 
-let NewExplosion centreLocation gameTime =
+let private NewExplosion centreLocation gameTime =
     {
         FlickBookType            = ExplosionFlickBookType ()
         FlickBookStartTime       = gameTime
@@ -66,30 +68,33 @@ let NewExplosion centreLocation gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type TankDirection = TankFacingUpLeft | TankFacingLeft | TankFacingDownLeft
+type private TankDirection = TankFacingUpLeft | TankFacingLeft | TankFacingDownLeft
 
-type AlliedState =
+type private AlliedState =
     | AlliedTankInPlay     of tankY:float32<epx> * TankDirection
     | AlliedTankExploding  of startTime:float32<seconds>
     | AlliedTankReachedFort
     | AlliedTankDestroyed
 
-type EnemyTankMatrixLocation =
+type private EnemyTankMatrixLocation =
     {
         etmx : float32<epx>
         etmy : float32<epx>
         // TODO: have a tank kind?
     }
 
-type TankBattleScreenConstantsModel =  // TODO: Use this convention in other screens?
+type private TankBattleScreenConstantsModel =  // TODO: Use this convention in other screens?
     {
-        ScreenStartTime            : float32<seconds>
-        TileMatrixTraits           : TileMatrixTraits
-        LevelMap                   : TankBattleMapMatrix
-        FinalBossAndTankBattleData : FinalBossAndTankBattleData
+        ScreenStartTime                 : float32<seconds>
+        TileMatrixTraits                : TileMatrixTraits
+        LevelMap                        : TankBattleMapMatrix
+        GameOverOnTankBattleScreen      : ScoreAndHiScore -> ErasedGameState
+        TankCompletedCourseSuccessfully : uint32 -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        TankMapsList                    : TankBattleMapMatrix list
+        MapNumber                       : int
     }
 
-type TankBattleScreenModel =
+type private TankBattleScreenModel =
     {
         // TODO: Adjust difficulty for enemy strength factor ?
 
@@ -107,30 +112,7 @@ type TankBattleScreenModel =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-/// Increment the map number for the next time we come into the tank battle screen.
-let WithIncrementedMapNumber tankBattleScreenModel =
-
-    // I don't desire to re-bind the constants every frame for state that
-    // only changes at the very end of the level.
-
-    {
-        tankBattleScreenModel with
-            Constants =
-                {
-                    tankBattleScreenModel.Constants with
-                        FinalBossAndTankBattleData =
-                            {
-                                tankBattleScreenModel.Constants.FinalBossAndTankBattleData with
-                                    TankBattleMapNumber =
-                                        tankBattleScreenModel.Constants.FinalBossAndTankBattleData.TankBattleMapNumber + 1
-                            }
-                }
-    }
-
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let MissileFlickbookType () = // TODO: Made into a function because of Fable static-initializer-order problem
+let private MissileFlickbookType () = // TODO: Made into a function because of Fable static-initializer-order problem
     {
         FlickBookDuration     = 3.0F<seconds>
         FlickBookImages       = [| ImageTorpedo0 |> ImageFromID |]
@@ -138,7 +120,7 @@ let MissileFlickbookType () = // TODO: Made into a function because of Fable sta
         VisibilityAfterEnd    = Hidden
     }
 
-let NewMissile originX originY gameTime =
+let private NewMissile originX originY gameTime =
     {
         FlickBookType            = MissileFlickbookType ()
         FlickBookStartTime       = gameTime
@@ -151,7 +133,7 @@ let NewMissile originX originY gameTime =
                 TankReFireInterval
     }
 
-let NewEnemyMissile centreLocation gameTime =
+let private NewEnemyMissile centreLocation gameTime =
     let { ptx=originX ; pty=originY } = centreLocation
     let originX = originX + EnemyTankGunOffsetFromCentreX
     let originY = originY - EnemyTankGunOffsetFromCentreY
@@ -169,39 +151,39 @@ let NewEnemyMissile centreLocation gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
    
-let TankCollisionRectangle (tankX:float32<epx>) (tankY:float32<epx>) tankDirection =
+let private TankCollisionRectangle (tankX:float32<epx>) (tankY:float32<epx>) tankDirection =
     match tankDirection with
         | TankFacingLeft     -> { Left = tankX - 8.0F<epx> ; Top = tankY - 4.0F<epx> ; Right = tankX + 8.0F<epx> ; Bottom = tankY + 4.0F<epx> }
         | TankFacingDownLeft
         | TankFacingUpLeft   -> { Left = tankX - 8.0F<epx> ; Top = tankY - 6.0F<epx> ; Right = tankX + 8.0F<epx> ; Bottom = tankY + 6.0F<epx> }
 
 /// Offset of the LEFT edge of the whole matrix, measured from the view rectangle.
-let TileMatrixOffsetXAtTimeOffset numTilesHorizontally (timeOffsetIntoLevel:float32<seconds>) =
+let private TileMatrixOffsetXAtTimeOffset numTilesHorizontally (timeOffsetIntoLevel:float32<seconds>) =
 
     let s = int (timeOffsetIntoLevel * 5.0F) |> IntToIntEpx
     (-numTilesHorizontally * TileSquareSide) + ScreenWidthInt + s
 
-let ScreenXtoMatrixPixelX numTilesHorizontally (timeOffsetIntoLevel:float32<seconds>) (x:float32<epx>) =
+let private ScreenXtoMatrixPixelX numTilesHorizontally (timeOffsetIntoLevel:float32<seconds>) (x:float32<epx>) =
 
     let amountOfMatrixOffLeftOfScreen = -(TileMatrixOffsetXAtTimeOffset numTilesHorizontally timeOffsetIntoLevel)
     amountOfMatrixOffLeftOfScreen + (x |> FloatEpxToIntEpx)
 
-let ScreenYtoMatrixPixelY (tankY:float32<epx>) =
+let private ScreenYtoMatrixPixelY (tankY:float32<epx>) =
 
     tankY - (ScrollingSectionTopY |> IntToFloatEpx)
 
-let EnemyTankMatrixLocationToScreen numTilesHorizontally enemyLocation gameTime =
+let private EnemyTankMatrixLocationToScreen numTilesHorizontally enemyLocation gameTime =
 
     let { etmx=ex ; etmy=ey } = enemyLocation
     let ofsX = TileMatrixOffsetXAtTimeOffset numTilesHorizontally gameTime |> IntToFloatEpx  // TODO: We repeat these calculations from elsewhere.
     let ofsY = ScrollingSectionTopY |> IntToFloatEpx
     { ptx=ofsX + ex ; pty=ofsY + ey }
 
-let CanTankPassOverTile tileImageId =
+let private CanTankPassOverTile tileImageId =
 
     tileImageId = ImageTileSand || tileImageId = ImageTileBridge
 
-let HasTankCrashed (tankY:float32<epx>) tankDirection (timeOffsetIntoLevel:float32<seconds>) (constants:TankBattleScreenConstantsModel) =
+let private HasTankCrashed (tankY:float32<epx>) tankDirection (timeOffsetIntoLevel:float32<seconds>) (constants:TankBattleScreenConstantsModel) =
 
     let tiles = constants.LevelMap.TilesArray
     let numTilesHorizontally = constants.LevelMap.TilesHorizontally
@@ -241,7 +223,7 @@ let HasTankCrashed (tankY:float32<epx>) tankDirection (timeOffsetIntoLevel:float
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let DrawMatrix render (constants:TankBattleScreenConstantsModel) (timeOffset:float32<seconds>) =
+let private DrawMatrix render (constants:TankBattleScreenConstantsModel) (timeOffset:float32<seconds>) =
 
     let tileMatrixViewportWindow =
         {
@@ -268,14 +250,30 @@ let DrawMatrix render (constants:TankBattleScreenConstantsModel) (timeOffset:flo
             let tileImage = (tiles.[iy * numTilesHorizontally + ix]) |> ImageFromID
             Image1to1 render x y tileImage)
 
+    ForEachTileWithVisiblePortion 
+        constants.TileMatrixTraits
+        tileMatrixViewportWindow 
+        tileMatrixOffset 
+        (fun x y ix iy -> 
+            let tileImage = (tiles.[iy * numTilesHorizontally + ix]) |> ImageFromID
+            Image1to1 render x y tileImage)
+
+    ForEachTileWithVisiblePortion 
+        constants.TileMatrixTraits
+        tileMatrixViewportWindow 
+        tileMatrixOffset 
+        (fun x y ix iy -> 
+            let tileImage = (tiles.[iy * numTilesHorizontally + ix]) |> ImageFromID
+            Image1to1 render x y tileImage)
+
 
  // TODO: Made into functions because of Fable static-initializer-order problem:
-let ImagesTankFacingLeft     () = Imgs [| ImageTankFacingLeft0     ; ImageTankFacingLeft1     |]
-let ImagesTankFacingUpLeft   () = Imgs [| ImageTankFacingUpLeft0   ; ImageTankFacingUpLeft1   |]
-let ImagesTankFacingDownLeft () = Imgs [| ImageTankFacingDownLeft0 ; ImageTankFacingDownLeft1 |]
+let private ImagesTankFacingLeft     () = Imgs [| ImageTankFacingLeft0     ; ImageTankFacingLeft1     |]
+let private ImagesTankFacingUpLeft   () = Imgs [| ImageTankFacingUpLeft0   ; ImageTankFacingUpLeft1   |]
+let private ImagesTankFacingDownLeft () = Imgs [| ImageTankFacingDownLeft0 ; ImageTankFacingDownLeft1 |]
 
 
-let TankImagesFor tankDirection =
+let private TankImagesFor tankDirection =
     match tankDirection with
         | TankFacingLeft     -> ImagesTankFacingLeft ()
         | TankFacingUpLeft   -> ImagesTankFacingUpLeft ()
@@ -283,7 +281,7 @@ let TankImagesFor tankDirection =
 
 
 
-let ForEachEnemyTankScreenLocation numTilesHorizontally gameTime f enemyTanks =
+let private ForEachEnemyTankScreenLocation numTilesHorizontally gameTime f enemyTanks =
 
     let ofsX = TileMatrixOffsetXAtTimeOffset numTilesHorizontally gameTime |> IntToFloatEpx
     let ofsY = ScrollingSectionTopY |> IntToFloatEpx
@@ -293,7 +291,7 @@ let ForEachEnemyTankScreenLocation numTilesHorizontally gameTime f enemyTanks =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let RenderTankBattleScreen render (model:TankBattleScreenModel) gameTime =
+let private RenderTankBattleScreen render (model:TankBattleScreenModel) gameTime =
 
     let gameTime = gameTime - model.Constants.ScreenStartTime  // TODO: Ideologically this should be called levelTime
 
@@ -343,7 +341,7 @@ let RenderTankBattleScreen render (model:TankBattleScreenModel) gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let ToEnemyTankLocationsOnMatrix enemyTankTileLocations =
+let private ToEnemyTankLocationsOnMatrix enemyTankTileLocations =
 
     let half = (TileSquareSide / 2)
 
@@ -356,17 +354,17 @@ let ToEnemyTankLocationsOnMatrix enemyTankTileLocations =
     )
 
 
-let ChooseCourseMap (tankMapsList:TankBattleMapMatrix list) tankBattleMapNumber =
+let private ChooseCourseMap (tankMapsList:TankBattleMapMatrix list) tankBattleMapNumber =
 
     let n = tankMapsList.Length
     if n < 1 then failwith "List of tank battle maps should never be empty"
     tankMapsList.[tankBattleMapNumber % n]
 
 
-let NewTankBattleScreen scoreAndHiScore tanksRemaining finalBossAndTankBattleData tankMapsList gameTime =
+let private OldNewTankBattleScreen scoreAndHiScore tanksRemaining mapNumber tankMapsList whereToOnGameOver whereToOnCourseCompletion gameTime =
 
     let levelMap =
-        ChooseCourseMap tankMapsList finalBossAndTankBattleData.TankBattleMapNumber
+        ChooseCourseMap tankMapsList mapNumber
 
     let tileMatrixTraits =
         {
@@ -378,10 +376,13 @@ let NewTankBattleScreen scoreAndHiScore tanksRemaining finalBossAndTankBattleDat
 
     let constants = 
         {
-            ScreenStartTime            = gameTime
-            TileMatrixTraits           = tileMatrixTraits
-            LevelMap                   = levelMap
-            FinalBossAndTankBattleData = finalBossAndTankBattleData
+            ScreenStartTime                 = gameTime
+            TileMatrixTraits                = tileMatrixTraits
+            LevelMap                        = levelMap
+            GameOverOnTankBattleScreen      = whereToOnGameOver 
+            TankCompletedCourseSuccessfully = whereToOnCourseCompletion
+            TankMapsList                    = tankMapsList
+            MapNumber                       = mapNumber
         }
 
     {
@@ -397,7 +398,7 @@ let NewTankBattleScreen scoreAndHiScore tanksRemaining finalBossAndTankBattleDat
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let TankDirectionFromInput (input:InputEventData) =
+let private TankDirectionFromInput (input:InputEventData) =
 
     let up   = input.Up.Held
     let down = input.Down.Held
@@ -407,7 +408,7 @@ let TankDirectionFromInput (input:InputEventData) =
     else if down  then TankFacingDownLeft
     else               TankFacingLeft
 
-let TankYMovedByDirection oldY tankDirection frameElapsedTime =
+let private TankYMovedByDirection oldY tankDirection frameElapsedTime =
 
     let distance = frameElapsedTime * TankMovementPerSecond
 
@@ -418,14 +419,14 @@ let TankYMovedByDirection oldY tankDirection frameElapsedTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let CanFireNow missilesList reFireInterval gameTime =
+let private CanFireNow missilesList reFireInterval gameTime =
 
     match missilesList |> FlickBookHeadItemStartTime with
         | None -> true
         | Some(mostRecentFiringTime) -> (gameTime - mostRecentFiringTime) >= reFireInterval
 
 
-let ConsiderTankFiring tankY input alliedMissiles gameTime =
+let private ConsiderTankFiring tankY input alliedMissiles gameTime =
 
     if input.Fire.JustDown && CanFireNow alliedMissiles TankReFireInterval gameTime then
 
@@ -439,7 +440,7 @@ let ConsiderTankFiring tankY input alliedMissiles gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let AlliedMissileCollidesWithEnemyTank numTilesHorizontally gameTime alliedMissile enemyLocation =
+let private AlliedMissileCollidesWithEnemyTank numTilesHorizontally gameTime alliedMissile enemyLocation =
 
     let enemyScreenLocation = 
         EnemyTankMatrixLocationToScreen numTilesHorizontally enemyLocation gameTime
@@ -449,7 +450,7 @@ let AlliedMissileCollidesWithEnemyTank numTilesHorizontally gameTime alliedMissi
         |> IsWithinRegionOf enemyScreenLocation MissileCollisionTriggerDistance
 
 
-let EnemyMissileCollidesWithPlayer gameTime enemyMissile tankY =
+let private EnemyMissileCollidesWithPlayer gameTime enemyMissile tankY =
     
     let thePlayer = { ptx=TankX ; pty=tankY }
     
@@ -458,7 +459,7 @@ let EnemyMissileCollidesWithPlayer gameTime enemyMissile tankY =
         |> IsWithinRegionOf thePlayer MissileCollisionTriggerDistance
 
 
-let DoesPlayerCollideWithEnemyTank numTilesHorizontally gameTime enemyTanks playerTankY playerTankDirection =
+let private DoesPlayerCollideWithEnemyTank numTilesHorizontally gameTime enemyTanks playerTankY playerTankDirection =
     
     let r = TankCollisionRectangle TankX playerTankY playerTankDirection
     
@@ -485,13 +486,13 @@ let DoesPlayerCollideWithEnemyTank numTilesHorizontally gameTime enemyTanks play
 
     collides
 
-let MissileExplosionFor missile gameTime = 
+let private MissileExplosionFor missile gameTime = 
     let missilePos = missile.FlickBookMechanicsObject |> MOMPositionAt gameTime
     NewExplosion missilePos gameTime
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewMissileFiredBy enemyTankMatrixLocation numTilesHorizontally gameTime =
+let private NewMissileFiredBy enemyTankMatrixLocation numTilesHorizontally gameTime =
 
     let enemyScreenLocation = 
         EnemyTankMatrixLocationToScreen numTilesHorizontally enemyTankMatrixLocation gameTime
@@ -499,7 +500,7 @@ let NewMissileFiredBy enemyTankMatrixLocation numTilesHorizontally gameTime =
     NewEnemyMissile enemyScreenLocation gameTime
 
 
-let EnemyMissilesWithAdditionalFirings numTilesHorizontally (enemyTanks:EnemyTankMatrixLocation list) (enemyMissiles:FlickBookInstance list) gameTime =
+let private EnemyMissilesWithAdditionalFirings numTilesHorizontally (enemyTanks:EnemyTankMatrixLocation list) (enemyMissiles:FlickBookInstance list) gameTime =
 
     // Which enemies are visible?  Only those can be considered for firing.
     // When was the most recent firing time?  Only consider firing again after a time period.
@@ -537,7 +538,7 @@ let EnemyMissilesWithAdditionalFirings numTilesHorizontally (enemyTanks:EnemyTan
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let HasInPlayTankReachedTheFort alliedState tankMatrixX =
+let private HasInPlayTankReachedTheFort alliedState tankMatrixX =
 
     match alliedState with
         | AlliedTankDestroyed
@@ -552,7 +553,7 @@ let HasInPlayTankReachedTheFort alliedState tankMatrixX =
                 alliedState
 
 
-let IsItTimeForExplodingTankToBeDestroyed alliedState tanksRemaining gameTime =
+let private IsItTimeForExplodingTankToBeDestroyed alliedState tanksRemaining gameTime =
 
     match alliedState with
 
@@ -569,7 +570,7 @@ let IsItTimeForExplodingTankToBeDestroyed alliedState tanksRemaining gameTime =
                 alliedState, tanksRemaining
 
 
-let PlayerMovementAndCrashDetection alliedState decoratives frameElapsedTime input constants gameTime =
+let private PlayerMovementAndCrashDetection alliedState decoratives frameElapsedTime input constants gameTime =
 
     match alliedState with
 
@@ -591,7 +592,7 @@ let PlayerMovementAndCrashDetection alliedState decoratives frameElapsedTime inp
             else
                 AlliedTankInPlay(tankY, tankDirection), decoratives
 
-let PlayerMissileFiring alliedState input alliedMissiles gameTime =
+let private PlayerMissileFiring alliedState input alliedMissiles gameTime =
 
     match alliedState with
         | AlliedTankDestroyed          //
@@ -602,7 +603,7 @@ let PlayerMissileFiring alliedState input alliedMissiles gameTime =
         | AlliedTankInPlay(tankY, _tankDirection) ->
             ConsiderTankFiring tankY input alliedMissiles gameTime
 
-let HasPlayerBeenHitByEnemyMissiles alliedState enemyMissiles decoratives scoreAndHiScore gameTime =
+let private HasPlayerBeenHitByEnemyMissiles alliedState enemyMissiles decoratives scoreAndHiScore gameTime =
 
     match alliedState with
         | AlliedTankReachedFort       //
@@ -625,7 +626,7 @@ let HasPlayerBeenHitByEnemyMissiles alliedState enemyMissiles decoratives scoreA
                 | PlayerSurvives  -> enemyMissiles, alliedState, decoratives, scoreAndHiScore
                 | PlayerDestroyed -> enemyMissiles, AlliedTankExploding(gameTime), decoratives, scoreAndHiScore
 
-let HasInPlayTankCrashedIntoEnemyTanks alliedState decoratives enemyTanks numTilesHorizontally gameTime =
+let private HasInPlayTankCrashedIntoEnemyTanks alliedState decoratives enemyTanks numTilesHorizontally gameTime =
 
     match alliedState with
         | AlliedTankDestroyed          //
@@ -645,14 +646,16 @@ let HasInPlayTankCrashedIntoEnemyTanks alliedState decoratives enemyTanks numTil
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 [<Struct>]
-type TankBattleChapterTransition =
+type private TankBattleChapterTransition =
     | StayOnTankBattleScreen          of newModel1 : TankBattleScreenModel
     | GameOverOnTankBattleScreen      of newModel2 : TankBattleScreenModel
     | TankCompletedCourseSuccessfully of newModel3 : TankBattleScreenModel
     | RestartTankBattle               of newModel4 : TankBattleScreenModel
 
 
-let NextTankBattleScreenState oldState input gameTime frameElapsedTime =
+let private OldNextTankBattleScreenState oldState keyStateGetter gameTime frameElapsedTime =
+
+    let input = keyStateGetter |> DecodedInput
 
     let newModel =
 
@@ -723,7 +726,6 @@ let NextTankBattleScreenState oldState input gameTime frameElapsedTime =
 
                 {
                     Constants          = oldState.Constants // Never updated during this level.
-
                     ScoreAndHiScore    = scoreAndHiScore
                     AlliedState        = alliedState
                     Decoratives        = decoratives    
@@ -733,24 +735,16 @@ let NextTankBattleScreenState oldState input gameTime frameElapsedTime =
                     EnemyTankLocations = enemyTanks
                 }
 
-    match newModel.AlliedState with
-        
-        | AlliedTankReachedFort ->
-            newModel |> WithIncrementedMapNumber
-
-        | AlliedTankDestroyed
-        | AlliedTankInPlay _
-        | AlliedTankExploding _ ->
-            newModel
+    newModel
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Query functions for Storyboard
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type TankBattleAfterFrameCase = StayOnTankBattleScreen | TankCompletedCourseSuccessfully | TankBattleGameOver | RestartTankBattle
+type private TankBattleAfterFrameCase = StayOnTankBattleScreen | TankCompletedCourseSuccessfully | TankBattleGameOver | RestartTankBattle
 
-let TankBattleTransition state =
+let private TankBattleTransition state =
 
     match state.AlliedState with
     
@@ -763,4 +757,62 @@ let TankBattleTransition state =
         | AlliedTankInPlay _
         | AlliedTankExploding _ ->
             StayOnTankBattleScreen
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Adapter until above refactored
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let private NextTankBattleScreenState gameState keyStateGetter gameTime elapsed =
+
+    let model = ModelFrom gameState
+    let model = OldNextTankBattleScreenState model keyStateGetter gameTime elapsed
+
+    match TankBattleTransition model with
+        | TankCompletedCourseSuccessfully -> 
+            model.Constants.TankCompletedCourseSuccessfully 
+                model.TanksRemaining
+                model.ScoreAndHiScore 
+                gameTime
+
+        | TankBattleGameOver -> 
+            model.Constants.GameOverOnTankBattleScreen 
+                model.ScoreAndHiScore 
+
+        | StayOnTankBattleScreen -> 
+            gameState |> WithUpdatedModel model
+
+        | RestartTankBattle ->
+            let tankModel =
+                OldNewTankBattleScreen 
+                    model.ScoreAndHiScore
+                    model.TanksRemaining 
+                    model.Constants.MapNumber
+                    model.Constants.TankMapsList 
+                    model.Constants.GameOverOnTankBattleScreen 
+                    model.Constants.TankCompletedCourseSuccessfully 
+                    gameTime 
+
+            let afterIntermission _outgoingGameState _gameTime =
+                gameState |> WithUpdatedModel tankModel  
+                
+            WithFortAssaultIntermissionCard afterIntermission gameTime
+            
+
+
+
+let NewTankBattleScreen scoreAndHiScore tanksRemaining mapNumber tankMapsList whereToOnGameOver whereToOnCourseCompletion gameTime =
+
+    let tankModel =
+        OldNewTankBattleScreen 
+            scoreAndHiScore 
+            tanksRemaining 
+            mapNumber
+            tankMapsList 
+            whereToOnGameOver 
+            whereToOnCourseCompletion 
+            gameTime 
+
+    NewGameState NextTankBattleScreenState RenderTankBattleScreen tankModel
 

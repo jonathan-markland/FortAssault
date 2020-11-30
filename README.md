@@ -4,7 +4,7 @@ Fort Assault
 
 Retro remake of a fairly well-known 1980s computer game.
 
-![Main screen](/WebImages/Image1.jpg)
+![Main screen](/ReadmeImages/Image1.jpg)
 
 "You can't use Functional Programming to make games!" -- Anon.
 
@@ -32,13 +32,13 @@ This is a research project also:
 Screenshots
 ===========
 
-![Game screenshot](/WebImages/Image2.jpg)
+![Game screenshot](/ReadmeImages/Image2.jpg)
 
-![Game screenshot](/WebImages/Image3.jpg)
+![Game screenshot](/ReadmeImages/Image3.jpg)
 
-![Game screenshot](/WebImages/Image4.jpg)
+![Game screenshot](/ReadmeImages/Image4.jpg)
 
-![Game screenshot](/WebImages/Image5.jpg)
+![Game screenshot](/ReadmeImages/Image5.jpg)
 
 Browser version
 ===============
@@ -48,7 +48,7 @@ It's all node.js / npm stack, so you need these.
 
 To start the server:
 
-	cd FortAssaultWeb
+	cd root-of-repository-folder
 	npm start
 
 Then navigate to http://localhost:8080

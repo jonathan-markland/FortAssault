@@ -13,13 +13,13 @@ open Time
 [<Struct>]
 type MOMReason =
     | MOMYetToAppear
-    | MOMVisibleAtPosition of pos:PointF32
+    | MOMVisibleAtPosition of pos:Point<float32<epx>>
     | MOMDisappeared
 
 
 
 let FunctionThatGetsPositionOfStationaryObject
-    (pos       : PointF32)
+    (pos       : Point<float32<epx>>)
     (startTime : float32<seconds>) 
     (duration  : float32<seconds>) =
 
@@ -41,8 +41,8 @@ let FunctionThatGetsPositionOfStationaryObject
 
 let FunctionThatGetsPositionOfMovingObject
     motionFunction
-    (startPos  : PointF32) 
-    (endPos    : PointF32)
+    (startPos  : Point<float32<epx>>) 
+    (endPos    : Point<float32<epx>>)
     (startTime : float32<seconds>) 
     (duration  : float32<seconds>) =
 
@@ -74,7 +74,8 @@ let FunctionThatGetsPositionOfMovingObject
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 /// Unit-Space is where some external range has been 
-/// normalized to a floating point value between 0.0F and 1.0F
+/// normalized to a floating point value between 0.0F and 1.0F,
+/// where 0.0F maps to the start of the range, and 1.0F the end.
 [<Measure>]
 type unitspace
 
@@ -90,7 +91,7 @@ let inline SlowingDown (tu:float32<unitspace>) =
     tu |> InReverse |> SpeedingUp |> InReverse
 
 /// Use f1 for the first half of the animation period, then use f2.
-/// But, lie to f1 and f2 so they thinks they are being used for a full period.
+/// But, lie to f1 and f2 so they think they are being used for a full period.
 let inline HalfAndHalf f1 f2 (tu:float32<unitspace>) =
     if tu < 0.5F<unitspace> then
         tu |> (*) 2.0F |> f1
@@ -141,15 +142,15 @@ let inline SlowingDownMotion (t:float32<seconds>) (duration:float32<seconds>) =
 type MechanicsObjectModel =
     {
         PositionGetter  :  (float32<seconds> -> MOMReason)
-        StartPosition   :  PointF32
-        FinalPosition   :  PointF32
+        StartPosition   :  Point<float32<epx>>
+        FinalPosition   :  Point<float32<epx>>
         EndGameTime     :  float32<seconds>
     }
 
 
 
 let MechanicsControlledStationaryObject
-        (pos       : PointF32)
+        (pos       : Point<float32<epx>>)
         (startTime : float32<seconds>) 
         (duration  : float32<seconds>) =
     {
@@ -163,8 +164,8 @@ let MechanicsControlledStationaryObject
 
 let MechanicsControlledMovingObject
         motionFunction
-        (startPos  : PointF32) 
-        (endPos    : PointF32)
+        (startPos  : Point<float32<epx>>) 
+        (endPos    : Point<float32<epx>>)
         (startTime : float32<seconds>) 
         (duration  : float32<seconds>) =
     {

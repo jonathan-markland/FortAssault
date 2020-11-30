@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Directions.fs" />
+    <Compile Include="GhostAI.fs" />
+    <Compile Include="Keys.fs" />
+    <Compile Include="Mazes.fs" />
+    <Compile Include="Rules.fs" />
+    <Compile Include="PacmanImageFiles.fs" />
+    <Compile Include="ResourceIDs.fs" />
+    <Compile Include="MazeState.fs" />
+    <Compile Include="MazeUnpacker.fs" />
+    <Compile Include="PacmanShared.fs" />
+    <Compile Include="TitleScreenShared.fs" />
+    <Compile Include="PacmanGetReadyOverlay.fs" />
+    <Compile Include="ScreenIntermissions.fs" />
+    <Compile Include="ScreenPacman.fs" />
+    <Compile Include="ScreenGameOver.fs" />
+    <Compile Include="ScreenGameTitle.fs" />
+    <Compile Include="ScreenPotentialEnterYourName.fs" />
+    <Compile Include="Storyboard.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\FsAnyGame\FsAnyGame.fsproj" />
+  </ItemGroup>
+
+</Project>

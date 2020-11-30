@@ -17,6 +17,151 @@ let TestFailWhenDoing (activityDescription:string) =
     TestFailBecause message
 
 // ---------------------------------------------------------------------------------------------
+//  Wider Test capture support
+// ---------------------------------------------------------------------------------------------
+
+/// If the code under test raises a stray exception, then 
+/// include additional contextual information for the test 
+/// failure report.
+let WithContextIfStrayException activityDescription testFunction =  // TODO: remove
+    try
+        testFunction ()
+    with 
+        | :? Xunit.Sdk.XunitException as e ->
+            failwith (sprintf "An Xunit assertion failed while %s: %s" activityDescription (e.Message))
+        | other ->
+            failwith (sprintf "Code under test raised exception while %s: %s" activityDescription (other.Message))
+
+
+type TestExecutionSnapshot =
+    | TestTerminatedNormally of context:string option
+    | XunitAssertFailed      of context:string option * Xunit.Sdk.XunitException
+    | StrayExceptionHappened of context:string option * System.Exception
+
+
+/// Invokes the testFunction with the testData, and captures the result in a shapshot.
+/// The testFunction should be the function to test, or indirectly, something that
+/// invokes the function to test with additional light preparation.  The testFunction
+/// is at liberty to perform Xunit assertions.  Any (non-Xunit) exceptions that escape 
+/// the testFunction are bound into the returned snapshot.
+let WhenInputTo testFunction testInputData =
+    try
+        testInputData |> testFunction
+        TestTerminatedNormally(None)
+    with
+        | :? Xunit.Sdk.XunitException as xue ->
+            XunitAssertFailed(None, xue)
+        | other ->
+            StrayExceptionHappened(None, other)
+
+
+
+let private TidyAppend (afterStr:string) (beforeStr:string) =
+    let str1 = beforeStr.Trim()
+    let str2 = afterStr.Trim()
+    if str1.Length > 0 && str2.Length > 0 then
+        str1 + System.Environment.NewLine + str2
+    else if str1.Length > 0 then
+        str1
+    else    
+        str2
+
+
+
+
+/// Apply an additional user-defined message to the snapshot, which 
+/// is useful if you want test fail messages to have more detailed 
+/// contextual information.
+let InContext newContextMessage testExecutionSnapshot =
+
+    let newContextMessage = "When " + newContextMessage + ":"
+
+    let before existingContext str =
+        Some (str |> TidyAppend (existingContext |> Option.defaultValue ""))
+
+    match testExecutionSnapshot with
+        
+        | TestTerminatedNormally existingContext -> 
+            TestTerminatedNormally(newContextMessage |> before existingContext)
+        
+        | XunitAssertFailed(existingContext, xue) ->
+            XunitAssertFailed(newContextMessage |> before existingContext, xue)
+        
+        | StrayExceptionHappened(existingContext, ex) ->
+            StrayExceptionHappened(newContextMessage |> before existingContext, ex)
+
+
+
+let private Whoops ctx msg =
+    failwith (ctx |> Option.defaultValue "" |> TidyAppend msg)
+
+
+
+let private WhoopsEx ctx explanation (ex:System.Exception) =
+    failwith (ctx |> Option.defaultValue "" |> TidyAppend explanation |> TidyAppend (ex.Message))
+
+
+
+/// Asserts that the test function should have terminated without stray exceptions
+/// and that no Xunit assertions that may have been performed did fire.
+let ShouldPass testExecutionSnapshot =
+
+    match testExecutionSnapshot with
+        
+        | TestTerminatedNormally _ -> 
+            TestPasses ()
+        
+        | XunitAssertFailed(ctx, xue) ->
+            WhoopsEx ctx "This test should have passed, but an Xunit assertion failed instead:" xue
+        
+        | StrayExceptionHappened(ctx, ex) ->
+            WhoopsEx ctx "This test should have passed, but an exception was thrown:" ex
+
+
+
+/// Asserts that the test function threw an exception, and that the function did
+/// not just terminate normally, and nor did any Xunit assertions that may have
+/// been performed raise failures.
+let ShouldFailWithAnException testExecutionSnapshot =
+
+    match testExecutionSnapshot with
+        
+        | TestTerminatedNormally ctx -> 
+            Whoops ctx "This test should have failed with an exception but it terminated normally."
+        
+        | XunitAssertFailed(ctx, xue) ->
+            WhoopsEx ctx "This test should have failed with an exception but an Xunit assertion failed instead:" xue
+        
+        | StrayExceptionHappened _ ->
+            // Here the we are not interested in the exception type or content.
+            TestPasses ()
+
+
+
+/// Asserts that the test function threw an exception, and that the function did
+/// not just terminate normally, and nor did any Xunit assertions that may have
+/// been performed raise failures.
+let ShouldFailWithExceptionMessageWhere predicate testExecutionSnapshot =
+
+    match testExecutionSnapshot with
+        
+        | TestTerminatedNormally ctx -> 
+            Whoops ctx "This test should have failed with an exception but it terminated normally."
+        
+        | XunitAssertFailed(ctx, xue) ->
+            WhoopsEx ctx "This test should have failed with an exception but an Xunit assertion failed instead:" xue
+        
+        | StrayExceptionHappened(ctx, ex) ->
+            let message = ex.Message
+            if predicate message then
+                TestPasses ()
+            else
+                WhoopsEx ctx "This test indeed raised an exception, but the exception message didn't meet the test expectation.  The unexpected message was:" ex
+
+
+
+
+// ---------------------------------------------------------------------------------------------
 //  Assertions on booleans
 // ---------------------------------------------------------------------------------------------
 

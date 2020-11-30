@@ -18,3 +18,7 @@ let InputEventKeyStateWhereNothingIsPressed =
         JustDown  = false
         Held      = false
     }
+
+
+let KeyStatesInhibited (_:WebBrowserKeyCode) =
+    InputEventKeyStateWhereNothingIsPressed

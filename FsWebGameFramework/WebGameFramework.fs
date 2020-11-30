@@ -12,6 +12,7 @@ open DrawingShapes
 open ImagesAndFonts
 
 open Input
+open ScreenHandler
 
 
 
@@ -202,11 +203,8 @@ let private RenderToWebCanvas (context2d:Browser.Types.CanvasRenderingContext2D)
 
 let FrameworkWebMain
     listOfKeysNeeded
-    gameStaticDataConstructor
     gameGlobalStateConstructor
     gameplayStartConstructor
-    gameRenderer
-    gameFrameAdvanceFunction 
     arrayOfLoadedImages
     arrayOfLoadedFonts =
 
@@ -215,67 +213,67 @@ let FrameworkWebMain
     let canvas = document.getElementById("gameScreen") :?> Browser.Types.HTMLCanvasElement
     let context2d = canvas.getContext("2d") :?> Browser.Types.CanvasRenderingContext2D
    
-    match gameStaticDataConstructor () with
-    
-        | Ok gameResources ->
+    let gameGlobalState =
+        match gameGlobalStateConstructor () with
+            | Error msg -> failwith msg
+            | Ok globals -> globals
 
-            let gameTime         = 0.0F<seconds>
-            let storyboard       = gameplayStartConstructor gameResources gameTime
-            let renderFunction   = RenderToWebCanvas context2d
-            let frameElapsedTime = 0.02F<seconds>
-            let gameGlobals      = gameGlobalStateConstructor ()
+    let gameTime = 0.0F<seconds>
+    let frameElapsedTime = 0.02F<seconds>
 
-            let toKeyTuple (WebBrowserKeyCode k) =
-                (k, WebBrowserKeyCode k)
+    let gameState : ErasedGameState =
+        gameplayStartConstructor gameGlobalState gameTime
 
-            let toKeyTuples lst =
-                lst |> List.map toKeyTuple
+    let renderFunction = RenderToWebCanvas context2d
+
+    let toKeyTuple (WebBrowserKeyCode k) =
+        (k, WebBrowserKeyCode k)
+
+    let toKeyTuples lst =
+        lst |> List.map toKeyTuple
             
-            let mutableKeyStateStore =
-                NewMutableKeyStateStore
-                    80 // P
-                    (listOfKeysNeeded |> toKeyTuples)
+    let mutableKeyStateStore =
+        NewMutableKeyStateStore
+            80 // P
+            (listOfKeysNeeded |> toKeyTuples)
 
-            let registerKeyHandler eventName handlerFunc =
-                document.addEventListener(
-                    eventName, 
-                    fun e -> 
-                        let ke: Browser.Types.KeyboardEvent = downcast e
-                        if handlerFunc mutableKeyStateStore ((int) ke.keyCode) then e.preventDefault())
+    let registerKeyHandler eventName handlerFunc =
+        document.addEventListener(
+            eventName, 
+            fun e -> 
+                let ke: Browser.Types.KeyboardEvent = downcast e
+                if handlerFunc mutableKeyStateStore ((int) ke.keyCode) then e.preventDefault())
 
-            registerKeyHandler "keydown" HandleKeyDownEvent
-            registerKeyHandler "keyup"   HandleKeyUpEvent
+    registerKeyHandler "keydown" HandleKeyDownEvent
+    registerKeyHandler "keyup"   HandleKeyUpEvent
 
-            document.getElementById("loaderScreen").classList.add("hidden")
-            document.getElementById("gameScreen").classList.remove("hidden")
+    document.getElementById("loaderScreen").classList.add("hidden")
+    document.getElementById("gameScreen").classList.remove("hidden")
 
-            let keyStateGetter = 
-                LiveKeyStateFrom mutableKeyStateStore
+    let keyStateGetter = 
+        LiveKeyStateFrom mutableKeyStateStore
 
-            let rec mainLoop screenState tickCount () =
+    let rec mainLoop (gameState : ErasedGameState) tickCount () =
 
-                let tickCount = tickCount + 1u
+        let tickCount = tickCount + 1u
                 
-                let gameTime = 
-                    (float32 tickCount) / 50.0F |> InSeconds
+        let gameTime = 
+            (float32 tickCount) / 50.0F |> InSeconds  // TODO: Revisit parameterisation of frame rate.
                 
-                gameRenderer renderFunction screenState gameTime
+        gameState.Draw renderFunction gameTime
 
-                let screenState = 
-                    gameFrameAdvanceFunction gameResources screenState keyStateGetter gameTime frameElapsedTime 
+        let nextGameState = 
+            gameState.Frame 
+                keyStateGetter 
+                gameTime 
+                frameElapsedTime 
 
-                ClearKeyJustPressedFlags mutableKeyStateStore
+        ClearKeyJustPressedFlags mutableKeyStateStore
 
-                window.setTimeout((mainLoop screenState tickCount), 20) |> ignore
+        // TODO: The setTimeout 20ms will not account for time taken to calculate
+        //       the nextGameState.   I am fudging this with 17ms requested.
+        //       See MDN for resolution to request animation frame.
+        window.setTimeout((mainLoop nextGameState tickCount), 17) |> ignore   // TODO: Revisit parameterisation of frame rate.
 
-            let gameGlobals =
-                match gameGlobals with
-                    | Error msg -> failwith msg
-                    | Ok globals -> globals
-
-            mainLoop (struct (storyboard, gameGlobals)) 0u ()
-
-   
-        | Error msg -> 
-            ConsoleLog msg
+    mainLoop gameState 0u ()
     

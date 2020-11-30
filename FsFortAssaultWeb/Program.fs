@@ -3,11 +3,8 @@
 open WebGameFramework
 
 open FortAssaultImageFiles
-open TankMapFileLoader
 open Storyboard
-open FortAssaultGlobalState
 open Input
-open EngineEntryPoint
 
 
 
@@ -16,10 +13,6 @@ open EngineEntryPoint
 // ------------------------------------------------------------------------------------------------------------
 
 let WebMain () =
-
-    let fortAssaultStaticDataConstructor () = 
-       LoadTankBattleSequences () 
-           |> Result.map (fun tankMapsList -> { TankMapsList = tankMapsList })
 
     let fortAssaultKeysNeeded =
         [
@@ -30,22 +23,21 @@ let WebMain () =
             WebBrowserKeyCode 90
         ]
 
+    let stubGlobalStateConstructor () = Ok 1  // Feature not used by Fort Assault.
+
     LoadResourceFilesThenDo 
         FortAssaultResourceImages 
         FortAssaultFontResourceImages 
         (FrameworkWebMain
             fortAssaultKeysNeeded
-            fortAssaultStaticDataConstructor 
-            FortAssaultGlobalStateConstructor 
-            NewFortAssaultStoryboard 
-            RenderFortAssaultStoryboard 
-            NextFortAssaultStoryboardState)
+            stubGlobalStateConstructor 
+            NewFortAssaultStoryboard)
 
 
 
 
 // ------------------------------------------------------------------------------------------------------------
-//  Javascript land runs this script right away:
+//  Javascript-land runs this script right away:
 // ------------------------------------------------------------------------------------------------------------
 
 WebMain ()

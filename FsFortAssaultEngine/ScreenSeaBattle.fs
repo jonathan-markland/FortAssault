@@ -17,6 +17,7 @@ open PendingEvents
 open InputEventData
 open ImagesAndFonts
 open StaticResourceAccess
+open ScreenHandler
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -60,6 +61,8 @@ type SeaBattleScreenModel =
         PendingMessageTexts : Pending<string> list
         PendingScoreChanges : Pending<uint32> list
         MessageText         : string
+        WhereToGoOnGameOver       : ScoreAndHiScore -> ErasedGameState
+        WhereToOnCourseCompletion : uint32 -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -357,7 +360,7 @@ let RenderSeaBattleScreen render (model:SeaBattleScreenModel) gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewSeaBattleScreen scoreAndHiScore shipsRemaining gameTime =
+let OldNewSeaBattleScreen scoreAndHiScore shipsRemaining whereToOnGameOver whereToOnCourseCompletion gameTime =
     {
         ScoreAndHiScore     = scoreAndHiScore
         ShipsRemaining      = shipsRemaining
@@ -373,11 +376,15 @@ let NewSeaBattleScreen scoreAndHiScore shipsRemaining gameTime =
         PendingMessageTexts = []
         PendingScoreChanges = []
         MessageText         = ""
+        WhereToGoOnGameOver       = whereToOnGameOver 
+        WhereToOnCourseCompletion = whereToOnCourseCompletion
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextSeaBattleScreenState oldState input gameTime frameElapsedTime =
+let OldNextSeaBattleScreenState oldState keyStateGetter gameTime frameElapsedTime =
+
+    let input = keyStateGetter |> DecodedInput
 
     match oldState.AlliedState with
 
@@ -474,6 +481,9 @@ let NextSeaBattleScreenState oldState input gameTime frameElapsedTime =
                     PendingScoreChanges = futureScoreChanges
                     Decoratives         = decoratives
                     MessageText         = messageText
+                    WhereToGoOnGameOver       = oldState.WhereToGoOnGameOver      
+                    WhereToOnCourseCompletion = oldState.WhereToOnCourseCompletion
+
                 }
 
         | WonScreen(timeEnded) -> 
@@ -509,16 +519,48 @@ let NextSeaBattleScreenState oldState input gameTime frameElapsedTime =
             oldState   // Ideology:  Never risk the logic rest of the logic when the screen is over.
 
 
+
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  Query functions for Storyboard
+//  Adapter until above refactored
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type SeaBattleAfterFrameCase = StayOnSeaBattleScreen | GoToScreenAfterSeaBattle | SeaBattleGameOver
+let private NextSeaBattleScreenState gameState keyStateGetter gameTime elapsed =
 
-let SeaBattleTransition state =
-    match state.AlliedState with
+    let model = ModelFrom gameState
+    let model = OldNextSeaBattleScreenState model keyStateGetter gameTime elapsed
+
+    match model.AlliedState with
         | AlliedShipInPlay
         | ShipSinking _
-        | WonScreen _              -> StayOnSeaBattleScreen
+        | WonScreen _ -> 
+            gameState |> WithUpdatedModel model
+
         | AirOrSeaBattleScreenOver ->
-            if state.ShipsRemaining > 0u then GoToScreenAfterSeaBattle else SeaBattleGameOver
+            if model.ShipsRemaining > 0u then 
+                model.WhereToOnCourseCompletion 
+                    model.ShipsRemaining
+                    model.ScoreAndHiScore 
+                    gameTime
+            else 
+                model.WhereToGoOnGameOver
+                    model.ScoreAndHiScore 
+                   
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let NewSeaBattleScreen 
+        scoreAndHiScore 
+        shipsRemaining 
+        whereToOnGameOver 
+        whereToOnCourseCompletion 
+        gameTime =
+
+    let airBattleModel =
+        OldNewSeaBattleScreen 
+            scoreAndHiScore 
+            shipsRemaining 
+            whereToOnGameOver 
+            whereToOnCourseCompletion 
+            gameTime
+
+    NewGameState NextSeaBattleScreenState RenderSeaBattleScreen airBattleModel

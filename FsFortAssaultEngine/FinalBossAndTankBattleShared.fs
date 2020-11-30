@@ -6,18 +6,13 @@ open Geometry
 
 type Target =
     {
-        TargetLocation : PointF32
+        TargetLocation : Point<float32<epx>>
     }
 
-/// State that is passed between the Tank battle and Final boss screens.
-type FinalBossAndTankBattleData =
+/// Targets remaining on the fort.  Passed between tank battle and fort screens.
+type FinalBossTargets =
     {
-        /// The targets remaining on the fort.
         TargetsOnFinalBoss : Target list
-
-        /// Increments for each successful time through the tank course.
-        /// Used to determine the map, must be range-checked against the maps array!
-        TankBattleMapNumber : int
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -62,7 +57,5 @@ let NewFinalBossAndTankBattleData () =
                 {
                     TargetLocation = { ptx=x ; pty=y }
                 })
-
-        TankBattleMapNumber = 0
     }
 

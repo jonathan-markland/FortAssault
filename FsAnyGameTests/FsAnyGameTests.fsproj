@@ -8,6 +8,7 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Include="MazeFilterTests.fs" />
     <Compile Include="ListSplicerTests.fs" />
     <Compile Include="EnterYourNameTests.fs" />
     <Compile Include="ScoreboardTests.fs" />

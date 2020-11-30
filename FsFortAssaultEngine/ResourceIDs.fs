@@ -3,7 +3,8 @@
 open Geometry
 open ImagesAndFonts
 
-// This game uses a 320*200 engine-coordinate (epx) space:
+// TODO: Should these be in here?
+// This game uses the following engine-coordinate (epx) space:
 
 let ScreenWidthInt  = 320<epx>  // Must be the same as below!
 let ScreenHeightInt = 200<epx>  // Must be the same as below!

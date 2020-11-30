@@ -1,5 +1,6 @@
 ﻿module ScreenGameTitle
 
+open ScreenHandler
 open DrawingFunctions
 open ResourceIDs
 open Geometry
@@ -7,41 +8,39 @@ open ImagesAndFonts
 open InputEventData
 open BeachBackgroundRenderer
 open Time
-open FortAssaultGlobalState
 open ScoreboardModel
 open StaticResourceAccess
+open ScoreHiScore
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+// TODO: Possibly implement fire button inhibit as like FreezeFrame
 
 /// Intended to form a barrier against pressing FIRE 
 /// repeatedly at the end of the Enter Your Name screen.
-let TimeBeforeResponding = 2.0F<seconds>
+let private TimeBeforeResponding = 2.0F<seconds>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-type GameTitleScreenState =
-    | GameTitleAwaitingFireButton
-    | GameTitleScreenOver
-
-type GameTitleScreenModel =
+type private GameTitleScreenModel =
     {
-        ScreenStartTime : float32<seconds>
-        GameGlobalState : FortAssaultGlobalState
-        HiScore         : uint32
-        State           : GameTitleScreenState
-        ScoreboardMemo  : string list
+        Scoreboard            : ScoreAndName list
+        ScreenStartTime       : float32<seconds>
+        HiScore               : uint32
+        ScoreboardMemo        : string list
+        NextScreenConstructor : ScoreAndHiScore -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let IsFireButtonOperative oldState gameTime =
+let private IsFireButtonOperative model gameTime =
 
-    let respondTime = oldState.ScreenStartTime + TimeBeforeResponding
+    let respondTime = model.ScreenStartTime + TimeBeforeResponding
     gameTime > respondTime
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let RenderGameTitleScreen render model (gameTime:float32<seconds>) =
+let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 
     RenderBeachBackground render (gameTime / 4.0F)
     CentreImage render 160.0F<epx> 68.0F<epx> (ImageTitle |> ImageFromID)
@@ -50,38 +49,34 @@ let RenderGameTitleScreen render model (gameTime:float32<seconds>) =
     if IsFireButtonOperative model gameTime then
         Text render BlackFontID CentreAlign MiddleAlign 160<epx> 180<epx> "USE CURSOR KEYS ... Z TO FIRE"
 
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let NewGameTitleScreen hiScore gameGlobalState gameTime =
-    {
-        GameGlobalState = gameGlobalState
-        HiScore         = hiScore
-        State           = GameTitleAwaitingFireButton
-        ScreenStartTime = gameTime
-        ScoreboardMemo  = ScoreboardText 30 gameGlobalState.GameScoreBoard
-    }
+    #if SHORT_PLAYTHROUGH
+    Text render RedFontID CentreAlign MiddleAlign 160<epx> 10<epx> "WARNING  SHORT PLAY VERSION"
+    #endif
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NextGameTitleScreenState oldState input gameTime =
+let private NextGameTitleScreenState gameState keyStateGetter gameTime elapsed =
 
-    if input.Fire.JustDown then
+    let input = keyStateGetter |> DecodedInput
+    let model = ModelFrom gameState
 
-        if IsFireButtonOperative oldState gameTime then
-            { oldState with State = GameTitleScreenOver }
-        else
-            oldState
-
+    if input.Fire.JustDown && IsFireButtonOperative model gameTime then
+        model.NextScreenConstructor {Score=0u ; HiScore=model.HiScore}
     else
-        oldState
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  Query functions for Storyboard
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let StayOnTitleScreen state =
-    match state.State with
-        | GameTitleAwaitingFireButton -> true
-        | GameTitleScreenOver -> false
-
+        Unchanged gameState
     
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let NewGameTitleScreen hiScore globalScoreboard nextConstructor gameTime =
+
+    let titleScreenModel =
+        {
+            Scoreboard      = globalScoreboard
+            HiScore         = hiScore
+            ScreenStartTime = gameTime
+            ScoreboardMemo  = ScoreboardText 30 globalScoreboard
+            NextScreenConstructor = nextConstructor
+        }
+
+    NewGameState NextGameTitleScreenState RenderGameTitleScreen titleScreenModel
+
