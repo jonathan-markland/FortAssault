@@ -270,7 +270,10 @@ let FrameworkWebMain
 
         ClearKeyJustPressedFlags mutableKeyStateStore
 
-        window.setTimeout((mainLoop nextGameState tickCount), 20) |> ignore   // TODO: Revisit parameterisation of frame rate.
+        // TODO: The setTimeout 20ms will not account for time taken to calculate
+        //       the nextGameState.   I am fudging this with 17ms requested.
+        //       See MDN for resolution to request animation frame.
+        window.setTimeout((mainLoop nextGameState tickCount), 17) |> ignore   // TODO: Revisit parameterisation of frame rate.
 
     mainLoop gameState 0u ()
     
