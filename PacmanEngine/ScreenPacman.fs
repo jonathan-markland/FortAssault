@@ -1089,6 +1089,8 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
         }
             = model
 
+    // Process
+
     let eaten , position , direction , scoreIncrement1 =
         AdvancePacMan keyStateGetter mazeState pacmanState
 
