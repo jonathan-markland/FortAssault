@@ -319,12 +319,10 @@
     <Compile Include="Program.fs" />
   </ItemGroup>
 
-  <ItemGroup />
-
   <ItemGroup>
-    <ProjectReference Include="..\FsAnyGame\FsAnyGame.fsproj" />
-    <ProjectReference Include="..\FsFortAssaultEngine\FsFortAssaultEngine.fsproj" />
-    <ProjectReference Include="..\FsDesktopGameFramework\FsDesktopGameFramework.fsproj" />
+    <ProjectReference Include="..\FortAssaultEngine\FortAssaultEngine.fsproj" />
+    <ProjectReference Include="..\GameLibDesktopFramework\GameLibDesktopFramework.fsproj" />
+    <ProjectReference Include="..\GameLib\GameLib.fsproj" />
   </ItemGroup>
 
 </Project>

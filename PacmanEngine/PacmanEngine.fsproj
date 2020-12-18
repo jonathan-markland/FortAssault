@@ -26,7 +26,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FsAnyGame\FsAnyGame.fsproj" />
+    <ProjectReference Include="..\GameLib\GameLib.fsproj" />
   </ItemGroup>
 
 </Project>

@@ -42,10 +42,10 @@
     <Compile Include="ScreenVictory.fs" />
     <Compile Include="MechanicsTestPage.fs" />
     <Compile Include="Storyboard.fs" />
-  </ItemGroup>
+  </ItemGroup>  
 
   <ItemGroup>
-    <ProjectReference Include="..\FsAnyGame\FsAnyGame.fsproj" />
+    <ProjectReference Include="..\GameLib\GameLib.fsproj" />
   </ItemGroup>
 
 </Project>
