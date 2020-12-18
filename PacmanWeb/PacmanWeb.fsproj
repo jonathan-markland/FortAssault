@@ -10,8 +10,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FsAnyGame\FsAnyGame.fsproj" />
-    <ProjectReference Include="..\FsWebGameFramework\FsWebGameFramework.fsproj" />
+    <ProjectReference Include="..\GameLib\GameLib.fsproj" />
+    <ProjectReference Include="..\GameLibWebFramework\GameLibWebFramework.fsproj" />
     <ProjectReference Include="..\PacmanEngine\PacmanEngine.fsproj" />
   </ItemGroup>
 

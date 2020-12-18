@@ -24,8 +24,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FsAnyGame\FsAnyGame.fsproj" />
-    <ProjectReference Include="..\FsXunitExtensions\FsXunitExtensions.fsproj" />
+    <ProjectReference Include="..\GameLib\GameLib.fsproj" />
+    <ProjectReference Include="..\XunitExtensions\XunitExtensions.fsproj" />
   </ItemGroup>
 
 </Project>

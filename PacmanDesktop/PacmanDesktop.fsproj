@@ -56,8 +56,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FsAnyGame\FsAnyGame.fsproj" />
-    <ProjectReference Include="..\FsDesktopGameFramework\FsDesktopGameFramework.fsproj" />
+    <ProjectReference Include="..\GameLib\GameLib.fsproj" />
+    <ProjectReference Include="..\GameLibDesktopFramework\GameLibDesktopFramework.fsproj" />
     <ProjectReference Include="..\PacmanEngine\PacmanEngine.fsproj" />
     <ProjectReference Include="..\SDL2-CS\SDL2-CS.csproj" />
   </ItemGroup>

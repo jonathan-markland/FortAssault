@@ -3,23 +3,23 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30204.135
 MinimumVisualStudioVersion = 15.0.26124.0
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsAnyGame", "FsAnyGame\FsAnyGame.fsproj", "{F98CA334-C050-421A-AFE6-A1C23C818346}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "GameLib", "GameLib\GameLib.fsproj", "{F98CA334-C050-421A-AFE6-A1C23C818346}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsDesktopGameFramework", "FsDesktopGameFramework\FsDesktopGameFramework.fsproj", "{8B83A3F9-74DA-400B-AFCC-EA80C1748FEA}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "GameLibDesktopFramework", "GameLibDesktopFramework\GameLibDesktopFramework.fsproj", "{8B83A3F9-74DA-400B-AFCC-EA80C1748FEA}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsFortAssaultEngine", "FsFortAssaultEngine\FsFortAssaultEngine.fsproj", "{70B9D5FF-7A10-43A7-BC6C-7A38FE08FF25}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FortAssaultEngine", "FortAssaultEngine\FortAssaultEngine.fsproj", "{70B9D5FF-7A10-43A7-BC6C-7A38FE08FF25}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsFortAssaultDesktop", "FsFortAssaultDesktop\FsFortAssaultDesktop.fsproj", "{8B7E2923-9C25-4A24-B3F4-5323C88EDB4A}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FortAssaultDesktop", "FortAssaultDesktop\FortAssaultDesktop.fsproj", "{8B7E2923-9C25-4A24-B3F4-5323C88EDB4A}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsAnyGameTests", "FsAnyGameTests\FsAnyGameTests.fsproj", "{F4D216BC-A2D8-47EB-972C-D3030F6BB081}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "GameLibTests", "GameLibTests\GameLibTests.fsproj", "{F4D216BC-A2D8-47EB-972C-D3030F6BB081}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsXunitExtensions", "FsXunitExtensions\FsXunitExtensions.fsproj", "{AEA3530F-9C15-41FA-B8CA-C00F59C284CE}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "XunitExtensions", "XunitExtensions\XunitExtensions.fsproj", "{AEA3530F-9C15-41FA-B8CA-C00F59C284CE}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsWebGameFramework", "FsWebGameFramework\FsWebGameFramework.fsproj", "{66F6B2FA-F3D4-4EE8-8DA3-BC698A28BBD2}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "GameLibWebFramework", "GameLibWebFramework\GameLibWebFramework.fsproj", "{66F6B2FA-F3D4-4EE8-8DA3-BC698A28BBD2}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "SDL2-CS", "SDL2-CS\SDL2-CS.csproj", "{CC4D47EC-6A7D-4E67-9D82-B720DE7364C8}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FsFortAssaultWeb", "FsFortAssaultWeb\FsFortAssaultWeb.fsproj", "{9580012D-2EF9-4843-AEB9-E71A2DC5061F}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FortAssaultWeb", "FortAssaultWeb\FortAssaultWeb.fsproj", "{9580012D-2EF9-4843-AEB9-E71A2DC5061F}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "PacmanDesktop", "PacmanDesktop\PacmanDesktop.fsproj", "{8AF618CF-B7CC-43D5-8674-2CFE27DED0DB}"
 EndProject

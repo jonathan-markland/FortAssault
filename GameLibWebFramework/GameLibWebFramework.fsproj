@@ -5,7 +5,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Include="WebGameFramework.fs" />
+    <Compile Include="GameLibWebFramework.fs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\FsAnyGame\FsAnyGame.fsproj" />
+    <ProjectReference Include="..\GameLib\GameLib.fsproj" />
   </ItemGroup>
 
 </Project>

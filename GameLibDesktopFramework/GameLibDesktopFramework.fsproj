@@ -6,11 +6,11 @@
 
   <ItemGroup>
     <Compile Include="SDLCover.fs" />
-    <Compile Include="DesktopGameFramework.fs" />
+    <Compile Include="GameLibDesktopFramework.fs" />
   </ItemGroup>
   
   <ItemGroup>
-    <ProjectReference Include="..\FsAnyGame\FsAnyGame.fsproj" />
+    <ProjectReference Include="..\GameLib\GameLib.fsproj" />
     <ProjectReference Include="..\SDL2-CS\SDL2-CS.csproj" />
   </ItemGroup>
 
