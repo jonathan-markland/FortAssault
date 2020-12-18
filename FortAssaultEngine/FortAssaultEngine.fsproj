@@ -8,10 +8,6 @@
     <DefineConstants></DefineConstants>
   </PropertyGroup>
 
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <DefineConstants>TRACE;SHORT_PLAYTHROUGH</DefineConstants>
-  </PropertyGroup>  
-
   <ItemGroup>
     <Compile Include="PendingEvents.fs" />
     <Compile Include="FortAssaultImageFiles.fs" />
