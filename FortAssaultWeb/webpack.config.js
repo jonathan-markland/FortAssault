@@ -6,7 +6,7 @@ var path = require("path");
 
 module.exports = {
     mode: "development",
-    entry: "./FsFortAssaultWeb.fsproj",
+    entry: "./FortAssaultWeb.fsproj",
     output: {
         path: path.join(__dirname, "./wwwroot"),
         filename: "bundle.js",
