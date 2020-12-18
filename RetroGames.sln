@@ -13,7 +13,7 @@ Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "FortAssaultDesktop", "FortA
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "GameLibTests", "GameLibTests\GameLibTests.fsproj", "{F4D216BC-A2D8-47EB-972C-D3030F6BB081}"
 EndProject
-Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "XunitExtensions", "XunitExtensions\XunitExtensions.fsproj", "{AEA3530F-9C15-41FA-B8CA-C00F59C284CE}"
+Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "XunitExtensionsLib", "XunitExtensionsLib\XunitExtensionsLib.fsproj", "{AEA3530F-9C15-41FA-B8CA-C00F59C284CE}"
 EndProject
 Project("{6EC3EE1D-3C4E-46DD-8F32-0CC8E7565705}") = "GameLibWebFramework", "GameLibWebFramework\GameLibWebFramework.fsproj", "{66F6B2FA-F3D4-4EE8-8DA3-BC698A28BBD2}"
 EndProject

@@ -21,7 +21,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\GameLib\GameLib.fsproj" />
-    <ProjectReference Include="..\XunitExtensions\XunitExtensions.fsproj" />
+    <ProjectReference Include="..\XunitExtensionsLib\XunitExtensionsLib.fsproj" />
     <ProjectReference Include="..\PacmanEngine\PacmanEngine.fsproj" />
   </ItemGroup>
 
