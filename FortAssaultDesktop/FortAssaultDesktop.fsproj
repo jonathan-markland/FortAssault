@@ -37,283 +37,283 @@
     <None Include="zlib1.dll">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\CliffsTile.png">
+    <Content Include="..\FortAssaultEngine\Images\CliffsTile.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\ColonelReceivingMedal.png">
+    <Content Include="..\FortAssaultEngine\Images\ColonelReceivingMedal.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\ColonelSaluting.png">
+    <Content Include="..\FortAssaultEngine\Images\ColonelSaluting.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\ColonelStanding.png">
+    <Content Include="..\FortAssaultEngine\Images\ColonelStanding.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Medal.png">
+    <Content Include="..\FortAssaultEngine\Images\Medal.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\PresidentPresentingMedal.png">
+    <Content Include="..\FortAssaultEngine\Images\PresidentPresentingMedal.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\PresidentSaluting.png">
+    <Content Include="..\FortAssaultEngine\Images\PresidentSaluting.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\PresidentStanding.png">
+    <Content Include="..\FortAssaultEngine\Images\PresidentStanding.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\SoldierSaluting.png">
+    <Content Include="..\FortAssaultEngine\Images\SoldierSaluting.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\SoldierStanding.png">
+    <Content Include="..\FortAssaultEngine\Images\SoldierStanding.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\FinalBossSurrender0.png">
+    <Content Include="..\FortAssaultEngine\Images\FinalBossSurrender0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\FinalBossSurrender1.png">
+    <Content Include="..\FortAssaultEngine\Images\FinalBossSurrender1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\TankFacingDownLeft1.png">
+    <Content Include="..\FortAssaultEngine\Images\TankFacingDownLeft1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\TankFacingLeft1.png">
+    <Content Include="..\FortAssaultEngine\Images\TankFacingLeft1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\TankFacingUpLeft0.png">
+    <Content Include="..\FortAssaultEngine\Images\TankFacingUpLeft0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\TankFacingUpLeft1.png">
+    <Content Include="..\FortAssaultEngine\Images\TankFacingUpLeft1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\VictoryScreen.png">
+    <Content Include="..\FortAssaultEngine\Images\VictoryScreen.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\IntermissionBackground.png">
+    <Content Include="..\FortAssaultEngine\Images\IntermissionBackground.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\TankFacingDownLeft0.png">
+    <Content Include="..\FortAssaultEngine\Images\TankFacingDownLeft0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\TankFacingLeft0.png">
+    <Content Include="..\FortAssaultEngine\Images\TankFacingLeft0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\EnemyTankGun1.png">
+    <Content Include="..\FortAssaultEngine\Images\EnemyTankGun1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\TankBattleMissile.png">
+    <Content Include="..\FortAssaultEngine\Images\TankBattleMissile.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\TileBarricade.png">
+    <Content Include="..\FortAssaultEngine\Images\TileBarricade.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\TileBridge.png">
+    <Content Include="..\FortAssaultEngine\Images\TileBridge.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\TileMine.png">
+    <Content Include="..\FortAssaultEngine\Images\TileMine.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\TileSand.png">
+    <Content Include="..\FortAssaultEngine\Images\TileSand.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\TileTower.png">
+    <Content Include="..\FortAssaultEngine\Images\TileTower.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\TileWater.png">
+    <Content Include="..\FortAssaultEngine\Images\TileWater.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\PlaneBomb0.png">
+    <Content Include="..\FortAssaultEngine\Images\PlaneBomb0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\PlaneBomb1.png">
+    <Content Include="..\FortAssaultEngine\Images\PlaneBomb1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\PlaneBomb2.png">
+    <Content Include="..\FortAssaultEngine\Images\PlaneBomb2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\PlaneBomb3.png">
+    <Content Include="..\FortAssaultEngine\Images\PlaneBomb3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\PlaneBomb4.png">
+    <Content Include="..\FortAssaultEngine\Images\PlaneBomb4.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Plane0.png">
+    <Content Include="..\FortAssaultEngine\Images\Plane0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Plane1.png">
+    <Content Include="..\FortAssaultEngine\Images\Plane1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Plane2.png">
+    <Content Include="..\FortAssaultEngine\Images\Plane2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Plane3.png">
+    <Content Include="..\FortAssaultEngine\Images\Plane3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Plane4.png">
+    <Content Include="..\FortAssaultEngine\Images\Plane4.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Plane4BankingLeft.png">
+    <Content Include="..\FortAssaultEngine\Images\Plane4BankingLeft.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Plane4BankingRight.png">
+    <Content Include="..\FortAssaultEngine\Images\Plane4BankingRight.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Plane5.png">
+    <Content Include="..\FortAssaultEngine\Images\Plane5.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Plane5BankingLeft.png">
+    <Content Include="..\FortAssaultEngine\Images\Plane5BankingLeft.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Plane5BankingRight.png">
+    <Content Include="..\FortAssaultEngine\Images\Plane5BankingRight.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Plane6.png">
+    <Content Include="..\FortAssaultEngine\Images\Plane6.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Plane6BankingLeft.png">
+    <Content Include="..\FortAssaultEngine\Images\Plane6BankingLeft.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Plane6BankingRight.png">
+    <Content Include="..\FortAssaultEngine\Images\Plane6BankingRight.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\PlaneExplode0.png">
+    <Content Include="..\FortAssaultEngine\Images\PlaneExplode0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\PlaneExplode1.png">
+    <Content Include="..\FortAssaultEngine\Images\PlaneExplode1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\PlaneExplode2.png">
+    <Content Include="..\FortAssaultEngine\Images\PlaneExplode2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Splash0.png">
+    <Content Include="..\FortAssaultEngine\Images\Splash0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\EnemyShip0.png">
+    <Content Include="..\FortAssaultEngine\Images\EnemyShip0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\EnemyShip1.png">
+    <Content Include="..\FortAssaultEngine\Images\EnemyShip1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\EnemyShip2.png">
+    <Content Include="..\FortAssaultEngine\Images\EnemyShip2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\EnemyShip3.png">
+    <Content Include="..\FortAssaultEngine\Images\EnemyShip3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\EnemyShip4.png">
+    <Content Include="..\FortAssaultEngine\Images\EnemyShip4.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\SeaBattleBackground0.png">
+    <Content Include="..\FortAssaultEngine\Images\SeaBattleBackground0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\SeaBattleBackground1.png">
+    <Content Include="..\FortAssaultEngine\Images\SeaBattleBackground1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\SeaBattleBackground2.png">
+    <Content Include="..\FortAssaultEngine\Images\SeaBattleBackground2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\SeaBattleBackground3.png">
+    <Content Include="..\FortAssaultEngine\Images\SeaBattleBackground3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\ShipGunBullet.png">
+    <Content Include="..\FortAssaultEngine\Images\ShipGunBullet.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\ShipGunNozzle.png">
+    <Content Include="..\FortAssaultEngine\Images\ShipGunNozzle.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\ShipGunStem.png">
+    <Content Include="..\FortAssaultEngine\Images\ShipGunStem.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\FinalBossActiveTarget.png">
+    <Content Include="..\FortAssaultEngine\Images\FinalBossActiveTarget.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\FinalBossTarget.png">
+    <Content Include="..\FortAssaultEngine\Images\FinalBossTarget.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\FinalBoss0.png">
+    <Content Include="..\FortAssaultEngine\Images\FinalBoss0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\FinalBoss1.png">
+    <Content Include="..\FortAssaultEngine\Images\FinalBoss1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\FinalBoss2.png">
+    <Content Include="..\FortAssaultEngine\Images\FinalBoss2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\FinalBoss3.png">
+    <Content Include="..\FortAssaultEngine\Images\FinalBoss3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\FinalBoss4.png">
+    <Content Include="..\FortAssaultEngine\Images\FinalBoss4.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\FinalBoss5.png">
+    <Content Include="..\FortAssaultEngine\Images\FinalBoss5.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\FinalBossBackground.png">
+    <Content Include="..\FortAssaultEngine\Images\FinalBossBackground.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\ShipExplode0.png">
+    <Content Include="..\FortAssaultEngine\Images\ShipExplode0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\ShipExplode1.png">
+    <Content Include="..\FortAssaultEngine\Images\ShipExplode1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\ShipExplode2.png">
+    <Content Include="..\FortAssaultEngine\Images\ShipExplode2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\ShipExplode3.png">
+    <Content Include="..\FortAssaultEngine\Images\ShipExplode3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Mine.png">
+    <Content Include="..\FortAssaultEngine\Images\Mine.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Ship0.png">
+    <Content Include="..\FortAssaultEngine\Images\Ship0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Ship1.png">
+    <Content Include="..\FortAssaultEngine\Images\Ship1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Ship2.png">
+    <Content Include="..\FortAssaultEngine\Images\Ship2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Ship3.png">
+    <Content Include="..\FortAssaultEngine\Images\Ship3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Ship4.png">
+    <Content Include="..\FortAssaultEngine\Images\Ship4.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Torpedo0.png">
+    <Content Include="..\FortAssaultEngine\Images\Torpedo0.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Torpedo22degrees.png">
+    <Content Include="..\FortAssaultEngine\Images\Torpedo22degrees.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\SecretPassage.png">
+    <Content Include="..\FortAssaultEngine\Images\SecretPassage.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Title.png">
+    <Content Include="..\FortAssaultEngine\Images\Title.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\AlliedFleetSymbol.png">
+    <Content Include="..\FortAssaultEngine\Images\AlliedFleetSymbol.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\EnemyFleetSymbol.png">
+    <Content Include="..\FortAssaultEngine\Images\EnemyFleetSymbol.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\Map.png">
+    <Content Include="..\FortAssaultEngine\Images\Map.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\MilitaryFontBlack.png">
+    <Content Include="..\FortAssaultEngine\Images\MilitaryFontBlack.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\MilitaryFontBlue.png">
+    <Content Include="..\FortAssaultEngine\Images\MilitaryFontBlue.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\MilitaryFontRed.png">
+    <Content Include="..\FortAssaultEngine\Images\MilitaryFontRed.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\MilitaryFontSymbols.png">
+    <Content Include="..\FortAssaultEngine\Images\MilitaryFontSymbols.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="..\FortAssaultWeb\wwwroot\Images\MilitaryFontYellow.png">
+    <Content Include="..\FortAssaultEngine\Images\MilitaryFontYellow.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Compile Include="Program.fs" />

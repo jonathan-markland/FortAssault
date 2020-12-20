@@ -3,13 +3,19 @@
 // https://github.com/fable-compiler/webpack-config-template
 
 var path = require("path");
+const HtmlWebpackPlugin = require('html-webpack-plugin');
 
 module.exports = {
     mode: "development",
     entry: "./FortAssaultWeb.fsproj",
+	plugins: [
+		new HtmlWebpackPlugin({
+			template: path.join(__dirname, './src/index.html')
+		})
+	],
     output: {
         path: path.join(__dirname, "./wwwroot"),
-        filename: "bundle.js",
+        filename: "[name].[chunkhash].js",
     },
     devServer: {
         publicPath: "/",

@@ -1,41 +1,7 @@
-﻿<!doctype html>
-<html style="margin:0; padding:0; border:0; width:100%; height:100%;">
-
-<head>
-  <title>Fort Assault - Retro re-make by Jonathan Markland</title>
-  <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="shortcut icon" href="fable.ico" />
-</head>
-
-<body style="margin:0; padding:0; border:0; width:100%; height:100%; overflow:hidden; background-color:#222222;">
-
-	<style>
-		.hidden { display:none; }
+<!doctype html><html style="margin:0; padding:0; border:0; width:100%; height:100%;"><head><title>Fort Assault - Retro re-make by Jonathan Markland</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="shortcut icon" href="fable.ico"/></head><body style="margin:0; padding:0; border:0; width:100%; height:100%; overflow:hidden; background-color:#222222;"><style>.hidden { display:none; }
 		.centre { overflow:hidden; align-self:center; justify-self:center; }
 		.loader { background-color:#DCDBAF; padding:1em; }
-		.canvas { width:80%; image-rendering: pixelated; }
-	</style>
-
-    <!-- Game play canvas -->
-
-    <div style="display:grid; width:100%; height:100%;">
-        
-		<div id="loaderScreen" class="centre loader">
-			Loading Fort Assault files, then game will start...
-		</div>
-
-		<canvas id="gameScreen" width="320" height="200" class="centre canvas hidden">
-            Web Canvas isn't supported by this browser, so the game cannot be displayed.
-        </canvas>
-		
-    </div>
-
-    <!-- Supplementary scripts could possibly be done in F# itself through Fable -->
-
-    <script>
-
-        function setMagentaToAlphaZero(imgElement) {
+		.canvas { width:80%; image-rendering: pixelated; }</style><div style="display:grid; width:100%; height:100%;"><div id="loaderScreen" class="centre loader">Loading Fort Assault files, then game will start...</div><canvas id="gameScreen" width="320" height="200" class="centre canvas hidden">Web Canvas isn't supported by this browser, so the game cannot be displayed.</canvas></div><script>function setMagentaToAlphaZero(imgElement) {
 
             const imgWidth = imgElement.width;
             const imgHeight = imgElement.height;
@@ -79,13 +45,4 @@
                     onCompletionOfLoad(img);
                 }
             }
-        }
-
-    </script>
-
-    <!-- F# transpiled to Javascript using Fable -->
-
-    <script src="bundle.js"></script>
-
-</body>
-</html>
+        }</script><script src="main.1c883d982f82e5b07211.js"></script></body></html>
