@@ -56,34 +56,43 @@ It's all node.js / npm stack, so you need these installed.
 build_production.bat
 --------------------
 
-Builds the bundle.js in the wwwroot folder.
-Everything else needed is already in the wwwroot folder,
-although I accept this is probably not standard usage.
-The wwwroot folder is self-contained and could become
-become part of another larger web site.
+Erases and re-builds the wwwroot folder.
+
+The needed files are copied into wwwroot, and the Fable
+compiler runs to generate a hash-stamped JS file
+from the F# source code.
+
+Each game has its own wwwroot folder, which is self-
+contained, and can be pasted into a larger web site
+that links to the index.html file.
 	
 serve_production.bat
 --------------------
+
+Run build_production.bat first!
 
 Serves the wwwroot folder at http://localhost:8080
 
 serve_development.bat
 ---------------------
 
-Uses WebPack to serve partially from wwwroot, but the
-Fable compiler's output is served from Webpack's RAM.
+Run build_production.bat first, so that the support
+files are created within the wwwroot folder.  It is 
+worthy of note that the main.<hash>.js file is *not* used,
+because WebPack starts the Fable compiler, and the Fable 
+compiler's output (main.js) is served directly from 
+Webpack's RAM.
+
 This supports live recompiling and refreshing of the
-browser if the F# code changes.  Also at http://localhost:8080
-	
+browser if the F# code changes.  
+
+This serves the wwwroot folder at:  http://localhost:8080
+
 Notes
 -----
-NB: The image files in wwwroot/Images are the ones that the
-Desktop version links to, so that there is only one image set.
-
-On the F# side, the 'web' code can be compiled by both the .Net
-compiler and the Fable compiler, but you cannot run the .DLL
-file made by the .Net compiler as it expects to interface
-with Javascript.
+On the F# side, the 'web' code can be compiled by the .Net
+compiler, which can be useful for error checking, even though
+it can never yield a useful program binary.
 
 Building desktop version on Linux
 ---------------------------------
@@ -106,17 +115,24 @@ Set '<game name>Desktop' as the startup project.
 Architecture
 ------------
 
-| Assembly                | Purpose                                                                                            |
+| Shared Assemblies       | Purpose                                                                                            |
 |-------------------------|----------------------------------------------------------------------------------------------------|
-| FsAnyGame               | Game algorithm library, based on F# core library only.                                             |
-| FsAnyGameTests          | Automation Tests for the complex bits of FsAnyGame.  Top priority of all tests.                    |
-| FsDesktopGameFramework  | Game mini-framework for desktop Windows and Linux, using SDL2.                                     |
-| FsWebGameFramework      | Game mini-framework for web browsers using Fable, and Web Canvas.                                  |
-| FsFortAssaultDesktop    | Fort Assault Linux/Windows Desktop version main program.                                           |
-| FsFortAssaultEngine     | Game engine, host-environment-agnostic.                                                            |
-| FsFortAssaultWeb        | Fort Assault web version main program.                                                             |
-| FsXUnitExtensions       | Jonathan's attempt at making XUnit tests nicer on F#, in lieu of looking for a proper F# test lib. |
+| GameLib                 | Game algorithm library, based on F# core library only.                                             |
+| GameLibDesktopFramework | Game mini-framework for desktop Windows and Linux, using SDL2.                                     |
+| GameLibTests            | Automation Tests for the complex bits of GameLib.                                                  |
+| GameLibWebFramework     | Game mini-framework for web browsers using Fable, and Web Canvas.                                  |
 | SDL2-CS                 | A (hopefully temporary) copy of the SDL2-CS framework, until the author puts that on NuGet! *hint* |
+| XunitExtensionsLib      | Jonathan's attempt at making XUnit tests nicer on F#, in lieu of looking for a proper F# test lib. |
+
+| Game Assemblies         | Purpose                                                                                            |
+|-------------------------|----------------------------------------------------------------------------------------------------|
+| FortAssaultDesktop      | Fort Assault Linux/Windows Desktop version main program.                                           |
+| FortAssaultEngine       | Fort Assault Game engine, host-environment-agnostic.                                               |
+| FortAssaultWeb          | Fort Assault web version main program.                                                             |
+| PacmanDesktop           | Pac Man Linux/Windows Desktop version main program.                                                |
+| PacmanEngine            | Pac Man Game engine, host-environment-agnostic.                                                    |
+| PacmanEngineTests       | Pac Man engine tests.                                                                              |
+| PacmanWeb               | Pac Man web version main program.                                                                  |
 
 Developer Screen Shortcuts
 --------------------------
@@ -137,26 +153,17 @@ into FsFortAssaultEngine.fsproj:
   </PropertyGroup>
 ```
 
-Automation Test notes
----------------------
-I only really care about the FsAnyGame library.  It will get more tests, particularly
-because it is a re-use focus point.
+Future Major Tasks
+------------------
 
-FortAssault itself is something of a personal research project, and low priority 
-for automation tests.  I am happy to present this game for people to play, but it is 
-not likely to get more investment from me after it has served its purpose of
-practising and refining F# techniques and spinning off a mini library+framework
-that targets desktop and web environments.
+Another game!  Adding more games helps determine requirements for the
+shared library and framework.
 
-Program-correctness notes
--------------------------
-There is only a set of tests for some features of the shared library that are more
-"difficult".  I make no bones that the main game has no tests.  This has been a
-research project to get to grips with the technology stack.  Working alone on this
-has made tests less urgent.  With the stack tamed, and the library and framework
-shaping up nicely, the next game may have more of a test framework.
+Add more test framework for the shared game library and framework.
 
-F# has some superb features to support strength-under-refactoring which is why I
-use this.
+Design for, and include the following:
+- Sound support
+- Runtime-generated bitmap images.  This would allow for more variety without
+  the need for manually-drawn image files.
 
-
+F#-Bolero (.Net WebAssembly) version, as a technology demonstrator.
