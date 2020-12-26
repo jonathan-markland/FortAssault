@@ -10,7 +10,7 @@
     <Compile Include="Keys.fs" />
     <Compile Include="Mazes.fs" />
     <Compile Include="Rules.fs" />
-    <Compile Include="PacmanImageFiles.fs" />
+    <Compile Include="PacmanResourceFiles.fs" />
     <Compile Include="ResourceIDs.fs" />
     <Compile Include="MazeState.fs" />
     <Compile Include="MazeUnpacker.fs" />

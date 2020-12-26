@@ -1,6 +1,7 @@
 ﻿module StaticResourceAccess
 
 open ImagesAndFonts
+open Sounds
 open StaticResourceSetup
 
 /// Obtain an image given an ID number.
@@ -14,3 +15,9 @@ let inline ImageFromID (ImageID(imageIndex)) =  // TODO:  Have a convenience ver
 /// set by calling the StaticResourceSetup module on game startup.
 let inline FontFromID (FontID(fontIndex)) =
     StaticFontsArray.[fontIndex]
+
+/// Obtain a sound given an ID number.
+/// The SoundID number indexes a collection that must be 
+/// set by calling the StaticResourceSetup module on game startup.
+let inline SoundFromID (SoundID(soundIndex)) =
+    StaticSoundsArray.[soundIndex]

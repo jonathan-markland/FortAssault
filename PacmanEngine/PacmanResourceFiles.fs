@@ -1,6 +1,7 @@
-﻿module PacmanImageFiles
+﻿module PacmanResourceFiles
 
 open ImagesAndFonts
+open Sounds
 open Geometry
 
 let private image colourKey fileName width height =
@@ -24,4 +25,7 @@ let PacmanResourceImages =
         image OpaqueImage           "PacmanBackground3.png"  320 256
     ]
 
+let PacmanResourceSounds : SoundMetadata list =
+    [
+    ]
 

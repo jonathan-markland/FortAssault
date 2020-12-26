@@ -2,7 +2,7 @@
 
 open WebGameFramework
 
-open FortAssaultImageFiles
+open FortAssaultResourceFiles
 open Storyboard
 open Input
 
@@ -28,6 +28,7 @@ let WebMain () =
     LoadResourceFilesThenDo 
         FortAssaultResourceImages 
         FortAssaultFontResourceImages 
+        FortAssaultResourceSounds
         (FrameworkWebMain
             fortAssaultKeysNeeded
             stubGlobalStateConstructor 

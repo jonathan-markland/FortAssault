@@ -2,7 +2,7 @@
 
 open SDL2  // TODO: It would be nicer if SDLCover could provide everything.
 
-open PacmanImageFiles
+open PacmanResourceFiles
 open Input
 open DesktopGameFramework
 open Storyboard

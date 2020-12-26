@@ -123,18 +123,18 @@ An important point to note is that on iOS, Apple currently mutes all sound outpu
 
 
 // ------------------------------------------------------------------------------------------------------------
-//  Load resources then start game
+//  Load resources
 // ------------------------------------------------------------------------------------------------------------
 
 let private LoadFileListThenDo fileNameObtainer needsMagentaObtainer widthGetter heightGetter continuation resourceList =
 
-    let htmlImageElementResizeArrayForFonts = new ResizeArray<Image>(resourceList |> List.length)
+    let resizeArray = new ResizeArray<Image>(resourceList |> List.length)
 
-    let rec recurse resourceRecordList fileNameObtainer needsMagentaObtainer =
+    let rec recurse resourceRecordList =
 
         match resourceRecordList with
             | [] -> 
-                continuation (htmlImageElementResizeArrayForFonts.ToArray())
+                continuation (resizeArray.ToArray())
 
             | resourceRecord::tail ->
                 let fileName = resourceRecord |> fileNameObtainer
@@ -156,19 +156,57 @@ let private LoadFileListThenDo fileNameObtainer needsMagentaObtainer widthGetter
                             HostImageRef = HostImageRef(htmlImageElement)
                         }
 
-                    htmlImageElementResizeArrayForFonts.Add(imgWithHostObject)
+                    resizeArray.Add(imgWithHostObject)
 
-                    recurse tail fileNameObtainer needsMagentaObtainer
+                    recurse tail
                 )
 
-    recurse resourceList fileNameObtainer needsMagentaObtainer
+    recurse resourceList
+
+    // We never get here because the | [] -> match case is the final "what to do next" (need continuation-pass)
+
+
+
+let private LoadSoundsFileListThenDo fileNameObtainer continuation resourceList =
+
+    let resizeArray = new ResizeArray<Sound>(resourceList |> List.length)
+
+    let rec recurse resourceRecordList =
+
+        match resourceRecordList with
+            | [] -> 
+                continuation (resizeArray.ToArray())
+
+            | resourceRecord::tail ->
+                let fileName = resourceRecord |> fileNameObtainer
+
+                LoadSoundThenDo fileName (fun hostObject ->
+
+                    let libraryObject =
+                        {
+                            SoundMetadata = 
+                                {
+                                    SoundFileName = fileName
+                                }
+                            HostSoundRef = HostSoundRef(hostObject)
+                        }
+
+                    resizeArray.Add(libraryObject)
+
+                    recurse tail
+                )
+
+    recurse resourceList
 
     // We never get here because the | [] -> match case is the final "what to do next" (need continuation-pass)
 
 // ------------------------------------------------------------------------------------------------------------
 
 // TODO: This should not need to be private?
-let LoadResourceFilesThenDo resourceImages fontResourceImages afterAllLoaded =
+let LoadResourceFilesThenDo resourceImages fontResourceImages resourceSounds afterAllLoaded =
+
+    let soundFileNameGetter metadata =
+        metadata.SoundFileName
 
     let imageFileNameGetter metadata =
         metadata.ImageFileName
@@ -181,7 +219,6 @@ let LoadResourceFilesThenDo resourceImages fontResourceImages afterAllLoaded =
     let imageWidthGetter  metadata = metadata.ImageWidth
     let imageHeightGetter metadata = metadata.ImageHeight
 
-
     fontResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
         (fun arrayOfLoadedFontImages ->
 
@@ -190,7 +227,10 @@ let LoadResourceFilesThenDo resourceImages fontResourceImages afterAllLoaded =
 
             resourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
                 (fun arrayOfLoadedImages ->
-                    afterAllLoaded arrayOfLoadedImages arrayOfLoadedFonts)
+
+                    resourceSounds |> LoadSoundsFileListThenDo soundFileNameGetter (fun arrayOfLoadedSounds ->
+                    afterAllLoaded arrayOfLoadedImages arrayOfLoadedFonts arrayOfLoadedSounds)
+                )
         )
 
     // NB: We never get here (continuations called).
@@ -236,9 +276,10 @@ let FrameworkWebMain
     gameGlobalStateConstructor
     gameplayStartConstructor
     arrayOfLoadedImages
-    arrayOfLoadedFonts =
+    arrayOfLoadedFonts
+    arrayOfLoadedSounds =
 
-    SetStaticImageAndFontResourceArrays arrayOfLoadedImages arrayOfLoadedFonts
+    SetStaticImageAndFontResourceArrays arrayOfLoadedImages arrayOfLoadedFonts arrayOfLoadedSounds
 
     let canvas = document.getElementById("gameScreen") :?> Browser.Types.HTMLCanvasElement
     let context2d = canvas.getContext("2d") :?> Browser.Types.CanvasRenderingContext2D

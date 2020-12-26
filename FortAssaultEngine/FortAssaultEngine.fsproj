@@ -10,7 +10,7 @@
 
   <ItemGroup>
     <Compile Include="PendingEvents.fs" />
-    <Compile Include="FortAssaultImageFiles.fs" />
+    <Compile Include="FortAssaultResourceFiles.fs" />
     <Compile Include="Rules.fs" />
     <Compile Include="InputEventData.fs" />
     <Compile Include="ResourceIDs.fs" />
