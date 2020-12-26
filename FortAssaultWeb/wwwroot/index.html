@@ -1,7 +1,11 @@
-<!doctype html><html style="margin:0; padding:0; border:0; width:100%; height:100%;"><head><title>Fort Assault - Retro re-make by Jonathan Markland</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><link rel="shortcut icon" href="fable.ico"/></head><body style="margin:0; padding:0; border:0; width:100%; height:100%; overflow:hidden; background-color:#222222;"><style>.hidden { display:none; }
+<!doctype html><html style="margin:0; padding:0; border:0; width:100%; height:100%;"><head><title>Fort Assault - Retro re-make by Jonathan Markland</title><meta http-equiv="Content-Type" content="text/html; charset=utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head><body style="margin:0; padding:0; border:0; width:100%; height:100%; overflow:hidden; background-color:#222222;"><style>.hidden { display:none; }
 		.centre { overflow:hidden; align-self:center; justify-self:center; }
-		.loader { background-color:#DCDBAF; padding:1em; }
-		.canvas { width:80%; image-rendering: pixelated; }</style><div style="display:grid; width:100%; height:100%;"><div id="loaderScreen" class="centre loader">Loading Fort Assault files, then game will start...</div><canvas id="gameScreen" width="320" height="200" class="centre canvas hidden">Web Canvas isn't supported by this browser, so the game cannot be displayed.</canvas></div><script>function setMagentaToAlphaZero(imgElement) {
+		.loader { background-color:#000000; color:#AAAAAA; padding:1em; }
+		.canvas { width:80%; image-rendering: pixelated; }
+		p { 
+			font-family: 'Courier New', monospace;
+			font-size: 16pt;
+		}</style><div style="display:grid; width:100%; height:100%;"><div id="loaderScreen" class="centre loader"><p>Loading files, then game will start...</p><div id="loadProgress"></div></div><canvas id="gameScreen" width="320" height="200" class="centre canvas hidden"><p>Web Canvas isn't supported by this browser, so the game cannot be displayed.</p></canvas></div><script>function setMagentaToAlphaZero(imgElement) {
 
             const imgWidth = imgElement.width;
             const imgHeight = imgElement.height;
@@ -30,6 +34,8 @@
 
         function loadImageThenDo(fileName, needsMagentaColourKey, onCompletionOfLoad) {
 
+			document.getElementById('loadProgress').innerHTML = '<p>Loading ' + fileName + '</p>';
+
             var img = new Image();
             img.src = "Images/" + fileName;
 
@@ -45,4 +51,9 @@
                     onCompletionOfLoad(img);
                 }
             }
+			
+			img.onerror = function () {
+				document.getElementById('loadProgress').innerHTML =
+					'<p>Failed to load image file ' + fileName + ', so press F5 and try again!</p>';
+			}
         }</script><script src="main.1c883d982f82e5b07211.js"></script></body></html>
