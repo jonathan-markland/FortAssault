@@ -10,6 +10,7 @@ open Time
 open Geometry
 open DrawingShapes
 open ImagesAndFonts
+open Sounds
 
 open Input
 open ScreenHandler
@@ -31,7 +32,7 @@ type JavascriptGraphicResources =
 
 
 // ------------------------------------------------------------------------------------------------------------
-//  Fable to Javascript interfacing
+//  General support:   Fable to Javascript interfacing
 // ------------------------------------------------------------------------------------------------------------
 
 [<Emit("console.log($0)")>]
@@ -44,11 +45,14 @@ let private ConsoleLog (messageText:string) : unit = jsNative
 let private Alert (messageText:string) : unit = jsNative
 
 
+// ------------------------------------------------------------------------------------------------------------
+//  Image and drawing support:   Fable to Javascript interfacing
+// ------------------------------------------------------------------------------------------------------------
 
 /// A supplementary Javascript function that we made.  TODO: It may not be necessary to even have this in Javascript!
 [<Emit("loadImageThenDo($0, $1, $2)")>]
 let private LoadImageThenDo
-    (htmlImageElement:obj)
+    (fileName:string)
     (needsMagentaColourKey:bool)
     (onCompletionOfLoad:obj -> unit) : unit = jsNative
 
@@ -89,6 +93,32 @@ let private JsDrawFilledRectangle (context2d:Browser.Types.CanvasRenderingContex
 let inline private DrawFilledRectangle context2d x y w h (colouru:uint32) =
     let colourStr = "#" + colouru.ToString("x6")
     JsDrawFilledRectangle context2d x y w h colourStr
+
+
+
+// ------------------------------------------------------------------------------------------------------------
+//  Sounds:   Fable to Javascript interfacing
+// ------------------------------------------------------------------------------------------------------------
+
+// Reference:  https://www.html5rocks.com/en/tutorials/webaudio/intro/
+
+/// A supplementary Javascript function that we made.  TODO: It may not be necessary to even have this in Javascript!
+[<Emit("loadSoundThenDo($0, $1)")>]
+let private LoadSoundThenDo
+    (fileName:string)
+    (onCompletionOfLoad:obj -> unit) : unit = jsNative   // obj is Javascript type AudioBuffer
+
+
+[<Emit("playSound($0)")>]
+let private JsPlaySound (audioBuffer:obj) : unit = jsNative   // obj is Javascript type AudioBuffer
+
+let private PlaySound (HostSoundRef(jsAudioBuffer)) =
+    JsPlaySound jsAudioBuffer
+
+
+(* TODO
+An important point to note is that on iOS, Apple currently mutes all sound output until the first time a sound is played during a user interaction event - for example, calling playSound() inside a touch event handler. You may struggle with Web Audio on iOS "not working" unless you circumvent this - in order to avoid problems like this, just play a sound (it can even be muted by connecting to a Gain Node with zero gain) inside an early UI event - e.g. "touch here to play".
+*)
 
 
 

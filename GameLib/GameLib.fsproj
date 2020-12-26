@@ -15,6 +15,7 @@
     <Compile Include="Time.fs" />
     <Compile Include="Geometry.fs" />
     <Compile Include="ImagesAndFonts.fs" />
+    <Compile Include="Sounds.fs" />
     <Compile Include="StaticResourceSetup.fs" />
     <Compile Include="StaticResourceAccess.fs" />
     <Compile Include="Tiles.fs" />

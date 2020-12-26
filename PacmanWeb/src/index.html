@@ -5,7 +5,6 @@
   <title>Pac Man - Retro re-make by Jonathan Markland</title>
   <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <link rel="shortcut icon" href="fable.ico" />
 </head>
 
 <body style="margin:0; padding:0; border:0; width:100%; height:100%; overflow:hidden; background-color:#000;">
@@ -13,8 +12,12 @@
 	<style>
 		.hidden { display:none; }
 		.centre { overflow:hidden; align-self:center; justify-self:center; }
-		.loader { background-color:#DCDBAF; padding:1em; }
+		.loader { background-color:#000000; color:#AAAAAA; padding:1em; }
 		.canvas { height:100%; image-rendering: pixelated; }
+		p { 
+			font-family: 'Courier New', monospace;
+			font-size: 16pt;
+		}
 	</style>
 
     <!-- Game play canvas -->
@@ -22,11 +25,12 @@
     <div style="display:grid; width:100%; height:100%;">
         
 		<div id="loaderScreen" class="centre loader">
-			Loading game files, then game will start...
+			<p>Loading files, then game will start...</p>
+			<div id="loadProgress"></div>
 		</div>
 
 		<canvas id="gameScreen" width="320" height="256" class="centre canvas hidden">
-            Web Canvas isn't supported by this browser, so the game cannot be displayed.
+            <p>Web Canvas isn't supported by this browser, so the game cannot be displayed.</p>
         </canvas>
 		
     </div>
@@ -64,12 +68,14 @@
 
         function loadImageThenDo(fileName, needsMagentaColourKey, onCompletionOfLoad) {
 
+			document.getElementById('loadProgress').innerHTML = '<p>Loading ' + fileName + '</p>';
+
             var img = new Image();
             img.src = "Images/" + fileName;
 
             console.log('Trying to load image ' + img.src);
 
-            img.onload = function () { // TODO: What do we do when this DOESN'T get called?
+            img.onload = function () {
                 console.log('Successfully loaded: ' + img.src);
                 if (needsMagentaColourKey) {
                     onCompletionOfLoad(setMagentaToAlphaZero(img));
@@ -79,6 +85,44 @@
                     onCompletionOfLoad(img);
                 }
             }
+			
+			img.onerror = function () {
+				document.getElementById('loadProgress').innerHTML =
+					'<p>Failed to load image file ' + fileName + ', so press F5 and try again!</p>';
+			}
+        }
+
+        // --- AUDIO support --------------------------------------------------------------
+
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        var audioContext = new AudioContext();
+
+        function loadSoundThenDo(fileName, onCompletionOfLoad) {
+            var request = new XMLHttpRequest();
+            var url = "Sounds/" + fileName;
+            request.open('GET', url, true);
+            request.responseType = 'arraybuffer';
+            request.onload = function () {
+                console.log('Successfully loaded: ' + url);
+                audioContext.decodeAudioData(
+                    request.response,
+                    function (audioBuffer) {
+                        console.log('Successfully decoded audio for: ' + url);
+                        onCompletionOfLoad(audioBuffer);
+                    },
+                    function () {
+                        document.getElementById('loadProgress').innerHTML =
+                            '<p>Failed to load sound file ' + fileName + ', so press F5 and try again!</p>';
+                    });
+            }
+            request.send();
+        }
+
+        function playSound(audioBuffer) {
+            var source = audioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(context.destination);
+            source.start(0);
         }
 
     </script>

@@ -4,9 +4,6 @@ rd /S /Q wwwroot\
 @mkdir wwwroot
 @if ERRORLEVEL 1 goto Failed
 
-copy src\assets\Fable.ico wwwroot\
-@if ERRORLEVEL 1 goto Failed
-
 copy src\assets\menutile.png wwwroot\
 @if ERRORLEVEL 1 goto Failed
 

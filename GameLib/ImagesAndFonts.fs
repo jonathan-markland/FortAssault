@@ -1,4 +1,4 @@
-﻿module ImagesAndFonts
+﻿module ImagesAndFonts  // TODO: Why have fonts in here as well?  Separate that out?
 
 open Geometry
 
@@ -40,7 +40,7 @@ type ImageID = ImageID of int
 /// A reference to the host's image object (opaque type).
 type HostImageRef = HostImageRef of obj
 
-/// Bitmap image recoed, used with drawing functions that draw bitmaps.
+/// Bitmap image record, used with drawing functions that draw bitmaps.
 /// Includes metadata about the image.
 type Image =
     {
