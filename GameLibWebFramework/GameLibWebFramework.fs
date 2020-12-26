@@ -271,6 +271,8 @@ let private RenderToWebCanvas (context2d:Browser.Types.CanvasRenderingContext2D)
 
 // ------------------------------------------------------------------------------------------------------------
 
+open StaticResourceAccess // TODO: HACK  (remove)
+
 let FrameworkWebMain
     listOfKeysNeeded
     gameGlobalStateConstructor
@@ -280,6 +282,8 @@ let FrameworkWebMain
     arrayOfLoadedSounds =
 
     SetStaticImageAndFontResourceArrays arrayOfLoadedImages arrayOfLoadedFonts arrayOfLoadedSounds
+
+    PlaySound ((SoundFromID(SoundID 0)).HostSoundRef)  // TODO: hack (remove)
 
     let canvas = document.getElementById("gameScreen") :?> Browser.Types.HTMLCanvasElement
     let context2d = canvas.getContext("2d") :?> Browser.Types.CanvasRenderingContext2D

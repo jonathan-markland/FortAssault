@@ -10,7 +10,13 @@ copy src\assets\menutile.png wwwroot\
 mkdir wwwroot\Images
 @if ERRORLEVEL 1 goto Failed
 
+mkdir wwwroot\Sounds
+@if ERRORLEVEL 1 goto Failed
+
 xcopy /s ..\PacmanEngine\Images\*.png wwwroot\Images\
+@if ERRORLEVEL 1 goto Failed
+
+xcopy /s ..\PacmanEngine\Sounds\*.* wwwroot\Sounds\
 @if ERRORLEVEL 1 goto Failed
 
 npx webpack --mode production

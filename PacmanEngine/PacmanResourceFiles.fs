@@ -27,5 +27,6 @@ let PacmanResourceImages =
 
 let PacmanResourceSounds : SoundMetadata list =
     [
+        { SoundFileName = "Pellet.mp3" }
     ]
 

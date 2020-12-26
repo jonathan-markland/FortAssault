@@ -41,7 +41,7 @@
 
             console.log('Trying to load image ' + img.src);
 
-            img.onload = function () { // TODO: What do we do when this DOESN'T get called?
+            img.onload = function () {
                 console.log('Successfully loaded: ' + img.src);
                 if (needsMagentaColourKey) {
                     onCompletionOfLoad(setMagentaToAlphaZero(img));
@@ -56,4 +56,37 @@
 				document.getElementById('loadProgress').innerHTML =
 					'<p>Failed to load image file ' + fileName + ', so press F5 and try again!</p>';
 			}
-        }</script><script src="main.8783ada7f1671fbeb2e3.js"></script></body></html>
+        }
+
+        // --- AUDIO support --------------------------------------------------------------
+
+        window.AudioContext = window.AudioContext || window.webkitAudioContext;
+        var audioContext = new AudioContext();
+
+        function loadSoundThenDo(fileName, onCompletionOfLoad) {
+            var request = new XMLHttpRequest();
+            var url = "Sounds/" + fileName;
+            request.open('GET', url, true);
+            request.responseType = 'arraybuffer';
+            request.onload = function () {
+                console.log('Successfully loaded: ' + url);
+                audioContext.decodeAudioData(
+                    request.response,
+                    function (audioBuffer) {
+                        console.log('Successfully decoded audio for: ' + url);
+                        onCompletionOfLoad(audioBuffer);
+                    },
+                    function () {
+                        document.getElementById('loadProgress').innerHTML =
+                            '<p>Failed to load sound file ' + fileName + ', so press F5 and try again!</p>';
+                    });
+            }
+            request.send();
+        }
+
+        function playSound(audioBuffer) {
+            var source = audioContext.createBufferSource();
+            source.buffer = audioBuffer;
+            source.connect(context.destination);
+            source.start(0);
+        }</script><script src="main.82b80930b565bf6e796f.js"></script></body></html>
