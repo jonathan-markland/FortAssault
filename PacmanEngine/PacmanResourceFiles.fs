@@ -27,6 +27,11 @@ let PacmanResourceImages =
 
 let PacmanResourceSounds : SoundMetadata list =
     [
-        { SoundFileName = "Pellet.mp3" }
+        { SoundFileName = "pellet.ogg" }
+        { SoundFileName = "pill.ogg" }
+        { SoundFileName = "321.ogg" }
+        { SoundFileName = "game-over.wav" }
+        { SoundFileName = "go.ogg" }
+        { SoundFileName = "gulp.ogg" }
+        { SoundFileName = "oww.ogg" }
     ]
-

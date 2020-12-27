@@ -3,6 +3,7 @@
 open Time
 open DrawingShapes
 open Input
+open Sounds
 
 
 /// A user-defined effectful function that processes a primitive drawing instruction.
@@ -28,13 +29,18 @@ type ErasedGameState() =
     /// frame of animation.
     abstract member Frame : KeyStateFunction -> float32<seconds> -> float32<seconds> -> ErasedGameState
 
+    /// Obtain the sound commands to be executed for this frame (if any).
+    abstract member Sounds : unit -> SoundOperation list
+
+
 
 /// A binder for a game-state model of a user-defined type, a drawing function
 /// and a frame-advance function.
 type SpecificGameState<'Model>
     ( model     : 'Model, 
       drawFunc  : RenderFunction -> 'Model -> float32<seconds> -> unit, 
-      frameFunc : SpecificGameState<'Model> -> KeyStateFunction -> float32<seconds> -> float32<seconds> -> ErasedGameState ) =
+      frameFunc : SpecificGameState<'Model> -> KeyStateFunction -> float32<seconds> -> float32<seconds> -> ErasedGameState,
+      sounds    : SoundOperation list ) =
 
     inherit ErasedGameState()
 
@@ -47,11 +53,17 @@ type SpecificGameState<'Model>
     /// The function that calculates the next game state from this frame's model.
     member val FrameFunc = frameFunc
 
+    /// The sound effect commands for this frame
+    member val SoundEffectCommands = sounds
+
     override this.Draw render gameTime = 
         this.DrawFunc render this.Model gameTime
 
     override this.Frame keyStateGetter gameTime frameElapsedTime = 
         this.FrameFunc this keyStateGetter gameTime frameElapsedTime   // 'this.Model' is the old state
+
+    override this.Sounds () =
+        this.SoundEffectCommands
 
 
 /// Returning a game state unchanged.  Casts to base.
@@ -66,13 +78,20 @@ let inline ModelFrom (gameState:SpecificGameState<'Model>) =
 
 /// Return a new game state with a model instance, frame handler and drawing handler.
 let inline NewGameState frameFunc drawFunc model =
-    (new SpecificGameState<'Model>(model, drawFunc, frameFunc))
+    (new SpecificGameState<'Model>(model, drawFunc, frameFunc, []))
         :> ErasedGameState
 
+/// Return a new game state with a model instance, frame handler and drawing handler, and sound commands for this frame.
+let inline NewGameStateAndSounds frameFunc drawFunc model sounds =
+    (new SpecificGameState<'Model>(model, drawFunc, frameFunc, sounds))
+        :> ErasedGameState
 
 /// Update the model instance, but keep the model type and handler functions the same.
 let inline WithUpdatedModel model (gameState:SpecificGameState<'Model>) =
     NewGameState (gameState.FrameFunc) (gameState.DrawFunc) model
+
+let inline WithUpdatedModelAndSounds model sounds (gameState:SpecificGameState<'Model>) =
+    NewGameStateAndSounds (gameState.FrameFunc) (gameState.DrawFunc) model sounds
 
 /// Update the model instance, but keep the model type and handler functions the same.
 let inline ReplacesModelIn gameState model =

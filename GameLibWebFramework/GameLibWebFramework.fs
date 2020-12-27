@@ -283,8 +283,6 @@ let FrameworkWebMain
 
     SetStaticImageAndFontResourceArrays arrayOfLoadedImages arrayOfLoadedFonts arrayOfLoadedSounds
 
-    PlaySound ((SoundFromID(SoundID 0)).HostSoundRef)  // TODO: hack (remove)
-
     let canvas = document.getElementById("gameScreen") :?> Browser.Types.HTMLCanvasElement
     let context2d = canvas.getContext("2d") :?> Browser.Types.CanvasRenderingContext2D
    
@@ -294,7 +292,7 @@ let FrameworkWebMain
             | Ok globals -> globals
 
     let gameTime = 0.0F<seconds>
-    let frameElapsedTime = 0.02F<seconds>
+    let frameElapsedTime = 0.02F<seconds>  // TODO: Revisit parameterisation of frame rate.
 
     let gameState : ErasedGameState =
         gameplayStartConstructor gameGlobalState gameTime
@@ -342,6 +340,14 @@ let FrameworkWebMain
                 keyStateGetter 
                 gameTime 
                 frameElapsedTime 
+
+        nextGameState.Sounds () 
+            |> List.iter (fun soundCommand -> 
+                match soundCommand with
+                    | PlaySoundEffect s -> PlaySound (s.HostSoundRef)
+                    | ChangeTheMusic s -> () // TODO: implement
+                    | StopTheMusic -> () // TODO: implement
+            )
 
         ClearKeyJustPressedFlags mutableKeyStateStore
 

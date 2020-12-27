@@ -22,3 +22,16 @@ type Sound =
         SoundMetadata   : SoundMetadata
         HostSoundRef    : HostSoundRef
     }
+
+/// Description of an operation requested upon the sound subsystem.
+type SoundOperation =
+
+    /// Play a sound effect into the mix.
+    | PlaySoundEffect of Sound
+
+    /// Change the background music, or start it.
+    | ChangeTheMusic of Sound
+
+    /// Stop the background music.
+    | StopTheMusic
+
