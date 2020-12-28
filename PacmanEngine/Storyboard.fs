@@ -23,7 +23,7 @@ open SlideTransitions
 open Mechanics
 open Time
 open Sounds
-open ScreenHandler
+open GameStateManagement
 open StaticResourceAccess
 open ResourceIDs
 

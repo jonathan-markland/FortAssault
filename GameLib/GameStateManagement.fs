@@ -1,4 +1,4 @@
-﻿module ScreenHandler  // TODO: This name isn't really right -- "GameState" ?
+﻿module GameStateManagement
 
 open Time
 open DrawingShapes
@@ -27,12 +27,12 @@ type ErasedGameState() =
 
     /// Calculate the model value, Draw function and Frame function for the next 
     /// frame of animation.
-    abstract member Frame : KeyStateFunction -> float32<seconds> -> float32<seconds> -> ErasedGameState
+    abstract member Frame : KeyStateFunction -> float32<seconds> -> float32<seconds> -> ErasedGameState   // TODO: I never really wanted the framework to pass in the frame time delta.
 
     /// Obtain the sound commands to be executed for this frame (if any).
     abstract member Sounds : unit -> SoundOperation list
 
-
+    
 
 /// A binder for a game-state model of a user-defined type, a drawing function
 /// and a frame-advance function.
@@ -66,7 +66,6 @@ type SpecificGameState<'Model>
         this.SoundEffectCommands
 
 
-
 /// Returning a game state unchanged, so the model, draw handler, and 
 /// frame handler remain the same.  However, SoundEffectCommands are
 /// removed if present to avoid repeated re-triggering of any sound.
@@ -89,17 +88,22 @@ let inline NewGameState frameFunc drawFunc model =
     (new SpecificGameState<'Model>(model, drawFunc, frameFunc, []))
         :> ErasedGameState
 
+
 /// Return a new game state with a model instance, frame handler and drawing handler, and sound commands for this frame.
 let inline NewGameStateAndSounds frameFunc drawFunc model sounds =
     (new SpecificGameState<'Model>(model, drawFunc, frameFunc, sounds))
         :> ErasedGameState
 
+
 /// Update the model instance, but keep the model type and handler functions the same.
 let inline WithUpdatedModel model (gameState:SpecificGameState<'Model>) =
     NewGameState (gameState.FrameFunc) (gameState.DrawFunc) model
 
+
+/// Update the model instance, keep the model type and handler functions the same, and include sound commands.
 let inline WithUpdatedModelAndSounds model sounds (gameState:SpecificGameState<'Model>) =
     NewGameStateAndSounds (gameState.FrameFunc) (gameState.DrawFunc) model sounds
+
 
 /// Update the model instance, but keep the model type and handler functions the same.
 let inline ReplacesModelIn gameState model =

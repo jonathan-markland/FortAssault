@@ -8,7 +8,7 @@ open Mechanics
 open ResourceIDs
 open ImagesAndFonts
 open StaticResourceAccess
-open ScreenHandler
+open GameStateManagement
 
 let private AnimDurationSeconds = 3.0F<seconds>
 let private AnimRepeatPeriod    = 5.0F<seconds>

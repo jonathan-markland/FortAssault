@@ -8,7 +8,7 @@ open InputEventData
 open ResourceIDs
 open ImagesAndFonts
 open StaticResourceAccess
-open ScreenHandler
+open GameStateManagement
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

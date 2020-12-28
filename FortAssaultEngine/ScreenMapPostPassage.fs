@@ -13,7 +13,7 @@ open MapScreenSharedDetail
 open ImagesAndFonts
 open StaticResourceAccess
 open InputEventData
-open ScreenHandler
+open GameStateManagement
 open FreezeFrame
 
 

@@ -7,7 +7,7 @@ open EnterYourName
 open ScoreHiScore
 open ScoreboardModel
 open ImagesAndFonts
-open ScreenHandler
+open GameStateManagement
 open Time
 open StaticResourceAccess
 open Rules

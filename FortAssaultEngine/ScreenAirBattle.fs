@@ -18,7 +18,7 @@ open Rules
 open ImagesAndFonts
 open StaticResourceAccess
 open InputEventData
-open ScreenHandler
+open GameStateManagement
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

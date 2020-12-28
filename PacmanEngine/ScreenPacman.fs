@@ -7,7 +7,7 @@ open ScoreHiScore
 open Geometry
 open ResourceIDs
 open StaticResourceAccess
-open ScreenHandler
+open GameStateManagement
 open ImagesAndFonts
 open PacmanShared
 open Input

@@ -13,7 +13,7 @@ open Rules
 open StaticResourceAccess
 open InputEventData
 open FreezeFrame
-open ScreenHandler
+open GameStateManagement
 open ScreenIntermission
 open ImagesAndFonts
 
