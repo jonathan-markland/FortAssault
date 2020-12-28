@@ -93,4 +93,5 @@ let GameOverSoundID    = SoundID 3
 let GoSoundID          = SoundID 4
 let GulpSoundID        = SoundID 5
 let OwwSoundID         = SoundID 6
-
+let VictorySoundID     = SoundID 7
+let ExtraLifeSoundID   = SoundID 8

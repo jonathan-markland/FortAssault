@@ -147,7 +147,7 @@ let private MainLoopProcessing
     initialGameStateConstructor 
     listOfKeysNeeded =
 
-    SetStaticImageAndFontResourceArrays gameResources.GameBMPs gameResources.Fonts
+    SetStaticImageAndFontResourceArrays gameResources.GameBMPs gameResources.Fonts [||]  // TODO: sort out sound for the SDL2/desktop solution.
 
     let mutable tickCount = 1u
     

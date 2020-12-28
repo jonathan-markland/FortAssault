@@ -958,14 +958,16 @@ let WithStateChangesResultingFromNewScore scoreAndHiScore scoreIncrement pacmanS
         let a = oldScore / ScoreDeltaForExtraLife
         let b = newScore / ScoreDeltaForExtraLife
         if b > a then
-            {
-                pacmanState with 
-                    PacState2 = { pacmanState.PacState2 with LivesLeft = pacmanState.PacState2.LivesLeft + 1u }
-            }
+            let pacmanState =
+                {
+                    pacmanState with 
+                        PacState2 = { pacmanState.PacState2 with LivesLeft = pacmanState.PacState2.LivesLeft + 1u }
+                }
+            pacmanState, [PlaySoundEffect (SoundFromID ExtraLifeSoundID)]
         else
-            pacmanState
+            pacmanState, []
     else
-        pacmanState
+        pacmanState, []
 
 
 
@@ -1009,6 +1011,8 @@ let WithStateChangesResultingFromCollisionWithPacman pacmanPos ghosts =   // TOD
                                 (WithGhostMode GhostReturningToBase)))
 
     struct (ghosts , score , gulpSounds)
+
+
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -1132,7 +1136,7 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
     let scoreAndHiScore =
         scoreAndHiScore |> ScoreIncrementedBy scoreIncrement
 
-    let pacmanState =
+    let pacmanState, lifeSound =
         pacmanState |> WithStateChangesResultingFromNewScore scoreAndHiScore scoreIncrement
 
     let memoizedStatusPanel =
@@ -1191,10 +1195,12 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
         let whereToAfterFreezeFrame _outgoingGameState gameTime =
             model.WhereToOnAllEaten model.LevelIndex betweenScreenStatus gameTime  // TODO: Maze flash - but could that be done with a clever external filter?
 
-        gameState |> WithDrawingOnlyFor ScreenCompletePauseTime gameTime whereToAfterFreezeFrame
+        gameState 
+            |> WithDrawingOnlyFor ScreenCompletePauseTime gameTime whereToAfterFreezeFrame
+            |> WithOneShotSound [PlaySoundEffect (SoundFromID VictorySoundID)]
 
     else 
-        let allSounds = List.concat [eatingSounds ; dyingSounds ; gulpSounds]
+        let allSounds = List.concat [eatingSounds ; dyingSounds ; gulpSounds ; lifeSound]
         gameState |> WithUpdatedModelAndSounds model allSounds  // TODO: This is the only case where we return the sounds.
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

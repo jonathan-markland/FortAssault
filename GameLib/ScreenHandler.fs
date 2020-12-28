@@ -66,9 +66,17 @@ type SpecificGameState<'Model>
         this.SoundEffectCommands
 
 
-/// Returning a game state unchanged.  Casts to base.
-let inline Unchanged (gameState:SpecificGameState<'Model>) =
-    gameState :> ErasedGameState
+
+/// Returning a game state unchanged, so the model, draw handler, and 
+/// frame handler remain the same.  However, SoundEffectCommands are
+/// removed if present to avoid repeated re-triggering of any sound.
+/// Casts to base (ErasedGameState).
+let Unchanged (gameState:SpecificGameState<'Model>) =
+    if gameState.SoundEffectCommands.IsEmpty then
+        gameState :> ErasedGameState
+    else
+        (new SpecificGameState<'Model>(gameState.Model, gameState.DrawFunc, gameState.FrameFunc, []))
+            :> ErasedGameState
 
 
 /// Obtain the model record from the SpecificGameState.

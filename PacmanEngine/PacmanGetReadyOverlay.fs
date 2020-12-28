@@ -5,6 +5,8 @@ open DrawingFunctions
 open ResourceIDs
 open ScreenHandler
 open ImagesAndFonts
+open Sounds
+open StaticResourceAccess
 
 
 
@@ -59,11 +61,16 @@ let FreezeForGetReady newGame messageOverlay duration gameTime =
     let model =
         {
             GameTimeLie     = gameTime
-            FrozenGameState = newGame gameTime
+            FrozenGameState = newGame gameTime  // Construction for the pause (will be thrown away)
             Overlay         = messageOverlay
         }
 
+    let afterPauseFunc _outgoingState gameTime = 
+        newGame gameTime  // Construction of the real game
+            |> WithOneShotSound [PlaySoundEffect (SoundFromID GoSoundID)]
+
     NewGameState NextFreezeForGetReadyState RenderFreezeForGetReady model
-        |> WithFreezeFrameFor duration gameTime (newGame |> AdaptedToIgnoreOutgoingStateParameter)
+        |> WithFreezeFrameFor duration gameTime afterPauseFunc
+        |> WithOneShotSound [PlaySoundEffect (SoundFromID ThreeTwoOneSoundID)]
         
 

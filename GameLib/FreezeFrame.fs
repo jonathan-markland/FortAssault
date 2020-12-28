@@ -77,3 +77,20 @@ let WithDrawingOnlyFor duration gameTime whereToAfter outgoingGameState =
 
     NewGameState NextFreezeFrameState RenderFreezeFrame freezeModel
 
+
+
+let WithOneShotSound oneShotSoundOperations (innerGameState:ErasedGameState) =
+
+    let frameFunc _gameState keyStateGetter gameTime elapsed =
+        // Just delegate the call, and whatever innerGameState returns 
+        // will naturally replace us on the next frame:
+        innerGameState.Frame keyStateGetter gameTime elapsed  
+
+    let drawFunc render model (gameTime:float32<seconds>) =
+        // Just delegate drawing.
+        // This will only be called once because of the replacement done by nextFrame
+        innerGameState.Draw render gameTime
+
+    NewGameStateAndSounds frameFunc drawFunc () oneShotSoundOperations
+            
+    

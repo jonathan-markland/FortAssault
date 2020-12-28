@@ -34,4 +34,6 @@ let PacmanResourceSounds : SoundMetadata list =
         { SoundFileName = "go.ogg" }
         { SoundFileName = "gulp.ogg" }
         { SoundFileName = "oww.ogg" }
+        { SoundFileName = "victory.wav" }
+        { SoundFileName = "life.mp3" }
     ]

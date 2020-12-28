@@ -15,6 +15,8 @@ open Input
 open Directions
 open TitleScreenShared
 open Keys
+open Sounds
+open FreezeFrame
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -99,17 +101,22 @@ let private NextPotentialEnterYourNameScreenState gameState keyStateGetter gameT
                         |> AddingIntoScoreboard enterYourNameModel model.ScoreAndHiScore.Score
     
                 model.WhereToAfterCtor updatedScoreboard gameTime
+                    |> WithOneShotSound [PlaySoundEffect (SoundFromID VictorySoundID)]
     
             else
-                gameState |> WithUpdatedModel
-                    {
-                        Scoreboard         = model.Scoreboard       // we only latch a new scoreboard at the very end
-                        ScoreAndHiScore    = model.ScoreAndHiScore  // never changes
-                        EnterYourNameModel = enterYourNameModel
-                        MemoizedText       = enterYourNameModel |> EnterYourNameModelScreenText
-                        PacMemo       = model.PacMemo
-                        WhereToAfterCtor   = model.WhereToAfterCtor
-                    }
+                gameState 
+                    |> WithUpdatedModelAndSounds
+                        {
+                            Scoreboard         = model.Scoreboard       // we only latch a new scoreboard at the very end
+                            ScoreAndHiScore    = model.ScoreAndHiScore  // never changes
+                            EnterYourNameModel = enterYourNameModel
+                            MemoizedText       = enterYourNameModel |> EnterYourNameModelScreenText
+                            PacMemo            = model.PacMemo
+                            WhereToAfterCtor   = model.WhereToAfterCtor
+                        }
+                        [PlaySoundEffect (SoundFromID PelletSoundID)]
+
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
