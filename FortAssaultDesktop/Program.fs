@@ -41,6 +41,7 @@ let main argv =
             FortAssaultRetroScreenHeightPixels
             FortAssaultResourceImages 
             FortAssaultFontResourceImages
+            FortAssaultResourceSounds
             fortAssaultKeysNeeded
             stubGlobalStateConstructor
             NewFortAssaultStoryboard  // Or, swap out for NewMechanicsTestPageStoryboard

@@ -30,10 +30,10 @@ let PacmanResourceSounds : SoundMetadata list =
         { SoundFileName = "pellet.ogg" }
         { SoundFileName = "pill.ogg" }
         { SoundFileName = "321.ogg" }
-        { SoundFileName = "game-over.wav" }
+        { SoundFileName = "game-over.ogg" }
         { SoundFileName = "go.ogg" }
         { SoundFileName = "gulp.ogg" }
         { SoundFileName = "oww.ogg" }
-        { SoundFileName = "victory.wav" }
-        { SoundFileName = "life.mp3" }
+        { SoundFileName = "victory.ogg" }
+        { SoundFileName = "life.ogg" }
     ]

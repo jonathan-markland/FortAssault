@@ -41,6 +41,7 @@ let main argv =
             PacmanRetroScreenHeightPixels
             PacmanResourceImages 
             PacmanFontResourceImages
+            PacmanResourceSounds
             keysNeeded
             stubGlobalStateConstructor
             NewPacmanStoryboard
