@@ -10,7 +10,7 @@ open BeachBackgroundRenderer
 open ScoreHiScore
 open ScoreboardModel
 open ImagesAndFonts
-open ScreenHandler
+open GameStateManagement
 open Time
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

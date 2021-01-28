@@ -35,7 +35,7 @@ let PacmanDyingAnimationTime = 2.0F<seconds>
 let PacmanDyingFlashRate     = 32.0F
 let PacmanDeadPauseTime      = 3.0F<seconds>
 
-let GetReadyCardTime             = 2.0F<seconds>
+let GetReadyCardTime             = 3.0F<seconds>  // Must align with 321 voice sound effect
 let LifeOverGetReadyPauseTime    = 4.0F<seconds>
 let ScreenCompletePauseTime      = 3.0F<seconds>
 let ScreenCompleteStatusCardTime = 6.0F<seconds>

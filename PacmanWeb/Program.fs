@@ -2,7 +2,7 @@
 
 open WebGameFramework
 
-open PacmanImageFiles
+open PacmanResourceFiles
 open Storyboard
 open Input
 
@@ -28,6 +28,7 @@ let WebMain () =
     LoadResourceFilesThenDo 
         PacmanResourceImages 
         PacmanFontResourceImages 
+        PacmanResourceSounds
         (FrameworkWebMain
             pacmanKeysNeeded
             stubGlobalStateConstructor 

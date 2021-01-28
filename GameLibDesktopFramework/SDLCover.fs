@@ -7,21 +7,27 @@ open SDL2
 /// SDL2 library initialisation handling.
 let WithSdl2Do f =
     try
-        let initResult = SDL.SDL_Init(SDL.SDL_INIT_TIMER)
+        let initResult = SDL.SDL_Init(SDL.SDL_INIT_TIMER ||| SDL.SDL_INIT_AUDIO)
         if initResult = 0 then
 
             let flags = SDL2.SDL_image.IMG_InitFlags.IMG_INIT_PNG
             let intFlags = (int) flags;
             let initImageResult = SDL2.SDL_image.IMG_Init(flags)
-
             if (initImageResult &&& intFlags) = intFlags then
-                Some(f ())
+
+                let audioRate = 22050  // TODO: The client game might want to parameterise the Audio rate
+                let audioFormat = SDL.AUDIO_S16SYS
+                let audioChannels = 2
+                let audioBufferSize = 512  // TODO: The client game might want to parameterise the Audio buffer size
+                if (SDL2.SDL_mixer.Mix_OpenAudio(audioRate, audioFormat, audioChannels, audioBufferSize)) = 0 then
+                    Some(f ())
+
+                else
+                    None // TODO: Could not initialise sound
             else
                 None // TODO: Handle closedown for outer SDL library in this case.
-
         else
             None
-
     with 
         | :? System.BadImageFormatException ->
             None
@@ -60,6 +66,13 @@ type SdlTextureNativeInt =
 type SdlRendererNativeInt =
     {
         SdlRendererNativeInt: nativeint
+    }
+
+/// SDL Sound handle, returned by MIX_LoadWAV()
+[<Struct>]
+type SdlSoundNativeInt =
+    {
+        SdlSoundNativeInt: nativeint
     }
 
 /// Red, Green, Blue triple.
@@ -123,10 +136,21 @@ let inline ToSdlRect x y w h =
 let LoadSdlImageFromFile filePath =
     let handle = SDL2.SDL_image.IMG_Load(filePath)
     if handle = nativeint 0 then
+        // let msg = SDL2.SDL.SDL_GetError(); // TODO: Return this.
         None
     else
         Some({ SdlBitmapImageNativeInt = { SdlSurfaceNativeInt = handle } })
 
+
+/// Load a sound file, supporting WAV and OGG.
+/// Only returns a value if load was successful.
+let LoadSdlSoundFromFile filePath =
+    let handle = SDL2.SDL_mixer.Mix_LoadWAV(filePath)
+    if handle = nativeint 0 then
+        let msg = SDL2.SDL.SDL_GetError(); // TODO: Return this.
+        None
+    else
+        Some({ SdlSoundNativeInt = handle })
 
 
 type SdlImageFileMetadata =

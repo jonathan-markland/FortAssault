@@ -3,8 +3,10 @@
 open Time
 open DrawingFunctions
 open ResourceIDs
-open ScreenHandler
+open GameStateManagement
 open ImagesAndFonts
+open Sounds
+open StaticResourceAccess
 
 
 
@@ -42,12 +44,12 @@ type FreezeForGetReadyModel =
     }
 
 
-let RenderFreezeForGetReady render model (gameTime:float32<seconds>) =
+let private RenderFreezeForGetReady render model (gameTime:float32<seconds>) =
     model.FrozenGameState.Draw render model.GameTimeLie
     model.Overlay.Draw render gameTime
 
 
-let NextFreezeForGetReadyState gameState keyStateGetter gameTime elapsed =
+let private NextFreezeForGetReadyState gameState keyStateGetter gameTime elapsed =
     let model = ModelFrom gameState
     let nextOverlay = model.Overlay.Frame keyStateGetter gameTime elapsed
     let model = { model with Overlay = nextOverlay }
@@ -59,11 +61,16 @@ let FreezeForGetReady newGame messageOverlay duration gameTime =
     let model =
         {
             GameTimeLie     = gameTime
-            FrozenGameState = newGame gameTime
+            FrozenGameState = newGame gameTime  // Construction for the pause (will be thrown away)
             Overlay         = messageOverlay
         }
 
+    let afterPauseFunc _outgoingState gameTime = 
+        newGame gameTime  // Construction of the real game
+            |> WithOneShotSound [PlaySoundEffect (SoundFromID GoSoundID)]
+
     NewGameState NextFreezeForGetReadyState RenderFreezeForGetReady model
-        |> WithFreezeFrameFor duration gameTime (newGame |> AdaptedToIgnoreOutgoingStateParameter)
+        |> WithFreezeFrameFor duration gameTime afterPauseFunc
+        |> WithOneShotSound [PlaySoundEffect (SoundFromID ThreeTwoOneSoundID)]
         
 

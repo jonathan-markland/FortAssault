@@ -1,7 +1,7 @@
 ﻿module InterruptableVideo
 
 open Time
-open ScreenHandler
+open GameStateManagement
 open Input
 
 

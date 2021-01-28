@@ -17,7 +17,7 @@ open Algorithm
 open FinalBossAndTankBattleShared
 open ImagesAndFonts
 open StaticResourceAccess
-open ScreenHandler
+open GameStateManagement
 open ScreenIntermission
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

@@ -2,6 +2,7 @@
 
 open Geometry
 open ImagesAndFonts
+open Sounds
 
 // TODO: These sizes really aren't in the right file.
 
@@ -83,6 +84,14 @@ let Level1ImageID               = ImageID(1)
 let Background2ImageID          = ImageID(2)
 let Background3ImageID          = ImageID(3)
 
-    
+// Sounds:
 
-
+let PelletSoundID      = SoundID 0
+let PillSoundID        = SoundID 1
+let ThreeTwoOneSoundID = SoundID 2
+let GameOverSoundID    = SoundID 3
+let GoSoundID          = SoundID 4
+let GulpSoundID        = SoundID 5
+let OwwSoundID         = SoundID 6
+let VictorySoundID     = SoundID 7
+let ExtraLifeSoundID   = SoundID 8

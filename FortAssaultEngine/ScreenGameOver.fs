@@ -7,7 +7,7 @@ open ScoreHiScore
 open Geometry
 open InputEventData
 open ImagesAndFonts
-open ScreenHandler
+open GameStateManagement
 open Time
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

@@ -7,7 +7,7 @@ open ScoreHiScore
 open Geometry
 open ResourceIDs
 open StaticResourceAccess
-open ScreenHandler
+open GameStateManagement
 open ImagesAndFonts
 open PacmanShared
 open Input
@@ -23,6 +23,7 @@ open Keys
 open MazeUnpacker
 open FreezeFrame
 open PacmanGetReadyOverlay
+open Sounds
 
 
 let ScreenRandomSeed = 0x33033u
@@ -536,21 +537,21 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
                                 else
                                     direction // disallow, no exit in that direction.
 
-            let eaten, scoreIncrement =
+            let eaten, scoreIncrement, soundEffectList =
                 match tile with
-                    | None -> EatenNothing , 0u
+                    | None -> EatenNothing , 0u, []
                     | Some (txi, tyi) ->
                         let i = tyi * mazeState.MazeTilesCountX + txi
 
                         let (MazeTile tileType) = mazeState.MazeTiles.[i]
                         if tileType = ((byte) TileIndex.Dot) then
-                            (EatenDot i) , ScoreForEatingDot
+                            (EatenDot i) , ScoreForEatingDot, [PlaySoundEffect (SoundFromID PelletSoundID)]
 
                         else if tileType = ((byte) TileIndex.Pill1) then   // We don't store Pill2 in the matrix.
-                            (EatenPowerPill i) , ScoreForEatingPowerPill
+                            (EatenPowerPill i) , ScoreForEatingPowerPill, [PlaySoundEffect (SoundFromID PillSoundID)]
 
                         else
-                            EatenNothing , 0u
+                            EatenNothing , 0u, []
 
             let position =  // TODO: issue of frame rate!
 
@@ -568,12 +569,12 @@ let private AdvancePacMan keyStateGetter mazeState pacmanState =
                         else
                             position // disallow, no exit in that direction.
             
-            (eaten , position , direction , scoreIncrement)            
+            (eaten , position , direction , scoreIncrement, soundEffectList)            
 
 
         | PacDyingUntil _
         | PacDead ->
-            (EatenNothing , position , direction , 0u)
+            (EatenNothing , position , direction , 0u, [])
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -930,15 +931,22 @@ let WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime pac
 
         | PacAlive ->
             let pacmanRectangle = pacmanState |> PacCollisionRectangle
-            pacmanState |> UpdateIf 
-                (pacmanRectangle |> IntersectsNormalGhostsIn ghostStateList)
-                (WithPacMode (PacDyingUntil (gameTime + PacmanDyingAnimationTime)))
+            let newPacState =
+                (pacmanState) |> UpdateIf 
+                    (pacmanRectangle |> IntersectsNormalGhostsIn ghostStateList)
+                    (WithPacMode (PacDyingUntil (gameTime + PacmanDyingAnimationTime)))
+            let dyingSounds =
+                match newPacState.PacState2.PacMode with
+                    | PacDyingUntil _ -> [PlaySoundEffect (SoundFromID OwwSoundID)]
+                    | _ -> []
+            (newPacState, dyingSounds)
 
         | PacDyingUntil t ->
-            pacmanState |> UpdateIf (gameTime >= t) (WithPacMode PacDead)
+            let dyingSounds = []
+            (pacmanState |> UpdateIf (gameTime >= t) (WithPacMode PacDead))  ,  dyingSounds
 
         | PacDead -> 
-            pacmanState
+            (pacmanState, [])
 
 
 /// State changes on pacman because of (possible) score increment
@@ -950,14 +958,16 @@ let WithStateChangesResultingFromNewScore scoreAndHiScore scoreIncrement pacmanS
         let a = oldScore / ScoreDeltaForExtraLife
         let b = newScore / ScoreDeltaForExtraLife
         if b > a then
-            {
-                pacmanState with 
-                    PacState2 = { pacmanState.PacState2 with LivesLeft = pacmanState.PacState2.LivesLeft + 1u }
-            }
+            let pacmanState =
+                {
+                    pacmanState with 
+                        PacState2 = { pacmanState.PacState2 with LivesLeft = pacmanState.PacState2.LivesLeft + 1u }
+                }
+            pacmanState, [PlaySoundEffect (SoundFromID ExtraLifeSoundID)]
         else
-            pacmanState
+            pacmanState, []
     else
-        pacmanState
+        pacmanState, []
 
 
 
@@ -982,9 +992,15 @@ let WithStateChangesResultingFromCollisionWithPacman pacmanPos ghosts =   // TOD
     let score = 
         ghosts |> List.sumBy (fun ghost ->
             if ghost |> isEdibleGhostOverlappingPacmanAt pacmanRectangle then 
-                ScoreForEatingGhost 
+                ScoreForEatingGhost
             else 
                 NoScore)
+
+    let gulpSounds =
+        if score > 0u then
+            [PlaySoundEffect (SoundFromID GulpSoundID)]
+        else
+            []
 
     let ghosts = 
         ghosts |> 
@@ -994,7 +1010,9 @@ let WithStateChangesResultingFromCollisionWithPacman pacmanPos ghosts =   // TOD
                                 (isEdibleGhostOverlappingPacmanAt pacmanRectangle) 
                                 (WithGhostMode GhostReturningToBase)))
 
-    struct (ghosts , score)
+    struct (ghosts , score , gulpSounds)
+
+
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -1091,7 +1109,7 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
 
     // Process
 
-    let eaten , position , direction , scoreIncrement1 =
+    let eaten , position , direction , scoreIncrement1, eatingSounds =
         AdvancePacMan keyStateGetter mazeState pacmanState
 
     let pacmanState =
@@ -1106,10 +1124,10 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
             |> WithEdibleGhostsIfPowerPill eaten gameTime
             |> WithGhostMovement mazeState pacmanState rand gameTime
 
-    let pacmanState =
+    let pacmanState, dyingSounds =
         pacmanState |> WithStateChangesResultingFromCollisionWithGhosts ghostStateList gameTime
 
-    let struct (ghostStateList , scoreIncrement2) =
+    let struct (ghostStateList, scoreIncrement2, gulpSounds) =
         ghostStateList |> WithStateChangesResultingFromCollisionWithPacman pacmanState
 
     let scoreIncrement =
@@ -1118,7 +1136,7 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
     let scoreAndHiScore =
         scoreAndHiScore |> ScoreIncrementedBy scoreIncrement
 
-    let pacmanState =
+    let pacmanState, lifeSound =
         pacmanState |> WithStateChangesResultingFromNewScore scoreAndHiScore scoreIncrement
 
     let memoizedStatusPanel =
@@ -1177,9 +1195,13 @@ let private NextPacmanScreenState gameState keyStateGetter gameTime elapsed =
         let whereToAfterFreezeFrame _outgoingGameState gameTime =
             model.WhereToOnAllEaten model.LevelIndex betweenScreenStatus gameTime  // TODO: Maze flash - but could that be done with a clever external filter?
 
-        gameState |> WithDrawingOnlyFor ScreenCompletePauseTime gameTime whereToAfterFreezeFrame
+        gameState 
+            |> WithDrawingOnlyFor ScreenCompletePauseTime gameTime whereToAfterFreezeFrame
+            |> WithOneShotSound [PlaySoundEffect (SoundFromID VictorySoundID)]
+
     else 
-        gameState |> WithUpdatedModel model
+        let allSounds = List.concat [eatingSounds ; dyingSounds ; gulpSounds ; lifeSound]
+        gameState |> WithUpdatedModelAndSounds model allSounds  // TODO: This is the only case where we return the sounds.
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

@@ -1,7 +1,7 @@
 ﻿module BlankScreen
 
 open Geometry
-open ScreenHandler
+open GameStateManagement
 open DrawingShapes
 
 type BlankScreenModel =

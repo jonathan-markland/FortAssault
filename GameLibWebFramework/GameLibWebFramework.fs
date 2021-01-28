@@ -10,9 +10,10 @@ open Time
 open Geometry
 open DrawingShapes
 open ImagesAndFonts
+open Sounds
 
 open Input
-open ScreenHandler
+open GameStateManagement
 
 
 
@@ -31,7 +32,7 @@ type JavascriptGraphicResources =
 
 
 // ------------------------------------------------------------------------------------------------------------
-//  Fable to Javascript interfacing
+//  General support:   Fable to Javascript interfacing
 // ------------------------------------------------------------------------------------------------------------
 
 [<Emit("console.log($0)")>]
@@ -44,11 +45,14 @@ let private ConsoleLog (messageText:string) : unit = jsNative
 let private Alert (messageText:string) : unit = jsNative
 
 
+// ------------------------------------------------------------------------------------------------------------
+//  Image and drawing support:   Fable to Javascript interfacing
+// ------------------------------------------------------------------------------------------------------------
 
 /// A supplementary Javascript function that we made.  TODO: It may not be necessary to even have this in Javascript!
 [<Emit("loadImageThenDo($0, $1, $2)")>]
 let private LoadImageThenDo
-    (htmlImageElement:obj)
+    (fileName:string)
     (needsMagentaColourKey:bool)
     (onCompletionOfLoad:obj -> unit) : unit = jsNative
 
@@ -93,18 +97,44 @@ let inline private DrawFilledRectangle context2d x y w h (colouru:uint32) =
 
 
 // ------------------------------------------------------------------------------------------------------------
-//  Load resources then start game
+//  Sounds:   Fable to Javascript interfacing
+// ------------------------------------------------------------------------------------------------------------
+
+// Reference:  https://www.html5rocks.com/en/tutorials/webaudio/intro/
+
+/// A supplementary Javascript function that we made.  TODO: It may not be necessary to even have this in Javascript!
+[<Emit("loadSoundThenDo($0, $1)")>]
+let private LoadSoundThenDo
+    (fileName:string)
+    (onCompletionOfLoad:obj -> unit) : unit = jsNative   // obj is Javascript type AudioBuffer
+
+
+[<Emit("playSound($0)")>]
+let private JsPlaySound (audioBuffer:obj) : unit = jsNative   // obj is Javascript type AudioBuffer
+
+let private PlaySound (HostSoundRef(jsAudioBuffer)) =
+    JsPlaySound jsAudioBuffer
+
+
+(* TODO
+An important point to note is that on iOS, Apple currently mutes all sound output until the first time a sound is played during a user interaction event - for example, calling playSound() inside a touch event handler. You may struggle with Web Audio on iOS "not working" unless you circumvent this - in order to avoid problems like this, just play a sound (it can even be muted by connecting to a Gain Node with zero gain) inside an early UI event - e.g. "touch here to play".
+*)
+
+
+
+// ------------------------------------------------------------------------------------------------------------
+//  Load resources
 // ------------------------------------------------------------------------------------------------------------
 
 let private LoadFileListThenDo fileNameObtainer needsMagentaObtainer widthGetter heightGetter continuation resourceList =
 
-    let htmlImageElementResizeArrayForFonts = new ResizeArray<Image>(resourceList |> List.length)
+    let resizeArray = new ResizeArray<Image>(resourceList |> List.length)
 
-    let rec recurse resourceRecordList fileNameObtainer needsMagentaObtainer =
+    let rec recurse resourceRecordList =
 
         match resourceRecordList with
             | [] -> 
-                continuation (htmlImageElementResizeArrayForFonts.ToArray())
+                continuation (resizeArray.ToArray())
 
             | resourceRecord::tail ->
                 let fileName = resourceRecord |> fileNameObtainer
@@ -126,19 +156,57 @@ let private LoadFileListThenDo fileNameObtainer needsMagentaObtainer widthGetter
                             HostImageRef = HostImageRef(htmlImageElement)
                         }
 
-                    htmlImageElementResizeArrayForFonts.Add(imgWithHostObject)
+                    resizeArray.Add(imgWithHostObject)
 
-                    recurse tail fileNameObtainer needsMagentaObtainer
+                    recurse tail
                 )
 
-    recurse resourceList fileNameObtainer needsMagentaObtainer
+    recurse resourceList
+
+    // We never get here because the | [] -> match case is the final "what to do next" (need continuation-pass)
+
+
+
+let private LoadSoundsFileListThenDo fileNameObtainer continuation resourceList =
+
+    let resizeArray = new ResizeArray<Sound>(resourceList |> List.length)
+
+    let rec recurse resourceRecordList =
+
+        match resourceRecordList with
+            | [] -> 
+                continuation (resizeArray.ToArray())
+
+            | resourceRecord::tail ->
+                let fileName = resourceRecord |> fileNameObtainer
+
+                LoadSoundThenDo fileName (fun hostObject ->
+
+                    let libraryObject =
+                        {
+                            SoundMetadata = 
+                                {
+                                    SoundFileName = fileName
+                                }
+                            HostSoundRef = HostSoundRef(hostObject)
+                        }
+
+                    resizeArray.Add(libraryObject)
+
+                    recurse tail
+                )
+
+    recurse resourceList
 
     // We never get here because the | [] -> match case is the final "what to do next" (need continuation-pass)
 
 // ------------------------------------------------------------------------------------------------------------
 
 // TODO: This should not need to be private?
-let LoadResourceFilesThenDo resourceImages fontResourceImages afterAllLoaded =
+let LoadResourceFilesThenDo resourceImages fontResourceImages resourceSounds afterAllLoaded =
+
+    let soundFileNameGetter metadata =
+        metadata.SoundFileName
 
     let imageFileNameGetter metadata =
         metadata.ImageFileName
@@ -151,7 +219,6 @@ let LoadResourceFilesThenDo resourceImages fontResourceImages afterAllLoaded =
     let imageWidthGetter  metadata = metadata.ImageWidth
     let imageHeightGetter metadata = metadata.ImageHeight
 
-
     fontResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
         (fun arrayOfLoadedFontImages ->
 
@@ -160,7 +227,10 @@ let LoadResourceFilesThenDo resourceImages fontResourceImages afterAllLoaded =
 
             resourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
                 (fun arrayOfLoadedImages ->
-                    afterAllLoaded arrayOfLoadedImages arrayOfLoadedFonts)
+
+                    resourceSounds |> LoadSoundsFileListThenDo soundFileNameGetter (fun arrayOfLoadedSounds ->
+                    afterAllLoaded arrayOfLoadedImages arrayOfLoadedFonts arrayOfLoadedSounds)
+                )
         )
 
     // NB: We never get here (continuations called).
@@ -201,14 +271,17 @@ let private RenderToWebCanvas (context2d:Browser.Types.CanvasRenderingContext2D)
 
 // ------------------------------------------------------------------------------------------------------------
 
+open StaticResourceAccess // TODO: HACK  (remove)
+
 let FrameworkWebMain
     listOfKeysNeeded
     gameGlobalStateConstructor
     gameplayStartConstructor
     arrayOfLoadedImages
-    arrayOfLoadedFonts =
+    arrayOfLoadedFonts
+    arrayOfLoadedSounds =
 
-    SetStaticImageAndFontResourceArrays arrayOfLoadedImages arrayOfLoadedFonts
+    SetStaticImageAndFontResourceArrays arrayOfLoadedImages arrayOfLoadedFonts arrayOfLoadedSounds
 
     let canvas = document.getElementById("gameScreen") :?> Browser.Types.HTMLCanvasElement
     let context2d = canvas.getContext("2d") :?> Browser.Types.CanvasRenderingContext2D
@@ -219,7 +292,7 @@ let FrameworkWebMain
             | Ok globals -> globals
 
     let gameTime = 0.0F<seconds>
-    let frameElapsedTime = 0.02F<seconds>
+    let frameElapsedTime = 0.02F<seconds>  // TODO: Revisit parameterisation of frame rate.
 
     let gameState : ErasedGameState =
         gameplayStartConstructor gameGlobalState gameTime
@@ -267,6 +340,14 @@ let FrameworkWebMain
                 keyStateGetter 
                 gameTime 
                 frameElapsedTime 
+
+        nextGameState.Sounds () 
+            |> List.iter (fun soundCommand -> 
+                match soundCommand with
+                    | PlaySoundEffect s -> PlaySound (s.HostSoundRef)
+                    | ChangeTheMusic s -> () // TODO: implement
+                    | StopTheMusic -> () // TODO: implement
+            )
 
         ClearKeyJustPressedFlags mutableKeyStateStore
 

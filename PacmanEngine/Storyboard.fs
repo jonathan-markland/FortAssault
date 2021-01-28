@@ -22,7 +22,10 @@ open ResourceIDs
 open SlideTransitions
 open Mechanics
 open Time
-open ScreenHandler
+open Sounds
+open GameStateManagement
+open StaticResourceAccess
+open ResourceIDs
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -63,6 +66,7 @@ and private GameOverStory scoreAndHiScore gameTime =
 
     NewGameOverScreen scoreAndHiScore 
         |> WithDrawingOnlyFor GameOverPauseTime gameTime slideInEnterYourName
+        |> WithOneShotSound [PlaySoundEffect (SoundFromID GameOverSoundID)]
 
 and private PacmanStory (levelNumber:int) betweenScreenStatus (gameTime:float32<seconds>) =
 

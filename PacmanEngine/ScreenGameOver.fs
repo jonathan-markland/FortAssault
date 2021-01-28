@@ -5,7 +5,7 @@ open ResourceIDs
 open ScoreHiScore
 open Geometry
 open ImagesAndFonts
-open ScreenHandler
+open GameStateManagement
 open Directions
 open PacmanShared
 open TitleScreenShared

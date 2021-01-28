@@ -1,6 +1,7 @@
-﻿module FortAssaultImageFiles
+﻿module FortAssaultResourceFiles
 
 open ImagesAndFonts
+open Sounds
 open Geometry
 
 let private image colourKey fileName width height =
@@ -120,4 +121,6 @@ let FortAssaultResourceImages =
         image MagentaColourKeyImage "PresidentStanding.png"         39 130
     ]
 
-
+let FortAssaultResourceSounds : SoundMetadata list =
+    [
+    ]

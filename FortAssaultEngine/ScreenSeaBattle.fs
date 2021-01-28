@@ -17,7 +17,7 @@ open PendingEvents
 open InputEventData
 open ImagesAndFonts
 open StaticResourceAccess
-open ScreenHandler
+open GameStateManagement
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

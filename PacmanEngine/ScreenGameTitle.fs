@@ -1,6 +1,6 @@
 ﻿module ScreenGameTitle
 
-open ScreenHandler
+open GameStateManagement
 open DrawingFunctions
 open ResourceIDs
 open Geometry

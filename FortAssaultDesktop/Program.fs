@@ -2,7 +2,7 @@
 
 open SDL2  // TODO: It would be nicer if SDLCover could provide everything.
 
-open FortAssaultImageFiles
+open FortAssaultResourceFiles
 open Input
 open DesktopGameFramework
 open Storyboard
@@ -41,6 +41,7 @@ let main argv =
             FortAssaultRetroScreenHeightPixels
             FortAssaultResourceImages 
             FortAssaultFontResourceImages
+            FortAssaultResourceSounds
             fortAssaultKeysNeeded
             stubGlobalStateConstructor
             NewFortAssaultStoryboard  // Or, swap out for NewMechanicsTestPageStoryboard

@@ -12,7 +12,8 @@ open Time
 open Geometry
 open DrawingShapes
 open ImagesAndFonts
-open ScreenHandler
+open Sounds
+open GameStateManagement
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -20,11 +21,12 @@ type FrameworkGameResourcesRecord =  // TODO: Unify with the javascript version!
     {
         GameBMPs    : Image[]
         Fonts       : Font[]
+        Sounds      : Sound[]
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (renderer:SdlRendererNativeInt) rootPath =  // TODO: Result error string
+let private LoadGameImagesFontsAndSounds gameResourceImages gameFontResourceImages gameResourceSounds (renderer:SdlRendererNativeInt) rootPath =  // TODO: Result error string
 
     let fromFile transparencyColour name = 
 
@@ -36,6 +38,18 @@ let private LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (re
 
         match LoadFromFileAndPrepareForSdlRenderer renderer fullPath transparencyColour with
             | Some(imageRecord) -> imageRecord
+            | None -> failwith (sprintf "Game could not start because file '%s' has invalid content." fullPath)
+
+    let fromSoundFile name = 
+
+        let fullPath =
+            Path.Combine(rootPath, name)
+    
+        if not (File.Exists(fullPath)) then
+            failwith (sprintf "Game could not start because file '%s' is missing." fullPath)
+
+        match LoadSdlSoundFromFile fullPath with
+            | Some(soundNativeInt) -> soundNativeInt
             | None -> failwith (sprintf "Game could not start because file '%s' has invalid content." fullPath)
 
     let magenta =
@@ -76,9 +90,25 @@ let private LoadGameImagesAndFonts gameResourceImages gameFontResourceImages (re
             ) 
                 |> List.toArray
 
+    let soundsArray =
+        gameResourceSounds 
+            |> List.map (fun metadata -> 
+                let hostSoundObject = fromSoundFile metadata.SoundFileName
+
+                let soundWithHostObject =
+                    {
+                        SoundMetadata = metadata
+                        HostSoundRef  = HostSoundRef(hostSoundObject)
+                    }
+
+                soundWithHostObject
+            ) 
+                |> List.toArray
+
     {
         GameBMPs = imagesArray
         Fonts    = fontsArray
+        Sounds   = soundsArray
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -126,6 +156,16 @@ let private RenderToSdl renderer drawingCommand =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let PlaySound (HostSoundRef(soundNativeIntObj)) =
+    let { SdlSoundNativeInt = soundNativeInt } = soundNativeIntObj :?> SdlSoundNativeInt
+    let channel = SDL2.SDL_mixer.Mix_PlayChannel(-1, soundNativeInt, 0) // TODO: Should we do anything if it fails to play?
+    if channel = -1 then
+        ()
+    else
+        ()
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
 let private TimerCallback (interval:uint32) (param:nativeint) : uint32 =  // TODO: Can this go into the SDL library?
 
     let mutable event = new SDL.SDL_Event()
@@ -147,7 +187,7 @@ let private MainLoopProcessing
     initialGameStateConstructor 
     listOfKeysNeeded =
 
-    SetStaticImageAndFontResourceArrays gameResources.GameBMPs gameResources.Fonts
+    SetStaticImageAndFontResourceArrays gameResources.GameBMPs gameResources.Fonts gameResources.Sounds
 
     let mutable tickCount = 1u
     
@@ -196,6 +236,14 @@ let private MainLoopProcessing
                 gameTime
                 frameElapsedTime  // TODO: Didn't like passing this really.
 
+        nextGameState.Sounds () 
+            |> List.iter (fun soundCommand -> 
+                match soundCommand with
+                    | PlaySoundEffect s -> PlaySound (s.HostSoundRef)
+                    | ChangeTheMusic s -> () // TODO: implement
+                    | StopTheMusic -> () // TODO: implement
+            )
+
         tickCount <- tickCount + 1u
         gameState <- nextGameState
 
@@ -243,6 +291,7 @@ let FrameworkDesktopMain
     hostRetroScreenHeightPixels 
     gameResourceImages 
     gameFontResourceImages
+    gameResourceSounds
     listOfKeysNeeded 
     (gameGlobalStateConstructor : unit -> Result<'gameGlobalState,string>)
     (gameplayStartConstructor   : 'gameGlobalState -> float32<seconds> -> ErasedGameState)
@@ -267,7 +316,7 @@ let FrameworkDesktopMain
                             let path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
                             
                             let gameResources = 
-                                LoadGameImagesAndFonts gameResourceImages gameFontResourceImages renderer path   // TODO:  Minor: We don't actually free the imageSet handles.
+                                LoadGameImagesFontsAndSounds gameResourceImages gameFontResourceImages gameResourceSounds renderer path   // TODO:  Minor: We don't actually free the imageSet handles.
 
                             let gameGlobalStateResult = 
                                 gameGlobalStateConstructor ()
