@@ -5,49 +5,49 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="SoundAttributions.txt">
+    <Content Include="Sounds\SoundAttributions.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <None Include="321.ogg">
+    <None Include="Sounds\321.ogg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="game-over.ogg">
+    <None Include="Sounds\game-over.ogg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="go.ogg">
+    <None Include="Sounds\go.ogg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="gulp.ogg">
+    <None Include="Sounds\gulp.ogg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="life.ogg">
+    <None Include="Sounds\life.ogg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="oww.ogg">
+    <None Include="Sounds\oww.ogg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="pellet.ogg">
+    <None Include="Sounds\pellet.ogg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="pill.ogg">
+    <None Include="Sounds\pill.ogg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <None Include="victory.ogg">
+    <None Include="Sounds\victory.ogg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </None>
-    <Content Include="PacmanBackground.png">
+    <Content Include="Images\PacmanBackground.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="PacmanBackground2.png">
+    <Content Include="Images\PacmanBackground2.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="PacmanBackground3.png">
+    <Content Include="Images\PacmanBackground3.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="PacmanFont.png">
+    <Content Include="Images\PacmanFont.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="PacmanLevel1.png">
+    <Content Include="Images\PacmanLevel1.png">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
   </ItemGroup>

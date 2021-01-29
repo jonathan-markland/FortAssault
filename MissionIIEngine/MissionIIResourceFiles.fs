@@ -1,4 +1,4 @@
-﻿module PacmanResourceFiles
+﻿module MissionIIResourceFiles
 
 open ImagesAndFonts
 open Sounds
