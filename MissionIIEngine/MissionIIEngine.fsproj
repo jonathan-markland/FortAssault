@@ -1,0 +1,32 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Directions.fs" />
+    <Compile Include="GhostAI.fs" />
+    <Compile Include="Keys.fs" />
+    <Compile Include="Mazes.fs" />
+    <Compile Include="Rules.fs" />
+    <Compile Include="MissionIIResourceFiles.fs" />
+    <Compile Include="ResourceIDs.fs" />
+    <Compile Include="MazeState.fs" />
+    <Compile Include="MazeUnpacker.fs" />
+    <Compile Include="MissionIIShared.fs" />
+    <Compile Include="TitleScreenShared.fs" />
+    <Compile Include="MissionIIGetReadyOverlay.fs" />
+    <Compile Include="ScreenIntermissions.fs" />
+    <Compile Include="ScreenMissionII.fs" />
+    <Compile Include="ScreenGameOver.fs" />
+    <Compile Include="ScreenGameTitle.fs" />
+    <Compile Include="ScreenPotentialEnterYourName.fs" />
+    <Compile Include="Storyboard.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GameLib\GameLib.fsproj" />
+  </ItemGroup>
+
+</Project>

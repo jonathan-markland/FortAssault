@@ -1,0 +1,30 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OS)|$(Configuration)|$(Platform)'=='Windows_NT|Debug|AnyCPU'">
+    <PlatformTarget>x86</PlatformTarget>
+    <DefineConstants></DefineConstants>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(OS)|$(Configuration)|$(Platform)'=='Unix|Debug|AnyCPU'">
+    <PlatformTarget>AnyCPU</PlatformTarget>
+    <DefineConstants></DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="Program.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GameLib\GameLib.fsproj" />
+    <ProjectReference Include="..\GameLibDesktopFramework\GameLibDesktopFramework.fsproj" />
+    <ProjectReference Include="..\MissionIIEngine\MissionIIEngine.fsproj" />
+    <ProjectReference Include="..\MissionIIResources\MissionIIResources.fsproj" />
+    <ProjectReference Include="..\SDL2-CS\SDL2-CS.csproj" />
+  </ItemGroup>
+
+</Project>
