@@ -74,7 +74,7 @@
     <Content Include="Sounds\SoundAttributions.txt">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
-    <Content Include="Images\StunGhostSound.ogg">
+    <Content Include="Sounds\StunGhostSound.ogg">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>
     <Content Include="Images\Background.png">

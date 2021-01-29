@@ -31,7 +31,7 @@ let private LoadGameImagesFontsAndSounds gameResourceImages gameFontResourceImag
     let fromFile transparencyColour name = 
 
         let fullPath =
-            Path.Combine(rootPath, name)
+            Path.Combine(Path.Combine(rootPath, "Images"), name)
         
         if not (File.Exists(fullPath)) then
             failwith (sprintf "Game could not start because file '%s' is missing." fullPath)
@@ -43,7 +43,7 @@ let private LoadGameImagesFontsAndSounds gameResourceImages gameFontResourceImag
     let fromSoundFile name = 
 
         let fullPath =
-            Path.Combine(rootPath, name)
+            Path.Combine(Path.Combine(rootPath, "Sounds"), name)
     
         if not (File.Exists(fullPath)) then
             failwith (sprintf "Game could not start because file '%s' is missing." fullPath)
