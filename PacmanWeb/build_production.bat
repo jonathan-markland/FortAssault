@@ -13,10 +13,10 @@ mkdir wwwroot\Images
 mkdir wwwroot\Sounds
 @if ERRORLEVEL 1 goto Failed
 
-xcopy /s ..\PacmanEngine\Images\*.png wwwroot\Images\
+xcopy /s ..\PacmanResources\Images\*.png wwwroot\Images\
 @if ERRORLEVEL 1 goto Failed
 
-xcopy /s ..\PacmanEngine\Sounds\*.* wwwroot\Sounds\
+xcopy /s ..\PacmanResources\Sounds\*.* wwwroot\Sounds\
 @if ERRORLEVEL 1 goto Failed
 
 npx webpack --mode production

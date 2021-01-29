@@ -10,7 +10,7 @@ copy src\assets\menutile.png wwwroot\
 mkdir wwwroot\Images
 @if ERRORLEVEL 1 goto Failed
 
-xcopy /s ..\FortAssaultEngine\Images\*.png wwwroot\Images\
+xcopy /s ..\FortAssaultResources\Images\*.png wwwroot\Images\
 @if ERRORLEVEL 1 goto Failed
 
 npx webpack --mode production

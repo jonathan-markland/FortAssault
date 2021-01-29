@@ -5,9 +5,31 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <Content Include="LICENSE.jpeg.txt" />
+    <Content Include="LICENSE.ogg-vorbis.txt" />
+    <Content Include="LICENSE.png.txt" />
+    <Content Include="LICENSE.tiff.txt" />
+    <Content Include="LICENSE.webp.txt" />
+    <Content Include="LICENSE.zlib.txt" />
+    <Content Include="ZLIB_README.txt" />
+    <None Include="libjpeg-9.dll" />
+    <None Include="libogg-0.dll" />
+    <None Include="libpng16-16.dll" />
+    <None Include="libtiff-5.dll" />
+    <None Include="libvorbis-0.dll" />
+    <None Include="libvorbisfile-3.dll" />
+    <None Include="libwebp-7.dll" />
+    <None Include="SDL2.dll" />
+    <None Include="SDL2_image.dll" />
+    <None Include="SDL2_mixer.dll" />
+    <None Include="zlib1.dll" />
     <Compile Include="SDLCover.fs" />
     <Compile Include="GameLibDesktopFramework.fs" />
   </ItemGroup>
+
+  <ItemGroup />
+
+  <ItemGroup />
   
   <ItemGroup>
     <ProjectReference Include="..\GameLib\GameLib.fsproj" />

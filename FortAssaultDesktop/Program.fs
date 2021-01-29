@@ -6,7 +6,6 @@ open FortAssaultResourceFiles
 open Input
 open DesktopGameFramework
 open Storyboard
-open MechanicsTestPage
 
 
 let FortAssaultWindowWidthPixels       = 1280 
