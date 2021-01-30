@@ -1,4 +1,4 @@
-﻿module ScreenPacman
+﻿module ScreenGamePlay
 
 open Rules
 open Time

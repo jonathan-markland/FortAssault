@@ -1,4 +1,4 @@
-﻿module Mazes
+﻿module Levels
 
 let AllPacmanMazes =
     [|

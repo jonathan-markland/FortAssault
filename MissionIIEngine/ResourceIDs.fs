@@ -4,59 +4,13 @@ open Geometry
 open ImagesAndFonts
 open Sounds
 
-// TODO: These sizes really aren't in the right file.
-
-let TileSide = 16<epx>
-let TileSideInt = 16
-
-/// Determines the inner collision-sensitive square within a tile.
-let CollisionSide = 6<epx>
-
-/// These index the PacmanLevel PNG files.
+/// NB: Compatible indices with the file the C# program saved out in the overall level matrices.
 type TileIndex =
-
-    | Blank  =  0uy  // 
-    | Wall0  =  1uy  //
-    | Wall1  =  2uy  // 
-    | Wall2  =  3uy  // 
-    | Wall3  =  4uy  // 
-    | Wall4  =  5uy  // 
-    | Wall5  =  6uy  // 
-    | Wall6  =  7uy  // 
-    | Wall7  =  8uy  // 
-    | Wall8  =  9uy  //    Must be a cluster
-    | Wall9  = 10uy  // 
-    | Wall10 = 11uy  // 
-    | Wall11 = 12uy  // 
-    | Wall12 = 13uy  // 
-    | Wall13 = 14uy  // 
-    | Wall14 = 15uy  // 
-    | Wall15 = 16uy  // 
-
-    | Dot    = 17uy
-    | Pill1  = 18uy
-    | Pill2  = 19uy
-
-    | PacRight1 = 20uy
-    | PacLeft1  = 21uy
-    | PacUp1    = 22uy
-    | PacDown1  = 23uy
-
-    | PacRight2 = 24uy
-    | PacLeft2  = 25uy
-    | PacUp2    = 26uy
-    | PacDown2  = 27uy
-
-    | Ghost1    = 28uy
-    | Ghost2    = 29uy
-    | Ghost3    = 30uy
-    | Ghost4    = 31uy
-
-    | Eyes1     = 32uy
-    | Eyes2     = 33uy
-
-    | GhostPale      = 34uy
-    | GhostReturning = 35uy
+    | TileFloor  =  0uy  // Where the man can walk
+    | TileWall1  =  1uy  // The inner wall (brick style 1)
+    | TileWall2  =  2uy  // The inner wall (brick style 2)  TODO: Reduce to just 1 when we add patterning-by-resampling solution
+    | TileEdge1  =  3uy  // The electrocution edge (brick style 1)
+    | TileEdge2  =  4uy  // The electrocution edge (brick style 2)  TODO: Reduce to just 1 when we add patterning-by-resampling solution
 
 
 // TODO: Should these screen things be in here?
@@ -75,23 +29,101 @@ let inline PercentOfScreenHeight x = (ScreenHeightInt * x) / 100
 
 // Fonts (all screens):
 
-let GreyFontID                  = FontID(0)
+let MissionIIFontID            = FontID 0
 
 // Images (all screens):
 
-let BackgroundImageID           = ImageID(0)
-let Level1ImageID               = ImageID(1)
-let Background2ImageID          = ImageID(2)
-let Background3ImageID          = ImageID(3)
+let BackgroundImageID          = ImageID  0
+let Background2ImageID         = ImageID  1
+let BulletImageID              = ImageID  2
+let DeadImageID                = ImageID  3
+let Electrocution1ImageID      = ImageID  4
+let Electrocution2ImageID      = ImageID  5
+let Explosion1ImageID          = ImageID  6
+let Explosion2ImageID          = ImageID  7
+let Explosion3ImageID          = ImageID  8
+let FacingDownImageID          = ImageID  9
+let FacingLeftImageID          = ImageID 10
+let FacingLeftDownImageID      = ImageID 11
+let FacingLeftUpImageID        = ImageID 12
+let FacingRightImageID         = ImageID 13
+let FacingRightDownImageID     = ImageID 14
+let FacingRightUpImageID       = ImageID 15
+let FacingUpImageID            = ImageID 16
+let FloorTile1ImageID          = ImageID 17
+let FloorTile2ImageID          = ImageID 18
+let FloorTile3ImageID          = ImageID 19
+let GhostImageID               = ImageID 20
+let GhostStunnedImageID        = ImageID 21
+let GoldImageID                = ImageID 22
+let InvincibilityAmuletImageID = ImageID 23
+let KeyImageID                 = ImageID 24
+let LevelExitImageID           = ImageID 25
+let LifeImageID                = ImageID 26
+let Monster1v1ImageID          = ImageID 27
+let Monster1v2ImageID          = ImageID 28
+let Monster2v1ImageID          = ImageID 29
+let Monster2v2ImageID          = ImageID 30
+let Monster3ImageID            = ImageID 31
+let Monster4v1ImageID          = ImageID 32
+let Monster4v2ImageID          = ImageID 33
+let Monster5v1ImageID          = ImageID 34
+let Monster5v2ImageID          = ImageID 35
+let PausedImageID              = ImageID 36
+let Potion1ImageID             = ImageID 37
+let Potion2ImageID             = ImageID 38
+let RingImageID                = ImageID 39
+let WalkingDown1ImageID        = ImageID 40
+let WalkingDown2ImageID        = ImageID 41
+let WalkingLeftDown1ImageID    = ImageID 42
+let WalkingLeftDown2ImageID    = ImageID 43
+let WalkingLeftUp1ImageID      = ImageID 44
+let WalkingLeftUp2ImageID      = ImageID 45
+let WalkingLeft1ImageID        = ImageID 46
+let WalkingLeft2ImageID        = ImageID 47
+let WalkingRightDown1ImageID   = ImageID 48
+let WalkingRightDown2ImageID   = ImageID 49
+let WalkingRightUp1ImageID     = ImageID 50
+let WalkingRightUp2ImageID     = ImageID 51
+let WalkingRight1ImageID       = ImageID 52
+let WalkingRight2ImageID       = ImageID 53
+let WalkingUp1ImageID          = ImageID 54
+let WalkingUp2ImageID          = ImageID 55
+let WallBrick1ImageID          = ImageID 56
+let WallBrick2ImageID          = ImageID 57
+let WallBrick3ImageID          = ImageID 58
+let WallBrick4ImageID          = ImageID 59
+let WallBrick5ImageID          = ImageID 60
+let WallBrick6ImageID          = ImageID 61
+let WallBrick7ImageID          = ImageID 62
+let WallBrick8ImageID          = ImageID 63
+let WallElectricImageID        = ImageID 64
+let WallOutline1ImageID        = ImageID 65
+let WallOutline2ImageID        = ImageID 66
+let WallOutline3ImageID        = ImageID 67
 
 // Sounds:
 
-let PelletSoundID      = SoundID 0
-let PillSoundID        = SoundID 1
-let ThreeTwoOneSoundID = SoundID 2
-let GameOverSoundID    = SoundID 3
-let GoSoundID          = SoundID 4
-let GulpSoundID        = SoundID 5
-let OwwSoundID         = SoundID 6
-let VictorySoundID     = SoundID 7
-let ExtraLifeSoundID   = SoundID 8
+let BonusSoundID               = SoundID  0
+let DroidFiringSoundID         = SoundID  1
+let DuoBonusSoundID            = SoundID  2
+let ElectrocutionSoundID       = SoundID  3
+let EnteringLevelSoundID       = SoundID  4
+let ExplosionSoundID           = SoundID  5
+let ExtraLifeSoundID           = SoundID  6
+let Footstep1SoundID           = SoundID  7
+let Footstep2SoundID           = SoundID  8
+let GameOver1SoundID           = SoundID  9
+let GameOver2SoundID           = SoundID 10
+let GameOver3SoundID           = SoundID 11
+let GameOver4SoundID           = SoundID 12
+let GhostAppearingSoundID      = SoundID 13
+let IntroSoundID               = SoundID 14
+let InvincibilityAmuletSoundID = SoundID 15
+let LevelExitActivatedSoundID  = SoundID 16
+let ManFiringSoundID           = SoundID 17
+let ManGrunt1SoundID           = SoundID 18
+let ManGrunt2SoundID           = SoundID 19
+let PauseModeSoundID           = SoundID 20
+let PickUpObjectSoundID        = SoundID 21
+let StunGhostSoundID           = SoundID 22
