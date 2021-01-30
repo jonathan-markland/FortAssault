@@ -1,6 +1,5 @@
 ﻿module ResourceIDs
 
-open Geometry
 open ImagesAndFonts
 open Sounds
 
@@ -11,21 +10,6 @@ type TileIndex =
     | TileWall2  =  2uy  // The inner wall (brick style 2)  TODO: Reduce to just 1 when we add patterning-by-resampling solution
     | TileEdge1  =  3uy  // The electrocution edge (brick style 1)
     | TileEdge2  =  4uy  // The electrocution edge (brick style 2)  TODO: Reduce to just 1 when we add patterning-by-resampling solution
-
-
-// TODO: Should these screen things be in here?
-// This game uses a the following engine-coordinate (epx) space:
-
-let ScreenWidthInt  = 320<epx>  // Must be the same as below!
-let ScreenHeightInt = 256<epx>  // Must be the same as below!
-
-let ScreenWidth  = 320.0F<epx>
-let ScreenHeight = 256.0F<epx>
-
-let inline PercentOfScreenWidth  x = (ScreenWidthInt * x) / 100
-let inline PercentOfScreenHeight x = (ScreenHeightInt * x) / 100
-
-
 
 // Fonts (all screens):
 
