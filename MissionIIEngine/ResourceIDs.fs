@@ -5,11 +5,12 @@ open Sounds
 
 /// NB: Compatible indices with the file the C# program saved out in the overall level matrices.
 type TileIndex =
-    | TileFloor  =  0uy  // Where the man can walk
-    | TileWall1  =  1uy  // The inner wall (brick style 1)
-    | TileWall2  =  2uy  // The inner wall (brick style 2)  TODO: Reduce to just 1 when we add patterning-by-resampling solution
-    | TileEdge1  =  3uy  // The electrocution edge (brick style 1)
-    | TileEdge2  =  4uy  // The electrocution edge (brick style 2)  TODO: Reduce to just 1 when we add patterning-by-resampling solution
+    | TileFloor1 =  0uy  // Where the man can walk
+    | TileFloor2 =  1uy  // Where the man can walk
+    | TileWall1  =  2uy  // The inner wall (brick style 1)
+    | TileWall2  =  3uy  // The inner wall (brick style 2)  TODO: Reduce to just 1 when we add patterning-by-resampling solution
+    | TileEdge1  =  4uy  // The electrocution edge (brick style 1)
+    | TileEdge2  =  5uy  // The electrocution edge (brick style 2)  TODO: Reduce to just 1 when we add patterning-by-resampling solution
 
 // Fonts (all screens):
 
