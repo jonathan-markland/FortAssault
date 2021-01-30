@@ -1,5 +1,7 @@
 ﻿module ScreenGameOver
 
+(*
+
 open DrawingFunctions
 open ResourceIDs
 open ScoreHiScore
@@ -76,3 +78,5 @@ let NewGameOverScreen scoreAndHiScore =
         }
 
     NewGameState ModelNeverChanges RenderGameOverScreen gameOverModel
+
+    *)

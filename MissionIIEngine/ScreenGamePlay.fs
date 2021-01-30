@@ -1,5 +1,7 @@
 ﻿module ScreenGamePlay
 
+(*
+
 open Rules
 open Time
 open DrawingFunctions
@@ -1274,5 +1276,5 @@ let NewPacmanScreen levelNumber whereToOnAllEaten whereToOnGameOver (betweenScre
     NewGameState NextPacmanScreenState RenderPacmanScreen screenModel
 
 
-
+*)
 

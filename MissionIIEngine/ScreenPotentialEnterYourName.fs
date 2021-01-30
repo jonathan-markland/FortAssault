@@ -1,5 +1,6 @@
 ﻿module ScreenPotentialEnterYourName
 
+(*
 open DrawingFunctions
 open ResourceIDs
 open Geometry
@@ -147,3 +148,4 @@ let NewPotentialEnterYourNameScreen scoreAndHiScore oldScoreboard whereToAfter g
         whereToAfter oldScoreboard gameTime
 
 
+*)

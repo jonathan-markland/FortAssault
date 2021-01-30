@@ -6,10 +6,9 @@ open InterruptableVideo
 open Keys
 
 open ScreenGameTitle
-open ScreenPacman
+open ScreenGamePlay
 open ScreenGameOver
 open ScreenPotentialEnterYourName
-open PacmanGetReadyOverlay
 
 open ScoreboardModel
 
@@ -34,7 +33,7 @@ let mutable private globalScoreboard : ScoreAndName list = []
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let rec private EnterYourNameStory scoreAndHiScore gameTime =
+(*let rec private EnterYourNameStory scoreAndHiScore gameTime =
 
     // You can just direct here, and it will sort out whether to show or not.
 
@@ -80,8 +79,9 @@ and private PacmanStory (levelNumber:int) betweenScreenStatus (gameTime:float32<
     let messageOverlay = NewPacmanGetReadyOverlay ()
 
     FreezeForGetReady newGame messageOverlay GetReadyCardTime gameTime
-
-and private GameTitleStory gameTime =
+    
+and private *)
+let rec GameTitleStory gameTime =
 
     let firstLevelForBrandNewGame =
         0
@@ -94,15 +94,15 @@ and private GameTitleStory gameTime =
     
     NewGameTitleScreen globalScoreboard
         |> AsInterruptableVideoThen 
-                (PacmanStory firstLevelForBrandNewGame betweenScreenStatus)
+                (GameTitleStory) // (PacmanStory firstLevelForBrandNewGame betweenScreenStatus)
                 KeyFire
 
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewPacmanStoryboard _ gameTime =
+let NewMissionIIStoryboard _ gameTime =
 
-    globalScoreboard <- InitialScoreboard [ "VINNY" ; "HELEN" ; "JARVIS" ; "JULIA" ] 2500u 2500u
+    globalScoreboard <- InitialScoreboard [ "BARNEY" ; "MARTIN" ; "HELEN" ; "JULIA" ] 2500u 2500u
     
     GameTitleStory gameTime

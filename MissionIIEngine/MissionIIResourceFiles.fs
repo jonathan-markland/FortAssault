@@ -12,12 +12,12 @@ let private image colourKey fileName width height =
         ImageHeight    = height |> IntToIntEpx
     }
 
-let PacmanFontResourceImages =
+let MissionIIFontResourceImages =
     [
         image MagentaColourKeyImage "Font.png"     216 8
     ]
 
-let PacmanResourceImages =
+let MissionIIResourceImages =
     [
         image OpaqueImage           "Background.png"         320 256
         image OpaqueImage           "Background2.png"        320 256
@@ -89,7 +89,7 @@ let PacmanResourceImages =
         image OpaqueImage           "WallOutline_3.png"       12   8
     ]
 
-let PacmanResourceSounds : SoundMetadata list =
+let MissionIIResourceSounds : SoundMetadata list =
     [
         { SoundFileName = "BonusSound.ogg" }
         { SoundFileName = "DroidFiringSound.ogg" }

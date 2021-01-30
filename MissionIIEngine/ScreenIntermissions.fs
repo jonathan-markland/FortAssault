@@ -1,5 +1,5 @@
 ﻿module ScreenIntermissions
-
+(*
 open IntermissionCard
 open FreezeFrame
 open StaticResourceAccess
@@ -30,3 +30,4 @@ let WithScreenCompleteIntermissionCard betweenScreenStatus whereToAfter gameTime
         ScreenWidthInt ScreenHeightInt 
             |> WithFreezeFrameFor ScreenCompleteStatusCardTime gameTime (whereToAfter |> AdaptedToIgnoreOutgoingStateParameter)
         
+*)
