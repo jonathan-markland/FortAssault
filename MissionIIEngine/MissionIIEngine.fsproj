@@ -12,7 +12,6 @@
     <Compile Include="Rules.fs" />
     <Compile Include="MissionIIResourceFiles.fs" />
     <Compile Include="ResourceIDs.fs" />
-    <Compile Include="TitleScreenShared.fs" />
     <Compile Include="ScreenIntermissions.fs" />
     <Compile Include="ScreenGamePlay.fs" />
     <Compile Include="ScreenGameOver.fs" />

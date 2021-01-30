@@ -4,7 +4,14 @@ open Geometry
 open ScoreHiScore
 open FlickBook
 
-// Between stories data model - lives, score, hiscore
+/// Wall and floor tile matrix type.
+type TileIndex =
+    | TileFloor1 =  0uy  // Where the man can walk
+    | TileFloor2 =  1uy  // Where the man can walk
+    | TileWall1  =  2uy  // The inner wall (brick style 1)
+    | TileWall2  =  3uy  // The inner wall (brick style 2)  TODO: Reduce to just 1 when we add patterning-by-resampling solution
+    | TileEdge1  =  4uy  // The electrocution edge (brick style 1)
+    | TileEdge2  =  5uy  // The electrocution edge (brick style 2)  TODO: Reduce to just 1 when we add patterning-by-resampling solution
 
 // The Man state dictates progress of the gameplay
 // If the man is electrocuting, there would be a countdown timer, and
