@@ -86,7 +86,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
 
     let drawInventory () =
         inventory |> List.iteri (fun i item ->
-            let x = ScreenWidthInt - ((int i) * InventoryItemSpacing)
+            let x = ScreenWidthInt - ((int (i+1)) * InventoryItemSpacing)
             Image1to1 render x BottomPanelTopY (inventoryItemImageFor item))
 
     let isEdge tile =
@@ -184,9 +184,13 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
+    
     gameState |> Unchanged
 
 
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  New screen constructor
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:BetweenScreenStatus) _gameTime =
