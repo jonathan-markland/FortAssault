@@ -18,6 +18,7 @@ open Geometry
 open ResourceIDs
 open Directions
 open LevelTextToMatrix
+open FlickBook
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  DRAWING
@@ -37,13 +38,12 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
     let {
             LevelNumber        = LevelNumber levelNumber
             LevelTileMatrix    = LevelTileMatrix levelTileMatrix
-            RoomNumber         = RoomNumber roomNumber
-            ScreenOriginPixel  = { ptx=levelPointX ; pty=levelPointY }
+            RoomNumber         = roomNumber
             ScreenOriginBlock  = (blockOriginX, blockOriginY)
             ScreenScore        = { Score=score ; HiScore = hiScore }
             ManInventory       = inventory
             ManLives           = ManLives lives
-            Collectibles       = collectibles
+            Interactible       = interactibles
             ImageLookupsTables = imageLookupTables
             WhereToOnGameOver  = _
         } = innerScreenModel
@@ -53,6 +53,9 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
             ManFacingStyles   = manFacingStyles
             ManWalkingStyles1 = manWalkingStyles1
             ManWalkingStyles2 = manWalkingStyles2
+            DroidStyles1      = droidStyles1
+            DroidStyles2      = droidStyles2
+            InteractibleObjectStyles = interactibleObjectStyles
         } = imageLookupTables
 
 
@@ -60,6 +63,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
         Rectangle render 0<epx> 0<epx> ScreenWidthInt ScreenHeightInt (SolidColour 0u)
 
     let drawTopLineOfScoreboard () =
+        let (RoomNumber roomNumber) = roomNumber
         let scoreText = $"SCORE {score}"
         let roomText  = $"ROOM {roomNumber} L{levelNumber}"
         Text render MissionIIFontID LeftAlign  TopAlign TextIndent TopPanelTopY scoreText
@@ -112,13 +116,55 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
                 | ManDead                     -> DeadImageID |> ImageFromID
         CentreImagePoint render (manCentre |> offset) manImage
 
+    let drawDroids () =
+        droids |> List.iter (fun droid ->
+            let {
+                    DroidType           = droidType
+                    DroidCentrePosition = centrePos
+                } = droid
+
+            let imageSet = gameTime |> PulseBetween DroidAnimationPerSecond droidStyles1 droidStyles2
+            CentreImagePoint render (centrePos |> offset) imageSet.[int droidType]
+        )
+
+    let drawBullets () =
+        bullets |> List.iter (fun bullet ->
+            let { BulletCentrePosition = centrePos } = bullet
+            CentreImagePoint render (centrePos |> offset) (BulletImageID |> ImageFromID)
+        )
+
+    let drawGhost () =
+        match ghost with
+            | NoGhost -> ()
+            | GhostActive centrePos -> 
+                CentreImagePoint render (centrePos |> offset) (GhostImageID |> ImageFromID)
+
+    let drawInteractibles () =
+        interactibles |> List.iter (fun interactible ->
+            let {
+                    InteractibleRoom           = interactibleRoomNumber
+                    InteractibleType           = interactibleObjectType
+                    InteractibleCentrePosition = centrePos
+                } = interactible
+            if roomNumber = interactibleRoomNumber then
+                CentreImagePoint render (centrePos |> offset) interactibleObjectStyles.[int interactibleObjectType]
+        )
+
+    let drawDecoratives () =
+        DrawFlickbookInstanceList render decoratives gameTime
+
     drawBackground ()
     drawTopLineOfScoreboard ()
     drawLives ()
     drawInventory ()
     drawTiles ()
-    // drawDroids ()
+    drawInteractibles ()
+    drawBullets ()
+    drawDroids ()
     drawMan ()
+    drawGhost ()
+    drawDecoratives ()
+
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -205,6 +251,34 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
             ImageFromID WalkingLeftDown2ImageID  
         |]
 
+    let droidStyles1 =
+        [|
+            ImageFromID Monster1v1ImageID
+            ImageFromID Monster2v1ImageID
+            ImageFromID Monster3ImageID  
+            ImageFromID Monster4v1ImageID
+            ImageFromID Monster5v1ImageID
+        |]
+
+    let droidStyles2 =
+        [|
+            ImageFromID Monster1v2ImageID
+            ImageFromID Monster2v2ImageID
+            ImageFromID Monster3ImageID  
+            ImageFromID Monster4v2ImageID
+            ImageFromID Monster5v2ImageID
+        |]
+
+    let interactibleObjectStyles =
+        [|
+            ImageFromID KeyImageID
+            ImageFromID RingImageID
+            ImageFromID GoldImageID
+            ImageFromID InvincibilityAmuletImageID
+            ImageFromID LifeImageID
+            ImageFromID LevelExitImageID
+        |]
+
     let screenModel =
         {
             InnerScreenModel =
@@ -217,27 +291,31 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
                     ScreenScore        = betweenScreenStatus.ScoreAndHiScore
                     ManInventory       = [ InvGold ; InvKey ; InvRing ] // TODO: remove
                     ManLives           = ManLives InitialLives
-                    Collectibles       = [] // TODO
+                    Interactible       = [] // TODO
                     ImageLookupsTables =
                         {
-                            BrickStyles       = brickStyles
-                            ManFacingStyles   = manFacingStyles
-                            ManWalkingStyles1 = manWalkingStyles1
-                            ManWalkingStyles2 = manWalkingStyles2
+                            BrickStyles              = brickStyles
+                            ManFacingStyles          = manFacingStyles
+                            ManWalkingStyles1        = manWalkingStyles1
+                            ManWalkingStyles2        = manWalkingStyles2
+                            DroidStyles1             = droidStyles1
+                            DroidStyles2             = droidStyles2
+                            InteractibleObjectStyles = interactibleObjectStyles
                         }
                     WhereToOnGameOver  = whereToOnGameOver
                 }
 
             ScreenMan =
                 {
-                    ManState = ManWalking Left8
+                    ManState = ManWalking EightWayDirection.Left8
                     ManCentrePosition = { ptx=160.0F<ViewSpace> ; pty=100.0F<ViewSpace> } // TODO
                 }
 
             ScreenDroids =
                 [
-                    { DroidType = HomingDroid ; DroidCentrePosition = { ptx=100.0F<ViewSpace> ; pty=60.0F<ViewSpace> } } // TODO
-                    { DroidType = HomingDroid ; DroidCentrePosition = { ptx=280.0F<ViewSpace> ; pty=110.0F<ViewSpace> } } // TODO
+                    { DroidType = DroidType.HomingDroid    ; DroidCentrePosition = { ptx=100.0F<ViewSpace> ; pty= 60.0F<ViewSpace> } } // TODO
+                    { DroidType = DroidType.WanderingDroid ; DroidCentrePosition = { ptx=280.0F<ViewSpace> ; pty=110.0F<ViewSpace> } } // TODO
+                    { DroidType = DroidType.AssassinDroid  ; DroidCentrePosition = { ptx=230.0F<ViewSpace> ; pty= 80.0F<ViewSpace> } } // TODO
                 ]
 
             ScreenGhost = NoGhost

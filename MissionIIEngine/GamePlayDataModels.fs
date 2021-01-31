@@ -8,6 +8,14 @@ open FlickBook
 open Directions
 open ImagesAndFonts
 
+/// The number of lives the player has remaining.
+type ManLives = ManLives of uint32
+
+/// During gameplay - the current level number.
+type LevelNumber = LevelNumber of int
+
+/// During gameplay - the screen number that the gameplay is showing.
+type RoomNumber = RoomNumber of int
 
 /// Wall and floor tile matrix type.
 type TileIndex =
@@ -33,11 +41,6 @@ type LevelSpace
 [<Measure>]
 type ViewSpace
 
-/// An integer Cartesian point in "level space", which is pixel-based.
-/// The level is a 4 x 4 arrangement of screens, each screen is 25 x 25 bricks
-/// where each brick is 12 x 8 pixels.
-type LevelPoint = Point<int<LevelSpace>>
-
 /// A point on the screen (based on float32<ViewSpace>)
 type ViewPoint = Point<float32<ViewSpace>>
 
@@ -47,14 +50,18 @@ type Bullet =
         BulletCentrePosition : ViewPoint
     }
 
-/// The kinds of item that the player must collect.
+/// The kinds of item that the player can hold in the inventory.
 type InventoryObjectType = InvKey | InvRing | InvGold
 
+/// Items scattered about the level that the player can interact with in some way.
+type InteractibleObjectType = ObKey=0 | ObRing=1 | ObGold=2 | ObAmulet=3 | ObHealthBonus=4 | ObLevelExit=5
+
 /// An item that the player must collect on the current level.
-type Collectible =
+type Interactible =
     {
-        CollectibleType           : InventoryObjectType
-        CollectibleCentrePosition : LevelPoint
+        InteractibleRoom           : RoomNumber
+        InteractibleType           : InteractibleObjectType
+        InteractibleCentrePosition : ViewPoint
     }
 
 /// Basic states the player can be in during the gameplay screen.
@@ -76,7 +83,7 @@ type ManModel =
 
 
 /// Types of droid.  This affects visuals and behaviours.
-type DroidType = HomingDroid | WanderingDroid | AssassinDroid
+type DroidType = HomingDroid=0 | WanderingDroid=1 | AssassinDroid=2
 
 
 /// Model for droid adversaries on the current screen.
@@ -96,17 +103,6 @@ type GhostModel =
     | GhostActive of ViewPoint
 
 
-/// The number of lives the player has remaining.
-type ManLives = ManLives of uint32
-
-/// During gameplay - the current level number.
-type LevelNumber = LevelNumber of int
-
-/// During gameplay - the screen number that the gameplay is showing.
-type RoomNumber = RoomNumber of int
-
-
-
 type ImageLookupsTables =
     {
         /// Brick images for use by the drawing function on this level.
@@ -120,6 +116,15 @@ type ImageLookupsTables =
 
         /// Image lookup for use when the man is walking, animation step 2.
         ManWalkingStyles2 : Image[]
+
+        /// Image lookup for droids, animation step 1.
+        DroidStyles1      : Image[]
+
+        /// Image lookup for droids, animation step 2.
+        DroidStyles2      : Image[]
+
+        /// Image lookup for interactive objects.
+        InteractibleObjectStyles : Image[]
     }
 
 
@@ -136,9 +141,6 @@ type InnerScreenModel =
         /// Current screen number within the level.  For display at top of screen.
         RoomNumber        : RoomNumber
 
-        /// The level-pixel (x,y) of the top left of the top left brick, of the current screen.
-        ScreenOriginPixel : LevelPoint
-
         /// Index into the 2D level tile matrix of the top left brick, of the current screen.
         ScreenOriginBlock : int * int
 
@@ -151,8 +153,8 @@ type InnerScreenModel =
         /// The number of lives that the player has left.
         ManLives          : ManLives
 
-        /// The locations within the current level of the collectible items.
-        Collectibles      : Collectible list
+        /// The locations within the current level items the player can interact with.
+        Interactible      : Interactible list
 
         /// Lookup tables for images when drawing.
         ImageLookupsTables : ImageLookupsTables

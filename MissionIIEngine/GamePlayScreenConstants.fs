@@ -36,3 +36,4 @@ let InventoryItemSpacing = 20<epx>
 
 let ManWalkingStepsPerSecond = 3.0F
 let ManElectrocutionSwitchesPerSecond = 8.0F
+let DroidAnimationPerSecond = 2.0F
