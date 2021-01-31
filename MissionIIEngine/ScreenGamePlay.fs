@@ -73,7 +73,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
         let lifeImage = LifeImageID |> ImageFromID
         let width = lifeImage.ImageMetadata.ImageWidth
         for i in 1u..lives do
-            let x = (int (i-1u)) * width
+            let x = (int i) * width
             Image1to1 render x BottomPanelTopY lifeImage
 
     let inventoryItemImageFor item =
@@ -172,36 +172,12 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
-
-    (*
-
-    // Unpack
-
-    let model = ModelFrom gameState
-
-    let {
-        }
-            = model
-
-    // Process
-
-
-    // Repack
-
-    let model =
-        {
-        }        
-
-    // Decide next gameState
-
-    *)
-
     gameState |> Unchanged
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:BetweenScreenStatus) =
+let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:BetweenScreenStatus) _gameTime =
 
     // let numberOfMazes = AllLevels. levelIndex    = levelNumber % numberOfMazes
 
@@ -275,7 +251,7 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
             ImageFromID RingImageID
             ImageFromID GoldImageID
             ImageFromID InvincibilityAmuletImageID
-            ImageFromID LifeImageID
+            ImageFromID Potion1ImageID
             ImageFromID LevelExitImageID
         |]
 
@@ -286,7 +262,6 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
                     LevelNumber        = LevelNumber levelNumber
                     LevelTileMatrix    = AllLevels.[0] |> LevelTextToMatrix // TODO
                     RoomNumber         = RoomNumber 1
-                    ScreenOriginPixel  = { ptx=0<LevelSpace> ; pty=0<LevelSpace> }
                     ScreenOriginBlock  = (0,0)
                     ScreenScore        = betweenScreenStatus.ScoreAndHiScore
                     ManInventory       = [ InvGold ; InvKey ; InvRing ] // TODO: remove

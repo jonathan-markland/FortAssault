@@ -14,7 +14,7 @@ let inline PercentOfScreenWidth  x = (ScreenWidthInt * x) / 100
 let inline PercentOfScreenHeight x = (ScreenHeightInt * x) / 100
 
 let BrickTileWidth  = 12<epx>
-let BrickTileHeight = 12<epx>
+let BrickTileHeight =  8<epx>
 
 let NumBricksPerSide = 25
 let NumRoomsPerSide  = 4
@@ -34,6 +34,6 @@ let TextIndent = 10<epx>
 /// Spacing between inventory items in the inventory display.
 let InventoryItemSpacing = 20<epx>
 
-let ManWalkingStepsPerSecond = 3.0F
+let ManWalkingStepsPerSecond = 5.0F
 let ManElectrocutionSwitchesPerSecond = 8.0F
-let DroidAnimationPerSecond = 2.0F
+let DroidAnimationPerSecond = 6.0F

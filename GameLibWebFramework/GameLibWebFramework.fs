@@ -126,7 +126,7 @@ An important point to note is that on iOS, Apple currently mutes all sound outpu
 //  Load resources
 // ------------------------------------------------------------------------------------------------------------
 
-let private LoadFileListThenDo fileNameObtainer needsMagentaObtainer widthGetter heightGetter continuation resourceList =
+let private LoadImageFileListThenDo fileNameObtainer needsMagentaObtainer widthGetter heightGetter continuation resourceList =
 
     let resizeArray = new ResizeArray<Image>(resourceList |> List.length)
 
@@ -157,6 +157,47 @@ let private LoadFileListThenDo fileNameObtainer needsMagentaObtainer widthGetter
                         }
 
                     resizeArray.Add(imgWithHostObject)
+
+                    recurse tail
+                )
+
+    recurse resourceList
+
+    // We never get here because the | [] -> match case is the final "what to do next" (need continuation-pass)
+
+
+
+let private LoadFontFileListThenDo fileNameObtainer widthGetter charWidthGetter heightGetter continuation resourceList =
+
+    let resizeArray = new ResizeArray<Font>(resourceList |> List.length)
+
+    let rec recurse resourceRecordList =
+
+        match resourceRecordList with
+            | [] -> 
+                continuation (resizeArray.ToArray())
+
+            | resourceRecord::tail ->
+                let fileName = resourceRecord |> fileNameObtainer
+                let w = resourceRecord |> widthGetter
+                let h = resourceRecord |> heightGetter
+                let charWidth = resourceRecord |> charWidthGetter
+
+                LoadImageThenDo fileName true (fun htmlImageElement ->
+
+                    let imgWithHostObject =
+                        {
+                            ImageMetadata = 
+                                {
+                                    ImageFileName  = fileName
+                                    ImageTransparency = MagentaColourKeyImage
+                                    ImageWidth     = w
+                                    ImageHeight    = h
+                                }
+                            HostImageRef = HostImageRef(htmlImageElement)
+                        }
+                    
+                    resizeArray.Add(BasicFont imgWithHostObject charWidth)
 
                     recurse tail
                 )
@@ -203,7 +244,7 @@ let private LoadSoundsFileListThenDo fileNameObtainer continuation resourceList 
 // ------------------------------------------------------------------------------------------------------------
 
 // TODO: This should not need to be private?
-let LoadResourceFilesThenDo resourceImages fontResourceImages resourceSounds afterAllLoaded =
+let LoadResourceFilesThenDo resourceImages (fontResourceImages:FontMetadata list) resourceSounds afterAllLoaded =
 
     let soundFileNameGetter metadata =
         metadata.SoundFileName
@@ -219,19 +260,22 @@ let LoadResourceFilesThenDo resourceImages fontResourceImages resourceSounds aft
     let imageWidthGetter  metadata = metadata.ImageWidth
     let imageHeightGetter metadata = metadata.ImageHeight
 
-    fontResourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
-        (fun arrayOfLoadedFontImages ->
+    let fontFileNameGetter metadata  = metadata.FontImageMetadata.ImageFileName
+    let fontWidthGetter metadata     = metadata.FontImageMetadata.ImageWidth
+    let fontCharWidthGetter metadata = metadata.FontCharWidth
+    let fontHeightGetter metadata    = metadata.FontImageMetadata.ImageHeight
 
-            let arrayOfLoadedFonts = 
-                arrayOfLoadedFontImages |> Array.map BasicFont
-
-            resourceImages |> LoadFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
-                (fun arrayOfLoadedImages ->
-
-                    resourceSounds |> LoadSoundsFileListThenDo soundFileNameGetter (fun arrayOfLoadedSounds ->
-                    afterAllLoaded arrayOfLoadedImages arrayOfLoadedFonts arrayOfLoadedSounds)
-                )
-        )
+    fontResourceImages
+        |> LoadFontFileListThenDo fontFileNameGetter fontWidthGetter fontCharWidthGetter fontHeightGetter
+            (fun arrayOfLoadedFonts ->
+                resourceImages 
+                    |> LoadImageFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
+                        (fun arrayOfLoadedImages ->
+                            resourceSounds 
+                                |> LoadSoundsFileListThenDo soundFileNameGetter (fun arrayOfLoadedSounds ->
+                                    afterAllLoaded arrayOfLoadedImages arrayOfLoadedFonts arrayOfLoadedSounds)
+                        )
+            )
 
     // NB: We never get here (continuations called).
 

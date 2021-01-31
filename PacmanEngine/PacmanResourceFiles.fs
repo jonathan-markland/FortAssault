@@ -12,9 +12,15 @@ let private image colourKey fileName width height =
         ImageHeight    = height |> IntToIntEpx
     }
 
+let private font fileName width charWidth charHeight =
+    {
+        FontImageMetadata = image MagentaColourKeyImage fileName width charHeight
+        FontCharWidth     = charWidth
+    }
+
 let PacmanFontResourceImages =
     [
-        image MagentaColourKeyImage "PacmanFont.png"     296 8
+        font "PacmanFont.png"     296 8 8
     ]
 
 let PacmanResourceImages =

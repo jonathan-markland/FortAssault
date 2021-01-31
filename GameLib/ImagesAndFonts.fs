@@ -63,6 +63,16 @@ let inline ImageDimensionsF imageWithHostObject =
 //  Font
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+/// Font information supplied by the game engine to the host.
+type FontMetadata =
+    {
+        /// The font is stored as a bitmap.
+        FontImageMetadata : ImageMetadata
+
+        /// The width of the characters in the font.
+        FontCharWidth : int
+    }
+
 /// Opaque type for referring to a *static* font resource, which can be
 /// obtained through the StaticResourceAccess module.
 [<Struct>]
@@ -85,19 +95,19 @@ type TextHAlignment = LeftAlign | CentreAlign | RightAlign
 type TextVAlignment = TopAlign  | MiddleAlign | BottomAlign
 
 /// Obtain a basic font record from image resource
-let BasicFont fontImage =
+let BasicFont fontImage charWidth =
 
-    let charSide =
+    let charHeight =
         int (fontImage.ImageMetadata.ImageHeight)
 
     {
         FontImage     = fontImage
         MagnifyX      = 1
         MagnifyY      = 1
-        SrcCharWidth  = charSide
-        SrcCharHeight = charSide
-        CharWidth     = charSide
-        CharHeight    = charSide
+        SrcCharWidth  = charWidth
+        SrcCharHeight = charHeight
+        CharWidth     = charWidth
+        CharHeight    = charHeight
     }
 
 /// Obtain a magnified version of an existing font.

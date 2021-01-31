@@ -92,9 +92,12 @@ let rec GameTitleStory gameTime =
             Lives = InitialLives
         }
     
+    let temp shs gt =
+        failwith ""
+
     NewGameTitleScreen globalScoreboard
         |> AsInterruptableVideoThen 
-                (MissionIIStory firstLevelForBrandNewGame betweenScreenStatus)
+                (NewMissionIIScreen firstLevelForBrandNewGame temp betweenScreenStatus)
                 KeyFire
 
 

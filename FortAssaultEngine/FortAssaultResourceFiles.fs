@@ -12,13 +12,20 @@ let private image colourKey fileName width height =
         ImageHeight    = height |> IntToIntEpx
     }
 
+let private font fileName width charWidth charHeight =
+    {
+        FontImageMetadata = image MagentaColourKeyImage fileName width charHeight
+        FontCharWidth     = charWidth
+    }
+
+    
 let FortAssaultFontResourceImages =
     [
-        image MagentaColourKeyImage "MilitaryFontRed.png"     296 8
-        image MagentaColourKeyImage "MilitaryFontYellow.png"  296 8
-        image MagentaColourKeyImage "MilitaryFontBlue.png"    296 8
-        image MagentaColourKeyImage "MilitaryFontBlack.png"   296 8
-        image MagentaColourKeyImage "MilitaryFontSymbols.png" 296 8
+        font "MilitaryFontRed.png"     296 8 8
+        font "MilitaryFontYellow.png"  296 8 8
+        font "MilitaryFontBlue.png"    296 8 8
+        font "MilitaryFontBlack.png"   296 8 8
+        font "MilitaryFontSymbols.png" 296 8 8
     ]
 
 let FortAssaultResourceImages =

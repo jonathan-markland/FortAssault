@@ -78,15 +78,15 @@ let private LoadGameImagesFontsAndSounds gameResourceImages gameFontResourceImag
     let fontsArray =
         gameFontResourceImages 
             |> List.map (fun metadata -> 
-                let hostImageObject = fromFile magenta metadata.ImageFileName
+                let hostImageObject = fromFile magenta metadata.FontImageMetadata.ImageFileName
 
                 let imageWithHostObject =
                     {
-                        ImageMetadata = metadata
+                        ImageMetadata = metadata.FontImageMetadata
                         HostImageRef  = HostImageRef(hostImageObject)
                     }
 
-                BasicFont imageWithHostObject
+                BasicFont imageWithHostObject (metadata.FontCharWidth)
             ) 
                 |> List.toArray
 
@@ -290,7 +290,7 @@ let FrameworkDesktopMain
     hostRetroScreenWidthPixels 
     hostRetroScreenHeightPixels 
     gameResourceImages 
-    gameFontResourceImages
+    (gameFontResourceImages:FontMetadata list)
     gameResourceSounds
     listOfKeysNeeded 
     (gameGlobalStateConstructor : unit -> Result<'gameGlobalState,string>)
@@ -316,7 +316,12 @@ let FrameworkDesktopMain
                             let path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
                             
                             let gameResources = 
-                                LoadGameImagesFontsAndSounds gameResourceImages gameFontResourceImages gameResourceSounds renderer path   // TODO:  Minor: We don't actually free the imageSet handles.
+                                LoadGameImagesFontsAndSounds 
+                                    gameResourceImages 
+                                    gameFontResourceImages 
+                                    gameResourceSounds 
+                                    renderer 
+                                    path   // TODO:  Minor: We don't actually free the imageSet handles.
 
                             let gameGlobalStateResult = 
                                 gameGlobalStateConstructor ()
