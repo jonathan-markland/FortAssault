@@ -71,8 +71,9 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
 
     let drawLives () =
         let lifeImage = LifeImageID |> ImageFromID
-        let width = lifeImage.ImageMetadata.ImageWidth
-        for i in 1u..lives do
+        let width = lifeImage.ImageMetadata.ImageWidth + LifeItemSpacing
+        let n = min 10u lives
+        for i in 1u..n do
             let x = (int i) * width
             Image1to1 render x BottomPanelTopY lifeImage
 
@@ -88,6 +89,12 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
             let x = ScreenWidthInt - ((int i) * InventoryItemSpacing)
             Image1to1 render x BottomPanelTopY (inventoryItemImageFor item))
 
+    let isEdge tile =
+        match tile with
+            | TileIndex.TileEdge1
+            | TileIndex.TileEdge2 -> true
+            | _ -> false
+
     let drawTiles () =
         let brickImage  = WallBrick1ImageID |> ImageFromID
         let brickWidth  = brickImage.ImageMetadata.ImageWidth  // all are same size
@@ -97,7 +104,12 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
                 let tile = levelTileMatrix.[blockOriginY+y].[blockOriginX+x]
                 let x' = x * brickWidth + PlayAreaOffsetX
                 let y' = y * brickHeight + PlayAreaOffsetY
-                Image1to1 render x' y' (brickStyles.[int tile])
+                let brick = 
+                    if tile |> isEdge then
+                        gameTime |> PulseBetween WallElectrocutionSwitchesPerSecond (brickStyles.[int tile]) (WallElectricImageID |> ImageFromID)
+                    else
+                        (brickStyles.[int tile])
+                Image1to1 render x' y' brick
 
     let offset (point:ViewPoint) =
         let { ptx=x ; pty=y } = point
@@ -183,12 +195,12 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
 
     let brickStyles =
         [|
-            ImageFromID WallBrick1ImageID
-            ImageFromID WallBrick2ImageID
+            ImageFromID FloorTile1ImageID
+            ImageFromID FloorTile2ImageID
             ImageFromID WallBrick3ImageID
             ImageFromID WallBrick4ImageID
-            ImageFromID WallBrick5ImageID
-            ImageFromID WallBrick6ImageID
+            ImageFromID WallOutline1ImageID
+            ImageFromID WallOutline2ImageID
         |]
 
     let manFacingStyles =

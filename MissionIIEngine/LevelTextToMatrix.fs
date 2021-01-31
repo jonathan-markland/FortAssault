@@ -13,7 +13,7 @@ let LevelTextToMatrix levelTextArray =
             | '#' -> TileIndex.TileWall1 
             | '@' -> TileIndex.TileWall2 
             | '*' -> TileIndex.TileEdge1 
-            | '+' -> TileIndex.TileEdge2 
+            | '+' -> TileIndex.TileEdge1  // TODO: Reinstate if the glowing supports all tile types. TileEdge2 
             | _   -> failwith "Unrecognised character in level definition text"
 
     

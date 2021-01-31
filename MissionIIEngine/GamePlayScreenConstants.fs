@@ -34,6 +34,10 @@ let TextIndent = 10<epx>
 /// Spacing between inventory items in the inventory display.
 let InventoryItemSpacing = 20<epx>
 
+/// Spacing between lives in the inventory display.
+let LifeItemSpacing = 3<epx>
+
 let ManWalkingStepsPerSecond = 5.0F
 let ManElectrocutionSwitchesPerSecond = 8.0F
+let WallElectrocutionSwitchesPerSecond = 20.0F
 let DroidAnimationPerSecond = 6.0F
