@@ -94,7 +94,7 @@ let rec GameTitleStory gameTime =
     
     NewGameTitleScreen globalScoreboard
         |> AsInterruptableVideoThen 
-                (GameTitleStory) // (PacmanStory firstLevelForBrandNewGame betweenScreenStatus)
+                (MissionIIStory firstLevelForBrandNewGame betweenScreenStatus)
                 KeyFire
 
 

@@ -6,11 +6,13 @@
 /// This is the units with which the game engine calculates.
 [<Measure>] type epx
 
+let inline Float32ToEpx (x:float32) = LanguagePrimitives.Float32WithMeasure<epx> (x)
+
 let inline IntEpxToInt (x:int<epx>) = int (x)
 let inline IntToIntEpx (x:int)      = LanguagePrimitives.Int32WithMeasure<epx> x
 
 let inline FloatEpxToInt x = int (x + 0.5F<epx>)
-let inline IntToFloatEpx x = LanguagePrimitives.Float32WithMeasure<epx> (float32 x)
+let inline IntToFloatEpx x = Float32ToEpx (float32 x)
 
 let inline FloatEpxToIntEpx x = x |> FloatEpxToInt |> IntToIntEpx
 

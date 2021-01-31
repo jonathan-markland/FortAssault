@@ -17,6 +17,7 @@ let BrickTileWidth  = 12<epx>
 let BrickTileHeight = 12<epx>
 
 let NumBricksPerSide = 25
+let NumRoomsPerSide  = 4
 
 let PlayAreaOffsetX = (ScreenWidthInt  - (NumBricksPerSide * BrickTileWidth)) / 2
 let PlayAreaOffsetY = (ScreenHeightInt - (NumBricksPerSide * BrickTileHeight)) / 2
@@ -29,3 +30,9 @@ let BottomPanelTopY = 238<epx>
 
 /// Indent for text from the side of the screen, used for left and right alignment.
 let TextIndent = 10<epx>
+
+/// Spacing between inventory items in the inventory display.
+let InventoryItemSpacing = 20<epx>
+
+let ManWalkingStepsPerSecond = 3.0F
+let ManElectrocutionSwitchesPerSecond = 8.0F

@@ -13,6 +13,7 @@
     <Compile Include="ListSplicer.fs" />
     <Compile Include="Angle.fs" />
     <Compile Include="Time.fs" />
+    <Compile Include="Directions.fs" />
     <Compile Include="Geometry.fs" />
     <Compile Include="ImagesAndFonts.fs" />
     <Compile Include="Sounds.fs" />

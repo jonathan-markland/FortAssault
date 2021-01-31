@@ -10,6 +10,7 @@
     <Compile Include="Keys.fs" />
     <Compile Include="Levels.fs" />
     <Compile Include="Rules.fs" />
+    <Compile Include="LevelTextToMatrix.fs" />
     <Compile Include="MissionIIResourceFiles.fs" />
     <Compile Include="ResourceIDs.fs" />
     <Compile Include="ScreenIntermissions.fs" />

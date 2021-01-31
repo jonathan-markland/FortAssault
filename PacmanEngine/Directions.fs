@@ -3,6 +3,7 @@
 open Geometry
 open MazeFilter
 
+// TODO: Amalgamate with the library's Directions module.
 type FacingDirection = FacingLeft | FacingUp | FacingRight | FacingDown
 
 let FacingDirectionToBitMaskByte facingDirection = // TODO: rename

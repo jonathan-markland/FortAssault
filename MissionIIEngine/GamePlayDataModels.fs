@@ -1,8 +1,13 @@
 ﻿module GamePlayDataModels
 
+open GameStateManagement
+open Time
 open Geometry
 open ScoreHiScore
 open FlickBook
+open Directions
+open ImagesAndFonts
+
 
 /// Wall and floor tile matrix type.
 type TileIndex =
@@ -13,6 +18,9 @@ type TileIndex =
     | TileEdge1  =  4uy  // The electrocution edge (brick style 1)
     | TileEdge2  =  5uy  // The electrocution edge (brick style 2)  TODO: Reduce to just 1 when we add patterning-by-resampling solution
 
+/// The level matrix when converted from the Levels.fs file's string format.
+type LevelTileMatrix = LevelTileMatrix of TileIndex [][]
+
 // The Man state dictates progress of the gameplay
 // If the man is electrocuting, there would be a countdown timer, and
 // that should NOT be handled by an "untilTime" in these records, do with GameStateManagement?
@@ -21,18 +29,22 @@ type TileIndex =
 [<Measure>]
 type LevelSpace
 
+/// Mis-use of measurement really, just indicates coordinates relative to the top left of the room as viewed.
+[<Measure>]
+type ViewSpace
+
 /// An integer Cartesian point in "level space", which is pixel-based.
 /// The level is a 4 x 4 arrangement of screens, each screen is 25 x 25 bricks
 /// where each brick is 12 x 8 pixels.
 type LevelPoint = Point<int<LevelSpace>>
 
-/// A point on the screen (based on float32<epx>)
-type ScreenPoint = Point<float32<epx>>
+/// A point on the screen (based on float32<ViewSpace>)
+type ViewPoint = Point<float32<ViewSpace>>
 
 /// Position of a bullet.
 type Bullet =
     {
-        BulletCentrePosition : ScreenPoint
+        BulletCentrePosition : ViewPoint
     }
 
 /// The kinds of item that the player must collect.
@@ -42,11 +54,15 @@ type InventoryObjectType = InvKey | InvRing | InvGold
 type Collectible =
     {
         CollectibleType           : InventoryObjectType
-        CollectibleCentrePosition : ScreenPoint
+        CollectibleCentrePosition : LevelPoint
     }
 
 /// Basic states the player can be in during the gameplay screen.
-type ManState = ManAlive | ManElectrocuting | ManDead
+type ManState = 
+    | ManStandingFacing of facing:EightWayDirection
+    | ManWalking        of facing:EightWayDirection
+    | ManElectrocuted
+    | ManDead
 
 /// The player's state.
 type ManModel =
@@ -55,7 +71,7 @@ type ManModel =
         ManState    : ManState
 
         /// The centre position of the player on the screen.
-        ManCentrePosition : ScreenPoint
+        ManCentrePosition : ViewPoint
     }
 
 
@@ -70,25 +86,41 @@ type DroidModel =
         DroidType     : DroidType
 
         /// The centre position of the droid on the screen.
-        DroidCentrePosition : ScreenPoint
+        DroidCentrePosition : ViewPoint
     }
 
 
 /// Is the ghost visible or not?
 type GhostModel =
     | NoGhost
-    | GhostActive of ScreenPoint
+    | GhostActive of ViewPoint
 
 
 /// The number of lives the player has remaining.
-type ManLives = ManLives of int
+type ManLives = ManLives of uint32
 
 /// During gameplay - the current level number.
 type LevelNumber = LevelNumber of int
 
 /// During gameplay - the screen number that the gameplay is showing.
-type ScreenNumber = ScreenNumber of int
+type RoomNumber = RoomNumber of int
 
+
+
+type ImageLookupsTables =
+    {
+        /// Brick images for use by the drawing function on this level.
+        BrickStyles       : Image[]
+
+        /// Image lookup for use when the man is standing, facing a direction.
+        ManFacingStyles   : Image[]
+
+        /// Image lookup for use when the man is walking, animation step 1.
+        ManWalkingStyles1 : Image[]
+
+        /// Image lookup for use when the man is walking, animation step 2.
+        ManWalkingStyles2 : Image[]
+    }
 
 
 /// The data model for the inner screen.
@@ -98,8 +130,11 @@ type InnerScreenModel =
         /// Current level number.  Displayed at top of screen.
         LevelNumber       : LevelNumber
 
+        /// The tiles matrix for the current level.
+        LevelTileMatrix   : LevelTileMatrix
+
         /// Current screen number within the level.  For display at top of screen.
-        ScreenNumber      : ScreenNumber
+        RoomNumber        : RoomNumber
 
         /// The level-pixel (x,y) of the top left of the top left brick, of the current screen.
         ScreenOriginPixel : LevelPoint
@@ -118,13 +153,21 @@ type InnerScreenModel =
 
         /// The locations within the current level of the collectible items.
         Collectibles      : Collectible list
-    }
 
+        /// Lookup tables for images when drawing.
+        ImageLookupsTables : ImageLookupsTables
+
+        /// Constructor for GameOver
+        WhereToOnGameOver : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+    }
 
 
 /// The data model for the gameplay screen.
 type ScreenModel =
     {
+        /// The things that don't change often.
+        InnerScreenModel  : InnerScreenModel
+
         /// The state of the player
         ScreenMan         : ManModel
 
