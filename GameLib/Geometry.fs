@@ -41,6 +41,13 @@ type Rectangle<'t> =
         Bottom : 't
     }
 
+/// Dimensions of a rectangular area in Cartesian space
+type RectDimensions<'t> =
+    {
+        dimx : 't
+        dimy : 't
+    }
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let inline InvertVector (p:Point<'t>) = { ptx = -p.ptx ; pty = -p.pty }
@@ -128,6 +135,17 @@ let inline InflateRectangle border r =
         Bottom = r.Bottom + border
     }
 
+/// Return a rectangle of given width and height centred about the given point.
+let inline RectangleCenteredAbout (point:Point<float32<'u>>) (dims:RectDimensions<float32<'u>>) =
+    let x' = point.ptx - (dims.dimx / 2.0F)
+    let y' = point.pty - (dims.dimy / 2.0F)
+    {
+        Left    = x'
+        Top     = y'
+        Right   = x' + dims.dimx
+        Bottom  = y' + dims.dimy
+    }
+
 /// Returns a floating point movement delta that, if applied, would 
 /// cause a given object located at 'fromPoint' to move towards a target
 /// located at 'toPoint'.
@@ -160,8 +178,11 @@ let SimpleMovementDeltaI32ToGetTo toPoint fromPoint =  // TODO: revisit for gene
 
 /// Returns true if the given point lies within any of the rectangles in a list.
 let LiesWithinRectangleList rectangleList point =
-
     rectangleList |> List.exists (fun r -> IsPointWithinRectangle r point)
+
+/// Returns true if the given point lies within any of the rectangles reported by the things in the list.
+let LiesWithinRectangularThingList getRectangleFrom thingList point =
+    thingList |> List.exists (fun thing -> point |> IsPointWithinRectangle (getRectangleFrom thing))
 
 /// Returns the square of a number.
 let inline Squared x = x * x

@@ -128,6 +128,16 @@ type ImageLookupsTables =
     }
 
 
+type RoomReference =
+    {
+        /// The tiles matrix for the current level.
+        LevelTileMatrix   : LevelTileMatrix
+        
+        /// Index into the 2D level tile matrix of the top left brick, of the current room.
+        RoomOriginBrick   : int * int
+    }
+
+
 /// The data model for the inner screen.
 /// Garbage:  Changes less often!
 type InnerScreenModel =
@@ -135,14 +145,11 @@ type InnerScreenModel =
         /// Current level number.  Displayed at top of screen.
         LevelNumber       : LevelNumber
 
-        /// The tiles matrix for the current level.
-        LevelTileMatrix   : LevelTileMatrix
-
         /// Current screen number within the level.  For display at top of screen.
         RoomNumber        : RoomNumber
 
-        /// Index into the 2D level tile matrix of the top left brick, of the current screen.
-        ScreenOriginBlock : int * int
+        /// A reference to the current room within the level matrix.
+        RoomReference     : RoomReference
 
         /// The player's score, and hi-score.
         ScreenScore       : ScoreAndHiScore

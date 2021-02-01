@@ -51,12 +51,18 @@ type Image =
 /// Obtain the dimensions of the given image as integers, which are native.
 let inline ImageDimensions imageWithHostObject =
     (imageWithHostObject.ImageMetadata.ImageWidth , 
-        imageWithHostObject.ImageMetadata.ImageHeight)
+        imageWithHostObject.ImageMetadata.ImageHeight)  // TODO: Use Dimensions2D type
 
 /// Obtain the dimensions of the given image as floating point.
 let inline ImageDimensionsF imageWithHostObject =
     (imageWithHostObject.ImageMetadata.ImageWidth |> IntToFloatEpx , 
-        imageWithHostObject.ImageMetadata.ImageHeight |> IntToFloatEpx)
+        imageWithHostObject.ImageMetadata.ImageHeight |> IntToFloatEpx)  // TODO: Use Dimensions2D type
+
+let inline ImageDimensionsF_v2 imageWithHostObject =  // TODO: Supercede.
+    {
+        dimx = imageWithHostObject.ImageMetadata.ImageWidth
+        dimy = imageWithHostObject.ImageMetadata.ImageHeight
+    }
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

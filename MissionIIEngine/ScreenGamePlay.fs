@@ -20,6 +20,46 @@ open Directions
 open LevelTextToMatrix
 open FlickBook
 
+
+let GhostTriggerDistance   = 12.0F<ViewSpace>
+let DroidTriggerDistance   = 12.0F<ViewSpace>
+let BulletTriggerDistance  =  8.0F<ViewSpace>
+let ManFiringStartDistance = 10.0F
+
+
+
+let IsCloseToAny things getThingCentre triggerDistance centre =
+    things |> List.exists (fun thing -> thing |> getThingCentre |> IsWithinRegionOf centre triggerDistance)
+
+
+let FireButtonJustPressed keyStateGetter =
+
+    let {
+            JustDown = justDown
+            Held     = _
+        } = (keyStateGetter (WebBrowserKeyCode 90)) // TODO: FIRE KEY CONSTANT!
+
+    justDown
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  TRANSLATION
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let inline DimensionsToFloat32ViewSpace dims =  // TODO: possibly reconsider?
+    {
+        dimx = ((float32) dims.dimx) |> LanguagePrimitives.Float32WithMeasure<ViewSpace>
+        dimy = ((float32) dims.dimy) |> LanguagePrimitives.Float32WithMeasure<ViewSpace>
+    }
+
+let offset (point:ViewPoint) =
+    let { ptx=x ; pty=y } = point
+    { 
+        ptx = ((float32 x) + (float32 PlayAreaOffsetX)) |> Float32ToEpx 
+        pty = ((float32 y) + (float32 PlayAreaOffsetY)) |> Float32ToEpx 
+    }
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  DRAWING
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -37,9 +77,8 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
 
     let {
             LevelNumber        = LevelNumber levelNumber
-            LevelTileMatrix    = LevelTileMatrix levelTileMatrix
             RoomNumber         = roomNumber
-            ScreenOriginBlock  = (blockOriginX, blockOriginY)
+            RoomReference      = roomReference
             ScreenScore        = { Score=score ; HiScore = hiScore }
             ManInventory       = inventory
             ManLives           = ManLives lives
@@ -47,6 +86,11 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
             ImageLookupsTables = imageLookupTables
             WhereToOnGameOver  = _
         } = innerScreenModel
+
+    let {
+            LevelTileMatrix   = LevelTileMatrix levelTileMatrix
+            RoomOriginBrick   = (blockOriginX, blockOriginY)
+        } = roomReference
 
     let {
             BrickStyles       = brickStyles
@@ -111,13 +155,6 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
                         (brickStyles.[int tile])
                 Image1to1 render x' y' brick
 
-    let offset (point:ViewPoint) =
-        let { ptx=x ; pty=y } = point
-        { 
-            ptx = ((float32 x) + (float32 PlayAreaOffsetX)) |> Float32ToEpx 
-            pty = ((float32 y) + (float32 PlayAreaOffsetY)) |> Float32ToEpx 
-        }
-
     let drawMan () =
         let { ManState=manState ; ManCentrePosition=manCentre } = man
         let manImage = 
@@ -180,12 +217,221 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Bullets
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let NewBulletFrom { ptx=x ; pty=y } startDistanceAway direction =
+
+    let converted x = x |> float32 |> LanguagePrimitives.Float32WithMeasure<ViewSpace>
+    let (dx,dy) = DeltasForEightWayDirection direction
+    let (fdx,fdy) = (converted dx , converted dy)
+
+    {
+        BulletCentrePosition =
+            {
+                ptx = fdx * startDistanceAway
+                pty = fdy * startDistanceAway
+            }
+    }
+
+
+let AdvancedWithBulletsRemovedThatHitWallsOrOutsidePlayArea levelTileMatrix bullets =
+
+        // Advance all bullets
+        // Check against screen bounds
+        // Check against walls
+
+    bullets  // TODO
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Man
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let IsManAlive man =
+    match man with
+        | ManStandingFacing _ 
+        | ManWalking        _ -> true
+        | ManElectrocuted
+        | ManDead             -> false
+
+let ManExtents man =
+
+    let {
+            ManState          = state
+            ManCentrePosition = centre
+        } = man
+        
+    let manImageID =
+        match state with
+            | ManStandingFacing _
+            | ManWalking        _ -> WalkingDown1ImageID
+            | ManElectrocuted     -> Electrocution1ImageID
+            | ManDead             -> DeadImageID
+
+    let manImage = manImageID |> ImageFromID
+
+    RectangleCenteredAbout centre (manImage |> ImageDimensionsF_v2 |> DimensionsToFloat32ViewSpace)
+
+
+let RespondingToKeys keyStateGetter man =
+
+        // If no direction keys pressed, leave current man state.
+        // Else
+        //    Calculate facing direction from keys.
+        //    Calculate next proposed position from current pos and facing direction.
+        //    (The man cannot be blocked by anything, he just risks electrocution).
+
+    man  // TODO
+
+
+let IntersectsRoomWallsOf roomReference manCentre =
+    failwith "adfgsdfg" // TODO
+    false
+
+let IntersectsGhost ghost manCentre =
+    match ghost with
+        | NoGhost -> false
+        | GhostActive ghostCentre ->
+            manCentre |> IsWithinRangeOf ghostCentre GhostTriggerDistance
+
+let IntersectsDroids droids manCentre =
+    let getDroidCentre { DroidType=_ ; DroidCentrePosition=centre } = centre
+    manCentre |> IsCloseToAny droids getDroidCentre DroidTriggerDistance
+
+let IntersectsBullets bullets manCentre =
+    let getBulletCentre { BulletCentrePosition=centre } = centre
+    manCentre |> IsCloseToAny bullets getBulletCentre BulletTriggerDistance
+
+let Electrocuted man =
+    { man with ManState = ManElectrocuted }
+
+let Dead man =
+    { man with ManState = ManDead }
+
+let PossiblyInteractingWith interactibles man =  // lives, inventory, interactibles =
+    // We only need to interact with the first found.  Leave (theoretical) overlaps for the next frame.
+    ()
+
+let PossiblyFiringAtDroids bullets keyStateGetter man = // bullets =
+    
+    if keyStateGetter |> FireButtonJustPressed then
+
+        let { ManCentrePosition=centre ; ManState=state } = man
+
+        match state with
+            | ManStandingFacing direction 
+            | ManWalking        direction -> (NewBulletFrom centre ManFiringStartDistance direction)::bullets
+            | ManElectrocuted
+            | ManDead -> bullets // no change
+
+    else
+        bullets // no change
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Droids
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let MovedBouncingAgainst (newManExtents, roomReference) gameTime droids = 
+    // droids
+    ()
+
+let DroidsExplodedIfShotBy bullets droids = 
+    // droids, decoratives =
+    ()
+
+let PossiblyFiringAtMan bullets gameTime droids =
+    // bullets =
+    ()
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Screen state advance on frame
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
-    
-    gameState |> Unchanged
+
+    let model = ModelFrom gameState
+
+    let {
+            InnerScreenModel     = innerScreenModel
+            ScreenMan            = man
+            ScreenDroids         = droids
+            ScreenGhost          = ghost
+            Bullets              = bullets
+            DecorativeFlickbooks = decoratives
+        } = model
+
+    let {
+            LevelNumber        = levelNumber
+            RoomNumber         = roomNumber
+            RoomReference      = roomReference
+            ScreenScore        = { Score=score ; HiScore = hiScore }
+            ManInventory       = inventory
+            ManLives           = lives
+            Interactible       = interactibles
+            ImageLookupsTables = imageLookupTables
+            WhereToOnGameOver  = _
+        } = innerScreenModel
+
+    let manOldExtents = man |> ManExtents
+
+    let normalGamePlay () =
+
+        // Man is alive.
+
+        let bullets   = bullets |> AdvancedWithBulletsRemovedThatHitWallsOrOutsidePlayArea roomReference
+        let man       = man |> RespondingToKeys keyStateGetter
+        let manCentre = man.ManCentrePosition
+
+        let man = 
+
+            if (manCentre |> IntersectsRoomWallsOf roomReference) 
+                || (manCentre |> IntersectsGhost ghost) 
+                || (manCentre |> IntersectsDroids droids) then
+                    Electrocuted man
+
+            else if (manCentre |> IntersectsBullets bullets) then
+                Dead man
+
+            else
+                man
+
+        let lives, inventory, interactibles =
+            man |> PossiblyInteractingWith interactibles   // Reminder: Ignores level exit (filtered above).
+
+        let droids =
+            droids |> MovedBouncingAgainst (newManExtents, roomReference) gameTime
+
+        let droids, decoratives =
+            droids |> DroidsExplodedIfShotBy bullets
+
+        let bullets =
+            man |> PossiblyFiringAtDroids bullets keyStateGetter
+
+        let bullets =
+            droids |> PossiblyFiringAtMan bullets gameTime
+
+        gameState |> withNewStateApplied man lives inventory interactibles droids bullets decoratives
+
+
+    let manAlive () =
+
+        if manOldExtents |> intersectsLevelExit then
+            failwith "Level exited"
+        else if manOldExtents |> intersectsAnyRoomExit then
+            failwith "room exited"
+        else
+            normalGamePlay ()
+
+
+    match man.ManState with
+        | ManStandingFacing _ 
+        | ManWalking        _ -> manAlive ()
+        | ManElectrocuted
+        | ManDead             -> Unchanged gameState
 
 
 
@@ -276,9 +522,12 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
             InnerScreenModel =
                 {
                     LevelNumber        = LevelNumber levelNumber
-                    LevelTileMatrix    = AllLevels.[0] |> LevelTextToMatrix // TODO
                     RoomNumber         = RoomNumber 1
-                    ScreenOriginBlock  = (0,0)
+                    RoomReference      =
+                        {
+                            LevelTileMatrix = AllLevels.[0] |> LevelTextToMatrix // TODO
+                            RoomOriginBrick = (0,0)
+                        }
                     ScreenScore        = betweenScreenStatus.ScoreAndHiScore
                     ManInventory       = [ InvGold ; InvKey ; InvRing ] // TODO: remove
                     ManLives           = ManLives InitialLives
@@ -299,7 +548,7 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
             ScreenMan =
                 {
                     ManState = ManWalking EightWayDirection.Left8
-                    ManCentrePosition = { ptx=160.0F<ViewSpace> ; pty=100.0F<ViewSpace> } // TODO
+                    ManCentrePosition = { ptx=220.0F<ViewSpace> ; pty=100.0F<ViewSpace> } // TODO
                 }
 
             ScreenDroids =
