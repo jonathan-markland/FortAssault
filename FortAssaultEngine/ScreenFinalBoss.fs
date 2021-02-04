@@ -112,15 +112,16 @@ let private ResultOfWhateverShellsHitTheFort shells (targets:Target list) explos
         let shellPos = shell.ShellMechanicsObject |> MOMPositionAt gameTime
         (NewExplosion shellPos gameTime, ScoreForHittingTarget)
 
-    ResultOfProjectileCollisions
-        shells
-        targets
-        (shellCollidesWithFort gameTime)
-        (fun x -> x.ShellStartTime)
-        (fun x -> x.TargetLocation.ptx)
-        explosions
-        score
-        createExplosionAndScoreFor
+    let shells, targets, additionalExplosions, additionalScore =
+        ResultOfProjectileCollisions
+            shells
+            targets
+            (shellCollidesWithFort gameTime)
+            (fun x -> x.ShellStartTime)
+            (fun x -> x.TargetLocation.ptx)
+            createExplosionAndScoreFor
+
+    shells, targets, explosions |> List.append additionalExplosions, score |> ScoreIncrementedBy additionalScore
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

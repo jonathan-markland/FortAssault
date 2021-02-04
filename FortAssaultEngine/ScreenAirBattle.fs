@@ -160,16 +160,16 @@ let ResultOfWhateverShellsHitThePlanes shells planes explosions score gameTime =
         let shellPos = shell.ShellMechanicsObject |> MOMPositionAt gameTime
         (NewExplosion shellPos gameTime, ScoreForHittingPlane)
 
-    ResultOfProjectileCollisions
-        shells
-        planes
-        (ShellCollidesWithPlane gameTime)
-        (fun x -> x.ShellStartTime) // Shell identity basis: They will all have different start times.
-        (fun x -> x.PlaneFlickBookInstance.FlickBookStartTime) // Plane identity basis: They will all have different start times.
-        explosions
-        score
-        createExplosionAndScoreFor
+    let shells, planes, additionalExplosions, additionalScore =
+        ResultOfProjectileCollisions
+            shells
+            planes
+            (ShellCollidesWithPlane gameTime)
+            (fun x -> x.ShellStartTime) // Shell identity basis: They will all have different start times.
+            (fun x -> x.PlaneFlickBookInstance.FlickBookStartTime) // Plane identity basis: They will all have different start times.
+            createExplosionAndScoreFor
 
+    shells, planes, explosions |> List.append additionalExplosions, score |> ScoreIncrementedBy additionalScore
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
