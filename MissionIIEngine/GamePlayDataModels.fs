@@ -189,8 +189,11 @@ type ScreenModel =
         /// The state of the ghost on the current screen.
         ScreenGhost       : GhostModel
 
-        /// The state of the bullets on the current screen.
-        Bullets           : Bullet list
+        /// The state of the bullets (fired by the player) on the current screen.
+        ManBullets        : Bullet list
+        
+        /// The state of the bullets (fired by the droid) on the current screen.
+        DroidBullets      : Bullet list
 
         /// Purely decorative flickbook animations on the current screen.
         DecorativeFlickbooks : FlickBookInstance list

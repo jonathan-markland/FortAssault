@@ -19,7 +19,7 @@ let ResultOfProjectileCollisions
         collides
         (getProjectileId : 'projectile -> 'projectileId)
         (getTargetId     : 'target -> 'targetId)
-        createExplosionAndScoreFor =
+        (createExplosionAndScoreFor : ('projectile -> 'explosion * uint32)) =
 
     let collidingPairs =
         List.allPairs projectiles targets |> List.filter (fun (projectile,target) -> collides projectile target)

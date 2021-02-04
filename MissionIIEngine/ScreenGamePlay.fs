@@ -20,6 +20,9 @@ open Directions
 open LevelTextToMatrix
 open FlickBook
 open Algorithm
+open Collisions
+open Mechanics
+
 
 
 let GhostTriggerDistance        = 12.0F<ViewSpace>
@@ -42,6 +45,28 @@ let FireButtonJustPressed keyStateGetter =
         } = (keyStateGetter (WebBrowserKeyCode 90)) // TODO: FIRE KEY CONSTANT!
 
     justDown
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  FLICKBOOK TYPES
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let ExplosionFlickBookType () =  // TODO: Made into a function because of Fable static-initializer-order problem
+    {
+        FlickBookDuration       = ExplosionDuration
+        FlickBookImages         = [| Explosion1ImageID |> ImageFromID ; Explosion2ImageID |> ImageFromID ; Explosion3ImageID |> ImageFromID |]
+        VisibilityBeforeStart   = Hidden
+        VisibilityAfterEnd      = Visible
+    }
+
+let NewExplosion centreLocation gameTime =
+    {
+        FlickBookType            = ExplosionFlickBookType ()
+        FlickBookMechanicsObject = MechanicsControlledStationaryObject centreLocation gameTime ExplosionDuration
+        FlickBookStartTime       = gameTime
+    }
+
 
 
 
@@ -383,9 +408,24 @@ let MovedBouncingAgainst (newManExtents, roomReference) gameTime droids =
     // droids
     ()
 
-let DroidsExplodedIfShotBy bullets droids = 
-    // droids, decoratives =
-    ()
+let DroidsExplodedIfShotBy bullets gameTime droids = 
+
+    let bulletCollidesWithDroid bullet droid =
+        let { BulletCentrePosition = bulletCentre } = bullet
+        let { DroidType=_ ; DroidCentrePosition=droidCentre ; DroidDirection=_ } = droid
+        bulletCentre |> IsWithinRegionOf droidCentre BulletTriggerDistance
+
+    let createExplosionAndScoreFor bullet =
+        let { BulletCentrePosition = bulletCentre } = bullet
+        NewExplosion bulletCentre gameTime
+
+    ResultOfProjectileCollisions
+        bullets
+        droids
+        bulletCollidesWithDroid
+        (fun { BulletCentrePosition = bulletCentre } -> bulletCentre)  // id
+        (fun { DroidType=_ ; DroidCentrePosition=droidCentre ; DroidDirection=_ } -> droidCentre)  // id
+        createExplosionAndScoreFor
 
 let PossiblyFiringAtMan bullets gameTime droids =
     // bullets =
@@ -405,7 +445,8 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
             ScreenMan            = man
             ScreenDroids         = droids
             ScreenGhost          = ghost
-            Bullets              = bullets
+            ManBullets           = manBullets
+            DroidBullets         = droidBullets
             DecorativeFlickbooks = decoratives
         } = model
 
@@ -427,7 +468,9 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
 
         // Man is alive.
 
-        let bullets   = bullets |> AdvancedWithBulletsRemovedThatHitWallsOrOutsidePlayArea roomReference
+        let manBullets   = manBullets   |> AdvancedWithBulletsRemovedThatHitWallsOrOutsidePlayArea roomReference
+        let droidBullets = droidBullets |> AdvancedWithBulletsRemovedThatHitWallsOrOutsidePlayArea roomReference
+        
         let man       = man |> RespondingToKeys keyStateGetter
         let manCentre = man.ManCentrePosition
 
@@ -439,7 +482,7 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
                 || (manCentre |> IntersectsDroids droids) then
                     Electrocuted man
 
-            else if (manCentre |> IntersectsBullets bullets) then
+            else if (manCentre |> IntersectsBullets droidBullets) then
                 Dead man
 
             else
@@ -452,8 +495,11 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
         let droids =
             droids |> MovedBouncingAgainst (manNewExtents, roomReference) gameTime
 
-        let droids, decoratives =
-            droids |> DroidsExplodedIfShotBy bullets
+        let manBullets, droids, additionalExplosions1, additionalScore =
+            droids |> DroidsExplodedIfShotBy manBullets gameTime
+
+        let droidBullets, droids, additionalExplosions2, _ =
+            droids |> DroidsExplodedIfShotBy droidBullets gameTime
 
         let bullets =
             man |> PossiblyFiringAtDroids bullets keyStateGetter
