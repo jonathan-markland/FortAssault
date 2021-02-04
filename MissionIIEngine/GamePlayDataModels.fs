@@ -33,16 +33,9 @@ type LevelTileMatrix = LevelTileMatrix of TileIndex [][]
 // If the man is electrocuting, there would be a countdown timer, and
 // that should NOT be handled by an "untilTime" in these records, do with GameStateManagement?
 
-/// Level space is in pixels, and covers the area of the entire level.
-[<Measure>]
-type LevelSpace
-
-/// Mis-use of measurement really, just indicates coordinates relative to the top left of the room as viewed.
-[<Measure>]
-type ViewSpace
-
-/// A point on the screen (based on float32<ViewSpace>)
-type ViewPoint = Point<float32<ViewSpace>>
+/// A point relative to the top left pixel of the room.
+/// In essence, the game play coordinates.
+type ViewPoint = ViewPoint of Point<float32<epx>>
 
 /// Position of a bullet.
 type Bullet =

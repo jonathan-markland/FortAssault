@@ -25,16 +25,18 @@ open Mechanics
 
 
 
-let GhostTriggerDistance        = 12.0F<ViewSpace>
-let DroidTriggerDistance        = 12.0F<ViewSpace>
-let BulletTriggerDistance       =  8.0F<ViewSpace>
-let ManFiringStartDistance      = 10.0F
-let InteractibleTriggerDistance = 10.0F<ViewSpace>
+let GhostTriggerDistance        = 12.0F<epx>
+let DroidTriggerDistance        = 12.0F<epx>
+let BulletTriggerDistance       =  8.0F<epx>
+let ManFiringStartDistance      = 10.0F<epx>
+let InteractibleTriggerDistance = 10.0F<epx>
 
 
 
-let IsCloseToAny things getThingCentre triggerDistance centre =
-    things |> List.exists (fun thing -> thing |> getThingCentre |> IsWithinRegionOf centre triggerDistance)
+let IsCloseToAny things getThingCentre triggerDistance (ViewPoint centre) =
+    things |> List.exists (fun thing -> 
+        let (ViewPoint thingCentre) = thing |> getThingCentre
+        thingCentre |> IsWithinRegionOf centre triggerDistance)
 
 
 let FireButtonJustPressed keyStateGetter =
@@ -247,7 +249,14 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
 //  Bullets
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewBulletFrom { ptx=x ; pty=y } startDistanceAway direction =
+let BulletCentreOf { BulletCentrePosition = ViewPoint bulletCentre } = 
+    bulletCentre
+
+let DroidCentreOf { DroidType=_ ; DroidCentrePosition=ViewPoint droidCentre ; DroidDirection=_ } =
+    droidCentre
+
+
+let NewBulletFrom (ViewPoint { ptx=x ; pty=y }) startDistanceAway direction =
 
     let converted x = x |> float32 |> LanguagePrimitives.Float32WithMeasure<ViewSpace>
     let (dx,dy) = DeltasForEightWayDirection direction
@@ -287,7 +296,7 @@ let ManExtents man =
 
     let {
             ManState          = state
-            ManCentrePosition = centre
+            ManCentrePosition = ViewPoint centre
         } = man
         
     let manImageID =
@@ -317,10 +326,10 @@ let IntersectsRoomWallsOf roomReference manCentre =
     failwith "adfgsdfg" // TODO
     false
 
-let IntersectsGhost ghost manCentre =
+let IntersectsGhost ghost (ViewPoint manCentre) =
     match ghost with
         | NoGhost -> false
-        | GhostActive ghostCentre ->
+        | GhostActive (ViewPoint ghostCentre) ->
             manCentre |> IsWithinRegionOf ghostCentre GhostTriggerDistance
 
 let IntersectsDroids droids manCentre =
@@ -341,7 +350,7 @@ type InteractibleRemovalOption = KeepInteractible | RemoveInteractible
 type InvincibilityTrigger = NoChangeInvincibility | GainInvincibility
 type LivesDelta = NoExtraLife | ExtraLifeGained
 
-let PossiblyInteractingWith currentRoomNumber interactibles man =
+let PossiblyInteractingWith interactibles currentRoomNumber man =
 
     // Reminder: Ignores level exit (filtered above).
     // We only need to interact with the first found.
@@ -384,7 +393,7 @@ let PossiblyInteractingWith currentRoomNumber interactibles man =
             else
                 (extraLife, invincib, invent, interactibles)
 
-let PossiblyFiringAtDroids bullets keyStateGetter man = // bullets =
+let PossiblyFiringAtDroids keyStateGetter man =
     
     if keyStateGetter |> FireButtonJustPressed then
 
@@ -392,12 +401,12 @@ let PossiblyFiringAtDroids bullets keyStateGetter man = // bullets =
 
         match state with
             | ManStandingFacing direction 
-            | ManWalking        direction -> (NewBulletFrom centre ManFiringStartDistance direction)::bullets
+            | ManWalking        direction -> Some (NewBulletFrom centre ManFiringStartDistance direction)
             | ManElectrocuted
-            | ManDead -> bullets // no change
+            | ManDead -> None
 
     else
-        bullets // no change
+        None
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -410,25 +419,22 @@ let MovedBouncingAgainst (newManExtents, roomReference) gameTime droids =
 
 let DroidsExplodedIfShotBy bullets gameTime droids = 
 
-    let bulletCollidesWithDroid bullet droid =
-        let { BulletCentrePosition = bulletCentre } = bullet
-        let { DroidType=_ ; DroidCentrePosition=droidCentre ; DroidDirection=_ } = droid
-        bulletCentre |> IsWithinRegionOf droidCentre BulletTriggerDistance
+    let doesBulletCollideWithDroid bullet droid =
+        (BulletCentreOf bullet) |> IsWithinRegionOf (DroidCentreOf droid) BulletTriggerDistance
 
-    let createExplosionAndScoreFor bullet =
-        let { BulletCentrePosition = bulletCentre } = bullet
-        NewExplosion bulletCentre gameTime
+    let createExplosionAndScore bullet =
+        (NewExplosion (BulletCentreOf bullet) gameTime)  ,  ScoreForPlayerHittingDroid
 
     ResultOfProjectileCollisions
         bullets
         droids
-        bulletCollidesWithDroid
-        (fun { BulletCentrePosition = bulletCentre } -> bulletCentre)  // id
-        (fun { DroidType=_ ; DroidCentrePosition=droidCentre ; DroidDirection=_ } -> droidCentre)  // id
-        createExplosionAndScoreFor
+        doesBulletCollideWithDroid
+        BulletCentreOf  // used as identity
+        DroidCentreOf   // used as identity
+        createExplosionAndScore
 
-let PossiblyFiringAtMan bullets gameTime droids =
-    // bullets =
+let PossiblyFiringAtMan man gameTime droids =
+
     ()
 
 
@@ -474,8 +480,6 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
         let man       = man |> RespondingToKeys keyStateGetter
         let manCentre = man.ManCentrePosition
 
-        let manNewExtents = man |> ManExtents
-
         let man = 
             if (manCentre |> IntersectsRoomWallsOf roomReference) 
                 || (manCentre |> IntersectsGhost ghost) 
@@ -490,10 +494,10 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
 
         // TODO: We do not yet have data modelling for the invincibility.
         let livesDelta, invincibTrigger, newItemForInventory, interactibles = // TODO: Use below to generate next state
-            man |> PossiblyInteractingWith roomNumber interactibles   // Reminder: Ignores level exit (filtered above).
+            man |> PossiblyInteractingWith interactibles roomNumber   // Reminder: Ignores level exit (filtered above).
 
-        let droids =
-            droids |> MovedBouncingAgainst (manNewExtents, roomReference) gameTime
+        // TODO let droids =
+        // TODO     droids |> MovedBouncingAgainst (manNewExtents, roomReference) gameTime
 
         let manBullets, droids, additionalExplosions1, additionalScore =
             droids |> DroidsExplodedIfShotBy manBullets gameTime
@@ -501,13 +505,20 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
         let droidBullets, droids, additionalExplosions2, _ =
             droids |> DroidsExplodedIfShotBy droidBullets gameTime
 
-        let bullets =
-            man |> PossiblyFiringAtDroids bullets keyStateGetter
+        let additionalManBullet =
+            man |> PossiblyFiringAtDroids keyStateGetter
 
-        let bullets =
-            droids |> PossiblyFiringAtMan bullets gameTime
+        let additionalDroidBullets =
+            droids |> PossiblyFiringAtMan man gameTime
 
-        gameState |> withNewStateApplied man lives inventory interactibles droids bullets decoratives
+        gameState 
+            |> withTheFollowingStateApplied
+                    man manBullets additionalManBullet
+                    droids droidBullets additionalDroidBullets
+                    additionalExplosions1 additionalExplosions2
+                    additionalScore
+                    lives inventory interactibles decoratives
+
 
 
     let manAlive () =
