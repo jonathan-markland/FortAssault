@@ -94,6 +94,9 @@ type DroidModel =
 
         /// The centre position of the droid on the screen.
         DroidCentrePosition : ViewPoint
+
+        /// Direction of movement (if possible).  All droids are always moving.
+        DroidDirection : EightWayDirection
     }
 
 

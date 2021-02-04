@@ -20,8 +20,8 @@ let ResultOfProjectileCollisions
         collides
         (getProjectileId : 'projectile -> 'projectileId)
         (getTargetId     : 'target -> 'targetId)
-        (explosions      : 'explosion list)
-        (score           : ScoreAndHiScore)
+        (explosions      : 'explosion list)  // TODO: We should just return a new "additional explosions" list.
+        (score           : ScoreAndHiScore)  // TODO: I should not have this.  Just return a score increment delta, and let the caller apply it.
         createExplosionAndScoreFor =
 
     let collidingPairs =

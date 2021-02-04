@@ -19,12 +19,14 @@ open ResourceIDs
 open Directions
 open LevelTextToMatrix
 open FlickBook
+open Algorithm
 
 
-let GhostTriggerDistance   = 12.0F<ViewSpace>
-let DroidTriggerDistance   = 12.0F<ViewSpace>
-let BulletTriggerDistance  =  8.0F<ViewSpace>
-let ManFiringStartDistance = 10.0F
+let GhostTriggerDistance        = 12.0F<ViewSpace>
+let DroidTriggerDistance        = 12.0F<ViewSpace>
+let BulletTriggerDistance       =  8.0F<ViewSpace>
+let ManFiringStartDistance      = 10.0F
+let InteractibleTriggerDistance = 10.0F<ViewSpace>
 
 
 
@@ -294,7 +296,7 @@ let IntersectsGhost ghost manCentre =
     match ghost with
         | NoGhost -> false
         | GhostActive ghostCentre ->
-            manCentre |> IsWithinRangeOf ghostCentre GhostTriggerDistance
+            manCentre |> IsWithinRegionOf ghostCentre GhostTriggerDistance
 
 let IntersectsDroids droids manCentre =
     let getDroidCentre { DroidType=_ ; DroidCentrePosition=centre } = centre
@@ -310,9 +312,52 @@ let Electrocuted man =
 let Dead man =
     { man with ManState = ManDead }
 
-let PossiblyInteractingWith interactibles man =  // lives, inventory, interactibles =
-    // We only need to interact with the first found.  Leave (theoretical) overlaps for the next frame.
-    ()
+type InteractibleRemovalOption = KeepInteractible | RemoveInteractible
+type InvincibilityTrigger = NoChangeInvincibility | GainInvincibility
+type LivesDelta = NoExtraLife | ExtraLifeGained
+
+let PossiblyInteractingWith currentRoomNumber interactibles man =
+
+    // Reminder: Ignores level exit (filtered above).
+    // We only need to interact with the first found.
+    // Leave (theoretical) overlaps for the next frame.
+
+    let manCentre = man.ManCentrePosition
+
+    let touchedItem interactible =
+        let {
+                InteractibleRoom           = objectRoomNumber
+                InteractibleType           = _
+                InteractibleCentrePosition = objectCentre
+            } = interactible
+
+        objectRoomNumber = currentRoomNumber 
+            && objectCentre |> IsWithinRegionOf manCentre InteractibleTriggerDistance
+
+    let collect inventoryItem =
+        (NoExtraLife, NoChangeInvincibility, Some inventoryItem)
+
+    let interactionResultFor interactible =
+        match interactible.InteractibleType with
+            | InteractibleObjectType.ObKey         -> collect InvKey
+            | InteractibleObjectType.ObRing        -> collect InvRing
+            | InteractibleObjectType.ObGold        -> collect InvGold
+            | InteractibleObjectType.ObAmulet      -> (NoExtraLife,     GainInvincibility,     None)
+            | InteractibleObjectType.ObHealthBonus -> (ExtraLifeGained, NoChangeInvincibility, None)
+            | InteractibleObjectType.ObLevelExit   -> (NoExtraLife,     NoChangeInvincibility, None)   // NB: No operation because of separate handling elsewhere.
+            | _ -> failwith "Unrecognised enum case"
+
+    let shouldBeRemoved interactible =
+        interactible.InteractibleType <> InteractibleObjectType.ObLevelExit
+
+    match interactibles |> List.tryFind touchedItem with
+        | None -> (NoExtraLife, NoChangeInvincibility, None, interactibles)
+        | Some interactible ->
+            let (extraLife, invincib, invent) = interactionResultFor interactible
+            if interactible |> shouldBeRemoved then
+                (extraLife, invincib, invent, interactibles |> PlanetSavingListFilter (not << touchedItem))
+            else
+                (extraLife, invincib, invent, interactibles)
 
 let PossiblyFiringAtDroids bullets keyStateGetter man = // bullets =
     
@@ -386,8 +431,9 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
         let man       = man |> RespondingToKeys keyStateGetter
         let manCentre = man.ManCentrePosition
 
-        let man = 
+        let manNewExtents = man |> ManExtents
 
+        let man = 
             if (manCentre |> IntersectsRoomWallsOf roomReference) 
                 || (manCentre |> IntersectsGhost ghost) 
                 || (manCentre |> IntersectsDroids droids) then
@@ -399,11 +445,12 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
             else
                 man
 
-        let lives, inventory, interactibles =
-            man |> PossiblyInteractingWith interactibles   // Reminder: Ignores level exit (filtered above).
+        // TODO: We do not yet have data modelling for the invincibility.
+        let livesDelta, invincibTrigger, newItemForInventory, interactibles = // TODO: Use below to generate next state
+            man |> PossiblyInteractingWith roomNumber interactibles   // Reminder: Ignores level exit (filtered above).
 
         let droids =
-            droids |> MovedBouncingAgainst (newManExtents, roomReference) gameTime
+            droids |> MovedBouncingAgainst (manNewExtents, roomReference) gameTime
 
         let droids, decoratives =
             droids |> DroidsExplodedIfShotBy bullets
@@ -553,9 +600,9 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
 
             ScreenDroids =
                 [
-                    { DroidType = DroidType.HomingDroid    ; DroidCentrePosition = { ptx=100.0F<ViewSpace> ; pty= 60.0F<ViewSpace> } } // TODO
-                    { DroidType = DroidType.WanderingDroid ; DroidCentrePosition = { ptx=280.0F<ViewSpace> ; pty=110.0F<ViewSpace> } } // TODO
-                    { DroidType = DroidType.AssassinDroid  ; DroidCentrePosition = { ptx=230.0F<ViewSpace> ; pty= 80.0F<ViewSpace> } } // TODO
+                    { DroidType = DroidType.HomingDroid    ; DroidCentrePosition = { ptx=100.0F<ViewSpace> ; pty= 60.0F<ViewSpace> } ; DroidDirection = EightWayDirection.Up8 } // TODO
+                    { DroidType = DroidType.WanderingDroid ; DroidCentrePosition = { ptx=280.0F<ViewSpace> ; pty=110.0F<ViewSpace> } ; DroidDirection = EightWayDirection.Up8 } // TODO
+                    { DroidType = DroidType.AssassinDroid  ; DroidCentrePosition = { ptx=230.0F<ViewSpace> ; pty= 80.0F<ViewSpace> } ; DroidDirection = EightWayDirection.Up8 } // TODO
                 ]
 
             ScreenGhost = NoGhost
