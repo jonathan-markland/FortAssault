@@ -39,10 +39,14 @@ type LevelTileMatrix = LevelTileMatrix of TileIndex [][]
 /// In essence, the game play coordinates.
 type ViewPoint = ViewPoint of Point<float32<epx>>
 
-/// Position of a bullet.
+/// Position and direction of bullet
 type Bullet =
     {
+        /// Position of bullet
         BulletCentrePosition : ViewPoint
+
+        /// Direction of travel of bullet
+        BulletDirection      : EightWayDirection
     }
 
 /// The kinds of item that the player can hold in the inventory.
