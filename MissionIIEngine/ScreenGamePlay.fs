@@ -34,7 +34,7 @@ let ManVsWallTriggerDistance     =  8.0F<epx>
 let DroidVsWallTriggerDistance   =  6.0F<epx>
 let DroidVsDroidTriggerDistance  =  6.0F<epx>
 let DroidVsManTriggerDistance    = 10.0F<epx>
-let BulletVsWallsTriggerDistance =  4.0F<epx>
+let BulletVsWallsTriggerDistance =  1.0F<epx>
 
 let ManFiringStartDistance      = 10.0F    // Used as multiplier hence no units.
 let DroidFiringStartDistance    = 8.0F     // Used as multiplier hence no units.
@@ -395,13 +395,13 @@ let IntersectsWalls hitTestDistance roomReference itemCentre =
 
     let (ViewPoint { ptx=x ; pty=y }) = itemCentre
 
-    let xi = (x |> FloatEpxToIntEpx)
-    let yi = (y |> FloatEpxToIntEpx)
+    let xi = (x |> FloatEpxToIntEpx) - hitTestDistance
+    let yi = (y |> FloatEpxToIntEpx) - hitTestDistance
 
-    let viewportWindow =  // in Viewport
+    let viewportWindow =
         {
-            WindowLeft   = xi - hitTestDistance
-            WindowTop    = yi - hitTestDistance
+            WindowLeft   = xi
+            WindowTop    = yi
             WindowWidth  = hitTestDistance * 2
             WindowHeight = hitTestDistance * 2
         }
@@ -410,8 +410,8 @@ let IntersectsWalls hitTestDistance roomReference itemCentre =
 
     let tilingOffset =  // from the top left of the viewport window
         {
-            OffsetX = xi + (ox * BrickTileWidth)
-            OffsetY = yi + (oy * BrickTileHeight)
+            OffsetX = -(xi + (ox * BrickTileWidth) )
+            OffsetY = -(yi + (oy * BrickTileHeight))
         }
 
     let mutable foundIntersection = false
