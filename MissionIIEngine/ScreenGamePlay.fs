@@ -448,8 +448,8 @@ let NewBulletFrom (ViewPoint { ptx=x ; pty=y }) startDistanceAway direction =
         BulletCentrePosition =
             ViewPoint
                 {
-                    ptx = fdx * startDistanceAway
-                    pty = fdy * startDistanceAway
+                    ptx = x + fdx * startDistanceAway
+                    pty = y + fdy * startDistanceAway
                 }
         BulletDirection = direction
     }
