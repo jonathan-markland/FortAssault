@@ -727,7 +727,7 @@ let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
 
     let possiblyFireIn direction (ViewPoint droidCentre) =
         let optBullet = Some (NewBulletFrom (ViewPoint droidCentre) DroidFiringStartDistance direction)
-        gameTime |> PulseBetween 20.0F None optBullet  // TODO: Decide when droids fire really!
+        gameTime |> PulseBetween 0.5F None optBullet  // TODO: Decide when droids fire really!
 
     let newBulletFiredByDroid droid =
         let droidCentre = DroidCentreOf droid
@@ -1017,9 +1017,9 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
 
             ScreenDroids =
                 [
-                    { DroidType = HomingDroid                          ; DroidCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty= 60.0F<epx> } } // TODO
+                    // { DroidType = HomingDroid                          ; DroidCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty= 60.0F<epx> } } // TODO
                     // { DroidType = WanderingDroid (EightWayDirection.Up8, _gameTime) ; DroidCentrePosition = ViewPoint { ptx=280.0F<epx> ; pty=110.0F<epx> } } // TODO
-                    // { DroidType = AssassinDroid                        ; DroidCentrePosition = ViewPoint { ptx=230.0F<epx> ; pty= 80.0F<epx> } } // TODO
+                    { DroidType = AssassinDroid                        ; DroidCentrePosition = ViewPoint { ptx=90.0F<epx> ; pty= 80.0F<epx> } } // TODO
                 ]
 
             ScreenGhost = NoGhost
