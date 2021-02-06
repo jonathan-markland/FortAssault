@@ -127,6 +127,9 @@ let DroidImageIndexFor droidType =
 let BulletCentreOf { BulletCentrePosition = ViewPoint centre } = 
     centre
 
+let VPBulletCentreOf { BulletCentrePosition = centre } = // TODO sort this out
+    centre
+
 let DroidCentreOf { DroidType=_ ; DroidCentrePosition=ViewPoint centre } =
     centre
 
@@ -174,28 +177,6 @@ let DownButtonHeld keyStateGetter =
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  FLICKBOOK TYPES
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
-let ExplosionFlickBookType () =
-    {
-        FlickBookDuration       = ExplosionDuration
-        FlickBookImages         = [| Explosion1ImageID |> ImageFromID ; Explosion2ImageID |> ImageFromID ; Explosion3ImageID |> ImageFromID |]
-        VisibilityBeforeStart   = Hidden
-        VisibilityAfterEnd      = Visible
-    }
-
-let NewExplosion centreLocation gameTime =
-    {
-        FlickBookType            = ExplosionFlickBookType ()
-        FlickBookMechanicsObject = MechanicsControlledStationaryObject centreLocation gameTime ExplosionDuration
-        FlickBookStartTime       = gameTime
-    }
-
-
-
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  TRANSLATION
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -210,6 +191,25 @@ let offset point =
     { 
         ptx = ((float32 x) + (float32 PlayAreaOffsetX)) |> Float32ToEpx 
         pty = ((float32 y) + (float32 PlayAreaOffsetY)) |> Float32ToEpx 
+    }
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  FLICKBOOK TYPES
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let ExplosionFlickBookType () =
+    {
+        FlickBookDuration       = ExplosionDuration
+        FlickBookImages         = [| Explosion1ImageID |> ImageFromID ; Explosion2ImageID |> ImageFromID ; Explosion3ImageID |> ImageFromID |]
+        VisibilityBeforeStart   = Hidden
+        VisibilityAfterEnd      = Visible
+    }
+
+let NewExplosion centreLocation gameTime =
+    {
+        FlickBookType            = ExplosionFlickBookType ()
+        FlickBookMechanicsObject = MechanicsControlledStationaryObject (centreLocation |> offset) gameTime ExplosionDuration
+        FlickBookStartTime       = gameTime
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -481,10 +481,7 @@ let IsManAlive man =
 
 let ManExtents man =
 
-    let {
-            ManState          = state
-            ManCentrePosition = ViewPoint centre
-        } = man
+    let { ManState = state ; ManCentrePosition = ViewPoint centre } = man
         
     let manImageID =
         match state with
@@ -496,7 +493,6 @@ let ManExtents man =
     let manImage = manImageID |> ImageFromID
 
     RectangleCenteredAbout centre (manImage |> ImageDimensionsF_v2 |> DimensionsToFloat32Epx)
-
 
 let RespondingToKeys keyStateGetter man =
 
@@ -523,9 +519,6 @@ let RespondingToKeys keyStateGetter man =
                     | _ -> man.ManState
             ManCentrePosition = man.ManCentrePosition
         }
-
-
-
 
 let IntersectsRoomWallsOf roomReference manCentre =
     IntersectsWalls ManVsWallTriggerDistance roomReference manCentre
@@ -720,7 +713,7 @@ let DroidsExplodedIfShotBy bullets gameTime droids =
         (BulletCentreOf bullet) |> IsWithinRegionOf (DroidCentreOf droid) BulletTriggerDistance
 
     let createExplosionAndScore bullet =
-        (NewExplosion (BulletCentreOf bullet) gameTime)  ,  ScoreForPlayerHittingDroid
+        (NewExplosion (VPBulletCentreOf bullet) gameTime)  ,  ScoreForPlayerHittingDroid
 
     ResultOfProjectileCollisions
         bullets
@@ -758,6 +751,7 @@ let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let private withTheFollowingStateApplied
+        gameTime
         man manBullets additionalManBullet
         droids droidBullets additionalDroidBullets
         additionalExplosions1 additionalExplosions2
@@ -795,6 +789,7 @@ let private withTheFollowingStateApplied
                     |> List.append droidBullets
             DecorativeFlickbooks = 
                 decoratives 
+                    |> WithCompletedFlickbooksRemoved gameTime
                     |> List.append additionalExplosions1 
                     |> List.append additionalExplosions2
         }
@@ -872,6 +867,7 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
 
         gameState |> WithUpdatedModel (
             model |> withTheFollowingStateApplied
+                gameTime
                 man manBullets additionalManBullet
                 droids droidBullets additionalDroidBullets
                 additionalExplosions1 additionalExplosions2
@@ -1021,7 +1017,7 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
 
             ScreenDroids =
                 [
-                    // { DroidType = HomingDroid                          ; DroidCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty= 60.0F<epx> } } // TODO
+                    { DroidType = HomingDroid                          ; DroidCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty= 60.0F<epx> } } // TODO
                     // { DroidType = WanderingDroid (EightWayDirection.Up8, _gameTime) ; DroidCentrePosition = ViewPoint { ptx=280.0F<epx> ; pty=110.0F<epx> } } // TODO
                     // { DroidType = AssassinDroid                        ; DroidCentrePosition = ViewPoint { ptx=230.0F<epx> ; pty= 80.0F<epx> } } // TODO
                 ]
