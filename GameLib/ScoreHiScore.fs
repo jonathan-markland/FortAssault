@@ -6,11 +6,15 @@ type ScoreAndHiScore =
         HiScore:  uint32
     }
 
-let ScoreIncrementedBy n { Score=oldScore ; HiScore=oldHiScore } =
+let ScoreIncrementedBy n scoreAndHiScore =
 
-    let newScore = oldScore + n
+    if n <> 0u then
 
-    {
-        Score    = newScore
-        HiScore  = max newScore oldHiScore
-    }
+        let { Score=oldScore ; HiScore=oldHiScore } = scoreAndHiScore
+        let newScore = oldScore + n
+        {
+            Score    = newScore
+            HiScore  = max newScore oldHiScore
+        }
+
+    else scoreAndHiScore

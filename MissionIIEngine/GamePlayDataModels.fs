@@ -7,6 +7,8 @@ open ScoreHiScore
 open FlickBook
 open Directions
 open ImagesAndFonts
+open Tiles
+
 
 /// The number of lives the player has remaining.
 type ManLives = ManLives of uint32
@@ -76,20 +78,20 @@ type ManModel =
 
 
 /// Types of droid.  This affects visuals and behaviours.
-type DroidType = HomingDroid=0 | WanderingDroid=1 | AssassinDroid=2
+type DroidType = 
+    | HomingDroid
+    | WanderingDroid of movement:EightWayDirection * nextDirectionChangeTime:float32<seconds>
+    | AssassinDroid
 
 
 /// Model for droid adversaries on the current screen.
 type DroidModel =
     {
-        /// The type of droid
-        DroidType     : DroidType
+        /// The type and traits-related state of droid
+        DroidType : DroidType
 
         /// The centre position of the droid on the screen.
         DroidCentrePosition : ViewPoint
-
-        /// Direction of movement (if possible).  All droids are always moving.
-        DroidDirection : EightWayDirection
     }
 
 
@@ -131,6 +133,9 @@ type RoomReference =
         
         /// Index into the 2D level tile matrix of the top left brick, of the current room.
         RoomOriginBrick   : int * int
+
+        /// TileMatrixTraits for rooms (cached).
+        TileMatrixTraits  : TileMatrixTraits
     }
 
 

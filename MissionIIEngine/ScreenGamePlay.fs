@@ -22,15 +22,103 @@ open FlickBook
 open Algorithm
 open Collisions
 open Mechanics
+open ScoreHiScore
 
 
 
 let GhostTriggerDistance        = 12.0F<epx>
 let DroidTriggerDistance        = 12.0F<epx>
 let BulletTriggerDistance       =  8.0F<epx>
-let ManFiringStartDistance      = 10.0F<epx>
 let InteractibleTriggerDistance = 10.0F<epx>
+let ManVsWallTriggerDistance    =  8.0F<epx>
+let DroidVsWallTriggerDistance  =  6.0F<epx>
+let DroidVsDroidTriggerDistance =  6.0F<epx>
+let DroidVsManTriggerDistance   = 10.0F<epx>
 
+let ManFiringStartDistance      = 10.0F    // Used as multiplier hence no units.
+let DroidFiringStartDistance    = 8.0F     // Used as multiplier hence no units.
+
+let HomingDroidSpeed    = 1.0F
+let WanderingDroidSpeed = 1.5F
+let AssassinDroidSpeed  = 0.75F
+
+let WanderingDroidDecisionInterval = 3.0F<seconds>
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  TODO:  FOR LIBRARY 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let EightWayDirectionApproximationFromTo (fromWhere:Point<float32<epx>>) (toWhere:Point<float32<epx>>) =
+
+    let { ptx=x1 ; pty=y1 } = fromWhere
+    let { ptx=x2 ; pty=y2 } = toWhere
+
+    let   dx,dy   = (x2 - x1) , (y2 - y1)
+    let  adx,ady  = abs dx , abs dy
+    
+    let twiceadx, twiceady = 2.0F * adx , 2.0F * ady
+
+    if adx > twiceady then
+        // Within 22.5 degrees above/below of the horizontal, to either side.
+        if dx > 0.0F<epx> then EightWayDirection.Right8 else EightWayDirection.Left8
+
+    else if ady > twiceadx then
+        // Within 22.5 degrees left/right of the vertical, above or below.
+        if dy > 0.0F<epx> then EightWayDirection.Down8 else EightWayDirection.Up8
+
+    else if dx > 0.0F<epx> then
+        // Right side of vertical, within 22.5 degrees of the 45 degree lines.
+        if dy > 0.0F<epx> then EightWayDirection.DownRight8 else EightWayDirection.UpRight8
+
+    else
+        // Left side of vertical, within 22.5 degrees of the 45 degree lines.
+        if dy > 0.0F<epx> then EightWayDirection.DownLeft8 else EightWayDirection.UpLeft8
+
+
+
+let MovedBy8way movementDirection speed point =
+
+    let (dx,dy) = DeltasForEightWayDirection movementDirection
+
+    {
+        ptx = point.ptx + ((dx |> IntToFloatEpx) * speed)
+        pty = point.pty + ((dy |> IntToFloatEpx) * speed)
+    }
+
+    
+    
+let inline RotateClockwise8way (direction:EightWayDirection) =
+    let newDirectionInt = (((int) direction) + 1) &&& 7
+    LanguagePrimitives.EnumOfValue<int, EightWayDirection> (newDirectionInt)
+
+
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  PROPERTIES AND SMALL FUNCTIONS
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let DroidImageIndexFor droidType =
+    match droidType with
+        | HomingDroid      -> 0
+        | WanderingDroid _ -> 1
+        | AssassinDroid    -> 2
+
+let BulletCentreOf { BulletCentrePosition = ViewPoint centre } = 
+    centre
+
+let DroidCentreOf { DroidType=_ ; DroidCentrePosition=ViewPoint centre } =
+    centre
+
+let VPDroidCentreOf { DroidType=_ ; DroidCentrePosition=centre } =  // TODO: sort out this
+    centre
+
+let ManCentreOf { ManCentrePosition = ViewPoint centre } = 
+    centre
+
+let VPManCentreOf { ManCentrePosition=centre } =  // TODO: sort out this
+    centre
 
 
 let IsCloseToAny things getThingCentre triggerDistance (ViewPoint centre) =
@@ -76,14 +164,14 @@ let NewExplosion centreLocation gameTime =
 //  TRANSLATION
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let inline DimensionsToFloat32ViewSpace dims =  // TODO: possibly reconsider?
+let inline DimensionsToFloat32Epx { dimx=dimx ; dimy=dimy } =  // TODO: possibly reconsider?
     {
-        dimx = ((float32) dims.dimx) |> LanguagePrimitives.Float32WithMeasure<ViewSpace>
-        dimy = ((float32) dims.dimy) |> LanguagePrimitives.Float32WithMeasure<ViewSpace>
+        dimx = ((float32) dimx) |> Float32ToEpx
+        dimy = ((float32) dimy) |> Float32ToEpx
     }
 
-let offset (point:ViewPoint) =
-    let { ptx=x ; pty=y } = point
+let offset point =
+    let (ViewPoint { ptx=x ; pty=y }) = point
     { 
         ptx = ((float32 x) + (float32 PlayAreaOffsetX)) |> Float32ToEpx 
         pty = ((float32 y) + (float32 PlayAreaOffsetY)) |> Float32ToEpx 
@@ -100,7 +188,8 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
             ScreenMan            = man
             ScreenDroids         = droids
             ScreenGhost          = ghost
-            Bullets              = bullets
+            ManBullets           = manBullets
+            DroidBullets         = droidBullets
             DecorativeFlickbooks = decoratives
         } = model
 
@@ -202,10 +291,10 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
                 } = droid
 
             let imageSet = gameTime |> PulseBetween DroidAnimationPerSecond droidStyles1 droidStyles2
-            CentreImagePoint render (centrePos |> offset) imageSet.[int droidType]
+            CentreImagePoint render (centrePos |> offset) imageSet.[DroidImageIndexFor droidType]
         )
 
-    let drawBullets () =
+    let drawBullets bullets =
         bullets |> List.iter (fun bullet ->
             let { BulletCentrePosition = centrePos } = bullet
             CentreImagePoint render (centrePos |> offset) (BulletImageID |> ImageFromID)
@@ -237,11 +326,69 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
     drawInventory ()
     drawTiles ()
     drawInteractibles ()
-    drawBullets ()
+    drawBullets manBullets
+    drawBullets droidBullets
     drawDroids ()
     drawMan ()
     drawGhost ()
     drawDecoratives ()
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  WALLS
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+open Tiles
+
+let RoomTileMatrixDetails () =
+    {
+        TilesHorizontally = NumBricksPerSide
+        TilesVertically   = NumBricksPerSide
+        TileWidthPixels   = BrickTileWidth
+        TileHeightPixels  = BrickTileHeight
+    }
+
+let IsWallTile tile =
+    match tile with 
+        | TileIndex.TileFloor1
+        | TileIndex.TileFloor2 -> false
+        | _ -> true
+
+let IntersectsWalls hitTestDistance roomReference itemCentre =
+
+    let hitTestDistance = hitTestDistance |> FloatEpxToIntEpx
+
+    let (ViewPoint { ptx=x ; pty=y }) = itemCentre
+
+    let xi = (x |> FloatEpxToIntEpx)
+    let yi = (y |> FloatEpxToIntEpx)
+
+    let viewportWindow =  // in Viewport
+        {
+            WindowLeft   = xi - hitTestDistance
+            WindowTop    = yi - hitTestDistance
+            WindowWidth  = hitTestDistance * 2
+            WindowHeight = hitTestDistance * 2
+        }
+
+    let (ox,oy) = roomReference.RoomOriginBrick
+
+    let tilingOffset =  // from the top left of the viewport window
+        {
+            OffsetX = xi + (ox * BrickTileWidth)
+            OffsetY = yi + (oy * BrickTileHeight)
+        }
+
+    let mutable foundIntersection = false
+
+    ForEachTileWithVisiblePortion roomReference.TileMatrixTraits viewportWindow tilingOffset 
+        (fun x y ix iy -> 
+            let (LevelTileMatrix matrix) = roomReference.LevelTileMatrix
+            let thisTile = matrix.[iy].[ix]
+            foundIntersection <- foundIntersection || (thisTile |> IsWallTile)
+        )
+
+    foundIntersection
 
 
 
@@ -249,25 +396,19 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
 //  Bullets
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let BulletCentreOf { BulletCentrePosition = ViewPoint bulletCentre } = 
-    bulletCentre
-
-let DroidCentreOf { DroidType=_ ; DroidCentrePosition=ViewPoint droidCentre ; DroidDirection=_ } =
-    droidCentre
-
-
 let NewBulletFrom (ViewPoint { ptx=x ; pty=y }) startDistanceAway direction =
 
-    let converted x = x |> float32 |> LanguagePrimitives.Float32WithMeasure<ViewSpace>
+    let converted x = x |> float32 |> Float32ToEpx
     let (dx,dy) = DeltasForEightWayDirection direction
     let (fdx,fdy) = (converted dx , converted dy)
 
     {
         BulletCentrePosition =
-            {
-                ptx = fdx * startDistanceAway
-                pty = fdy * startDistanceAway
-            }
+            ViewPoint
+                {
+                    ptx = fdx * startDistanceAway
+                    pty = fdy * startDistanceAway
+                }
     }
 
 
@@ -308,7 +449,7 @@ let ManExtents man =
 
     let manImage = manImageID |> ImageFromID
 
-    RectangleCenteredAbout centre (manImage |> ImageDimensionsF_v2 |> DimensionsToFloat32ViewSpace)
+    RectangleCenteredAbout centre (manImage |> ImageDimensionsF_v2 |> DimensionsToFloat32Epx)
 
 
 let RespondingToKeys keyStateGetter man =
@@ -323,8 +464,7 @@ let RespondingToKeys keyStateGetter man =
 
 
 let IntersectsRoomWallsOf roomReference manCentre =
-    failwith "adfgsdfg" // TODO
-    false
+    IntersectsWalls ManVsWallTriggerDistance roomReference manCentre
 
 let IntersectsGhost ghost (ViewPoint manCentre) =
     match ghost with
@@ -356,13 +496,13 @@ let PossiblyInteractingWith interactibles currentRoomNumber man =
     // We only need to interact with the first found.
     // Leave (theoretical) overlaps for the next frame.
 
-    let manCentre = man.ManCentrePosition
+    let (ViewPoint manCentre) = man.ManCentrePosition
 
     let touchedItem interactible =
         let {
                 InteractibleRoom           = objectRoomNumber
                 InteractibleType           = _
-                InteractibleCentrePosition = objectCentre
+                InteractibleCentrePosition = ViewPoint objectCentre
             } = interactible
 
         objectRoomNumber = currentRoomNumber 
@@ -413,9 +553,96 @@ let PossiblyFiringAtDroids keyStateGetter man =
 //  Droids
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let MovedBouncingAgainst (newManExtents, roomReference) gameTime droids = 
-    // droids
-    ()
+let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference gameTime droids = 
+
+    let intersectsWall droidCentre =
+        IntersectsWalls DroidVsWallTriggerDistance roomReference droidCentre
+
+    let intersectsMan (ViewPoint droidCentre) =
+        let (ViewPoint manCentre) = manCentre
+        droidCentre |> IsWithinRegionOf manCentre DroidVsManTriggerDistance
+
+    let intersectsOtherDroids exceptThisDroidIndex (ViewPoint droidCentre) =
+        let mutable flag = false  // TODO
+        droids |> List.iteri (fun i otherDroid -> 
+            if i <> exceptThisDroidIndex then
+                flag <- droidCentre |> IsWithinRegionOf (DroidCentreOf otherDroid) DroidVsDroidTriggerDistance)
+        flag
+
+    let intersectsSomething droidIndex point =
+        point |> intersectsWall || point |> intersectsMan || point |> intersectsOtherDroids droidIndex
+
+    let proposedLocationForHomingDroid centre =
+        // (Without regard for intersections)
+        let (ViewPoint centre) = centre
+        let (ViewPoint manCentre) = manCentre
+        let movementDirection = EightWayDirectionApproximationFromTo centre manCentre
+        let newCentre = centre |> MovedBy8way movementDirection HomingDroidSpeed
+        (ViewPoint newCentre, HomingDroid)
+
+    let proposedLocationForWanderingDroid centre direction changeTime droidIndex gameTime =
+        // (Without regard for intersections)
+        let (ViewPoint centre) = centre
+
+        let wanderingInDifferentDirection direction gameTime =
+            // TODO: use gameTime as seed to choose
+            WanderingDroid ((direction |> RotateClockwise8way), (gameTime + WanderingDroidDecisionInterval))
+
+        if changeTime > gameTime then
+            (ViewPoint centre, wanderingInDifferentDirection direction gameTime)
+        else
+            let newPosition = centre |> MovedBy8way direction WanderingDroidSpeed
+            if (ViewPoint newPosition) |> intersectsSomething droidIndex then
+                (ViewPoint centre, wanderingInDifferentDirection direction gameTime)
+            else
+                (ViewPoint newPosition, WanderingDroid (direction, changeTime))  // TODO: This is really returning the WanderingDroid unchanged.
+
+    let proposedLocationForAssassinDroid centre =
+        // (Without regard for intersections)
+        let (ViewPoint centre) = centre
+        let (ViewPoint manCentre) = manCentre
+        let movementDirection = EightWayDirectionApproximationFromTo centre manCentre
+        let newCentre = centre |> MovedBy8way movementDirection AssassinDroidSpeed
+        (ViewPoint newCentre, AssassinDroid)
+
+    let withBestEffortPositioning oldCentre droidIndex idealCentreWithoutRegardForOverlaps =
+
+        let succeedsAt =
+            not << (intersectsSomething droidIndex)
+
+        let (ViewPoint { ptx=oldx ; pty=oldy }) = oldCentre
+        let (ViewPoint { ptx=newx ; pty=newy }) = idealCentreWithoutRegardForOverlaps
+        let verticallySlidPosition = ViewPoint { ptx=oldx ; pty=newy }
+
+        if succeedsAt verticallySlidPosition then
+            if succeedsAt idealCentreWithoutRegardForOverlaps then idealCentreWithoutRegardForOverlaps else verticallySlidPosition
+        else
+            let horizontallySlidPosition = ViewPoint { ptx=newx ; pty=oldy }
+            if succeedsAt horizontallySlidPosition then horizontallySlidPosition else oldCentre
+
+    let toNewDroidLocation droidIndex droid =
+        
+        let { DroidType=dtype ; DroidCentrePosition=oldCentre } = droid
+        
+        let idealCentreWithoutRegardForOverlaps , updatedDroidType =   // TODO: updatedDroidType not absolutely ideal just because we want wandering droid to change direction
+            match dtype with
+                | HomingDroid ->
+                    proposedLocationForHomingDroid oldCentre
+
+                | WanderingDroid (direction,changeTime) ->
+                    proposedLocationForWanderingDroid oldCentre direction changeTime droidIndex gameTime
+
+                | AssassinDroid ->
+                    proposedLocationForAssassinDroid oldCentre
+        
+        let adjustedCentre =
+            idealCentreWithoutRegardForOverlaps |> withBestEffortPositioning oldCentre droidIndex
+        
+        { DroidType=updatedDroidType ; DroidCentrePosition=adjustedCentre }
+
+    droids |> List.mapi toNewDroidLocation
+
+
 
 let DroidsExplodedIfShotBy bullets gameTime droids = 
 
@@ -433,14 +660,76 @@ let DroidsExplodedIfShotBy bullets gameTime droids =
         DroidCentreOf   // used as identity
         createExplosionAndScore
 
-let PossiblyFiringAtMan man gameTime droids =
+let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
 
-    ()
+    let possiblyFireIn direction (ViewPoint droidCentre) =
+        let optBullet = Some (NewBulletFrom (ViewPoint droidCentre) DroidFiringStartDistance direction)
+        gameTime |> PulseBetween 20.0F None optBullet  // TODO: Decide when droids fire really!
+
+    let newBulletFiredByDroid droid =
+        let droidCentre = DroidCentreOf droid
+        match droid.DroidType with
+            | HomingDroid -> 
+                None  // never fires
+            
+            | WanderingDroid (direction,_) -> 
+                possiblyFireIn direction (ViewPoint droidCentre)
+
+            | AssassinDroid -> 
+                let dir = EightWayDirectionApproximationFromTo droidCentre (ManCentreOf man)
+                possiblyFireIn dir (ViewPoint droidCentre)
+
+    droids |> List.choose newBulletFiredByDroid
+
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Screen state advance on frame
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let private withTheFollowingStateApplied
+        man manBullets additionalManBullet
+        droids droidBullets additionalDroidBullets
+        additionalExplosions1 additionalExplosions2
+        additionalScore
+        lives inventory newItemForInventory interactibles decoratives model =
+
+    let innerScreenModel =  // TODO: possibly optimise further.
+        {
+            LevelNumber        = model.InnerScreenModel.LevelNumber  // Will never change here because change handling done at higher level.
+            RoomNumber         = model.InnerScreenModel.RoomNumber   // Will never change here because change handling done at higher level.
+            RoomReference      = model.InnerScreenModel.RoomReference
+            ScreenScore        = model.InnerScreenModel.ScreenScore |> ScoreIncrementedBy additionalScore
+            ManInventory       =
+                match newItemForInventory with
+                    | Some extra -> extra::inventory
+                    | None       -> inventory
+            ManLives           = lives
+            Interactible       = interactibles
+            ImageLookupsTables = model.InnerScreenModel.ImageLookupsTables
+            WhereToOnGameOver  = model.InnerScreenModel.WhereToOnGameOver
+        }
+
+    let model =
+        {
+            InnerScreenModel  = innerScreenModel
+            ScreenMan         = man
+            ScreenDroids      = droids
+            ScreenGhost       = model.ScreenGhost // TODO pass in the updated ghost
+            ManBullets        = 
+                match additionalManBullet with
+                    | Some extra -> extra::manBullets
+                    | None       -> manBullets
+            DroidBullets = 
+                additionalDroidBullets 
+                    |> List.append droidBullets
+            DecorativeFlickbooks = 
+                decoratives 
+                    |> List.append additionalExplosions1 
+                    |> List.append additionalExplosions2
+        }
+
+    model
 
 let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
 
@@ -496,8 +785,8 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
         let livesDelta, invincibTrigger, newItemForInventory, interactibles = // TODO: Use below to generate next state
             man |> PossiblyInteractingWith interactibles roomNumber   // Reminder: Ignores level exit (filtered above).
 
-        // TODO let droids =
-        // TODO     droids |> MovedBouncingAgainst (manNewExtents, roomReference) gameTime
+        let droids =
+            droids |> MovedToNewPositionsWhileConsidering (VPManCentreOf man) roomReference gameTime
 
         let manBullets, droids, additionalExplosions1, additionalScore =
             droids |> DroidsExplodedIfShotBy manBullets gameTime
@@ -509,19 +798,23 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
             man |> PossiblyFiringAtDroids keyStateGetter
 
         let additionalDroidBullets =
-            droids |> PossiblyFiringAtMan man gameTime
+            droids |> DroidsPossiblyFiring man gameTime
 
-        gameState 
-            |> withTheFollowingStateApplied
-                    man manBullets additionalManBullet
-                    droids droidBullets additionalDroidBullets
-                    additionalExplosions1 additionalExplosions2
-                    additionalScore
-                    lives inventory interactibles decoratives
+        gameState |> WithUpdatedModel (
+            model |> withTheFollowingStateApplied
+                man manBullets additionalManBullet
+                droids droidBullets additionalDroidBullets
+                additionalExplosions1 additionalExplosions2
+                additionalScore
+                lives inventory newItemForInventory interactibles decoratives)
+            
 
 
 
     let manAlive () =
+
+        let intersectsLevelExit _ = false // TODO
+        let intersectsAnyRoomExit _ = false // TODO
 
         if manOldExtents |> intersectsLevelExit then
             failwith "Level exited"
@@ -629,8 +922,9 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
                     RoomNumber         = RoomNumber 1
                     RoomReference      =
                         {
-                            LevelTileMatrix = AllLevels.[0] |> LevelTextToMatrix // TODO
-                            RoomOriginBrick = (0,0)
+                            LevelTileMatrix  = AllLevels.[0] |> LevelTextToMatrix // TODO
+                            RoomOriginBrick  = (0,0)
+                            TileMatrixTraits = RoomTileMatrixDetails ()  // establish a cache in a convenient location
                         }
                     ScreenScore        = betweenScreenStatus.ScoreAndHiScore
                     ManInventory       = [ InvGold ; InvKey ; InvRing ] // TODO: remove
@@ -646,27 +940,32 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
                             DroidStyles2             = droidStyles2
                             InteractibleObjectStyles = interactibleObjectStyles
                         }
-                    WhereToOnGameOver  = whereToOnGameOver
+                    WhereToOnGameOver = whereToOnGameOver
                 }
 
             ScreenMan =
                 {
-                    ManState = ManWalking EightWayDirection.Left8
-                    ManCentrePosition = { ptx=220.0F<ViewSpace> ; pty=100.0F<ViewSpace> } // TODO
+                    ManState          = ManWalking EightWayDirection.Left8
+                    ManCentrePosition = ViewPoint { ptx=220.0F<epx> ; pty=100.0F<epx> } // TODO
                 }
 
             ScreenDroids =
                 [
-                    { DroidType = DroidType.HomingDroid    ; DroidCentrePosition = { ptx=100.0F<ViewSpace> ; pty= 60.0F<ViewSpace> } ; DroidDirection = EightWayDirection.Up8 } // TODO
-                    { DroidType = DroidType.WanderingDroid ; DroidCentrePosition = { ptx=280.0F<ViewSpace> ; pty=110.0F<ViewSpace> } ; DroidDirection = EightWayDirection.Up8 } // TODO
-                    { DroidType = DroidType.AssassinDroid  ; DroidCentrePosition = { ptx=230.0F<ViewSpace> ; pty= 80.0F<ViewSpace> } ; DroidDirection = EightWayDirection.Up8 } // TODO
+                    { DroidType = HomingDroid                          ; DroidCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty= 60.0F<epx> } } // TODO
+                    { DroidType = WanderingDroid (EightWayDirection.Up8, _gameTime) ; DroidCentrePosition = ViewPoint { ptx=280.0F<epx> ; pty=110.0F<epx> } } // TODO
+                    { DroidType = AssassinDroid                        ; DroidCentrePosition = ViewPoint { ptx=230.0F<epx> ; pty= 80.0F<epx> } } // TODO
                 ]
 
             ScreenGhost = NoGhost
 
-            Bullets =
+            ManBullets =
                 [
-                    { BulletCentrePosition = { ptx=120.0F<ViewSpace> ; pty=60.0F<ViewSpace> } }
+                    { BulletCentrePosition = ViewPoint { ptx=120.0F<epx> ; pty=60.0F<epx> } }
+                ]
+
+            DroidBullets =
+                [
+                    { BulletCentrePosition = ViewPoint { ptx=60.0F<epx> ; pty=160.0F<epx> } }
                 ]
 
             DecorativeFlickbooks = []
