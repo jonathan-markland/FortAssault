@@ -101,8 +101,9 @@ type DroidModel =
 
 /// Is the ghost visible or not?
 type GhostModel =
-    | NoGhost
+    | NoGhostUntil of gameTime:float32<seconds>
     | GhostActive of ViewPoint
+    | GhostStunned of ViewPoint * untilGameTime:float32<seconds>
 
 
 type ImageLookupsTables =

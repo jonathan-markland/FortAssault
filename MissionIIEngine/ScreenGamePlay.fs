@@ -25,28 +25,6 @@ open Mechanics
 open ScoreHiScore
 
 
-
-let GhostTriggerDistance         = 12.0F<epx>
-let DroidTriggerDistance         = 12.0F<epx>
-let BulletTriggerDistance        =  8.0F<epx>
-let InteractibleTriggerDistance  = 10.0F<epx>
-let ManVsWallTriggerDistance     =  8.0F<epx>
-let DroidVsWallTriggerDistance   =  6.0F<epx>
-let DroidVsDroidTriggerDistance  =  8.0F<epx>
-let DroidVsManTriggerDistance    = DroidTriggerDistance + 2.0F<epx>  // Stop droid moving inside man's collision distance.
-let BulletVsWallsTriggerDistance =  1.0F<epx>
-
-let ManFiringStartDistance      = 10.0F    // Used as multiplier hence no units.
-let DroidFiringStartDistance    = 8.0F     // Used as multiplier hence no units.
-
-let HomingDroidSpeed    = 0.7F
-let WanderingDroidSpeed = 1.5F
-let AssassinDroidSpeed  = 0.5F
-let BulletSpeed         = 4.0F
-let ManSpeed            = 1.0F
-
-let WanderingDroidDecisionInterval = 3.0F<seconds>
-
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  TODO:  FOR LIBRARY 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -149,6 +127,7 @@ let IsCloseToAny things getThingCentre triggerDistance (ViewPoint centre) =
         thingCentre |> IsWithinRegionOf centre triggerDistance)
 
 
+    
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  ROOMS
@@ -176,8 +155,54 @@ let ManVersusExits man =
         | ManStandingFacing _
         | ManWalking _ -> position |> inRelationToExits
 
+type NewRoomFlipData =
+    {
+        NewRoomNumber       : RoomNumber
+        NewRoomManCentre    : ViewPoint
+        NewRoomOrigin       : (int * int)
+    }
 
-    
+let CheckForRoomFlip roomOrigin man =
+
+    let (rx,ry) = roomOrigin
+
+    let n = NumRoomsPerSide - 1
+
+    let roomMoveDeltas =
+        match man |> ManVersusExits with
+            | ExitingLeft  -> if rx > 0 then Some (-1, 0) else failwith "Leftmost exit leads outside level bounds"
+            | ExitingRight -> if rx < n then Some (+1, 0) else failwith "Rightmost exit leads outside level bounds"
+            | ExitingUp    -> if ry > 0 then Some ( 0,-1) else failwith "Upward exit leads outside level bounds"
+            | ExitingDown  -> if ry < n then Some ( 0,+1) else failwith "Downward exit leads outside level bounds"
+            | NotExitingRoom -> None
+
+    match roomMoveDeltas with
+        | None -> None
+        | Some (rdx,rdy) ->
+
+            let mandx = ((float32) -rdx) * (RoomWidthPixels  - ManRoomFlipMargin)
+            let mandy = ((float32) -rdy) * (RoomHeightPixels - ManRoomFlipMargin)
+
+            let manCentre = ManCentreOf man
+
+            let (rx,ry) = (rx+rdx, ry+rdy)
+
+            Some 
+                {
+                    NewRoomNumber       = RoomNumber ((ry * NumRoomsPerSide) + rx + 1)
+                    NewRoomManCentre    = ViewPoint { ptx=manCentre.ptx + mandx ; pty=manCentre.pty + mandy }
+                    NewRoomOrigin       = (rx, ry)
+                }
+
+let RoomCornerFurthestFrom (ViewPoint point) =
+
+    let rcx = RoomWidthPixels / 2.0F
+    let rcy = RoomHeightPixels / 2.0F
+
+    let cornerX = if point.ptx > rcx then 0.0F<epx> else RoomWidthPixels
+    let cornerY = if point.pty > rcy then 0.0F<epx> else RoomHeightPixels
+
+    ViewPoint { ptx=cornerX ; pty=cornerY }
 
 
 
@@ -377,9 +402,11 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
 
     let drawGhost () =
         match ghost with
-            | NoGhost -> ()
+            | NoGhostUntil _ -> ()
             | GhostActive centrePos -> 
                 CentreImagePoint render (centrePos |> offset) (GhostImageID |> ImageFromID)
+            | GhostStunned (centrePos,_) ->
+                CentreImagePoint render (centrePos |> offset) (GhostStunnedImageID |> ImageFromID)
 
     let drawInteractibles () =
         interactibles |> List.iter (fun interactible ->
@@ -566,9 +593,9 @@ let IntersectsRoomWallsOf roomReference manCentre =
 
 let IntersectsGhost ghost (ViewPoint manCentre) =
     match ghost with
-        | NoGhost -> false
-        | GhostActive (ViewPoint ghostCentre) ->
-            manCentre |> IsWithinRegionOf ghostCentre GhostTriggerDistance
+        | NoGhostUntil _ -> false
+        | GhostActive (ViewPoint ghostCentre) -> manCentre |> IsWithinRegionOf ghostCentre GhostTriggerDistance
+        | GhostStunned _ -> false
 
 let IntersectsDroids droids manCentre =
     let getDroidCentre { DroidType=_ ; DroidCentrePosition=centre } = centre
@@ -587,6 +614,13 @@ let Dead man =
 type InteractibleRemovalOption = KeepInteractible | RemoveInteractible
 type InvincibilityTrigger = NoChangeInvincibility | GainInvincibility
 type LivesDelta = NoExtraLife | ExtraLifeGained
+
+let LivesIncrementedBy livesDelta manLives =
+    match livesDelta with   
+        | NoExtraLife -> manLives
+        | ExtraLifeGained ->
+            let (ManLives lives) = manLives
+            ManLives (lives + 1u)
 
 let PossiblyInteractingWith interactibles currentRoomNumber man =
 
@@ -785,19 +819,95 @@ let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
 
     droids |> List.choose newBulletFiredByDroid
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Ghost
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let GhostUpdatedWithRespectTo man manBullets gameTime ghost =
+
+    let bulletThatIntersectsGhost ghostCentre bullet =
+        (BulletCentreOf bullet) |> IsWithinRegionOf ghostCentre BulletTriggerDistance
+
+    let shotBy manBullets (ViewPoint ghostCentre) =
+        manBullets |> List.exists (bulletThatIntersectsGhost ghostCentre)
+
+    match ghost with
+
+        | NoGhostUntil appearanceTime ->
+            if gameTime > appearanceTime then GhostActive (RoomCornerFurthestFrom (VPManCentreOf man)) else ghost
+
+        | GhostActive ghostCentre -> 
+            if ghostCentre |> shotBy manBullets then
+                GhostStunned (ghostCentre,gameTime + GhostStunDuration)
+            else
+                let (ViewPoint ghostCentre) = ghostCentre
+                let direction = EightWayDirectionApproximationFromTo ghostCentre (ManCentreOf man)
+                let ghostCentre = ghostCentre |> MovedBy8way direction GhostSpeed
+                GhostActive (ViewPoint ghostCentre)
+
+        | GhostStunned (ghostCentre,reactivationTime) ->
+            if ghostCentre |> shotBy manBullets then
+                GhostStunned (ghostCentre,gameTime + GhostStunDuration)
+            else if reactivationTime > gameTime then 
+                GhostActive ghostCentre 
+            else 
+                ghost
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Apply level change
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Apply room flip
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let WithRoomFlipAppliedFrom roomFlipData gameTime model =
+
+    let {
+            NewRoomNumber       = newRoomNumber
+            NewRoomManCentre    = newRoomManCentre
+            NewRoomOrigin       = newRoomOrigin
+        } = roomFlipData
+
+    let model =
+        {
+            InnerScreenModel = 
+                {
+                    model.InnerScreenModel with
+                        RoomReference =
+                            {
+                                RoomNumber = newRoomNumber
+                                RoomOrigin = newRoomOrigin
+                                LevelModel = model.InnerScreenModel.RoomReference.LevelModel
+                            }
+                }
+            ScreenMan =
+                {
+                    ManState          = model.ScreenMan.ManState
+                    ManCentrePosition = newRoomManCentre
+                }
+            ScreenDroids         = [] // TODO: new screen droids
+            ScreenGhost          = NoGhostUntil (gameTime + GhostGraceDuration)
+            ManBullets           = []
+            DroidBullets         = []
+            DecorativeFlickbooks = []
+        }
+
+    model
+    
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Screen state advance on frame
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private withTheFollowingStateApplied
+let private WithTheFollowingStateApplied
         gameTime
         man manBullets additionalManBullet
         droids droidBullets additionalDroidBullets
+        ghost
         additionalExplosions1 additionalExplosions2
         additionalScore
-        lives inventory newItemForInventory interactibles decoratives model =
+        newItemForInventory livesDelta interactibles decoratives model =
 
     let innerScreenModel =  // TODO: possibly optimise further.
         {
@@ -805,9 +915,9 @@ let private withTheFollowingStateApplied
             ScreenScore        = model.InnerScreenModel.ScreenScore |> ScoreIncrementedBy additionalScore
             ManInventory       =
                 match newItemForInventory with
-                    | Some extra -> extra::inventory
-                    | None       -> inventory
-            ManLives           = lives
+                    | Some extra -> extra::model.InnerScreenModel.ManInventory
+                    | None       -> model.InnerScreenModel.ManInventory
+            ManLives           = model.InnerScreenModel.ManLives |> LivesIncrementedBy livesDelta
             Interactible       = interactibles
             ImageLookupsTables = model.InnerScreenModel.ImageLookupsTables
             WhereToOnGameOver  = model.InnerScreenModel.WhereToOnGameOver
@@ -818,7 +928,7 @@ let private withTheFollowingStateApplied
             InnerScreenModel  = innerScreenModel
             ScreenMan         = man
             ScreenDroids      = droids
-            ScreenGhost       = model.ScreenGhost // TODO pass in the updated ghost
+            ScreenGhost       = ghost
             ManBullets        = 
                 match additionalManBullet with
                     | Some extra -> extra::manBullets
@@ -852,10 +962,10 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
     let {
             RoomReference      = roomReference
             ScreenScore        = { Score=score ; HiScore = hiScore }
-            ManInventory       = inventory
-            ManLives           = lives
+            ManInventory       = _
+            ManLives           = _
             Interactible       = interactibles
-            ImageLookupsTables = imageLookupTables
+            ImageLookupsTables = _
             WhereToOnGameOver  = _
         } = innerScreenModel
 
@@ -865,7 +975,6 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
             LevelModel        = _
         } = roomReference
 
-    let manOldExtents = man |> ManExtents
 
     let normalGamePlay () =
 
@@ -908,29 +1017,36 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
         let additionalDroidBullets =
             droids |> DroidsPossiblyFiring man gameTime
 
-        gameState |> WithUpdatedModel (
-            model |> withTheFollowingStateApplied
-                gameTime
-                man manBullets additionalManBullet
-                droids droidBullets additionalDroidBullets
-                additionalExplosions1 additionalExplosions2
-                additionalScore
-                lives inventory newItemForInventory interactibles decoratives)
-            
+        let ghost =
+            ghost |> GhostUpdatedWithRespectTo man manBullets gameTime
 
+        model |> WithTheFollowingStateApplied
+            gameTime
+            man manBullets additionalManBullet
+            droids droidBullets additionalDroidBullets
+            ghost
+            additionalExplosions1 additionalExplosions2
+            additionalScore
+            newItemForInventory livesDelta interactibles decoratives
 
 
     let manAlive () =
 
-        let intersectsLevelExit _ = false // TODO
-        let intersectsAnyRoomExit _ = false // TODO
+        let intersectsLevelExitCarryingAllNeededObjects _ = None // TODO
+        let manCentre = ManCentreOf man
 
-        if manOldExtents |> intersectsLevelExit then
-            failwith "Level exited"
-        else if manOldExtents |> intersectsAnyRoomExit then
-            failwith "room exited"
-        else
-            normalGamePlay ()
+        let model =
+            match manCentre |> intersectsLevelExitCarryingAllNeededObjects with
+                | Some gameStateOnNextLevel ->
+                    gameStateOnNextLevel
+                | None ->
+                    match CheckForRoomFlip roomReference.RoomOrigin man with
+                        | Some roomFlipData ->
+                            model |> WithRoomFlipAppliedFrom roomFlipData gameTime
+                        | None ->
+                            normalGamePlay ()
+
+        gameState |> WithUpdatedModel model
 
 
     match man.ManState with
@@ -941,13 +1057,16 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
 
 
 
+
+
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  New screen constructor
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:BetweenScreenStatus) _gameTime =
+let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:BetweenScreenStatus) gameTime =
 
-    // let numberOfMazes = AllLevels. levelIndex    = levelNumber % numberOfMazes
+    // TODO: sort out   let numberOfMazes = AllLevels. levelIndex    = levelNumber % numberOfMazes
 
     let brickStyles =
         [|
@@ -1030,7 +1149,7 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
                     RoomReference =
                         {
                             RoomNumber       = RoomNumber 1
-                            RoomOrigin       = (0,2)
+                            RoomOrigin       = (0,0)
                             LevelModel       =
                                 {
                                     LevelNumber      = LevelNumber levelNumber
@@ -1069,7 +1188,7 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
                     // { DroidType = AssassinDroid ; DroidCentrePosition = ViewPoint { ptx=90.0F<epx> ; pty= 80.0F<epx> } } // TODO
                 ]
 
-            ScreenGhost = NoGhost
+            ScreenGhost = NoGhostUntil (gameTime + GhostGraceDuration)
 
             ManBullets =
                 [

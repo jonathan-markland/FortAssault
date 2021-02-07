@@ -1,6 +1,7 @@
 ﻿module GamePlayScreenConstants
 
 open Geometry
+open Time
 
 // This game uses a the following engine-coordinate (epx) space:
 
@@ -26,6 +27,33 @@ let RoomHeightPixels    = RoomHeightPixelsInt |> IntToFloatEpx
 
 let PlayAreaOffsetX = (ScreenWidthInt  - (NumBricksPerSide * BrickTileWidth)) / 2
 let PlayAreaOffsetY = (ScreenHeightInt - (NumBricksPerSide * BrickTileHeight)) / 2
+
+let GhostTriggerDistance         = 12.0F<epx>
+let DroidTriggerDistance         = 12.0F<epx>
+let BulletTriggerDistance        =  8.0F<epx>
+let InteractibleTriggerDistance  = 10.0F<epx>
+let ManVsWallTriggerDistance     =  8.0F<epx>
+let DroidVsWallTriggerDistance   =  6.0F<epx>
+let DroidVsDroidTriggerDistance  =  8.0F<epx>
+let DroidVsManTriggerDistance    = DroidTriggerDistance + 2.0F<epx>  // Stop droid moving inside man's collision distance.
+let BulletVsWallsTriggerDistance =  1.0F<epx>
+
+let ManFiringStartDistance      = 10.0F    // Used as multiplier hence no units.
+let DroidFiringStartDistance    = 8.0F     // Used as multiplier hence no units.
+
+let HomingDroidSpeed    = 0.7F
+let WanderingDroidSpeed = 1.5F
+let AssassinDroidSpeed  = 0.5F
+let BulletSpeed         = 4.0F
+let ManSpeed            = 1.0F
+let GhostSpeed          = 3.0F
+
+let WanderingDroidDecisionInterval = 3.0F<seconds>
+let GhostGraceDuration             = 10.0F<seconds>
+let GhostStunDuration              =  4.0F<seconds>
+
+/// Distance in from the sides at which to position man when flipping between rooms.
+let ManRoomFlipMargin = ManSpeed * 4.0F<epx>
 
 /// For display of score text (etc) at top of screen.
 let TopPanelTopY =  10<epx>
