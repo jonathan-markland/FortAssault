@@ -32,16 +32,16 @@ let BulletTriggerDistance        =  8.0F<epx>
 let InteractibleTriggerDistance  = 10.0F<epx>
 let ManVsWallTriggerDistance     =  8.0F<epx>
 let DroidVsWallTriggerDistance   =  6.0F<epx>
-let DroidVsDroidTriggerDistance  =  6.0F<epx>
-let DroidVsManTriggerDistance    = 10.0F<epx>
+let DroidVsDroidTriggerDistance  =  8.0F<epx>
+let DroidVsManTriggerDistance    = DroidTriggerDistance + 2.0F<epx>  // Stop droid moving inside man's collision distance.
 let BulletVsWallsTriggerDistance =  1.0F<epx>
 
 let ManFiringStartDistance      = 10.0F    // Used as multiplier hence no units.
 let DroidFiringStartDistance    = 8.0F     // Used as multiplier hence no units.
 
-let HomingDroidSpeed    = 1.0F
+let HomingDroidSpeed    = 0.7F
 let WanderingDroidSpeed = 1.5F
-let AssassinDroidSpeed  = 0.75F
+let AssassinDroidSpeed  = 0.5F
 let BulletSpeed         = 4.0F
 let ManSpeed            = 1.0F
 
@@ -147,6 +147,37 @@ let IsCloseToAny things getThingCentre triggerDistance (ViewPoint centre) =
     things |> List.exists (fun thing -> 
         let (ViewPoint thingCentre) = thing |> getThingCentre
         thingCentre |> IsWithinRegionOf centre triggerDistance)
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  ROOMS
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+type RoomExitCases = ExitingLeft | ExitingRight | ExitingUp | ExitingDown | NotExitingRoom
+
+let ManVersusExits man =
+
+    let { ManState = state ; ManCentrePosition = position } = man
+
+    let inRelationToExits (ViewPoint position) =
+        
+        let { ptx=x ; pty=y } = position
+
+        if x < 0.0F<epx> then ExitingLeft
+        else if y < 0.0F<epx> then ExitingUp
+        else if x > RoomWidthPixels then ExitingRight
+        else if y > RoomHeightPixels then ExitingDown
+        else NotExitingRoom
+
+    match state with
+        | ManDead
+        | ManElectrocuted -> NotExitingRoom
+        | ManStandingFacing _
+        | ManWalking _ -> position |> inRelationToExits
+
+
+    
 
 
 
@@ -712,7 +743,7 @@ let DroidsExplodedIfShotBy bullets gameTime droids =
     let doesBulletCollideWithDroid bullet droid =
         (BulletCentreOf bullet) |> IsWithinRegionOf (DroidCentreOf droid) BulletTriggerDistance
 
-    let createExplosionAndScore bullet =
+    let createExplosionAndScore bullet =   // TODO:  Explosion needs to be in the centre of the adversary, not the bullet centre.
         (NewExplosion (VPBulletCentreOf bullet) gameTime)  ,  ScoreForPlayerHittingDroid
 
     ResultOfProjectileCollisions
@@ -727,7 +758,7 @@ let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
 
     let possiblyFireIn direction (ViewPoint droidCentre) =
         let optBullet = Some (NewBulletFrom (ViewPoint droidCentre) DroidFiringStartDistance direction)
-        gameTime |> PulseBetween 0.5F None optBullet  // TODO: Decide when droids fire really!
+        gameTime |> PulseBetween 1.0F None optBullet  // TODO: Decide when droids fire really!
 
     let newBulletFiredByDroid droid =
         let droidCentre = DroidCentreOf droid
@@ -1017,9 +1048,10 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
 
             ScreenDroids =
                 [
-                    // { DroidType = HomingDroid                          ; DroidCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty= 60.0F<epx> } } // TODO
+                    // { DroidType = HomingDroid ; DroidCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty= 60.0F<epx> } } // TODO
+                    // { DroidType = HomingDroid ; DroidCentrePosition = ViewPoint { ptx=80.0F<epx> ; pty= 90.0F<epx> } } // TODO
                     // { DroidType = WanderingDroid (EightWayDirection.Up8, _gameTime) ; DroidCentrePosition = ViewPoint { ptx=280.0F<epx> ; pty=110.0F<epx> } } // TODO
-                    { DroidType = AssassinDroid                        ; DroidCentrePosition = ViewPoint { ptx=90.0F<epx> ; pty= 80.0F<epx> } } // TODO
+                    // { DroidType = AssassinDroid ; DroidCentrePosition = ViewPoint { ptx=90.0F<epx> ; pty= 80.0F<epx> } } // TODO
                 ]
 
             ScreenGhost = NoGhost

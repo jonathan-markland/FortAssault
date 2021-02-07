@@ -19,6 +19,11 @@ let BrickTileHeight =  8<epx>
 let NumBricksPerSide = 25
 let NumRoomsPerSide  = 4
 
+let RoomWidthPixelsInt  = NumBricksPerSide * BrickTileWidth
+let RoomHeightPixelsInt = NumBricksPerSide * BrickTileHeight
+let RoomWidthPixels     = RoomWidthPixelsInt  |> IntToFloatEpx
+let RoomHeightPixels    = RoomHeightPixelsInt |> IntToFloatEpx
+
 let PlayAreaOffsetX = (ScreenWidthInt  - (NumBricksPerSide * BrickTileWidth)) / 2
 let PlayAreaOffsetY = (ScreenHeightInt - (NumBricksPerSide * BrickTileHeight)) / 2
 
