@@ -130,29 +130,38 @@ type ImageLookupsTables =
     }
 
 
-type RoomReference =
+type LevelModel =
     {
+        /// Current level number.  Displayed at top of screen.
+        LevelNumber       : LevelNumber
+
         /// The tiles matrix for the current level.
         LevelTileMatrix   : LevelTileMatrix
-        
-        /// Index into the 2D level tile matrix of the top left brick, of the current room.
-        RoomOriginBrick   : int * int
 
         /// TileMatrixTraits for rooms (cached).
         TileMatrixTraits  : TileMatrixTraits
     }
 
 
+
+type RoomReference =  // TODO: rename "RoomModel"
+    {
+        /// Current screen number within the level.  For display at top of screen.
+        RoomNumber        : RoomNumber
+
+        /// Indicates the current room by index into the matrix ie: (0..3,0..3)
+        RoomOrigin        : int * int
+
+        /// The current level data
+        LevelModel        : LevelModel
+    }
+
+
+
 /// The data model for the inner screen.
 /// Garbage:  Changes less often!
 type InnerScreenModel =
     {
-        /// Current level number.  Displayed at top of screen.
-        LevelNumber       : LevelNumber
-
-        /// Current screen number within the level.  For display at top of screen.
-        RoomNumber        : RoomNumber
-
         /// A reference to the current room within the level matrix.
         RoomReference     : RoomReference
 

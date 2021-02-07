@@ -260,8 +260,6 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
         } = model
 
     let {
-            LevelNumber        = LevelNumber levelNumber
-            RoomNumber         = roomNumber
             RoomReference      = roomReference
             ScreenScore        = { Score=score ; HiScore = hiScore }
             ManInventory       = inventory
@@ -271,10 +269,18 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
             WhereToOnGameOver  = _
         } = innerScreenModel
 
+
     let {
-            LevelTileMatrix   = LevelTileMatrix levelTileMatrix
-            RoomOriginBrick   = (blockOriginX, blockOriginY)
+            RoomNumber        = roomNumber
+            RoomOrigin        = (roomOriginX, roomOriginY)
+            LevelModel        = levelModel
         } = roomReference
+
+    let {
+            LevelNumber       = levelNumber
+            LevelTileMatrix   = LevelTileMatrix levelTileMatrix
+            TileMatrixTraits  = _
+        } = levelModel
 
     let {
             BrickStyles       = brickStyles
@@ -293,6 +299,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
     let drawTopLineOfScoreboard () =
         let (RoomNumber roomNumber) = roomNumber
         let scoreText = $"SCORE {score}"
+        let (LevelNumber levelNumber) = levelNumber
         let roomText  = $"ROOM {roomNumber} L{levelNumber}"
         Text render MissionIIFontID LeftAlign  TopAlign TextIndent TopPanelTopY scoreText
         Text render MissionIIFontID RightAlign TopAlign (ScreenWidthInt - TextIndent) TopPanelTopY roomText
@@ -324,9 +331,11 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
             | _ -> false
 
     let drawTiles () =
-        let brickImage  = WallBrick1ImageID |> ImageFromID
-        let brickWidth  = brickImage.ImageMetadata.ImageWidth  // all are same size
-        let brickHeight = brickImage.ImageMetadata.ImageHeight // all are same size
+        let brickImage   = WallBrick1ImageID |> ImageFromID
+        let brickWidth   = brickImage.ImageMetadata.ImageWidth  // all are same size
+        let brickHeight  = brickImage.ImageMetadata.ImageHeight // all are same size
+        let blockOriginX = roomOriginX * NumBricksPerSide
+        let blockOriginY = roomOriginY * NumBricksPerSide
         for y in 0..NumBricksPerSide-1 do
             for x in 0..NumBricksPerSide-1 do
                 let tile = levelTileMatrix.[blockOriginY+y].[blockOriginX+x]
@@ -437,7 +446,8 @@ let IntersectsWalls hitTestDistance roomReference itemCentre =
             WindowHeight = hitTestDistance * 2
         }
 
-    let (ox,oy) = roomReference.RoomOriginBrick
+    let (rx,ry) = roomReference.RoomOrigin
+    let (ox,oy) = (rx * NumBricksPerSide , ry * NumBricksPerSide)
 
     let tilingOffset =  // from the top left of the viewport window
         {
@@ -445,11 +455,11 @@ let IntersectsWalls hitTestDistance roomReference itemCentre =
             OffsetY = -(yi + (oy * BrickTileHeight))
         }
 
-    let mutable foundIntersection = false
+    let mutable foundIntersection = false  // TODO: Provide variant of ForEachTileWithVisiblePortion in the library.
 
-    ForEachTileWithVisiblePortion roomReference.TileMatrixTraits viewportWindow tilingOffset 
+    ForEachTileWithVisiblePortion roomReference.LevelModel.TileMatrixTraits viewportWindow tilingOffset 
         (fun x y ix iy -> 
-            let (LevelTileMatrix matrix) = roomReference.LevelTileMatrix
+            let (LevelTileMatrix matrix) = roomReference.LevelModel.LevelTileMatrix
             let thisTile = matrix.[iy].[ix]
             foundIntersection <- foundIntersection || (thisTile |> IsWallTile)
         )
@@ -791,9 +801,7 @@ let private withTheFollowingStateApplied
 
     let innerScreenModel =  // TODO: possibly optimise further.
         {
-            LevelNumber        = model.InnerScreenModel.LevelNumber  // Will never change here because change handling done at higher level.
-            RoomNumber         = model.InnerScreenModel.RoomNumber   // Will never change here because change handling done at higher level.
-            RoomReference      = model.InnerScreenModel.RoomReference
+            RoomReference      = model.InnerScreenModel.RoomReference // Will never change here because change handling done at higher level.
             ScreenScore        = model.InnerScreenModel.ScreenScore |> ScoreIncrementedBy additionalScore
             ManInventory       =
                 match newItemForInventory with
@@ -842,8 +850,6 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
         } = model
 
     let {
-            LevelNumber        = levelNumber
-            RoomNumber         = roomNumber
             RoomReference      = roomReference
             ScreenScore        = { Score=score ; HiScore = hiScore }
             ManInventory       = inventory
@@ -852,6 +858,12 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
             ImageLookupsTables = imageLookupTables
             WhereToOnGameOver  = _
         } = innerScreenModel
+
+    let {
+            RoomNumber        = roomNumber
+            RoomOrigin        = _
+            LevelModel        = _
+        } = roomReference
 
     let manOldExtents = man |> ManExtents
 
@@ -1015,13 +1027,16 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
         {
             InnerScreenModel =
                 {
-                    LevelNumber        = LevelNumber levelNumber
-                    RoomNumber         = RoomNumber 1
-                    RoomReference      =
+                    RoomReference =
                         {
-                            LevelTileMatrix  = AllLevels.[0] |> LevelTextToMatrix // TODO
-                            RoomOriginBrick  = (0,0)
-                            TileMatrixTraits = RoomTileMatrixDetails ()  // establish a cache in a convenient location
+                            RoomNumber       = RoomNumber 1
+                            RoomOrigin       = (0,0)
+                            LevelModel       =
+                                {
+                                    LevelNumber      = LevelNumber levelNumber
+                                    LevelTileMatrix  = AllLevels.[0] |> LevelTextToMatrix // TODO
+                                    TileMatrixTraits = RoomTileMatrixDetails ()  // establish a cache in a convenient location
+                                }
                         }
                     ScreenScore        = betweenScreenStatus.ScoreAndHiScore
                     ManInventory       = [ InvGold ; InvKey ; InvRing ] // TODO: remove
