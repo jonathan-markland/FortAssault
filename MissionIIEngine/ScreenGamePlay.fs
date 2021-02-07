@@ -415,10 +415,10 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
 
 open Tiles
 
-let RoomTileMatrixDetails () =
+let LevelTileMatrixDetails () =
     {
-        TilesHorizontally = NumBricksPerSide
-        TilesVertically   = NumBricksPerSide
+        TilesHorizontally = NumBricksPerSide * NumRoomsPerSide
+        TilesVertically   = NumBricksPerSide * NumRoomsPerSide
         TileWidthPixels   = BrickTileWidth
         TileHeightPixels  = BrickTileHeight
     }
@@ -1030,12 +1030,12 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
                     RoomReference =
                         {
                             RoomNumber       = RoomNumber 1
-                            RoomOrigin       = (0,0)
+                            RoomOrigin       = (0,2)
                             LevelModel       =
                                 {
                                     LevelNumber      = LevelNumber levelNumber
                                     LevelTileMatrix  = AllLevels.[0] |> LevelTextToMatrix // TODO
-                                    TileMatrixTraits = RoomTileMatrixDetails ()  // establish a cache in a convenient location
+                                    TileMatrixTraits = LevelTileMatrixDetails ()
                                 }
                         }
                     ScreenScore        = betweenScreenStatus.ScoreAndHiScore
