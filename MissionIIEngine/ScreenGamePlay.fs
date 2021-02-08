@@ -204,6 +204,40 @@ let RoomCornerFurthestFrom (ViewPoint point) =
 
     ViewPoint { ptx=cornerX ; pty=cornerY }
 
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  LEVEL
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+/// The rule for the number of items required to exit the given numbered level.
+let NumItemsRequiredOnLevel (LevelNumber levelNumber) =
+
+    let itemCountNeededToExitLevel = min (max 1 levelNumber) 3
+    itemCountNeededToExitLevel
+
+/// Do we intersect the level exit, and do we have the required items?
+let CheckForNextLevel currentLevelNumber (inventory:InventoryObjectType list) (interactibles:Interactible list) currentRoomNumber manCentre =
+
+    let numCarrying = inventory.Length
+    let numNeeded   = NumItemsRequiredOnLevel currentLevelNumber
+
+    if numCarrying < numNeeded then
+        false
+
+    else
+        interactibles |> List.exists (fun interactible ->
+            
+            let {
+                    InteractibleRoom           = objectRoomNumber
+                    InteractibleType           = objectType
+                    InteractibleCentrePosition = ViewPoint objectCentre
+                } = interactible
+
+            objectType = InteractibleObjectType.ObLevelExit
+                && objectRoomNumber = currentRoomNumber
+                && objectCentre |> IsWithinRegionOf manCentre InteractibleTriggerDistance
+        )
+    
+
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -962,7 +996,7 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
     let {
             RoomReference      = roomReference
             ScreenScore        = { Score=score ; HiScore = hiScore }
-            ManInventory       = _
+            ManInventory       = inventory
             ManLives           = _
             Interactible       = interactibles
             ImageLookupsTables = _
@@ -972,8 +1006,14 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
     let {
             RoomNumber        = roomNumber
             RoomOrigin        = _
-            LevelModel        = _
+            LevelModel        = levelModel
         } = roomReference
+
+    let {
+            LevelNumber      = levelNumber
+            LevelTileMatrix  = _
+            TileMatrixTraits = _
+        } = levelModel
 
 
     let normalGamePlay () =
@@ -1032,14 +1072,14 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
 
     let manAlive () =
 
-        let intersectsLevelExitCarryingAllNeededObjects _ = None // TODO
         let manCentre = ManCentreOf man
 
         let model =
-            match manCentre |> intersectsLevelExitCarryingAllNeededObjects with
-                | Some gameStateOnNextLevel ->
-                    gameStateOnNextLevel
-                | None ->
+            match manCentre |> CheckForNextLevel levelNumber inventory interactibles roomNumber with
+                | true ->
+                    failwith "TODO: next level"
+                    // model |> WithLevelChangeApplied
+                | false ->
                     match CheckForRoomFlip roomReference.RoomOrigin man with
                         | Some roomFlipData ->
                             model |> WithRoomFlipAppliedFrom roomFlipData gameTime
@@ -1158,9 +1198,41 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
                                 }
                         }
                     ScreenScore        = betweenScreenStatus.ScoreAndHiScore
-                    ManInventory       = [ InvGold ; InvKey ; InvRing ] // TODO: remove
+                    ManInventory       = []
                     ManLives           = ManLives InitialLives
-                    Interactible       = [] // TODO
+                    Interactible       = 
+                        [
+                            {
+                                InteractibleRoom           = RoomNumber 2
+                                InteractibleType           = InteractibleObjectType.ObKey
+                                InteractibleCentrePosition = ViewPoint { ptx=200.0F<epx> ; pty=100.0F<epx> }
+                            }
+                            {
+                                InteractibleRoom           = RoomNumber 4
+                                InteractibleType           = InteractibleObjectType.ObRing
+                                InteractibleCentrePosition = ViewPoint { ptx=200.0F<epx> ; pty=100.0F<epx> }
+                            }
+                            {
+                                InteractibleRoom           = RoomNumber 8
+                                InteractibleType           = InteractibleObjectType.ObHealthBonus
+                                InteractibleCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty=100.0F<epx> }
+                            }
+                            {
+                                InteractibleRoom           = RoomNumber 8
+                                InteractibleType           = InteractibleObjectType.ObLevelExit
+                                InteractibleCentrePosition = ViewPoint { ptx=200.0F<epx> ; pty=120.0F<epx> }
+                            }
+                            {
+                                InteractibleRoom           = RoomNumber 6
+                                InteractibleType           = InteractibleObjectType.ObLevelExit
+                                InteractibleCentrePosition = ViewPoint { ptx=200.0F<epx> ; pty=80.0F<epx> }
+                            }
+                            {
+                                InteractibleRoom           = RoomNumber 5
+                                InteractibleType           = InteractibleObjectType.ObGold
+                                InteractibleCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty=100.0F<epx> }
+                            }
+                        ]
                     ImageLookupsTables =
                         {
                             BrickStyles              = brickStyles
