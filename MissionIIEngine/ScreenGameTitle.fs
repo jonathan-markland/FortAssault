@@ -8,6 +8,7 @@ open ImagesAndFonts
 open Time
 open ScoreboardModel
 open StaticResourceAccess
+open GamePlayScreenConstants
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -24,34 +25,19 @@ let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
     let backgroundImage = BackgroundImageID |> ImageFromID
     Image1to1 render 0<epx> 0<epx> backgroundImage
 
-    (*
-    let tilesImage = Level1ImageID |> ImageFromID
-
     let x50pc = 50 |> PercentOfScreenWidth
-    let y20pc = 20 |> PercentOfScreenHeight
-    let y50pc = 50 |> PercentOfScreenHeight
-    let y75pc = 75 |> PercentOfScreenHeight
+    let y1 = 30 |> PercentOfScreenHeight
+    let y2 = 55 |> PercentOfScreenHeight
+    let y3 = 65 |> PercentOfScreenHeight
+    let y4 = 75 |> PercentOfScreenHeight
 
-    let verticalSpacing = 16<epx>  // TODO: Twice the font height
+    let smallFont = FontFromID MissionIIFontID
+    let bigFont = MagnifiedFont  6  4 6  smallFont
 
-    let pacAt   = DrawPacMan render tilesImage gameTime
-    let ghostAt = DrawGhost render tilesImage gameTime 
-
-    pacAt  model.PacRightMemo
-    pacAt  model.PacLeftMemo 
-
-    ghostAt  model.Ghost0Memo
-    ghostAt  model.Ghost1Memo
-    ghostAt  model.Ghost2Memo
-    ghostAt  model.Ghost3Memo
-
-    // TODO: Decided I didn't like this: let largeFont = (GreyFontID |> FontFromID) |> MagnifiedFont 1 2
-    Text render GreyFontID CentreAlign MiddleAlign x50pc y20pc "PAC MAN"
-
-    Paragraph render GreyFontID CentreAlign MiddleAlign x50pc y50pc verticalSpacing model.ScoreboardMemo
-
-    Text render GreyFontID CentreAlign MiddleAlign x50pc y75pc "USE CURSOR KEYS ... Z TO START"
-    *)
+    TextX render bigFont   CentreAlign MiddleAlign x50pc y1 "MISSION II"
+    TextX render smallFont CentreAlign MiddleAlign x50pc y2 "A RETRO REMAKE OF THE BBC MICRO CLASSIC"
+    TextX render smallFont CentreAlign MiddleAlign x50pc y3 "CYBERTRON MISSION"
+    TextX render smallFont CentreAlign MiddleAlign x50pc y4 "CONTROLS   CURSOR KEYS   Z FIRE"
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

@@ -356,12 +356,13 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
         Rectangle render 0<epx> 0<epx> ScreenWidthInt ScreenHeightInt (SolidColour 0u)
 
     let drawTopLineOfScoreboard () =
+        let fatFont = MagnifiedFont  6  2 1  (FontFromID MissionIIFontID)
         let (RoomNumber roomNumber) = roomNumber
         let scoreText = $"SCORE {score}"
         let (LevelNumber levelNumber) = levelNumber
         let roomText  = $"ROOM {roomNumber} L{levelNumber}"
-        Text render MissionIIFontID LeftAlign  TopAlign TextIndent TopPanelTopY scoreText
-        Text render MissionIIFontID RightAlign TopAlign (ScreenWidthInt - TextIndent) TopPanelTopY roomText
+        TextX render fatFont LeftAlign  TopAlign TextIndent TopPanelTopY scoreText
+        TextX render fatFont RightAlign TopAlign (ScreenWidthInt - TextIndent) TopPanelTopY roomText
 
     let drawLives () =
         let lifeImage = LifeImageID |> ImageFromID

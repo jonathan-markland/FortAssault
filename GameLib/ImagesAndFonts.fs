@@ -117,18 +117,18 @@ let BasicFont fontImage charWidth =
     }
 
 /// Obtain a magnified version of an existing font.
-let MagnifiedFont dx dy oldFont =
+let MagnifiedFont charWidth magX magY oldFont =
 
-    let charSide =
+    let charHeight =
         int (oldFont.FontImage.ImageMetadata.ImageHeight)
 
     {
         FontImage     = oldFont.FontImage
-        MagnifyX      = dx
-        MagnifyY      = dy
-        SrcCharWidth  = charSide
-        SrcCharHeight = charSide
-        CharWidth     = dx * charSide
-        CharHeight    = dy * charSide
+        MagnifyX      = magX
+        MagnifyY      = magY
+        SrcCharWidth  = charWidth
+        SrcCharHeight = charHeight
+        CharWidth     = magX * charWidth
+        CharHeight    = magY * charHeight
     }
 
