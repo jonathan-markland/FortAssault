@@ -23,6 +23,7 @@ open Algorithm
 open Collisions
 open Mechanics
 open ScoreHiScore
+open Random
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -337,7 +338,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
 
     let {
             LevelNumber       = levelNumber
-            LevelTileMatrix   = LevelTileMatrix levelTileMatrix
+            LevelTileMatrix   = levelTileMatrix
             TileMatrixTraits  = _
         } = levelModel
 
@@ -396,6 +397,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
         let brickHeight  = brickImage.ImageMetadata.ImageHeight // all are same size
         let blockOriginX = roomOriginX * NumBricksPerSide
         let blockOriginY = roomOriginY * NumBricksPerSide
+        let (LevelTileMatrix levelTileMatrix) = levelTileMatrix
         for y in 0..NumBricksPerSide-1 do
             for x in 0..NumBricksPerSide-1 do
                 let tile = levelTileMatrix.[blockOriginY+y].[blockOriginX+x]
@@ -457,11 +459,26 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
     let drawDecoratives () =
         DrawFlickbookInstanceList render decoratives gameTime
 
+    // DEBUG:
+    let drawPotentialObjectPositionsInRoom () =
+        
+        let potentialObjectPositionsInRoom = 
+            PlacesWhereObjectsCanBePlacedInRoom levelTileMatrix (roomOriginX, roomOriginY) |> Seq.toArray
+
+        potentialObjectPositionsInRoom
+            |> Array.iter (fun (brickX,brickY) ->
+                let x = brickX * BrickTileWidth + PlayAreaOffsetX
+                let y = brickY * BrickTileHeight + PlayAreaOffsetY
+                Rectangle render x y BrickTileWidth BrickTileHeight (SolidColour 0xFF0000u)
+            )
+        
+
     drawBackground ()
     drawTopLineOfScoreboard ()
     drawLives ()
     drawInventory ()
     drawTiles ()
+    drawPotentialObjectPositionsInRoom ()
     drawInteractibles ()
     drawBullets manBullets
     drawBullets droidBullets
@@ -470,7 +487,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
     drawGhost ()
     drawDecoratives ()
 
-
+    
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  WALLS / BOUNDS
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -720,6 +737,52 @@ let PossiblyFiringAtDroids keyStateGetter man =
 //  Droids
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let NRandomChosenPositions numRequired (places:(int*int)[]) randomSeed =
+
+    let mutable randomState = randomSeed
+
+    seq {
+        for i in 1..numRequired do
+            randomState <- randomState |> XorShift32
+            let (XorShift32State v) = randomState
+            let index = (int) (v % (uint32) places.Length)
+            yield places.[index]
+    }
+
+        
+
+let NewDroidsForRoom levelNumber placesForAdversariesInThisRoom gameTime =
+   
+    []
+    (* TODO
+    let randomSeed = XorShift32State (uint32 gameTime)
+
+    // TODO: Some choices were within the walls -- why?
+    // TODO: Eliminate the man's start position from the list of potential droid positions!!!
+    // TODO: Chose subsequent from the remainder.
+    // TODO: Choose droid types by level.
+
+    let chosenPositions = NRandomChosenPositions 10 placesForAdversariesInThisRoom randomSeed
+
+    let chosenPositions2 = chosenPositions |> Seq.toList
+
+    chosenPositions
+        |> Seq.map (fun (brickX,brickY) ->
+            let (droidX,droidY) = (brickX * BrickTileWidth |> IntToFloatEpx, brickY * BrickTileHeight |> IntToFloatEpx)
+            { DroidType = HomingDroid ; DroidCentrePosition = ViewPoint { ptx=droidX ; pty=droidY } }
+        )
+        |> Seq.toList
+
+                // [
+                //     // TODO: sort out
+                //     { DroidType = HomingDroid ; DroidCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty= 60.0F<epx> } } // TODO
+                //     { DroidType = HomingDroid ; DroidCentrePosition = ViewPoint { ptx=80.0F<epx> ; pty= 90.0F<epx> } } // TODO
+                //     { DroidType = WanderingDroid (EightWayDirection.Up8, gameTime) ; DroidCentrePosition = ViewPoint { ptx=280.0F<epx> ; pty=110.0F<epx> } } // TODO
+                //     { DroidType = AssassinDroid ; DroidCentrePosition = ViewPoint { ptx=90.0F<epx> ; pty= 80.0F<epx> } } // TODO
+                // ]
+
+                *)
+
 let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference gameTime droids = 
 
     let intersectsWall droidCentre =
@@ -892,6 +955,9 @@ let GhostUpdatedWithRespectTo man manBullets gameTime ghost =
 //  Apply level change
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+    // TODO: How do we know which room to start in?
+    // TODO: How do we know where to position the man?
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Apply room flip
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -904,24 +970,28 @@ let WithRoomFlipAppliedFrom roomFlipData gameTime model =
             NewRoomOrigin       = newRoomOrigin
         } = roomFlipData
 
+    let levelMatrix =
+        model.InnerScreenModel.RoomReference.LevelModel.LevelTileMatrix
+
+    let placesForAdversariesInThisRoom = 
+        PlacesWhereObjectsCanBePlacedInRoom levelMatrix newRoomOrigin |> Seq.toArray
+
+    let roomReference = 
+        {
+            RoomNumber = newRoomNumber
+            RoomOrigin = newRoomOrigin
+            LevelModel = model.InnerScreenModel.RoomReference.LevelModel
+        }
+
     let model =
         {
-            InnerScreenModel = 
-                {
-                    model.InnerScreenModel with
-                        RoomReference =
-                            {
-                                RoomNumber = newRoomNumber
-                                RoomOrigin = newRoomOrigin
-                                LevelModel = model.InnerScreenModel.RoomReference.LevelModel
-                            }
-                }
+            InnerScreenModel = { model.InnerScreenModel with RoomReference = roomReference }
             ScreenMan =
                 {
                     ManState          = model.ScreenMan.ManState
                     ManCentrePosition = newRoomManCentre
                 }
-            ScreenDroids         = [] // TODO: new screen droids
+            ScreenDroids         = NewDroidsForRoom roomReference.LevelModel.LevelNumber placesForAdversariesInThisRoom gameTime
             ScreenGhost          = NoGhostUntil (gameTime + GhostGraceDuration)
             ManBullets           = []
             DroidBullets         = []
@@ -929,12 +999,12 @@ let WithRoomFlipAppliedFrom roomFlipData gameTime model =
         }
 
     model
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Apply in-game changes required
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     
-
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  Screen state advance on frame
-// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-
 let private WithTheFollowingStateApplied
         gameTime
         man manBullets additionalManBullet
@@ -948,10 +1018,12 @@ let private WithTheFollowingStateApplied
         {
             RoomReference      = model.InnerScreenModel.RoomReference // Will never change here because change handling done at higher level.
             ScreenScore        = model.InnerScreenModel.ScreenScore |> ScoreIncrementedBy additionalScore
+            
             ManInventory       =
                 match newItemForInventory with
                     | Some extra -> extra::model.InnerScreenModel.ManInventory
                     | None       -> model.InnerScreenModel.ManInventory
+
             ManLives           = model.InnerScreenModel.ManLives |> LivesIncrementedBy livesDelta
             Interactible       = interactibles
             ImageLookupsTables = model.InnerScreenModel.ImageLookupsTables
@@ -964,13 +1036,16 @@ let private WithTheFollowingStateApplied
             ScreenMan         = man
             ScreenDroids      = droids
             ScreenGhost       = ghost
+
             ManBullets        = 
                 match additionalManBullet with
                     | Some extra -> extra::manBullets
                     | None       -> manBullets
+
             DroidBullets = 
                 additionalDroidBullets 
                     |> List.append droidBullets
+
             DecorativeFlickbooks = 
                 decoratives 
                     |> WithCompletedFlickbooksRemoved gameTime
@@ -979,6 +1054,11 @@ let private WithTheFollowingStateApplied
         }
 
     model
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Screen state advance on frame
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
 
@@ -1183,21 +1263,29 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
             ImageFromID LevelExitImageID
         |]
 
+    let levelMatrix = AllLevels.[0] |> LevelTextToMatrix // TODO: sort out passing in the level index
+    // TODO:  let sparePlacesForInteractibles = PlacesWhereObjectsCanBeLocatedInLevel levelMatrix |> Seq.toArray
+
+    let roomReference =
+        {
+            RoomNumber = RoomNumber 1
+            RoomOrigin = (0,0)
+            LevelModel =
+                {
+                    LevelNumber      = LevelNumber levelNumber
+                    LevelTileMatrix  = levelMatrix
+                    TileMatrixTraits = LevelTileMatrixDetails ()
+                }
+        }
+
+    let placesForAdversariesInThisRoom = 
+        PlacesWhereObjectsCanBePlacedInRoom levelMatrix (0,0) |> Seq.toArray
+
     let screenModel =
         {
             InnerScreenModel =
                 {
-                    RoomReference =
-                        {
-                            RoomNumber       = RoomNumber 1
-                            RoomOrigin       = (0,0)
-                            LevelModel       =
-                                {
-                                    LevelNumber      = LevelNumber levelNumber
-                                    LevelTileMatrix  = AllLevels.[0] |> LevelTextToMatrix // TODO
-                                    TileMatrixTraits = LevelTileMatrixDetails ()
-                                }
-                        }
+                    RoomReference      = roomReference
                     ScreenScore        = betweenScreenStatus.ScoreAndHiScore
                     ManInventory       = []
                     ManLives           = ManLives InitialLives
@@ -1253,13 +1341,8 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
                     ManCentrePosition = ViewPoint { ptx=220.0F<epx> ; pty=100.0F<epx> } // TODO
                 }
 
-            ScreenDroids =
-                [
-                    // { DroidType = HomingDroid ; DroidCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty= 60.0F<epx> } } // TODO
-                    // { DroidType = HomingDroid ; DroidCentrePosition = ViewPoint { ptx=80.0F<epx> ; pty= 90.0F<epx> } } // TODO
-                    // { DroidType = WanderingDroid (EightWayDirection.Up8, _gameTime) ; DroidCentrePosition = ViewPoint { ptx=280.0F<epx> ; pty=110.0F<epx> } } // TODO
-                    // { DroidType = AssassinDroid ; DroidCentrePosition = ViewPoint { ptx=90.0F<epx> ; pty= 80.0F<epx> } } // TODO
-                ]
+            ScreenDroids = 
+                NewDroidsForRoom roomReference.LevelModel.LevelNumber placesForAdversariesInThisRoom gameTime
 
             ScreenGhost = NoGhostUntil (gameTime + GhostGraceDuration)
 

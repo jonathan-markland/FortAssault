@@ -31,7 +31,7 @@ type TileIndex =
 /// The level matrix when converted from the Levels.fs file's string format.
 type LevelTileMatrix = LevelTileMatrix of TileIndex [][]
 
-// The Man state dictates progress of the gameplay
+// TODO: The Man state dictates progress of the gameplay
 // If the man is electrocuting, there would be a countdown timer, and
 // that should NOT be handled by an "untilTime" in these records, do with GameStateManagement?
 
