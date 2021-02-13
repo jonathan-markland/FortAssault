@@ -106,6 +106,12 @@ let EightWayDirectionFromKeys left right up down =
 //  PROPERTIES AND SMALL FUNCTIONS
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let ManExclusionRectangleAround (ViewPoint manCentre) =
+    let manImage = ImageFromID FacingUpImageID
+    let w = manImage.ImageMetadata.ImageWidth
+    let h = manImage.ImageMetadata.ImageHeight
+    RectangleCenteredAbout { ptx=(manCentre.ptx) |> FloatEpxToIntEpx ; pty=(manCentre.pty) |> FloatEpxToIntEpx } { dimx=w ; dimy=h } 2
+
 let DroidImageIndexFor droidType =
     match droidType with
         | HomingDroid      -> 0
@@ -549,6 +555,10 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
             |> Seq.iter (fun (x,y) -> 
                 Rectangle render (x+PlayAreaOffsetX) (y+PlayAreaOffsetY) (2<epx>) (2<epx>) colour)
 
+    let drawManExclusionDebugRectangle () =
+        let r = ManExclusionRectangleAround (VPManCentreOf man)
+        Rectangle render (r.Left+PlayAreaOffsetX) (r.Top+PlayAreaOffsetY) (r |> RectangleWidth) (r |> RectangleHeight) (SolidColour 0x000040u)
+
 
     drawBackground ()
     drawTopLineOfScoreboard ()
@@ -559,6 +569,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
     drawBullets manBullets
     drawBullets droidBullets
     drawDroids ()
+    drawManExclusionDebugRectangle ()
     drawMan ()
     drawGhost ()
     drawDecoratives ()
@@ -682,7 +693,7 @@ let ManExtents man =
 
     let manImage = manImageID |> ImageFromID
 
-    RectangleCenteredAbout centre (manImage |> ImageDimensionsF_v2 |> DimensionsToFloat32Epx)
+    RectangleCenteredAbout centre (manImage |> ImageDimensionsF_v2 |> DimensionsToFloat32Epx) 2.0F
 
 let RespondingToKeys keyStateGetter man =
 
@@ -807,18 +818,21 @@ let PossiblyFiringAtDroids keyStateGetter man =
 //  Droids
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NRandomChosenPositions numRequired (places:(int<epx> * int<epx>)[]) randomSeed =
+let NRandomChosenThings numRequired (things:'t[]) randomSeed =  // TODO: move to library
 
     let mutable randomState = randomSeed
 
-    seq {
-        if places.Length > 0 then
-            for i in 1..numRequired do
-                randomState <- randomState |> XorShift32
-                let (XorShift32State v) = randomState
-                let index = (int) (v % (uint32) places.Length)
-                yield places.[index]
-    }
+    let sequence =
+        seq {
+            if things.Length > 0 then
+                for i in 1..numRequired do
+                    randomState <- randomState |> XorShift32
+                    let (XorShift32State v) = randomState
+                    let index = (int) (v % (uint32) things.Length)
+                    yield things.[index]
+        }
+    
+    (sequence, randomState)
 
         
 
@@ -826,13 +840,10 @@ let NewDroidsForRoom levelNumber placesForAdversariesInThisRoom gameTime =
    
     let randomSeed = XorShift32State (uint32 gameTime)
 
-    // TODO: Eliminate the man's start position from the list of potential droid positions!!!
     // TODO: Chose subsequent from the remainder.
     // TODO: Choose droid types by level.
 
-    let chosenPositions = NRandomChosenPositions 10 placesForAdversariesInThisRoom randomSeed
-
-    let chosenPositions2 = chosenPositions |> Seq.toList
+    let chosenPositions,_ = NRandomChosenThings 10 placesForAdversariesInThisRoom randomSeed
 
     chosenPositions
         |> Seq.map (fun (centreX,centreY) ->
@@ -1038,7 +1049,7 @@ let WithRoomFlipAppliedFrom roomFlipData gameTime model =
     let levelMatrix =
         roomReference.LevelModel.LevelTileMatrix
 
-    let exclusionRectangles = [] // TODO
+    let exclusionRectangles = [ManExclusionRectangleAround newRoomManCentre]
 
     let placesForAdversariesInThisRoom = 
         AvailableObjectPositionsWithinRoom roomReference exclusionRectangles LargestAdversaryDimension |> Seq.toArray
@@ -1344,7 +1355,9 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
                 }
         }
 
-    let exclusionRectangles = [] // TODO
+    let manCentre = ViewPoint { ptx=220.0F<epx> ; pty=100.0F<epx> } // TODO: decide from positioner?
+
+    let exclusionRectangles = [ManExclusionRectangleAround manCentre] // TODO
 
     let placesForAdversariesInThisRoom = 
         AvailableObjectPositionsWithinRoom roomReference exclusionRectangles LargestAdversaryDimension |> Seq.toArray
@@ -1406,7 +1419,7 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
             ScreenMan =
                 {
                     ManState          = ManWalking EightWayDirection.Left8
-                    ManCentrePosition = ViewPoint { ptx=220.0F<epx> ; pty=100.0F<epx> } // TODO
+                    ManCentrePosition = manCentre
                 }
 
             ScreenDroids = 

@@ -55,7 +55,7 @@ let inline InvertVector (p:Point<'t>) = { ptx = -p.ptx ; pty = -p.pty }
 let inline ApplyToPoint f (p:Point<'t>) = { ptx = f p.ptx ; pty = f p.pty }
 
 let inline PointMult factor (p:Point<'t>) = { ptx = p.ptx * factor ; pty = p.pty * factor }
-    
+
 let inline RectangleWidth  (r:Rectangle<'t>) = r.Right - r.Left
 let inline RectangleHeight (r:Rectangle<'t>) = r.Bottom - r.Top
 
@@ -140,9 +140,10 @@ let inline SquareWithTopLeftAt point side =
     { Left=x ; Top=y ; Right=x+side ; Bottom=y+side }
 
 /// Return a rectangle of given width and height centred about the given point.
-let inline RectangleCenteredAbout (point:Point<float32<'u>>) (dims:RectDimensions<float32<'u>>) =
-    let x' = point.ptx - (dims.dimx / 2.0F)
-    let y' = point.pty - (dims.dimy / 2.0F)
+/// 'two' needs to be the number 2 in the same type as the point and dimensions.
+let inline RectangleCenteredAbout point dims two =  // TODO: Can we avoid passing 'two'?
+    let x' = point.ptx - (dims.dimx / two)
+    let y' = point.pty - (dims.dimy / two) 
     {
         Left    = x'
         Top     = y'
