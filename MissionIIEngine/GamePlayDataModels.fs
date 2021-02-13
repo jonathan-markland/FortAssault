@@ -145,13 +145,15 @@ type LevelModel =
 
 
 
+/// Identifies a room by its Cartesian position in the level arrangement.
+type RoomOrigin = RoomOrigin of (int * int)
+
+
+
 type RoomReference =  // TODO: rename "RoomModel"
     {
-        /// Current screen number within the level.  For display at top of screen.
-        RoomNumber        : RoomNumber
-
         /// Indicates the current room by index into the matrix ie: (0..3,0..3)
-        RoomOrigin        : int * int
+        RoomOrigin        : RoomOrigin
 
         /// The current level data
         LevelModel        : LevelModel

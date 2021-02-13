@@ -134,6 +134,10 @@ let IsCloseToAny things getThingCentre triggerDistance (ViewPoint centre) =
 //  ROOMS
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let RoomNumberFromRoomOrigin roomOrigin =
+    let (RoomOrigin (rx,ry)) = roomOrigin
+    RoomNumber ((ry * NumRoomsPerSide) + rx + 1)
+
 type RoomExitCases = ExitingLeft | ExitingRight | ExitingUp | ExitingDown | NotExitingRoom
 
 let ManVersusExits man =
@@ -158,14 +162,13 @@ let ManVersusExits man =
 
 type NewRoomFlipData =
     {
-        NewRoomNumber       : RoomNumber
-        NewRoomManCentre    : ViewPoint
-        NewRoomOrigin       : (int * int)
+        NewRoomOrigin    : RoomOrigin
+        NewRoomManCentre : ViewPoint
     }
 
 let CheckForRoomFlip roomOrigin man =
 
-    let (rx,ry) = roomOrigin
+    let (RoomOrigin (rx,ry)) = roomOrigin
 
     let n = NumRoomsPerSide - 1
 
@@ -181,19 +184,16 @@ let CheckForRoomFlip roomOrigin man =
         | None -> None
         | Some (rdx,rdy) ->
 
-            let mandx = ((float32) -rdx) * (RoomWidthPixels  - ManRoomFlipMargin)
-            let mandy = ((float32) -rdy) * (RoomHeightPixels - ManRoomFlipMargin)
-
-            let manCentre = ManCentreOf man
-
-            let (rx,ry) = (rx+rdx, ry+rdy)
-
-            Some 
+            let manRoomFlipMoveDelta =
                 {
-                    NewRoomNumber       = RoomNumber ((ry * NumRoomsPerSide) + rx + 1)
-                    NewRoomManCentre    = ViewPoint { ptx=manCentre.ptx + mandx ; pty=manCentre.pty + mandy }
-                    NewRoomOrigin       = (rx, ry)
+                    modx = ((float32) -rdx) * (RoomWidthPixels  - ManRoomFlipMargin)
+                    mody = ((float32) -rdy) * (RoomHeightPixels - ManRoomFlipMargin)
                 }
+
+            Some {
+                    NewRoomOrigin    = RoomOrigin (rx+rdx, ry+rdy)
+                    NewRoomManCentre = ViewPoint (ManCentreOf man |> PointMovedByDelta manRoomFlipMoveDelta)
+                 }
 
 let RoomCornerFurthestFrom (ViewPoint point) =
 
@@ -315,9 +315,9 @@ let IsWallTile tile =
         | TileIndex.TileFloor2 -> false
         | _ -> true
 
-let AvailableObjectPositionsWithinRoom roomReference exclusionRectangles side =
+let AvailableObjectPositionsWithinRoom roomReference exclusionRectangles side =  // TODO: exclusionRectangles!
 
-    let (rx,ry) = roomReference.RoomOrigin
+    let (RoomOrigin (rx,ry)) = roomReference.RoomOrigin
     let (ox,oy) = (rx * NumBricksPerSide * BrickTileWidth , ry * NumBricksPerSide * BrickTileHeight)
 
     seq {
@@ -360,6 +360,7 @@ let AvailableObjectPositionsWithinRoom roomReference exclusionRectangles side =
     }
 
 
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  DRAWING
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -388,8 +389,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
 
 
     let {
-            RoomNumber        = roomNumber
-            RoomOrigin        = (roomOriginX, roomOriginY)
+            RoomOrigin        = roomOrigin
             LevelModel        = levelModel
         } = roomReference
 
@@ -409,6 +409,8 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
             InteractibleObjectStyles = interactibleObjectStyles
         } = imageLookupTables
 
+    let roomNumber = roomOrigin |> RoomNumberFromRoomOrigin
+    let (RoomOrigin (roomOriginX,roomOriginY)) = roomOrigin
 
     let drawBackground () =
         Rectangle render 0<epx> 0<epx> ScreenWidthInt ScreenHeightInt (SolidColour 0u)
@@ -528,16 +530,6 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
             |> Seq.iter (fun (x,y) -> 
                 Rectangle render (x+PlayAreaOffsetX) (y+PlayAreaOffsetY) (side-1<epx>) (side-1<epx>) (SolidColour 0xFF0000u))
 
-        //let potentialObjectPositionsInRoom = 
-        //    PlacesWhereObjectsCanBePlacedInRoom levelTileMatrix (roomOriginX, roomOriginY) |> Seq.toArray
-        //
-        //potentialObjectPositionsInRoom
-        //    |> Array.iter (fun (brickX,brickY) ->
-        //        let x = brickX * BrickTileWidth + PlayAreaOffsetX
-        //        let y = brickY * BrickTileHeight + PlayAreaOffsetY
-        //        Rectangle render x y BrickTileWidth BrickTileHeight (SolidColour 0xFF0000u)
-        //    )
-        
 
     drawBackground ()
     drawTopLineOfScoreboard ()
@@ -583,7 +575,7 @@ let IntersectsWalls hitTestDistance roomReference itemCentre =
             WindowHeight = hitTestDistance * 2
         }
 
-    let (rx,ry) = roomReference.RoomOrigin
+    let (RoomOrigin (rx,ry)) = roomReference.RoomOrigin
     let (ox,oy) = (rx * NumBricksPerSide , ry * NumBricksPerSide)
 
     let tilingOffset =  // from the top left of the viewport window
@@ -1020,7 +1012,6 @@ let GhostUpdatedWithRespectTo man manBullets gameTime ghost =
 let WithRoomFlipAppliedFrom roomFlipData gameTime model =
 
     let {
-            NewRoomNumber       = newRoomNumber
             NewRoomManCentre    = newRoomManCentre
             NewRoomOrigin       = newRoomOrigin
         } = roomFlipData
@@ -1033,7 +1024,6 @@ let WithRoomFlipAppliedFrom roomFlipData gameTime model =
 
     let roomReference = 
         {
-            RoomNumber = newRoomNumber
             RoomOrigin = newRoomOrigin
             LevelModel = model.InnerScreenModel.RoomReference.LevelModel
         }
@@ -1140,8 +1130,7 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
         } = innerScreenModel
 
     let {
-            RoomNumber        = roomNumber
-            RoomOrigin        = _
+            RoomOrigin        = roomOrigin
             LevelModel        = levelModel
         } = roomReference
 
@@ -1150,6 +1139,8 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
             LevelTileMatrix  = _
             TileMatrixTraits = _
         } = levelModel
+
+    let roomNumber = RoomNumberFromRoomOrigin roomOrigin
 
 
     let normalGamePlay () =
@@ -1216,7 +1207,7 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
                     failwith "TODO: next level"
                     // model |> WithLevelChangeApplied
                 | false ->
-                    match CheckForRoomFlip roomReference.RoomOrigin man with
+                    match CheckForRoomFlip roomOrigin man with
                         | Some roomFlipData ->
                             model |> WithRoomFlipAppliedFrom roomFlipData gameTime
                         | None ->
@@ -1323,8 +1314,7 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
 
     let roomReference =
         {
-            RoomNumber = RoomNumber 1
-            RoomOrigin = (0,0)
+            RoomOrigin = RoomOrigin (0,0)
             LevelModel =
                 {
                     LevelNumber      = LevelNumber levelNumber
