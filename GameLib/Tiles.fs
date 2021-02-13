@@ -10,6 +10,7 @@ type TileMatrixTraits =
         TileHeightPixels  : int<epx>
     }
 
+[<Struct>]
 type TileMatrixViewportWindow =
     {
         WindowLeft   : int<epx>
@@ -18,6 +19,7 @@ type TileMatrixViewportWindow =
         WindowHeight : int<epx>
     }
 
+[<Struct>]
 type TileMatrixOffset =
     {
         OffsetX : int<epx>

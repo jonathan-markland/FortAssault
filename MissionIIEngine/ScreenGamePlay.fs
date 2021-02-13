@@ -304,6 +304,63 @@ let NewExplosion centreLocation gameTime =
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  OBJECT POSITION FINDER
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+    
+open Tiles
+
+let IsWallTile tile =
+    match tile with 
+        | TileIndex.TileFloor1
+        | TileIndex.TileFloor2 -> false
+        | _ -> true
+
+let AvailableObjectPositionsWithinRoom roomReference exclusionRectangles side =
+
+    let (rx,ry) = roomReference.RoomOrigin
+    let (ox,oy) = (rx * NumBricksPerSide * BrickTileWidth , ry * NumBricksPerSide * BrickTileHeight)
+
+    seq {
+
+        let mutable ty = 0<epx>
+        while ty < RoomHeightPixelsInt do
+
+            let mutable tx = 0<epx>
+            while tx < RoomWidthPixelsInt do
+                
+                let viewportWindow =
+                    {
+                        WindowLeft   = tx
+                        WindowTop    = ty
+                        WindowWidth  = side
+                        WindowHeight = side
+                    }
+
+                let tilingOffset =  // from the top left of the viewport window
+                    {
+                        OffsetX = -(tx + ox)
+                        OffsetY = -(ty + oy)
+                    }
+
+                let mutable intersectsWall = false  // TODO: Provide variant of ForEachTileWithVisiblePortion in the library.
+
+                ForEachTileWithVisiblePortion roomReference.LevelModel.TileMatrixTraits viewportWindow tilingOffset 
+                    (fun x y ix iy -> 
+                        let (LevelTileMatrix matrix) = roomReference.LevelModel.LevelTileMatrix
+                        let thisTile = matrix.[iy].[ix]
+                        intersectsWall <- intersectsWall || (thisTile |> IsWallTile)
+                    )
+
+                if not intersectsWall then
+                    yield (tx,ty)
+
+                tx <- tx + side
+
+            ty <- ty + side
+    }
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  DRAWING
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -462,15 +519,24 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
     // DEBUG:
     let drawPotentialObjectPositionsInRoom () =
         
+        let side = 20<epx>
+
         let potentialObjectPositionsInRoom = 
-            PlacesWhereObjectsCanBePlacedInRoom levelTileMatrix (roomOriginX, roomOriginY) |> Seq.toArray
+            AvailableObjectPositionsWithinRoom roomReference [] side
 
         potentialObjectPositionsInRoom
-            |> Array.iter (fun (brickX,brickY) ->
-                let x = brickX * BrickTileWidth + PlayAreaOffsetX
-                let y = brickY * BrickTileHeight + PlayAreaOffsetY
-                Rectangle render x y BrickTileWidth BrickTileHeight (SolidColour 0xFF0000u)
-            )
+            |> Seq.iter (fun (x,y) -> 
+                Rectangle render (x+PlayAreaOffsetX) (y+PlayAreaOffsetY) (side-1<epx>) (side-1<epx>) (SolidColour 0xFF0000u))
+
+        //let potentialObjectPositionsInRoom = 
+        //    PlacesWhereObjectsCanBePlacedInRoom levelTileMatrix (roomOriginX, roomOriginY) |> Seq.toArray
+        //
+        //potentialObjectPositionsInRoom
+        //    |> Array.iter (fun (brickX,brickY) ->
+        //        let x = brickX * BrickTileWidth + PlayAreaOffsetX
+        //        let y = brickY * BrickTileHeight + PlayAreaOffsetY
+        //        Rectangle render x y BrickTileWidth BrickTileHeight (SolidColour 0xFF0000u)
+        //    )
         
 
     drawBackground ()
@@ -492,8 +558,6 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
 //  WALLS / BOUNDS
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-open Tiles
-
 let LevelTileMatrixDetails () =
     {
         TilesHorizontally = NumBricksPerSide * NumRoomsPerSide
@@ -501,12 +565,6 @@ let LevelTileMatrixDetails () =
         TileWidthPixels   = BrickTileWidth
         TileHeightPixels  = BrickTileHeight
     }
-
-let IsWallTile tile =
-    match tile with 
-        | TileIndex.TileFloor1
-        | TileIndex.TileFloor2 -> false
-        | _ -> true
 
 let IntersectsWalls hitTestDistance roomReference itemCentre =
 
@@ -551,6 +609,7 @@ let OutOfPlayAreaBounds (ViewPoint point) =
     let sidev = (BrickTileHeight * NumBricksPerSide) |> IntToFloatEpx
 
     point.ptx < 0.0F<epx> || point.pty < 0.0F<epx> || point.ptx > sideh || point.pty > sidev
+
 
 
 
@@ -742,22 +801,20 @@ let NRandomChosenPositions numRequired (places:(int*int)[]) randomSeed =
     let mutable randomState = randomSeed
 
     seq {
-        for i in 1..numRequired do
-            randomState <- randomState |> XorShift32
-            let (XorShift32State v) = randomState
-            let index = (int) (v % (uint32) places.Length)
-            yield places.[index]
+        if places.Length > 0 then
+            for i in 1..numRequired do
+                randomState <- randomState |> XorShift32
+                let (XorShift32State v) = randomState
+                let index = (int) (v % (uint32) places.Length)
+                yield places.[index]
     }
 
         
 
 let NewDroidsForRoom levelNumber placesForAdversariesInThisRoom gameTime =
    
-    []
-    (* TODO
     let randomSeed = XorShift32State (uint32 gameTime)
 
-    // TODO: Some choices were within the walls -- why?
     // TODO: Eliminate the man's start position from the list of potential droid positions!!!
     // TODO: Chose subsequent from the remainder.
     // TODO: Choose droid types by level.
@@ -774,14 +831,12 @@ let NewDroidsForRoom levelNumber placesForAdversariesInThisRoom gameTime =
         |> Seq.toList
 
                 // [
-                //     // TODO: sort out
+                //     // TODO: remove
                 //     { DroidType = HomingDroid ; DroidCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty= 60.0F<epx> } } // TODO
                 //     { DroidType = HomingDroid ; DroidCentrePosition = ViewPoint { ptx=80.0F<epx> ; pty= 90.0F<epx> } } // TODO
                 //     { DroidType = WanderingDroid (EightWayDirection.Up8, gameTime) ; DroidCentrePosition = ViewPoint { ptx=280.0F<epx> ; pty=110.0F<epx> } } // TODO
                 //     { DroidType = AssassinDroid ; DroidCentrePosition = ViewPoint { ptx=90.0F<epx> ; pty= 80.0F<epx> } } // TODO
                 // ]
-
-                *)
 
 let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference gameTime droids = 
 
@@ -974,7 +1029,7 @@ let WithRoomFlipAppliedFrom roomFlipData gameTime model =
         model.InnerScreenModel.RoomReference.LevelModel.LevelTileMatrix
 
     let placesForAdversariesInThisRoom = 
-        PlacesWhereObjectsCanBePlacedInRoom levelMatrix newRoomOrigin |> Seq.toArray
+        [||] // TODO: PlacesWhereObjectsCanBePlacedInRoom levelMatrix newRoomOrigin |> Seq.toArray
 
     let roomReference = 
         {
@@ -1279,7 +1334,7 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
         }
 
     let placesForAdversariesInThisRoom = 
-        PlacesWhereObjectsCanBePlacedInRoom levelMatrix (0,0) |> Seq.toArray
+        [||] // TODO: PlacesWhereObjectsCanBePlacedInRoom levelMatrix (0,0) |> Seq.toArray
 
     let screenModel =
         {
@@ -1344,18 +1399,9 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
             ScreenDroids = 
                 NewDroidsForRoom roomReference.LevelModel.LevelNumber placesForAdversariesInThisRoom gameTime
 
-            ScreenGhost = NoGhostUntil (gameTime + GhostGraceDuration)
-
-            ManBullets =
-                [
-                    { BulletCentrePosition = ViewPoint { ptx=120.0F<epx> ; pty=60.0F<epx> } ; BulletDirection = EightWayDirection.DownRight8 }
-                ]
-
-            DroidBullets =
-                [
-                    { BulletCentrePosition = ViewPoint { ptx=60.0F<epx> ; pty=160.0F<epx> } ; BulletDirection = EightWayDirection.Up8 }
-                ]
-
+            ScreenGhost          = NoGhostUntil (gameTime + GhostGraceDuration)
+            ManBullets           = []
+            DroidBullets         = []
             DecorativeFlickbooks = []
         }
 
