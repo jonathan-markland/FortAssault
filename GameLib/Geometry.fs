@@ -135,6 +135,10 @@ let inline InflateRectangle border r =
         Bottom = r.Bottom + border
     }
 
+let inline SquareWithTopLeftAt point side =
+    let { ptx=x ; pty=y } = point
+    { Left=x ; Top=y ; Right=x+side ; Bottom=y+side }
+
 /// Return a rectangle of given width and height centred about the given point.
 let inline RectangleCenteredAbout (point:Point<float32<'u>>) (dims:RectDimensions<float32<'u>>) =
     let x' = point.ptx - (dims.dimx / 2.0F)

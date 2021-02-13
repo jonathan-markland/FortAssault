@@ -315,10 +315,13 @@ let IsWallTile tile =
         | TileIndex.TileFloor2 -> false
         | _ -> true
 
-let AvailableObjectPositionsWithinRoom roomReference exclusionRectangles side =  // TODO: exclusionRectangles!
+/// Yields a sequence of the centre positions of the available spare-space squares.
+let AvailableObjectPositionsWithinRoom roomReference exclusionRectangles (desiredSquareSide:int<epx>) =
 
     let (RoomOrigin (rx,ry)) = roomReference.RoomOrigin
     let (ox,oy) = (rx * NumBricksPerSide * BrickTileWidth , ry * NumBricksPerSide * BrickTileHeight)
+
+    let halfSide = desiredSquareSide / 2
 
     seq {
 
@@ -332,8 +335,8 @@ let AvailableObjectPositionsWithinRoom roomReference exclusionRectangles side = 
                     {
                         WindowLeft   = tx
                         WindowTop    = ty
-                        WindowWidth  = side
-                        WindowHeight = side
+                        WindowWidth  = desiredSquareSide
+                        WindowHeight = desiredSquareSide
                     }
 
                 let tilingOffset =  // from the top left of the viewport window
@@ -352,11 +355,16 @@ let AvailableObjectPositionsWithinRoom roomReference exclusionRectangles side = 
                     )
 
                 if not intersectsWall then
-                    yield (tx,ty)
+                    let areaRect = SquareWithTopLeftAt { ptx=tx ; pty=ty } desiredSquareSide
+                    let areaIntersectsAnyOfTheExclusionRectangles =
+                        exclusionRectangles |> List.exists (RectangleIntersects areaRect)
+                    if not areaIntersectsAnyOfTheExclusionRectangles then
+                        let centreSpot = (tx + halfSide,ty + halfSide)
+                        yield centreSpot
 
-                tx <- tx + side
+                tx <- tx + desiredSquareSide
 
-            ty <- ty + side
+            ty <- ty + desiredSquareSide
     }
 
 
@@ -528,7 +536,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
 
         potentialObjectPositionsInRoom
             |> Seq.iter (fun (x,y) -> 
-                Rectangle render (x+PlayAreaOffsetX) (y+PlayAreaOffsetY) (side-1<epx>) (side-1<epx>) (SolidColour 0xFF0000u))
+                Rectangle render (x+PlayAreaOffsetX) (y+PlayAreaOffsetY) (2<epx>) (2<epx>) (SolidColour 0xFF0000u))
 
 
     drawBackground ()
@@ -788,7 +796,7 @@ let PossiblyFiringAtDroids keyStateGetter man =
 //  Droids
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NRandomChosenPositions numRequired (places:(int*int)[]) randomSeed =
+let NRandomChosenPositions numRequired (places:(int<epx> * int<epx>)[]) randomSeed =
 
     let mutable randomState = randomSeed
 
@@ -816,8 +824,8 @@ let NewDroidsForRoom levelNumber placesForAdversariesInThisRoom gameTime =
     let chosenPositions2 = chosenPositions |> Seq.toList
 
     chosenPositions
-        |> Seq.map (fun (brickX,brickY) ->
-            let (droidX,droidY) = (brickX * BrickTileWidth |> IntToFloatEpx, brickY * BrickTileHeight |> IntToFloatEpx)
+        |> Seq.map (fun (centreX,centreY) ->
+            let (droidX,droidY) = (centreX |> IntToFloatEpx, centreY |> IntToFloatEpx)
             { DroidType = HomingDroid ; DroidCentrePosition = ViewPoint { ptx=droidX ; pty=droidY } }
         )
         |> Seq.toList
@@ -1016,11 +1024,16 @@ let WithRoomFlipAppliedFrom roomFlipData gameTime model =
             NewRoomOrigin       = newRoomOrigin
         } = roomFlipData
 
+    let roomReference =
+        model.InnerScreenModel.RoomReference
+
     let levelMatrix =
-        model.InnerScreenModel.RoomReference.LevelModel.LevelTileMatrix
+        roomReference.LevelModel.LevelTileMatrix
+
+    let exclusionRectangles = [] // TODO
 
     let placesForAdversariesInThisRoom = 
-        [||] // TODO: PlacesWhereObjectsCanBePlacedInRoom levelMatrix newRoomOrigin |> Seq.toArray
+        AvailableObjectPositionsWithinRoom roomReference exclusionRectangles LargestAdversaryDimension |> Seq.toArray
 
     let roomReference = 
         {
@@ -1323,8 +1336,10 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
                 }
         }
 
+    let exclusionRectangles = [] // TODO
+
     let placesForAdversariesInThisRoom = 
-        [||] // TODO: PlacesWhereObjectsCanBePlacedInRoom levelMatrix (0,0) |> Seq.toArray
+        AvailableObjectPositionsWithinRoom roomReference exclusionRectangles LargestAdversaryDimension |> Seq.toArray
 
     let screenModel =
         {

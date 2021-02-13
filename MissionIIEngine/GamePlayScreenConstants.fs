@@ -38,6 +38,9 @@ let DroidVsDroidTriggerDistance  =  8.0F<epx>
 let DroidVsManTriggerDistance    = DroidTriggerDistance + 2.0F<epx>  // Stop droid moving inside man's collision distance.
 let BulletVsWallsTriggerDistance =  1.0F<epx>
 
+/// Used for initial positioning of adversaries in the room.
+let LargestAdversaryDimension    = 20<epx>
+
 let ManFiringStartDistance      = 10.0F    // Used as multiplier hence no units.
 let DroidFiringStartDistance    = 8.0F     // Used as multiplier hence no units.
 

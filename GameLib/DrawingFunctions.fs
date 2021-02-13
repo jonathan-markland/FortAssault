@@ -49,7 +49,7 @@ let Rectangle render left top width height colour =
 
 
 /// Draw a square of a given side, centred about a point.
-let SquareAroundPoint render left top (side:int<epx>) colour =
+let SquareAroundPoint render left top (side:int<epx>) colour =  // TODO: Should be done in geometry to yield the square as a rectangle around the point, then draw the rectangle.
     let h = side / 2
     Rectangle render (left - h) (top - h) side side colour
 
