@@ -30,6 +30,15 @@ open Random
 //  TODO:  FOR LIBRARY 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let NewLocationForAttractor oldLocation attractionPoint travelSpeed =  // TODO: use in fort assault map screen too
+
+    if oldLocation |> IsWithinRegionOf attractionPoint 1.0F<epx> then
+        oldLocation
+    else
+        let delta = oldLocation |> SimpleMovementDeltaToGetTo attractionPoint travelSpeed
+        oldLocation |> PointMovedByDelta delta
+
+
 let EightWayDirectionApproximationFromTo (fromWhere:Point<float32<epx>>) (toWhere:Point<float32<epx>>) =
 
     let { ptx=x1 ; pty=y1 } = fromWhere
@@ -534,9 +543,11 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
         let potentialObjectPositionsInRoom = 
             AvailableObjectPositionsWithinRoom roomReference [] side
 
+        let colour = gameTime |> PulseBetween 10.0F (SolidColour 0xFF0000u) (SolidColour 0x0000FFu) 
+
         potentialObjectPositionsInRoom
             |> Seq.iter (fun (x,y) -> 
-                Rectangle render (x+PlayAreaOffsetX) (y+PlayAreaOffsetY) (2<epx>) (2<epx>) (SolidColour 0xFF0000u))
+                Rectangle render (x+PlayAreaOffsetX) (y+PlayAreaOffsetY) (2<epx>) (2<epx>) colour)
 
 
     drawBackground ()
@@ -544,7 +555,6 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
     drawLives ()
     drawInventory ()
     drawTiles ()
-    drawPotentialObjectPositionsInRoom ()
     drawInteractibles ()
     drawBullets manBullets
     drawBullets droidBullets
@@ -552,6 +562,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
     drawMan ()
     drawGhost ()
     drawDecoratives ()
+    drawPotentialObjectPositionsInRoom ()
 
     
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -864,8 +875,7 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
         // (Without regard for intersections)
         let (ViewPoint centre) = centre
         let (ViewPoint manCentre) = manCentre
-        let movementDirection = EightWayDirectionApproximationFromTo centre manCentre
-        let newCentre = centre |> MovedBy8way movementDirection HomingDroidSpeed
+        let newCentre = NewLocationForAttractor centre manCentre HomingDroidSpeed
         (ViewPoint newCentre, HomingDroid)
 
     let proposedLocationForWanderingDroid centre direction changeTime droidIndex gameTime =
@@ -892,8 +902,7 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
         // (Without regard for intersections)
         let (ViewPoint centre) = centre
         let (ViewPoint manCentre) = manCentre
-        let movementDirection = EightWayDirectionApproximationFromTo centre manCentre
-        let newCentre = centre |> MovedBy8way movementDirection AssassinDroidSpeed
+        let newCentre = NewLocationForAttractor centre manCentre AssassinDroidSpeed
         (ViewPoint newCentre, AssassinDroid)
 
     let withBestEffortPositioning oldCentre droidIndex idealCentreWithoutRegardForOverlaps =
@@ -994,14 +1003,13 @@ let GhostUpdatedWithRespectTo man manBullets gameTime ghost =
                 GhostStunned (ghostCentre,gameTime + GhostStunDuration)
             else
                 let (ViewPoint ghostCentre) = ghostCentre
-                let direction = EightWayDirectionApproximationFromTo ghostCentre (ManCentreOf man)
-                let ghostCentre = ghostCentre |> MovedBy8way direction GhostSpeed
+                let ghostCentre = NewLocationForAttractor ghostCentre (ManCentreOf man) GhostSpeed
                 GhostActive (ViewPoint ghostCentre)
 
         | GhostStunned (ghostCentre,reactivationTime) ->
             if ghostCentre |> shotBy manBullets then
                 GhostStunned (ghostCentre,gameTime + GhostStunDuration)
-            else if reactivationTime > gameTime then 
+            else if gameTime > reactivationTime then 
                 GhostActive ghostCentre 
             else 
                 ghost

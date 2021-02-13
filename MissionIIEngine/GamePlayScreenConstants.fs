@@ -44,12 +44,12 @@ let LargestAdversaryDimension    = 20<epx>
 let ManFiringStartDistance      = 10.0F    // Used as multiplier hence no units.
 let DroidFiringStartDistance    = 8.0F     // Used as multiplier hence no units.
 
-let HomingDroidSpeed    = 0.7F
+let HomingDroidSpeed    = 0.7F<epx>
 let WanderingDroidSpeed = 1.5F
-let AssassinDroidSpeed  = 0.5F
+let AssassinDroidSpeed  = 0.5F<epx>
 let BulletSpeed         = 4.0F
 let ManSpeed            = 1.0F
-let GhostSpeed          = 3.0F
+let GhostSpeed          = 2.0F<epx>
 
 let WanderingDroidDecisionInterval = 3.0F<seconds>
 let GhostGraceDuration             = 10.0F<seconds>
