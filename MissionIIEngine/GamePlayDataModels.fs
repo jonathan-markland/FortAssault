@@ -88,9 +88,16 @@ type DroidType =
     | AssassinDroid
 
 
+/// Unique identity for droid for collision with bullets algorithm.
+type DroidIdentity = DroidIdentity of uint32
+
+
 /// Model for droid adversaries on the current screen.
 type DroidModel =
     {
+        /// A unique identity number for this droid for collision with bullet detection.
+        DroidIdentity : DroidIdentity
+
         /// The type and traits-related state of droid
         DroidType : DroidType
 

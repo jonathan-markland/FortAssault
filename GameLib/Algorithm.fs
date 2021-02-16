@@ -1,5 +1,7 @@
 ﻿module Algorithm
 
+open Random
+
 /// Returns true if 'item' does not exist in 'theList', where keySelector is
 /// a function that returns a comparison key, given the item.
 let NotInListById theList keySelector item =
@@ -63,5 +65,54 @@ let inline ChooseItemFromListByModulo (hint:^num) (theList: 'a list) =
 
     else    
         None
+
+
+/// Like List.map, except the mapping function is also passed the remainder of the list
+/// to be done, and the new list as it stands so far in the process.
+let UpgradedListMap (mappingFunction:'item -> 'item list -> 'output list -> 'output) theList = // TODO: rename
+
+    let mutable accLeftToDo  = theList
+    let mutable doneList = []
+
+    while not (accLeftToDo |> List.isEmpty) do
+        match accLeftToDo with
+            | item::toDoList -> 
+                let processedItem = mappingFunction item toDoList doneList
+                doneList <- processedItem :: doneList
+                accLeftToDo <- toDoList
+            | [] ->
+                ()
+
+    doneList |> List.rev
+
+
+
+/// Returns a sequence that yields the contents of the given array in a shuffled order.
+let ShuffledArrayAsSeq (things:'t[]) randomSeed =
+
+    let mutable randomState = randomSeed
+    let count = things.Length
+
+    /// Temporary indirection array to avoid modifying caller's array.
+    let indirection = Array.init count (fun i -> i)
+
+    let sequence =
+        seq {
+            for i = (count-1) downto 0 do
+                randomState <- randomState |> XorShift32
+                let (XorShift32State v) = randomState
+
+                // Choose from the remaining indices:
+                let index = (int) (v % (uint32) (i+1))
+
+                yield things.[indirection.[index]]
+
+                // Swap chosen index to end:
+                let v = indirection.[index]
+                indirection.[index] <- indirection.[i]
+                indirection.[i] <- v
+        }
+
+    (sequence, randomState)
 
 

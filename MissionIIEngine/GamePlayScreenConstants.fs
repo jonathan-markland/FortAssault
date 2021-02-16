@@ -34,7 +34,7 @@ let BulletTriggerDistance        =  8.0F<epx>
 let InteractibleTriggerDistance  = 10.0F<epx>
 let ManVsWallTriggerDistance     =  8.0F<epx>
 let DroidVsWallTriggerDistance   =  6.0F<epx>
-let DroidVsDroidTriggerDistance  =  8.0F<epx>
+let DroidVsDroidTriggerDistance  = 12.0F<epx>
 let DroidVsManTriggerDistance    = DroidTriggerDistance + 2.0F<epx>  // Stop droid moving inside man's collision distance.
 let BulletVsWallsTriggerDistance =  1.0F<epx>
 
@@ -52,7 +52,7 @@ let ManSpeed            = 1.0F
 let GhostSpeed          = 2.0F<epx>
 
 let WanderingDroidDecisionInterval = 3.0F<seconds>
-let GhostGraceDuration             = 10.0F<seconds>
+let GhostGraceDuration             = 20.0F<seconds>
 let GhostStunDuration              =  4.0F<seconds>
 
 /// Distance in from the sides at which to position man when flipping between rooms.

@@ -1,5 +1,6 @@
 ﻿module ScreenGamePlay
 
+open Algorithm
 open Levels
 open GamePlayDataModels
 open GamePlayScreenConstants
@@ -124,10 +125,16 @@ let BulletCentreOf { BulletCentrePosition = ViewPoint centre } =
 let VPBulletCentreOf { BulletCentrePosition = centre } = // TODO sort this out
     centre
 
-let DroidCentreOf { DroidType=_ ; DroidCentrePosition=ViewPoint centre } =
+let ToDroidIdentity (i:int) =
+    DroidIdentity ((uint32) i)
+
+let DroidIdentity { DroidIdentity=id ; DroidType=_ ; DroidCentrePosition=_ } =
+    id
+
+let DroidCentreOf { DroidIdentity=_ ; DroidType=_ ; DroidCentrePosition=ViewPoint centre } =
     centre
 
-let VPDroidCentreOf { DroidType=_ ; DroidCentrePosition=centre } =  // TODO: sort out this
+let VPDroidCentreOf { DroidIdentity=_ ; DroidType=_ ; DroidCentrePosition=centre } =  // TODO: sort out this
     centre
 
 let ManCentreOf { ManCentrePosition = ViewPoint centre } = 
@@ -443,7 +450,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
         let (RoomNumber roomNumber) = roomNumber
         let scoreText = $"SCORE {score}"
         let (LevelNumber levelNumber) = levelNumber
-        let roomText  = $"ROOM {roomNumber} L{levelNumber}"
+        let roomText  = $"ROOM {roomNumber} L{levelNumber + 1}"
         TextX render fatFont LeftAlign  TopAlign TextIndent TopPanelTopY scoreText
         TextX render fatFont RightAlign TopAlign (ScreenWidthInt - TextIndent) TopPanelTopY roomText
 
@@ -544,7 +551,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
     // DEBUG:
     let drawPotentialObjectPositionsInRoom () =
         
-        let side = 20<epx>
+        let side = LargestAdversaryDimension
 
         let potentialObjectPositionsInRoom = 
             AvailableObjectPositionsWithinRoom roomReference [] side
@@ -569,11 +576,11 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
     drawBullets manBullets
     drawBullets droidBullets
     drawDroids ()
-    drawManExclusionDebugRectangle ()
+    // FOR DEBUG:  drawManExclusionDebugRectangle ()
     drawMan ()
     drawGhost ()
     drawDecoratives ()
-    drawPotentialObjectPositionsInRoom ()
+    // FOR DEBUG:  drawPotentialObjectPositionsInRoom ()
 
     
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -818,21 +825,10 @@ let PossiblyFiringAtDroids keyStateGetter man =
 //  Droids
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NRandomChosenThings numRequired (things:'t[]) randomSeed =  // TODO: move to library
+let NRandomChosenThings numRequired (things:'t[]) randomSeed =
 
-    let mutable randomState = randomSeed
-
-    let sequence =
-        seq {
-            if things.Length > 0 then
-                for i in 1..numRequired do
-                    randomState <- randomState |> XorShift32
-                    let (XorShift32State v) = randomState
-                    let index = (int) (v % (uint32) things.Length)
-                    yield things.[index]
-        }
-    
-    (sequence, randomState)
+    let (sequence, randomState) = ShuffledArrayAsSeq things randomSeed
+    (sequence |> Seq.take numRequired, randomState)
 
         
 
@@ -840,25 +836,20 @@ let NewDroidsForRoom levelNumber placesForAdversariesInThisRoom gameTime =
    
     let randomSeed = XorShift32State (uint32 gameTime)
 
-    // TODO: Chose subsequent from the remainder.
     // TODO: Choose droid types by level.
 
-    let chosenPositions,_ = NRandomChosenThings 10 placesForAdversariesInThisRoom randomSeed
+    let (chosenPositions,_) = NRandomChosenThings 10 placesForAdversariesInThisRoom randomSeed
 
     chosenPositions
-        |> Seq.map (fun (centreX,centreY) ->
+        |> Seq.mapi (fun i (centreX,centreY) ->
             let (droidX,droidY) = (centreX |> IntToFloatEpx, centreY |> IntToFloatEpx)
-            { DroidType = HomingDroid ; DroidCentrePosition = ViewPoint { ptx=droidX ; pty=droidY } }
+            // { DroidIdentity = i |> ToDroidIdentity ; DroidType = AssassinDroid ; DroidCentrePosition = ViewPoint { ptx=droidX ; pty=droidY } } // TODO
+            // { DroidIdentity = i |> ToDroidIdentity ; DroidType = WanderingDroid (EightWayDirection.Up8, gameTime) ; DroidCentrePosition = ViewPoint { ptx=droidX ; pty=droidY } } // TODO
+            { DroidIdentity = i |> ToDroidIdentity ; DroidType = HomingDroid ; DroidCentrePosition = ViewPoint { ptx=droidX ; pty=droidY } }
         )
         |> Seq.toList
 
-                // [
-                //     // TODO: remove
-                //     { DroidType = HomingDroid ; DroidCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty= 60.0F<epx> } } // TODO
-                //     { DroidType = HomingDroid ; DroidCentrePosition = ViewPoint { ptx=80.0F<epx> ; pty= 90.0F<epx> } } // TODO
-                //     { DroidType = WanderingDroid (EightWayDirection.Up8, gameTime) ; DroidCentrePosition = ViewPoint { ptx=280.0F<epx> ; pty=110.0F<epx> } } // TODO
-                //     { DroidType = AssassinDroid ; DroidCentrePosition = ViewPoint { ptx=90.0F<epx> ; pty= 80.0F<epx> } } // TODO
-                // ]
+
 
 let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference gameTime droids = 
 
@@ -869,17 +860,16 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
         let (ViewPoint manCentre) = manCentre
         droidCentre |> IsWithinRegionOf manCentre DroidVsManTriggerDistance
 
-    let intersectsOtherDroids exceptThisDroidIndex (ViewPoint droidCentre) =
-        let mutable flag = false  // TODO
-        droids |> List.iteri (fun i otherDroid -> 
-            if i <> exceptThisDroidIndex then
-                flag <- droidCentre |> IsWithinRegionOf (DroidCentreOf otherDroid) DroidVsDroidTriggerDistance)
-        flag
+    let intersectsDroidsIn droidList (ViewPoint droidCentre) =
+        not
+            (droidList |> List.forall (fun otherDroid -> 
+                not (droidCentre |> IsWithinRegionOf (DroidCentreOf otherDroid) DroidVsDroidTriggerDistance)))
 
-    let intersectsSomething droidIndex point =
+    let intersectsSomething otherDroidsNotYetMoved droidsMovedSoFar point =
         point |> intersectsWall 
             || point |> intersectsMan 
-            || point |> intersectsOtherDroids droidIndex
+            || point |> intersectsDroidsIn otherDroidsNotYetMoved
+            || point |> intersectsDroidsIn droidsMovedSoFar
             || point |> OutOfPlayAreaBounds
 
     let proposedLocationForHomingDroid centre =
@@ -889,7 +879,7 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
         let newCentre = NewLocationForAttractor centre manCentre HomingDroidSpeed
         (ViewPoint newCentre, HomingDroid)
 
-    let proposedLocationForWanderingDroid centre direction changeTime droidIndex gameTime =
+    let proposedLocationForWanderingDroid centre direction changeTime otherDroidsNotYetMoved droidsMovedSoFar gameTime =
         // (Without regard for intersections)
         let (ViewPoint centre) = centre
 
@@ -904,7 +894,7 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
         else
             let newPosition = centre |> MovedBy8way direction WanderingDroidSpeed
 
-            if (ViewPoint newPosition) |> intersectsSomething droidIndex then
+            if (ViewPoint newPosition) |> intersectsSomething otherDroidsNotYetMoved droidsMovedSoFar then
                 (ViewPoint centre, wanderingInDifferentDirection direction gameTime)
             else
                 (ViewPoint newPosition, WanderingDroid (direction, changeTime))  // TODO: This is really returning the WanderingDroid unchanged.
@@ -916,10 +906,10 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
         let newCentre = NewLocationForAttractor centre manCentre AssassinDroidSpeed
         (ViewPoint newCentre, AssassinDroid)
 
-    let withBestEffortPositioning oldCentre droidIndex idealCentreWithoutRegardForOverlaps =
+    let withBestEffortPositioning oldCentre otherDroidsNotYetMoved droidsMovedSoFar idealCentreWithoutRegardForOverlaps =
 
         let succeedsAt =
-            not << (intersectsSomething droidIndex)
+            not << (intersectsSomething otherDroidsNotYetMoved droidsMovedSoFar)
 
         let (ViewPoint { ptx=oldx ; pty=oldy }) = oldCentre
         let (ViewPoint { ptx=newx ; pty=newy }) = idealCentreWithoutRegardForOverlaps
@@ -931,9 +921,9 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
             let horizontallySlidPosition = ViewPoint { ptx=newx ; pty=oldy }
             if succeedsAt horizontallySlidPosition then horizontallySlidPosition else oldCentre
 
-    let toNewDroidLocation droidIndex droid =
+    let toNewDroidLocation droid otherDroidsNotYetMoved droidsMovedSoFar =
         
-        let { DroidType=dtype ; DroidCentrePosition=oldCentre } = droid
+        let { DroidIdentity=id ; DroidType=dtype ; DroidCentrePosition=oldCentre } = droid
         
         let idealCentreWithoutRegardForOverlaps , updatedDroidType =   // TODO: updatedDroidType not absolutely ideal just because we want wandering droid to change direction
             match dtype with
@@ -941,17 +931,17 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
                     proposedLocationForHomingDroid oldCentre
 
                 | WanderingDroid (direction,changeTime) ->
-                    proposedLocationForWanderingDroid oldCentre direction changeTime droidIndex gameTime
+                    proposedLocationForWanderingDroid oldCentre direction changeTime otherDroidsNotYetMoved droidsMovedSoFar gameTime
 
                 | AssassinDroid ->
                     proposedLocationForAssassinDroid oldCentre
         
         let adjustedCentre =
-            idealCentreWithoutRegardForOverlaps |> withBestEffortPositioning oldCentre droidIndex
+            idealCentreWithoutRegardForOverlaps |> withBestEffortPositioning oldCentre otherDroidsNotYetMoved droidsMovedSoFar
         
-        { DroidType=updatedDroidType ; DroidCentrePosition=adjustedCentre }
+        { DroidIdentity=id ; DroidType=updatedDroidType ; DroidCentrePosition=adjustedCentre }
 
-    droids |> List.mapi toNewDroidLocation
+    droids |> UpgradedListMap toNewDroidLocation
 
 
 
@@ -968,14 +958,14 @@ let DroidsExplodedIfShotBy bullets gameTime droids =
         droids
         doesBulletCollideWithDroid
         BulletCentreOf  // used as identity
-        DroidCentreOf   // used as identity
+        DroidIdentity
         createExplosionAndScore
 
 let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
 
     let possiblyFireIn direction (ViewPoint droidCentre) =
         let optBullet = Some (NewBulletFrom (ViewPoint droidCentre) DroidFiringStartDistance direction)
-        gameTime |> PulseBetween 1.0F None optBullet  // TODO: Decide when droids fire really!
+        gameTime |> PulseBetween 0.1F None optBullet  // TODO: Decide when droids fire really!
 
     let newBulletFiredByDroid droid =
         let droidCentre = DroidCentreOf droid
@@ -1051,14 +1041,14 @@ let WithRoomFlipAppliedFrom roomFlipData gameTime model =
 
     let exclusionRectangles = [ManExclusionRectangleAround newRoomManCentre]
 
-    let placesForAdversariesInThisRoom = 
-        AvailableObjectPositionsWithinRoom roomReference exclusionRectangles LargestAdversaryDimension |> Seq.toArray
-
     let roomReference = 
         {
             RoomOrigin = newRoomOrigin
             LevelModel = model.InnerScreenModel.RoomReference.LevelModel
         }
+
+    let placesForAdversariesInThisRoom = 
+        AvailableObjectPositionsWithinRoom roomReference exclusionRectangles LargestAdversaryDimension |> Seq.toArray
 
     let model =
         {
