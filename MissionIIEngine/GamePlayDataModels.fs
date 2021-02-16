@@ -53,8 +53,17 @@ type Bullet =
 type InventoryObjectType = InvKey | InvRing | InvGold
 
 /// Items scattered about the level that the player can interact with in some way.
-type InteractibleObjectType = ObKey=0 | ObRing=1 | ObGold=2 | ObAmulet=3 | ObHealthBonus=4 | ObLevelExit=5
+type InteractibleObjectType = ObKey | ObRing | ObGold | ObAmulet | ObHealthBonus | ObLevelExit
 
+let InteractibleImageIndexFor interactibleObjectType =
+    match interactibleObjectType with
+        | ObKey         -> 0
+        | ObRing        -> 1
+        | ObGold        -> 2
+        | ObAmulet      -> 3
+        | ObHealthBonus -> 4
+        | ObLevelExit   -> 5
+        
 /// An item that the player must collect on the current level.
 type Interactible =
     {
@@ -134,7 +143,7 @@ type ImageLookupsTables =
         DroidStyles2      : Image[]
 
         /// Image lookup for interactive objects.
-        InteractibleObjectStyles : Image[]
+        InteractibleObjectImages : Image[]
     }
 
 

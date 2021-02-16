@@ -436,7 +436,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
             ManWalkingStyles2 = manWalkingStyles2
             DroidStyles1      = droidStyles1
             DroidStyles2      = droidStyles2
-            InteractibleObjectStyles = interactibleObjectStyles
+            InteractibleObjectImages = interactibleObjectImages
         } = imageLookupTables
 
     let roomNumber = roomOrigin |> RoomNumberFromRoomOrigin
@@ -542,7 +542,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
                     InteractibleCentrePosition = centrePos
                 } = interactible
             if roomNumber = interactibleRoomNumber then
-                CentreImagePoint render (centrePos |> offset) interactibleObjectStyles.[int interactibleObjectType]
+                CentreImagePoint render (centrePos |> offset) interactibleObjectImages.[InteractibleImageIndexFor interactibleObjectType]
         )
 
     let drawDecoratives () =
@@ -783,15 +783,14 @@ let PossiblyInteractingWith interactibles currentRoomNumber man =
     let collect inventoryItem =
         (NoExtraLife, NoChangeInvincibility, Some inventoryItem)
 
-    let interactionResultFor interactible =
-        match interactible.InteractibleType with
-            | InteractibleObjectType.ObKey         -> collect InvKey
-            | InteractibleObjectType.ObRing        -> collect InvRing
-            | InteractibleObjectType.ObGold        -> collect InvGold
-            | InteractibleObjectType.ObAmulet      -> (NoExtraLife,     GainInvincibility,     None)
-            | InteractibleObjectType.ObHealthBonus -> (ExtraLifeGained, NoChangeInvincibility, None)
-            | InteractibleObjectType.ObLevelExit   -> (NoExtraLife,     NoChangeInvincibility, None)   // NB: No operation because of separate handling elsewhere.
-            | _ -> failwith "Unrecognised enum case"
+    let interactionResultFor interactibleType =
+        match interactibleType with
+            | ObKey         -> collect InvKey
+            | ObRing        -> collect InvRing
+            | ObGold        -> collect InvGold
+            | ObAmulet      -> (NoExtraLife,     GainInvincibility,     None)
+            | ObHealthBonus -> (ExtraLifeGained, NoChangeInvincibility, None)
+            | ObLevelExit   -> (NoExtraLife,     NoChangeInvincibility, None)   // NB: No operation because of separate handling elsewhere.
 
     let shouldBeRemoved interactible =
         interactible.InteractibleType <> InteractibleObjectType.ObLevelExit
@@ -799,7 +798,7 @@ let PossiblyInteractingWith interactibles currentRoomNumber man =
     match interactibles |> List.tryFind touchedItem with
         | None -> (NoExtraLife, NoChangeInvincibility, None, interactibles)
         | Some interactible ->
-            let (extraLife, invincib, invent) = interactionResultFor interactible
+            let (extraLife, invincib, invent) = interactionResultFor interactible.InteractibleType
             if interactible |> shouldBeRemoved then
                 (extraLife, invincib, invent, interactibles |> PlanetSavingListFilter (not << touchedItem))
             else
@@ -1401,7 +1400,7 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
                             ManWalkingStyles2        = manWalkingStyles2
                             DroidStyles1             = droidStyles1
                             DroidStyles2             = droidStyles2
-                            InteractibleObjectStyles = interactibleObjectStyles
+                            InteractibleObjectImages = interactibleObjectStyles
                         }
                     WhereToOnGameOver = whereToOnGameOver
                 }
