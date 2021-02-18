@@ -64,7 +64,7 @@ let InteractibleImageIndexFor interactibleObjectType =
         | ObHealthBonus -> 4
         | ObLevelExit   -> 5
         
-/// An item that the player must collect on the current level.
+/// An item that the player can collect on the current level.
 type Interactible =
     {
         InteractibleRoom           : RoomNumber
@@ -74,8 +74,8 @@ type Interactible =
 
 /// Basic states the player can be in during the gameplay screen.
 type ManState = 
-    | ManStandingFacing of facing:EightWayDirection
-    | ManWalking        of facing:EightWayDirection
+    | ManStandingFacing of facing : EightWayDirection
+    | ManWalking        of facing : EightWayDirection
     | ManElectrocuted
     | ManDead
 
@@ -92,7 +92,7 @@ type ManModel =
 
 /// Types of droid.  This affects visuals and behaviours.
 type DroidType = 
-    | HomingDroid
+    | HomingDroid   // TODO: different speeds for the individual droids?
     | WanderingDroid of movement:EightWayDirection * nextDirectionChangeTime:float32<seconds>
     | AssassinDroid
 

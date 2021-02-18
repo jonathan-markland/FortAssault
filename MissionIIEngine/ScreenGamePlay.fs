@@ -192,9 +192,10 @@ let CheckForRoomFlip roomOrigin man =
 
     let (RoomOrigin (rx,ry)) = roomOrigin
 
-    let n = NumRoomsPerSide - 1
-
     let roomMoveDeltas =
+
+        let n = NumRoomsPerSide - 1
+
         match man |> ManVersusExits with
             | ExitingLeft  -> if rx > 0 then Some (-1, 0) else failwith "Leftmost exit leads outside level bounds"
             | ExitingRight -> if rx < n then Some (+1, 0) else failwith "Rightmost exit leads outside level bounds"
@@ -299,7 +300,7 @@ let inline DimensionsToFloat32Epx { dimx=dimx ; dimy=dimy } =  // TODO: possibly
         dimy = ((float32) dimy) |> Float32ToEpx
     }
 
-let offset point =
+let Offset point =
     let (ViewPoint { ptx=x ; pty=y }) = point
     { 
         ptx = ((float32 x) + (float32 PlayAreaOffsetX)) |> Float32ToEpx 
@@ -321,7 +322,7 @@ let ExplosionFlickBookType () =
 let NewExplosion centreLocation gameTime =
     {
         FlickBookType            = ExplosionFlickBookType ()
-        FlickBookMechanicsObject = MechanicsControlledStationaryObject (centreLocation |> offset) gameTime ExplosionDuration
+        FlickBookMechanicsObject = MechanicsControlledStationaryObject (centreLocation |> Offset) gameTime ExplosionDuration
         FlickBookStartTime       = gameTime
     }
 
@@ -507,7 +508,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
                 | ManWalking        direction -> (gameTime |> PulseBetween ManWalkingStepsPerSecond manWalkingStyles1 manWalkingStyles2).[int direction]
                 | ManElectrocuted             ->  gameTime |> PulseBetween ManElectrocutionSwitchesPerSecond Electrocution1ImageID Electrocution2ImageID |> ImageFromID
                 | ManDead                     -> DeadImageID |> ImageFromID
-        CentreImagePoint render (manCentre |> offset) manImage
+        CentreImagePoint render (manCentre |> Offset) manImage
 
     let drawDroids () =
         droids |> List.iter (fun droid ->
@@ -517,22 +518,22 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
                 } = droid
 
             let imageSet = gameTime |> PulseBetween DroidAnimationPerSecond droidStyles1 droidStyles2
-            CentreImagePoint render (centrePos |> offset) imageSet.[DroidImageIndexFor droidType]
+            CentreImagePoint render (centrePos |> Offset) imageSet.[DroidImageIndexFor droidType]
         )
 
     let drawBullets bullets =
         bullets |> List.iter (fun bullet ->
             let { BulletCentrePosition = centrePos } = bullet
-            CentreImagePoint render (centrePos |> offset) (BulletImageID |> ImageFromID)
+            CentreImagePoint render (centrePos |> Offset) (BulletImageID |> ImageFromID)
         )
 
     let drawGhost () =
         match ghost with
             | NoGhostUntil _ -> ()
             | GhostActive centrePos -> 
-                CentreImagePoint render (centrePos |> offset) (GhostImageID |> ImageFromID)
+                CentreImagePoint render (centrePos |> Offset) (GhostImageID |> ImageFromID)
             | GhostStunned (centrePos,_) ->
-                CentreImagePoint render (centrePos |> offset) (GhostStunnedImageID |> ImageFromID)
+                CentreImagePoint render (centrePos |> Offset) (GhostStunnedImageID |> ImageFromID)
 
     let drawInteractibles () =
         interactibles |> List.iter (fun interactible ->
@@ -542,7 +543,8 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
                     InteractibleCentrePosition = centrePos
                 } = interactible
             if roomNumber = interactibleRoomNumber then
-                CentreImagePoint render (centrePos |> offset) interactibleObjectImages.[InteractibleImageIndexFor interactibleObjectType]
+                let image = interactibleObjectImages.[InteractibleImageIndexFor interactibleObjectType]
+                CentreImagePoint render (centrePos |> Offset) image
         )
 
     let drawDecoratives () =
@@ -765,12 +767,14 @@ let LivesIncrementedBy livesDelta manLives =
 let PossiblyInteractingWith interactibles currentRoomNumber man =
 
     // Reminder: Ignores level exit (filtered above).
-    // We only need to interact with the first found.
-    // Leave (theoretical) overlaps for the next frame.
+
+    // We only need to interact with the first found, because it will
+    // be removed on this frame, and we can leave any (theoretical) 
+    // overlapping interactible items for the next frame.
 
     let (ViewPoint manCentre) = man.ManCentrePosition
 
-    let touchedItem interactible =
+    let isItemTouched interactible =
         let {
                 InteractibleRoom           = objectRoomNumber
                 InteractibleType           = _
@@ -780,10 +784,11 @@ let PossiblyInteractingWith interactibles currentRoomNumber man =
         objectRoomNumber = currentRoomNumber 
             && objectCentre |> IsWithinRegionOf manCentre InteractibleTriggerDistance
 
-    let collect inventoryItem =
-        (NoExtraLife, NoChangeInvincibility, Some inventoryItem)
-
     let interactionResultFor interactibleType =
+
+        let collect inventoryItem =
+            (NoExtraLife, NoChangeInvincibility, Some inventoryItem)
+
         match interactibleType with
             | ObKey         -> collect InvKey
             | ObRing        -> collect InvRing
@@ -792,17 +797,29 @@ let PossiblyInteractingWith interactibles currentRoomNumber man =
             | ObHealthBonus -> (ExtraLifeGained, NoChangeInvincibility, None)
             | ObLevelExit   -> (NoExtraLife,     NoChangeInvincibility, None)   // NB: No operation because of separate handling elsewhere.
 
-    let shouldBeRemoved interactible =
-        interactible.InteractibleType <> InteractibleObjectType.ObLevelExit
+    let possibleFirstTouchedInteractible = 
+        interactibles |> List.tryFind isItemTouched
 
-    match interactibles |> List.tryFind touchedItem with
-        | None -> (NoExtraLife, NoChangeInvincibility, None, interactibles)
+    match possibleFirstTouchedInteractible with
+        
+        | None -> 
+            (NoExtraLife, NoChangeInvincibility, None, interactibles)
+        
         | Some interactible ->
-            let (extraLife, invincib, invent) = interactionResultFor interactible.InteractibleType
-            if interactible |> shouldBeRemoved then
-                (extraLife, invincib, invent, interactibles |> PlanetSavingListFilter (not << touchedItem))
-            else
-                (extraLife, invincib, invent, interactibles)
+
+            let shouldBeRemoved interactible =
+                interactible.InteractibleType <> InteractibleObjectType.ObLevelExit
+
+            let (livesDelta, invincibilityTrigger, itemGained) = 
+                interactionResultFor interactible.InteractibleType
+
+            let interactibles = 
+                if interactible |> shouldBeRemoved then
+                    interactibles |> PlanetSavingListFilter (not << isItemTouched)
+                else
+                    interactibles
+
+            (livesDelta, invincibilityTrigger, itemGained, interactibles)
 
 let PossiblyFiringAtDroids keyStateGetter man =
     
@@ -842,9 +859,10 @@ let NewDroidsForRoom levelNumber placesForAdversariesInThisRoom gameTime =
     chosenPositions
         |> Seq.mapi (fun i (centreX,centreY) ->
             let (droidX,droidY) = (centreX |> IntToFloatEpx, centreY |> IntToFloatEpx)
+            // TODO
             // { DroidIdentity = i |> ToDroidIdentity ; DroidType = AssassinDroid ; DroidCentrePosition = ViewPoint { ptx=droidX ; pty=droidY } } // TODO
-            // { DroidIdentity = i |> ToDroidIdentity ; DroidType = WanderingDroid (EightWayDirection.Up8, gameTime) ; DroidCentrePosition = ViewPoint { ptx=droidX ; pty=droidY } } // TODO
-            { DroidIdentity = i |> ToDroidIdentity ; DroidType = HomingDroid ; DroidCentrePosition = ViewPoint { ptx=droidX ; pty=droidY } }
+            { DroidIdentity = i |> ToDroidIdentity ; DroidType = WanderingDroid (EightWayDirection.Up8, gameTime) ; DroidCentrePosition = ViewPoint { ptx=droidX ; pty=droidY } } // TODO
+            // { DroidIdentity = i |> ToDroidIdentity ; DroidType = HomingDroid ; DroidCentrePosition = ViewPoint { ptx=droidX ; pty=droidY } }
         )
         |> Seq.toList
 
@@ -864,7 +882,7 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
             (droidList |> List.forall (fun otherDroid -> 
                 not (droidCentre |> IsWithinRegionOf (DroidCentreOf otherDroid) DroidVsDroidTriggerDistance)))
 
-    let intersectsSomething otherDroidsNotYetMoved droidsMovedSoFar point =
+    let intersectsSomethingIncluding otherDroidsNotYetMoved droidsMovedSoFar point =
         point |> intersectsWall 
             || point |> intersectsMan 
             || point |> intersectsDroidsIn otherDroidsNotYetMoved
@@ -888,12 +906,12 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
             let nextDecisionTime = gameTime + WanderingDroidDecisionInterval
             WanderingDroid (newDirection, nextDecisionTime)
 
-        if changeTime > gameTime then
+        if gameTime > changeTime then
             (ViewPoint centre, wanderingInDifferentDirection direction gameTime)
         else
             let newPosition = centre |> MovedBy8way direction WanderingDroidSpeed
 
-            if (ViewPoint newPosition) |> intersectsSomething otherDroidsNotYetMoved droidsMovedSoFar then
+            if (ViewPoint newPosition) |> intersectsSomethingIncluding otherDroidsNotYetMoved droidsMovedSoFar then
                 (ViewPoint centre, wanderingInDifferentDirection direction gameTime)
             else
                 (ViewPoint newPosition, WanderingDroid (direction, changeTime))  // TODO: This is really returning the WanderingDroid unchanged.
@@ -908,7 +926,7 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
     let withBestEffortPositioning oldCentre otherDroidsNotYetMoved droidsMovedSoFar idealCentreWithoutRegardForOverlaps =
 
         let succeedsAt =
-            not << (intersectsSomething otherDroidsNotYetMoved droidsMovedSoFar)
+            not << (intersectsSomethingIncluding otherDroidsNotYetMoved droidsMovedSoFar)
 
         let (ViewPoint { ptx=oldx ; pty=oldy }) = oldCentre
         let (ViewPoint { ptx=newx ; pty=newy }) = idealCentreWithoutRegardForOverlaps
@@ -966,18 +984,21 @@ let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
         let optBullet = Some (NewBulletFrom (ViewPoint droidCentre) DroidFiringStartDistance direction)
         gameTime |> PulseBetween 0.1F None optBullet  // TODO: Decide when droids fire really!
 
+    let towards (ViewPoint dest) (ViewPoint source) =
+        EightWayDirectionApproximationFromTo source dest
+
     let newBulletFiredByDroid droid =
-        let droidCentre = DroidCentreOf droid
+        let droidCentre = VPDroidCentreOf droid
         match droid.DroidType with
             | HomingDroid -> 
                 None  // never fires
             
             | WanderingDroid (direction,_) -> 
-                possiblyFireIn direction (ViewPoint droidCentre)
+                possiblyFireIn direction droidCentre
 
             | AssassinDroid -> 
-                let dir = EightWayDirectionApproximationFromTo droidCentre (ManCentreOf man)
-                possiblyFireIn dir (ViewPoint droidCentre)
+                let direction = (VPManCentreOf man) |> towards droidCentre 
+                possiblyFireIn direction droidCentre
 
     droids |> List.choose newBulletFiredByDroid
 
