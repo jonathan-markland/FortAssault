@@ -274,7 +274,7 @@ let CheckForNextLevel currentLevelNumber (inventory:InventoryObjectType list) (i
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let FireButtonJustPressed keyStateGetter =
-    let { JustDown = justDown ; Held = _ } = keyStateGetter (WebBrowserKeyCode 90) // TODO: FIRE KEY CONSTANT!
+    let { JustDown = justDown ; Held = _ } = keyStateGetter (WebBrowserKeyCode 90) // TODO: Constants, see also the inhibitor function below.
     justDown
 
 let LeftButtonHeld keyStateGetter =
@@ -1232,6 +1232,21 @@ let private WithTheFollowingStateAppliedForManDeadOrElectrocuted manBullets droi
 //  Screen state advance on frame
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+/// Return a key-state-getter function that inhibits the player's keys
+/// but will pass through all others (eg: PAUSE).
+let InhibitingPlayerKeys (keyStateGetterToOverride : WebBrowserKeyCode -> InputEventKeyState) =
+
+    let filteredKeyStateGetter wkey = 
+        let (WebBrowserKeyCode key) = wkey
+        if key=90 || key=37 || key=39 || key=38 || key=40 then  // TODO: code constants
+            { JustDown=false ; Held = false }  // Lie about the real key state
+        else
+            keyStateGetterToOverride wkey
+
+    filteredKeyStateGetter
+
+
+
 let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
 
     let model = ModelFrom gameState
@@ -1270,17 +1285,19 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
     let roomNumber = RoomNumberFromRoomOrigin roomOrigin
 
 
-    // State changes that are always done irrespective of the man's state:
-
-    let manBullets   = manBullets   |> AdvancedWithBulletsRemovedThatHitWallsOrOutsidePlayArea roomReference
-    let droidBullets = droidBullets |> AdvancedWithBulletsRemovedThatHitWallsOrOutsidePlayArea roomReference
-    let decoratives  = decoratives  |> WithCompletedFlickbooksRemoved gameTime
-
-
-
     let normalGamePlay () =
 
-        // Man is alive.
+        let keyStateGetter =
+            match man.ManState with
+                | ManStandingFacing _ 
+                | ManWalking        _ -> keyStateGetter
+                | ManElectrocuted
+                | ManDead             -> keyStateGetter |> InhibitingPlayerKeys
+
+        let manBullets   = manBullets   |> AdvancedWithBulletsRemovedThatHitWallsOrOutsidePlayArea roomReference
+        let droidBullets = droidBullets |> AdvancedWithBulletsRemovedThatHitWallsOrOutsidePlayArea roomReference
+        let decoratives  = decoratives  |> WithCompletedFlickbooksRemoved gameTime
+        let droids       = droids       |> MovedToNewPositionsWhileConsidering (VPManCentreOf man) roomReference gameTime
 
         let man       = man |> RespondingToKeys keyStateGetter
         let manCentre = man.ManCentrePosition
@@ -1300,9 +1317,6 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
         // TODO: We do not yet have data modelling for the invincibility.
         let livesDelta, invincibTrigger, newItemForInventory, interactibles = // TODO: Use below to generate next state
             man |> PossiblyInteractingWith interactibles roomNumber   // Reminder: Ignores level exit (filtered above).
-
-        let droids =
-            droids |> MovedToNewPositionsWhileConsidering (VPManCentreOf man) roomReference gameTime
 
         let manBullets, droids, additionalExplosions1, additionalScore =
             droids |> DroidsExplodedIfShotBy manBullets gameTime
@@ -1329,33 +1343,26 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
             newItemForInventory livesDelta interactibles decoratives
 
 
-    let manAlive () =
 
-        let manCentre = ManCentreOf man
+    let manCentre = ManCentreOf man
 
-        let model =
-            match manCentre |> CheckForNextLevel levelNumber inventory interactibles roomNumber with
-                | true ->
-                    failwith "TODO: next level"
-                    // model |> WithLevelChangeApplied
-                | false ->
-                    match CheckForRoomFlip roomOrigin man with
-                        | Some roomFlipData ->
-                            model |> WithRoomFlipAppliedFrom roomFlipData gameTime
-                        | None ->
-                            normalGamePlay ()
-
-        gameState |> WithUpdatedModel model
+    let model =
+        match manCentre |> CheckForNextLevel levelNumber inventory interactibles roomNumber with
+            | true ->
+                failwith "TODO: next level"
+                // model |> WithLevelChangeApplied
+            | false ->
+                match CheckForRoomFlip roomOrigin man with
+                    | Some roomFlipData ->
+                        model |> WithRoomFlipAppliedFrom roomFlipData gameTime
+                    | None ->
+                        normalGamePlay ()
 
 
-    match man.ManState with
-        | ManStandingFacing _ 
-        | ManWalking        _ -> manAlive ()
-        | ManElectrocuted
-        | ManDead -> 
-            model
-                |> WithTheFollowingStateAppliedForManDeadOrElectrocuted manBullets droidBullets decoratives // [ManDead case]
-                |> ReplacesModelIn gameState
+
+    gameState |> WithUpdatedModel model
+
+
 
 
 
