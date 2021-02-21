@@ -1166,7 +1166,7 @@ let WithRoomFlipAppliedFrom roomFlipData gameTime model =
 //  Apply in-game changes required
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     
-let private WithTheFollowingStateApplied
+let private WithTheFollowingStateApplied  // TODO: rename for clarification, because this is only applied when the man is alive
         gameTime
         man manBullets additionalManBullet
         droids droidBullets additionalDroidBullets
@@ -1209,12 +1209,23 @@ let private WithTheFollowingStateApplied
 
             DecorativeFlickbooks = 
                 decoratives 
-                    |> WithCompletedFlickbooksRemoved gameTime
                     |> List.append additionalExplosions1 
                     |> List.append additionalExplosions2
         }
 
     model
+
+
+
+let private WithTheFollowingStateAppliedForManDeadOrElectrocuted manBullets droidBullets decoratives model =
+
+    {
+        model with
+            ManBullets           = manBullets   // because the state contains the position
+            DroidBullets         = droidBullets // because the state contains the position
+            DecorativeFlickbooks = decoratives  // to record the removals of any that have expired
+    }
+
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -1259,13 +1270,18 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
     let roomNumber = RoomNumberFromRoomOrigin roomOrigin
 
 
+    // State changes that are always done irrespective of the man's state:
+
+    let manBullets   = manBullets   |> AdvancedWithBulletsRemovedThatHitWallsOrOutsidePlayArea roomReference
+    let droidBullets = droidBullets |> AdvancedWithBulletsRemovedThatHitWallsOrOutsidePlayArea roomReference
+    let decoratives  = decoratives  |> WithCompletedFlickbooksRemoved gameTime
+
+
+
     let normalGamePlay () =
 
         // Man is alive.
 
-        let manBullets   = manBullets   |> AdvancedWithBulletsRemovedThatHitWallsOrOutsidePlayArea roomReference
-        let droidBullets = droidBullets |> AdvancedWithBulletsRemovedThatHitWallsOrOutsidePlayArea roomReference
-        
         let man       = man |> RespondingToKeys keyStateGetter
         let manCentre = man.ManCentrePosition
 
@@ -1336,7 +1352,10 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
         | ManStandingFacing _ 
         | ManWalking        _ -> manAlive ()
         | ManElectrocuted
-        | ManDead             -> Unchanged gameState
+        | ManDead -> 
+            model
+                |> WithTheFollowingStateAppliedForManDeadOrElectrocuted manBullets droidBullets decoratives // [ManDead case]
+                |> ReplacesModelIn gameState
 
 
 
