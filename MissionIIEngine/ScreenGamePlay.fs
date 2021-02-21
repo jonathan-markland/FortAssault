@@ -143,6 +143,11 @@ let ManCentreOf { ManCentrePosition = ViewPoint centre } =
 let VPManCentreOf { ManCentrePosition=centre } =  // TODO: sort out this
     centre
 
+let CanDroidTypeFire { DroidIdentity=_ ; DroidType=droidType ; DroidCentrePosition=_ } =
+    match droidType with
+        | HomingDroid      -> false
+        | WanderingDroid _ -> true
+        | AssassinDroid    -> true
 
 let IsCloseToAny things getThingCentre triggerDistance (ViewPoint centre) =
     things |> List.exists (fun thing -> 
@@ -849,24 +854,64 @@ let NRandomChosenThings numRequired (things:'t[]) randomSeed =
     let (sequence, randomState) = ShuffledArrayAsSeq things randomSeed
     (sequence |> Seq.take numRequired, randomState)
 
-        
+
+
+type DroidTypeToMake = MakeHoming | MakeWandering | MakeAssassin      
 
 let NewDroidsForRoom levelNumber placesForAdversariesInThisRoom gameTime =
    
+    let numberToMake = 10
+
     let randomSeed = XorShift32State (uint32 gameTime)
+    let (chosenPositions,_) = NRandomChosenThings numberToMake placesForAdversariesInThisRoom randomSeed
 
-    // TODO: Choose droid types by level.
+    let newDroidTypeToMakeFor (LevelNumber levelNumber) i =
+        if levelNumber = 1 then
+            MakeHoming
+        else if levelNumber = 2 then
+            if i < 3 then MakeWandering else MakeHoming
+        else
+            if i < 3 then 
+                MakeAssassin 
+            else if i < 5 then
+                MakeWandering
+            else
+                MakeHoming
 
-    let (chosenPositions,_) = NRandomChosenThings 10 placesForAdversariesInThisRoom randomSeed
+    let newDroidBy levelNumber i newDroidCentre =
+
+        let (droidX,droidY) = newDroidCentre
+        let centre   = ViewPoint { ptx=droidX ; pty=droidY } 
+        let identity = i |> ToDroidIdentity
+
+        match newDroidTypeToMakeFor levelNumber i with
+        
+            | MakeHoming -> 
+                { 
+                    DroidIdentity       = identity
+                    DroidType           = HomingDroid
+                    DroidCentrePosition = centre
+                }
+
+            | MakeWandering ->
+                { 
+                    DroidIdentity       = identity
+                    DroidType           = WanderingDroid (EightWayDirection.Up8, gameTime)
+                    DroidCentrePosition = centre
+                }
+
+            | MakeAssassin ->
+                { 
+                    DroidIdentity       = identity
+                    DroidType           = AssassinDroid
+                    DroidCentrePosition = centre
+                }
+
 
     chosenPositions
         |> Seq.mapi (fun i (centreX,centreY) ->
-            let (droidX,droidY) = (centreX |> IntToFloatEpx, centreY |> IntToFloatEpx)
-            // TODO
-            // { DroidIdentity = i |> ToDroidIdentity ; DroidType = AssassinDroid ; DroidCentrePosition = ViewPoint { ptx=droidX ; pty=droidY } } // TODO
-            { DroidIdentity = i |> ToDroidIdentity ; DroidType = WanderingDroid (EightWayDirection.Up8, gameTime) ; DroidCentrePosition = ViewPoint { ptx=droidX ; pty=droidY } } // TODO
-            // { DroidIdentity = i |> ToDroidIdentity ; DroidType = HomingDroid ; DroidCentrePosition = ViewPoint { ptx=droidX ; pty=droidY } }
-        )
+            let newDroidCentre = (centreX |> IntToFloatEpx, centreY |> IntToFloatEpx)
+            newDroidBy levelNumber i newDroidCentre)
         |> Seq.toList
 
 
@@ -990,6 +1035,8 @@ let DroidsExplodedIfShotBy bullets gameTime droids =
         DroidIdentity
         createExplosionAndScore
 
+
+
 let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
 
     let possiblyFireIn direction (ViewPoint droidCentre) =
@@ -1011,6 +1058,9 @@ let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
                 let direction = (VPManCentreOf man) |> towards droidCentre 
                 possiblyFireIn direction droidCentre
 
+    let filteredForDroidsThatCanFire droidList =
+        droidList |> List.filter CanDroidTypeFire
+
     let shouldConsiderNow =
         ((int) (gameTime * 50.0F)) % 50 = 0   // TODO: Hack until I refactor use of float32<seconds> throughout in favour of integer 'FrameCount of uint32'?
 
@@ -1019,10 +1069,12 @@ let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
             | [] -> []
             | droids ->
                 let randomSeed = XorShift32State (uint32 gameTime)
-                let (chosenDroids,_) = NRandomChosenThings 1 (droids |> List.toArray) randomSeed
+                let (chosenDroids,_) = NRandomChosenThings 1 (droids |> filteredForDroidsThatCanFire |> List.toArray) randomSeed
                 chosenDroids |> Seq.choose newBulletFiredByDroid |> Seq.toList // TODO: Use seq in interface?
     else
         []
+
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Ghost
