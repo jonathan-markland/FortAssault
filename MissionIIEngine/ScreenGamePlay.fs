@@ -843,6 +843,9 @@ let PossiblyFiringAtDroids keyStateGetter man =
 
 let NRandomChosenThings numRequired (things:'t[]) randomSeed =
 
+    if numRequired > things.Length then
+        failwith "Array isn't large enough to supply requested number of randomly chosen items"
+
     let (sequence, randomState) = ShuffledArrayAsSeq things randomSeed
     (sequence |> Seq.take numRequired, randomState)
 
@@ -981,8 +984,7 @@ let DroidsExplodedIfShotBy bullets gameTime droids =
 let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
 
     let possiblyFireIn direction (ViewPoint droidCentre) =
-        let optBullet = Some (NewBulletFrom (ViewPoint droidCentre) DroidFiringStartDistance direction)
-        gameTime |> PulseBetween 0.1F None optBullet  // TODO: Decide when droids fire really!
+        Some (NewBulletFrom (ViewPoint droidCentre) DroidFiringStartDistance direction)
 
     let towards (ViewPoint dest) (ViewPoint source) =
         EightWayDirectionApproximationFromTo source dest
@@ -1000,7 +1002,18 @@ let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
                 let direction = (VPManCentreOf man) |> towards droidCentre 
                 possiblyFireIn direction droidCentre
 
-    droids |> List.choose newBulletFiredByDroid
+    let shouldConsiderNow =
+        ((int) (gameTime * 50.0F)) % 50 = 0   // TODO: Hack until I refactor use of float32<seconds> throughout in favour of integer 'FrameCount of uint32'?
+
+    if shouldConsiderNow then
+        match droids with
+            | [] -> []
+            | droids ->
+                let randomSeed = XorShift32State (uint32 gameTime)
+                let (chosenDroids,_) = NRandomChosenThings 1 (droids |> List.toArray) randomSeed
+                chosenDroids |> Seq.choose newBulletFiredByDroid |> Seq.toList // TODO: Use seq in interface?
+    else
+        []
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Ghost

@@ -45,7 +45,7 @@ let ManFiringStartDistance      = 10.0F    // Used as multiplier hence no units.
 let DroidFiringStartDistance    = 8.0F     // Used as multiplier hence no units.
 
 let HomingDroidSpeed    = 0.7F<epx>
-let WanderingDroidSpeed = 1.5F
+let WanderingDroidSpeed = 0.9F
 let AssassinDroidSpeed  = 0.5F<epx>
 let BulletSpeed         = 4.0F
 let ManSpeed            = 1.0F
