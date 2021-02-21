@@ -79,8 +79,8 @@ let MovedBy8way movementDirection speed point =
 
 
 
-let inline RotateClockwise8way (direction:EightWayDirection) =
-    let newDirectionInt = (((int) direction) + 1) &&& 7
+let inline RotateClockwise8way stepsDelta (fromDirection:EightWayDirection) =
+    let newDirectionInt = (((int) fromDirection) + stepsDelta) &&& 7
     LanguagePrimitives.EnumOfValue<int, EightWayDirection> (newDirectionInt)
 
 
@@ -900,12 +900,21 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
         (ViewPoint newCentre, HomingDroid)
 
     let proposedLocationForWanderingDroid centre direction changeTime otherDroidsNotYetMoved droidsMovedSoFar gameTime =
+
         // (Without regard for intersections)
+
+        // Note: the droids may "stick" a bit because they are beside a wall, and are
+        //       turning through an angle and only move once they turn towards a free direction.
+
         let (ViewPoint centre) = centre
 
-        let wanderingInDifferentDirection direction gameTime =
-            // TODO: use gameTime as seed to choose
-            let newDirection = direction |> RotateClockwise8way
+        let rotationAmountByTime (time:float32<seconds>) =
+            let delta = (((int) (time * 7.0F)) % 5) - 2  // 7.0 is arbitrary.
+            System.Diagnostics.Debug.Assert (delta >= -2 && delta <= 2)
+            delta
+
+        let wanderingInDifferentDirection oldDirection gameTime =
+            let newDirection = oldDirection |> RotateClockwise8way (rotationAmountByTime gameTime)
             let nextDecisionTime = gameTime + WanderingDroidDecisionInterval
             WanderingDroid (newDirection, nextDecisionTime)
 
