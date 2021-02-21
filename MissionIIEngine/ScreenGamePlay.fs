@@ -865,10 +865,10 @@ let NewDroidsForRoom levelNumber placesForAdversariesInThisRoom gameTime =
     let randomSeed = XorShift32State (uint32 gameTime)
     let (chosenPositions,_) = NRandomChosenThings numberToMake placesForAdversariesInThisRoom randomSeed
 
-    let newDroidTypeToMakeFor (LevelNumber levelNumber) i =
-        if levelNumber = 1 then
+    let newDroidTypeToMakeFor (LevelNumber levelNumber) i =  // TODO: Throughout this should be LevelIndex if it is going to be zero-based!
+        if levelNumber = 0 then
             MakeHoming
-        else if levelNumber = 2 then
+        else if levelNumber = 1 then
             if i < 3 then MakeWandering else MakeHoming
         else
             if i < 3 then 
@@ -1055,7 +1055,7 @@ let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
                 possiblyFireIn direction droidCentre
 
             | AssassinDroid -> 
-                let direction = (VPManCentreOf man) |> towards droidCentre 
+                let direction = droidCentre |> towards (VPManCentreOf man)
                 possiblyFireIn direction droidCentre
 
     let filteredForDroidsThatCanFire droidList =
@@ -1065,11 +1065,11 @@ let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
         ((int) (gameTime * 50.0F)) % 50 = 0   // TODO: Hack until I refactor use of float32<seconds> throughout in favour of integer 'FrameCount of uint32'?
 
     if shouldConsiderNow then
-        match droids with
+        match droids |> filteredForDroidsThatCanFire with
             | [] -> []
             | droids ->
                 let randomSeed = XorShift32State (uint32 gameTime)
-                let (chosenDroids,_) = NRandomChosenThings 1 (droids |> filteredForDroidsThatCanFire |> List.toArray) randomSeed
+                let (chosenDroids,_) = NRandomChosenThings 1 (droids |> List.toArray) randomSeed
                 chosenDroids |> Seq.choose newBulletFiredByDroid |> Seq.toList // TODO: Use seq in interface?
     else
         []
