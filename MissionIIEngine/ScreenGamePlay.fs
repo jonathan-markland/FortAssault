@@ -1113,8 +1113,8 @@ let GhostUpdatedWithRespectTo man manBullets gameTime ghost =
 //  Apply level change
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-    // TODO: How do we know which room to start in?
-    // TODO: How do we know where to position the man?
+    // TODO: How do we know which room to start in?  Determine by level index -> formula -> % 15
+    // TODO: How do we know where to position the man?  
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Apply room flip
@@ -1122,18 +1122,15 @@ let GhostUpdatedWithRespectTo man manBullets gameTime ghost =
 
 let WithRoomFlipAppliedFrom roomFlipData gameTime model =
 
+    // TODO: Room flip must include score
+
     let {
             NewRoomManCentre    = newRoomManCentre
             NewRoomOrigin       = newRoomOrigin
         } = roomFlipData
 
-    let roomReference =
-        model.InnerScreenModel.RoomReference
-
-    let levelMatrix =
-        roomReference.LevelModel.LevelTileMatrix
-
-    let exclusionRectangles = [ManExclusionRectangleAround newRoomManCentre]
+    let exclusionRectangles =
+        [ManExclusionRectangleAround newRoomManCentre]
 
     let roomReference = 
         {
@@ -1349,7 +1346,7 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
     let model =
         match manCentre |> CheckForNextLevel levelNumber inventory interactibles roomNumber with
             | true ->
-                failwith "TODO: next level"
+                failwith "Next level not yet implemented"
                 // model |> WithLevelChangeApplied
             | false ->
                 match CheckForRoomFlip roomOrigin man with
