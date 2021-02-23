@@ -238,7 +238,7 @@ let RoomCornerFurthestFrom (ViewPoint point) =
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 /// The rule for the number of items required to exit the given numbered level.
-let NumItemsRequiredOnLevel (LevelNumber levelNumber) =
+let NumItemsRequiredOnLevel (LevelIndex levelNumber) =
 
     let itemCountNeededToExitLevel = min (max 1 levelNumber) 3
     itemCountNeededToExitLevel
@@ -430,7 +430,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
         } = roomReference
 
     let {
-            LevelNumber       = levelNumber
+            LevelIndex       = levelIndex
             LevelTileMatrix   = levelTileMatrix
             TileMatrixTraits  = _
         } = levelModel
@@ -455,8 +455,8 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
         let fatFont = MagnifiedFont  6  2 1  (FontFromID MissionIIFontID)
         let (RoomNumber roomNumber) = roomNumber
         let scoreText = $"SCORE {score}"
-        let (LevelNumber levelNumber) = levelNumber
-        let roomText  = $"ROOM {roomNumber} L{levelNumber + 1}"
+        let (LevelIndex levelIndex) = levelIndex
+        let roomText  = $"ROOM {roomNumber} L{levelIndex + 1}"
         TextX render fatFont LeftAlign  TopAlign TextIndent TopPanelTopY scoreText
         TextX render fatFont RightAlign TopAlign (ScreenWidthInt - TextIndent) TopPanelTopY roomText
 
@@ -865,10 +865,10 @@ let NewDroidsForRoom levelNumber placesForAdversariesInThisRoom gameTime =
     let randomSeed = XorShift32State (uint32 gameTime)
     let (chosenPositions,_) = NRandomChosenThings numberToMake placesForAdversariesInThisRoom randomSeed
 
-    let newDroidTypeToMakeFor (LevelNumber levelNumber) i =  // TODO: Throughout this should be LevelIndex if it is going to be zero-based!
-        if levelNumber = 0 then
+    let newDroidTypeToMakeFor (LevelIndex levelIndex) i =  // TODO: Throughout this should be LevelIndex if it is going to be zero-based!
+        if levelIndex = 0 then
             MakeHoming
-        else if levelNumber = 1 then
+        else if levelIndex = 1 then
             if i < 3 then MakeWandering else MakeHoming
         else
             if i < 3 then 
@@ -1122,15 +1122,13 @@ let GhostUpdatedWithRespectTo man manBullets gameTime ghost =
 
 let WithRoomFlipAppliedFrom roomFlipData gameTime model =
 
-    // TODO: Room flip must include score
-
     let {
-            NewRoomManCentre    = newRoomManCentre
+            NewRoomManCentre    = manCentreInNewRoom
             NewRoomOrigin       = newRoomOrigin
         } = roomFlipData
 
     let exclusionRectangles =
-        [ManExclusionRectangleAround newRoomManCentre]
+        [ManExclusionRectangleAround manCentreInNewRoom]
 
     let roomReference = 
         {
@@ -1141,15 +1139,25 @@ let WithRoomFlipAppliedFrom roomFlipData gameTime model =
     let placesForAdversariesInThisRoom = 
         AvailableObjectPositionsWithinRoom roomReference exclusionRectangles LargestAdversaryDimension |> Seq.toArray
 
+    let bonus =
+        match model.ScreenDroids with   
+            | [] -> ScoreBonusForShootingAllDroids
+            | _  -> 0u
+
     let model =
         {
-            InnerScreenModel = { model.InnerScreenModel with RoomReference = roomReference }
+            InnerScreenModel = 
+                { 
+                    model.InnerScreenModel with 
+                        RoomReference = roomReference 
+                        ScreenScore   = model.InnerScreenModel.ScreenScore |> ScoreIncrementedBy bonus
+                }
             ScreenMan =
                 {
                     ManState          = model.ScreenMan.ManState
-                    ManCentrePosition = newRoomManCentre
+                    ManCentrePosition = manCentreInNewRoom
                 }
-            ScreenDroids         = NewDroidsForRoom roomReference.LevelModel.LevelNumber placesForAdversariesInThisRoom gameTime
+            ScreenDroids         = NewDroidsForRoom roomReference.LevelModel.LevelIndex placesForAdversariesInThisRoom gameTime
             ScreenGhost          = NoGhostUntil (gameTime + GhostGraceDuration)
             ManBullets           = []
             DroidBullets         = []
@@ -1274,7 +1282,7 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
         } = roomReference
 
     let {
-            LevelNumber      = levelNumber
+            LevelIndex      = levelNumber
             LevelTileMatrix  = _
             TileMatrixTraits = _
         } = levelModel
@@ -1370,7 +1378,7 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
 //  New screen constructor
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:BetweenScreenStatus) gameTime =
+let NewMissionIIScreen levelIndex whereToOnGameOver (betweenScreenStatus:BetweenScreenStatus) gameTime =
 
     // TODO: sort out   let numberOfMazes = AllLevels. levelIndex    = levelNumber % numberOfMazes
 
@@ -1456,7 +1464,7 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
             RoomOrigin = RoomOrigin (0,0)
             LevelModel =
                 {
-                    LevelNumber      = LevelNumber levelNumber
+                    LevelIndex       = LevelIndex levelIndex
                     LevelTileMatrix  = levelMatrix
                     TileMatrixTraits = LevelTileMatrixDetails ()
                 }
@@ -1530,7 +1538,7 @@ let NewMissionIIScreen levelNumber whereToOnGameOver (betweenScreenStatus:Betwee
                 }
 
             ScreenDroids = 
-                NewDroidsForRoom roomReference.LevelModel.LevelNumber placesForAdversariesInThisRoom gameTime
+                NewDroidsForRoom roomReference.LevelModel.LevelIndex placesForAdversariesInThisRoom gameTime
 
             ScreenGhost          = NoGhostUntil (gameTime + GhostGraceDuration)
             ManBullets           = []

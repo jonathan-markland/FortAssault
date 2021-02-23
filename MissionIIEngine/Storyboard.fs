@@ -83,7 +83,7 @@ and private PacmanStory (levelNumber:int) betweenScreenStatus (gameTime:float32<
 and private *)
 let rec GameTitleStory gameTime =
 
-    let firstLevelForBrandNewGame =
+    let firstLevelIndexForBrandNewGame =
         0
 
     let betweenScreenStatus = 
@@ -97,7 +97,7 @@ let rec GameTitleStory gameTime =
 
     NewGameTitleScreen globalScoreboard
         |> AsInterruptableVideoThen 
-                (NewMissionIIScreen firstLevelForBrandNewGame temp betweenScreenStatus)
+                (NewMissionIIScreen firstLevelIndexForBrandNewGame temp betweenScreenStatus)
                 KeyFire
 
 

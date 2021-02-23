@@ -14,7 +14,7 @@ open Tiles
 type ManLives = ManLives of uint32
 
 /// During gameplay - the current level number.
-type LevelNumber = LevelNumber of int
+type LevelNumber = LevelIndex of int
 
 /// During gameplay - the screen number that the gameplay is showing.
 type RoomNumber = RoomNumber of int
@@ -150,7 +150,7 @@ type ImageLookupsTables =
 type LevelModel =
     {
         /// Current level number.  Displayed at top of screen.
-        LevelNumber       : LevelNumber
+        LevelIndex       : LevelNumber
 
         /// The tiles matrix for the current level.
         LevelTileMatrix   : LevelTileMatrix

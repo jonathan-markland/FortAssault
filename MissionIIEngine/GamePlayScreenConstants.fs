@@ -77,3 +77,5 @@ let ManWalkingStepsPerSecond = 5.0F
 let ManElectrocutionSwitchesPerSecond = 8.0F
 let WallElectrocutionSwitchesPerSecond = 20.0F
 let DroidAnimationPerSecond = 6.0F
+
+let ScoreBonusForShootingAllDroids = 250u
