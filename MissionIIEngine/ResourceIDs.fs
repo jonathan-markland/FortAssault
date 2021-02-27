@@ -3,6 +3,9 @@
 open ImagesAndFonts
 open Sounds
 
+let NumFloorTileImages = 3
+let NumWallTileImages  = 8
+
 // Fonts (all screens):
 
 let MissionIIFontID            = FontID 0

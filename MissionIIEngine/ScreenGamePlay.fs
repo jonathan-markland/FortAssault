@@ -1109,12 +1109,227 @@ let GhostUpdatedWithRespectTo man manBullets gameTime ghost =
             else 
                 ghost
 
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
-//  Apply level change
+//  Style resources
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-    // TODO: How do we know which room to start in?  Determine by level index -> formula -> % 15
-    // TODO: How do we know where to position the man?  
+let StyleResources levelIndex =
+
+    let moduloImageChoice count (ImageID firstImageIndex) offset =
+        let i = firstImageIndex + (offset % count)
+        ImageID i
+
+    let brickStyles =
+        [|
+            ImageFromID (moduloImageChoice NumFloorTileImages FloorTile1ImageID levelIndex)
+            ImageFromID (moduloImageChoice NumFloorTileImages FloorTile1ImageID (levelIndex + 1))
+            ImageFromID (moduloImageChoice NumWallTileImages WallBrick1ImageID levelIndex)
+            ImageFromID (moduloImageChoice NumWallTileImages WallBrick1ImageID (levelIndex + 1))
+            ImageFromID WallOutline1ImageID
+            ImageFromID WallOutline2ImageID
+        |]
+
+    let manFacingStyles =
+        [|
+            ImageFromID FacingLeftImageID      
+            ImageFromID FacingLeftUpImageID    
+            ImageFromID FacingUpImageID        
+            ImageFromID FacingRightUpImageID   
+            ImageFromID FacingRightImageID     
+            ImageFromID FacingRightDownImageID 
+            ImageFromID FacingDownImageID      
+            ImageFromID FacingLeftDownImageID  
+        |]
+
+    let manWalkingStyles1 =
+        [|
+            ImageFromID WalkingLeft1ImageID      
+            ImageFromID WalkingLeftUp1ImageID    
+            ImageFromID WalkingUp1ImageID        
+            ImageFromID WalkingRightUp1ImageID   
+            ImageFromID WalkingRight1ImageID     
+            ImageFromID WalkingRightDown1ImageID 
+            ImageFromID WalkingDown1ImageID      
+            ImageFromID WalkingLeftDown1ImageID  
+        |]
+
+    let manWalkingStyles2 =
+        [|
+            ImageFromID WalkingLeft2ImageID      
+            ImageFromID WalkingLeftUp2ImageID    
+            ImageFromID WalkingUp2ImageID        
+            ImageFromID WalkingRightUp2ImageID   
+            ImageFromID WalkingRight2ImageID     
+            ImageFromID WalkingRightDown2ImageID 
+            ImageFromID WalkingDown2ImageID      
+            ImageFromID WalkingLeftDown2ImageID  
+        |]
+
+    let droidStyles1 =
+        [|
+            ImageFromID Monster1v1ImageID
+            ImageFromID Monster2v1ImageID
+            ImageFromID Monster3ImageID  
+            ImageFromID Monster4v1ImageID
+            ImageFromID Monster5v1ImageID
+        |]
+
+    let droidStyles2 =
+        [|
+            ImageFromID Monster1v2ImageID
+            ImageFromID Monster2v2ImageID
+            ImageFromID Monster3ImageID  
+            ImageFromID Monster4v2ImageID
+            ImageFromID Monster5v2ImageID
+        |]
+
+    let interactibleObjectStyles =
+        [|
+            ImageFromID KeyImageID
+            ImageFromID RingImageID
+            ImageFromID GoldImageID
+            ImageFromID InvincibilityAmuletImageID
+            ImageFromID Potion1ImageID
+            ImageFromID LevelExitImageID
+        |]
+
+    {
+        BrickStyles              = brickStyles
+        ManFacingStyles          = manFacingStyles
+        ManWalkingStyles1        = manWalkingStyles1
+        ManWalkingStyles2        = manWalkingStyles2
+        DroidStyles1             = droidStyles1
+        DroidStyles2             = droidStyles2
+        InteractibleObjectImages = interactibleObjectStyles
+    }
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Start level
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let ModelForStartingLevel levelIndex whereToOnGameOver (betweenScreenStatus:BetweenScreenStatus) gameTime =
+
+    let numberOfMazes = AllLevels.Length
+    let levelIndex    = levelIndex % numberOfMazes
+    let levelMatrix   = AllLevels.[levelIndex] |> LevelTextToMatrix
+
+    // TODO:  let sparePlacesForInteractibles = PlacesWhereObjectsCanBeLocatedInLevel levelMatrix |> Seq.toArray
+
+    let roomReference =
+        {
+            RoomOrigin = RoomOrigin (0,0)  // TODO: Choose random start room.
+            LevelModel =
+                {
+                    LevelIndex       = LevelIndex levelIndex
+                    LevelTileMatrix  = levelMatrix
+                    TileMatrixTraits = LevelTileMatrixDetails ()
+                }
+        }
+
+    let manCentre = ViewPoint { ptx=220.0F<epx> ; pty=100.0F<epx> } // TODO: decide from positioner?
+
+    let exclusionRectangles = [ManExclusionRectangleAround manCentre] // TODO: Need greater surround gap.
+
+    // let placesForAdversariesInThisRoom = 
+    //     AvailableObjectPositionsWithinRoom roomReference exclusionRectangles LargestAdversaryDimension |> Seq.toArray
+
+    let screenModel =
+        {
+            InnerScreenModel =
+                {
+                    RoomReference      = roomReference
+                    ScreenScore        = betweenScreenStatus.ScoreAndHiScore
+                    ManInventory       = []
+                    ManLives           = ManLives InitialLives
+                    Interactible       = // TODO: Decide positions
+                        [
+                            {
+                                InteractibleRoom           = RoomNumber 2
+                                InteractibleType           = InteractibleObjectType.ObKey
+                                InteractibleCentrePosition = ViewPoint { ptx=200.0F<epx> ; pty=100.0F<epx> }
+                            }
+                            {
+                                InteractibleRoom           = RoomNumber 4
+                                InteractibleType           = InteractibleObjectType.ObRing
+                                InteractibleCentrePosition = ViewPoint { ptx=200.0F<epx> ; pty=100.0F<epx> }
+                            }
+                            {
+                                InteractibleRoom           = RoomNumber 8
+                                InteractibleType           = InteractibleObjectType.ObHealthBonus
+                                InteractibleCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty=100.0F<epx> }
+                            }
+                            {
+                                InteractibleRoom           = RoomNumber 8
+                                InteractibleType           = InteractibleObjectType.ObLevelExit
+                                InteractibleCentrePosition = ViewPoint { ptx=200.0F<epx> ; pty=120.0F<epx> }
+                            }
+                            {
+                                InteractibleRoom           = RoomNumber 6
+                                InteractibleType           = InteractibleObjectType.ObLevelExit
+                                InteractibleCentrePosition = ViewPoint { ptx=200.0F<epx> ; pty=80.0F<epx> }
+                            }
+                            {
+                                InteractibleRoom           = RoomNumber 5
+                                InteractibleType           = InteractibleObjectType.ObGold
+                                InteractibleCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty=100.0F<epx> }
+                            }
+                        ]
+                    ImageLookupsTables = StyleResources levelIndex
+                    WhereToOnGameOver = whereToOnGameOver
+                }
+
+            ScreenMan =
+                {
+                    ManState          = ManStandingFacing EightWayDirection.Down8
+                    ManCentrePosition = manCentre
+                }
+
+            ScreenDroids = 
+                [] // Let's not:  NewDroidsForRoom roomReference.LevelModel.LevelIndex placesForAdversariesInThisRoom gameTime
+
+            ScreenGhost          = NoGhostUntil (gameTime + GhostGraceDuration)
+            ManBullets           = []
+            DroidBullets         = []
+            DecorativeFlickbooks = []
+        }
+
+    screenModel
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Apply level flip
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let WithLevelChangeApplied gameTime model =
+
+    // TODO: de-structure
+
+    let (LevelIndex levelIndex) = 
+        model.InnerScreenModel.RoomReference.LevelModel.LevelIndex
+
+    let levelIndex = 
+        levelIndex + 1
+
+    let whereToOnGameOver = 
+        model.InnerScreenModel.WhereToOnGameOver
+
+    let scoreAndHiScore =
+        model.InnerScreenModel.ScreenScore
+
+    let (ManLives lives) =
+        model.InnerScreenModel.ManLives
+
+    let betweenScreenStatus =
+        {
+            ScoreAndHiScore = scoreAndHiScore
+            Lives           = lives
+        }
+
+    ModelForStartingLevel levelIndex whereToOnGameOver betweenScreenStatus gameTime
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Apply room flip
@@ -1220,16 +1435,6 @@ let private WithTheFollowingStateApplied  // TODO: rename for clarification, bec
 
     model
 
-
-
-let private WithTheFollowingStateAppliedForManDeadOrElectrocuted manBullets droidBullets decoratives model =
-
-    {
-        model with
-            ManBullets           = manBullets   // because the state contains the position
-            DroidBullets         = droidBullets // because the state contains the position
-            DecorativeFlickbooks = decoratives  // to record the removals of any that have expired
-    }
 
 
 
@@ -1354,8 +1559,7 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
     let model =
         match manCentre |> CheckForNextLevel levelNumber inventory interactibles roomNumber with
             | true ->
-                failwith "Next level not yet implemented"
-                // model |> WithLevelChangeApplied
+                model |> WithLevelChangeApplied gameTime
             | false ->
                 match CheckForRoomFlip roomOrigin man with
                     | Some roomFlipData ->
@@ -1378,173 +1582,9 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
 //  New screen constructor
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewMissionIIScreen levelIndex whereToOnGameOver (betweenScreenStatus:BetweenScreenStatus) gameTime =
+let NewMissionIIScreen whereToOnGameOver (betweenScreenStatus:BetweenScreenStatus) gameTime =
 
-    // TODO: sort out   let numberOfMazes = AllLevels. levelIndex    = levelNumber % numberOfMazes
-
-    let brickStyles =
-        [|
-            ImageFromID FloorTile1ImageID
-            ImageFromID FloorTile2ImageID
-            ImageFromID WallBrick3ImageID
-            ImageFromID WallBrick4ImageID
-            ImageFromID WallOutline1ImageID
-            ImageFromID WallOutline2ImageID
-        |]
-
-    let manFacingStyles =
-        [|
-            ImageFromID FacingLeftImageID      
-            ImageFromID FacingLeftUpImageID    
-            ImageFromID FacingUpImageID        
-            ImageFromID FacingRightUpImageID   
-            ImageFromID FacingRightImageID     
-            ImageFromID FacingRightDownImageID 
-            ImageFromID FacingDownImageID      
-            ImageFromID FacingLeftDownImageID  
-        |]
-
-    let manWalkingStyles1 =
-        [|
-            ImageFromID WalkingLeft1ImageID      
-            ImageFromID WalkingLeftUp1ImageID    
-            ImageFromID WalkingUp1ImageID        
-            ImageFromID WalkingRightUp1ImageID   
-            ImageFromID WalkingRight1ImageID     
-            ImageFromID WalkingRightDown1ImageID 
-            ImageFromID WalkingDown1ImageID      
-            ImageFromID WalkingLeftDown1ImageID  
-        |]
-
-    let manWalkingStyles2 =
-        [|
-            ImageFromID WalkingLeft2ImageID      
-            ImageFromID WalkingLeftUp2ImageID    
-            ImageFromID WalkingUp2ImageID        
-            ImageFromID WalkingRightUp2ImageID   
-            ImageFromID WalkingRight2ImageID     
-            ImageFromID WalkingRightDown2ImageID 
-            ImageFromID WalkingDown2ImageID      
-            ImageFromID WalkingLeftDown2ImageID  
-        |]
-
-    let droidStyles1 =
-        [|
-            ImageFromID Monster1v1ImageID
-            ImageFromID Monster2v1ImageID
-            ImageFromID Monster3ImageID  
-            ImageFromID Monster4v1ImageID
-            ImageFromID Monster5v1ImageID
-        |]
-
-    let droidStyles2 =
-        [|
-            ImageFromID Monster1v2ImageID
-            ImageFromID Monster2v2ImageID
-            ImageFromID Monster3ImageID  
-            ImageFromID Monster4v2ImageID
-            ImageFromID Monster5v2ImageID
-        |]
-
-    let interactibleObjectStyles =
-        [|
-            ImageFromID KeyImageID
-            ImageFromID RingImageID
-            ImageFromID GoldImageID
-            ImageFromID InvincibilityAmuletImageID
-            ImageFromID Potion1ImageID
-            ImageFromID LevelExitImageID
-        |]
-
-    let levelMatrix = AllLevels.[0] |> LevelTextToMatrix // TODO: sort out passing in the level index
-    // TODO:  let sparePlacesForInteractibles = PlacesWhereObjectsCanBeLocatedInLevel levelMatrix |> Seq.toArray
-
-    let roomReference =
-        {
-            RoomOrigin = RoomOrigin (0,0)
-            LevelModel =
-                {
-                    LevelIndex       = LevelIndex levelIndex
-                    LevelTileMatrix  = levelMatrix
-                    TileMatrixTraits = LevelTileMatrixDetails ()
-                }
-        }
-
-    let manCentre = ViewPoint { ptx=220.0F<epx> ; pty=100.0F<epx> } // TODO: decide from positioner?
-
-    let exclusionRectangles = [ManExclusionRectangleAround manCentre] // TODO
-
-    let placesForAdversariesInThisRoom = 
-        AvailableObjectPositionsWithinRoom roomReference exclusionRectangles LargestAdversaryDimension |> Seq.toArray
-
-    let screenModel =
-        {
-            InnerScreenModel =
-                {
-                    RoomReference      = roomReference
-                    ScreenScore        = betweenScreenStatus.ScoreAndHiScore
-                    ManInventory       = []
-                    ManLives           = ManLives InitialLives
-                    Interactible       = 
-                        [
-                            {
-                                InteractibleRoom           = RoomNumber 2
-                                InteractibleType           = InteractibleObjectType.ObKey
-                                InteractibleCentrePosition = ViewPoint { ptx=200.0F<epx> ; pty=100.0F<epx> }
-                            }
-                            {
-                                InteractibleRoom           = RoomNumber 4
-                                InteractibleType           = InteractibleObjectType.ObRing
-                                InteractibleCentrePosition = ViewPoint { ptx=200.0F<epx> ; pty=100.0F<epx> }
-                            }
-                            {
-                                InteractibleRoom           = RoomNumber 8
-                                InteractibleType           = InteractibleObjectType.ObHealthBonus
-                                InteractibleCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty=100.0F<epx> }
-                            }
-                            {
-                                InteractibleRoom           = RoomNumber 8
-                                InteractibleType           = InteractibleObjectType.ObLevelExit
-                                InteractibleCentrePosition = ViewPoint { ptx=200.0F<epx> ; pty=120.0F<epx> }
-                            }
-                            {
-                                InteractibleRoom           = RoomNumber 6
-                                InteractibleType           = InteractibleObjectType.ObLevelExit
-                                InteractibleCentrePosition = ViewPoint { ptx=200.0F<epx> ; pty=80.0F<epx> }
-                            }
-                            {
-                                InteractibleRoom           = RoomNumber 5
-                                InteractibleType           = InteractibleObjectType.ObGold
-                                InteractibleCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty=100.0F<epx> }
-                            }
-                        ]
-                    ImageLookupsTables =
-                        {
-                            BrickStyles              = brickStyles
-                            ManFacingStyles          = manFacingStyles
-                            ManWalkingStyles1        = manWalkingStyles1
-                            ManWalkingStyles2        = manWalkingStyles2
-                            DroidStyles1             = droidStyles1
-                            DroidStyles2             = droidStyles2
-                            InteractibleObjectImages = interactibleObjectStyles
-                        }
-                    WhereToOnGameOver = whereToOnGameOver
-                }
-
-            ScreenMan =
-                {
-                    ManState          = ManWalking EightWayDirection.Left8
-                    ManCentrePosition = manCentre
-                }
-
-            ScreenDroids = 
-                NewDroidsForRoom roomReference.LevelModel.LevelIndex placesForAdversariesInThisRoom gameTime
-
-            ScreenGhost          = NoGhostUntil (gameTime + GhostGraceDuration)
-            ManBullets           = []
-            DroidBullets         = []
-            DecorativeFlickbooks = []
-        }
+    let screenModel = ModelForStartingLevel 0 whereToOnGameOver betweenScreenStatus gameTime
 
     NewGameState NextMissionIIScreenState RenderMissionIIScreen screenModel
 

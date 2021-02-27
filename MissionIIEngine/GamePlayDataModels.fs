@@ -14,7 +14,7 @@ open Tiles
 type ManLives = ManLives of uint32
 
 /// During gameplay - the current level number.
-type LevelNumber = LevelIndex of int
+type LevelNumber = LevelIndex of int  // TODO: rename LevelNumber to index!
 
 /// During gameplay - the screen number that the gameplay is showing.
 type RoomNumber = RoomNumber of int
