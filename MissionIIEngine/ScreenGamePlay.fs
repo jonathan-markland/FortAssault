@@ -156,6 +156,21 @@ let IsCloseToAny things getThingCentre triggerDistance (ViewPoint centre) =
         let (ViewPoint thingCentre) = thing |> getThingCentre
         thingCentre |> IsWithinRegionOf centre triggerDistance)
 
+let ManJustDied lastModel thisModel =
+ 
+    let isOver manState =
+        match manState with
+            | ManStandingFacing _
+            | ManWalking        _ -> false
+            | ManElectrocuted
+            | ManDead -> true
+ 
+    let a = lastModel.ScreenMan.ManState |> isOver
+    let b = thisModel.ScreenMan.ManState |> isOver
+
+    match (a,b) with
+        | (false,true) -> true
+        | _ -> false
 
     
 
@@ -1473,6 +1488,8 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
             DecorativeFlickbooks = decoratives
         } = model
 
+    let modelOnPreviousFrame = model
+
     let {
             RoomReference      = roomReference
             ScreenScore        = { Score=score ; HiScore = hiScore }
@@ -1583,11 +1600,18 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
                 | Some roomFlipData ->
                     model 
                         |> WithRoomFlipAppliedFrom roomFlipData gameTime
-                        |> ReplacesModelIn gameState
+                        |> ReplacesModelIn gameState 
 
                 | None ->
-                    normalGamePlay () 
-                        |> ReplacesModelIn gameState
+                    let model = normalGamePlay () 
+                    let gameState = model |> ReplacesModelIn gameState
+                    if ManJustDied modelOnPreviousFrame model then
+                        gameState
+                            // |> UntilFutureTimeAndThen (gameTime + LifeLossPauseDuration) showLevelCard
+                    else
+                        gameState
+
+                    
 
 
 

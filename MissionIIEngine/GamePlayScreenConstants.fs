@@ -56,6 +56,7 @@ let GhostGraceDuration             = 20.0F<seconds>
 let GhostStunDuration              =  4.0F<seconds>
 let LevelExitPauseDuration         =  2.0F<seconds>
 let LevelIntroCardDuration         =  5.0F<seconds>
+let LifeLossPauseDuration          =  3.0F<seconds>
 
 /// Distance in from the sides at which to position man when flipping between rooms.
 let ManRoomFlipMargin = ManSpeed * 4.0F<epx>
