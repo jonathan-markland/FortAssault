@@ -1,7 +1,7 @@
 ﻿module Storyboard
 
 open Rules
-open InterruptableVideo
+open SustainModeUntil
 
 open Keys
 
