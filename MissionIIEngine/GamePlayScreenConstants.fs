@@ -54,6 +54,7 @@ let GhostSpeed          = 2.0F<epx>
 let WanderingDroidDecisionInterval = 3.0F<seconds>
 let GhostGraceDuration             = 20.0F<seconds>
 let GhostStunDuration              =  4.0F<seconds>
+let LevelExitPauseDuration         =  3.0F<seconds>
 
 /// Distance in from the sides at which to position man when flipping between rooms.
 let ManRoomFlipMargin = ManSpeed * 4.0F<epx>

@@ -25,6 +25,7 @@ open Collisions
 open Mechanics
 open ScoreHiScore
 open Random
+open SustainModeUntil
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -1556,20 +1557,31 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
 
     let manCentre = ManCentreOf man
 
-    let model =
-        match manCentre |> CheckForNextLevel levelNumber inventory interactibles roomNumber with
-            | true ->
-                model |> WithLevelChangeApplied gameTime
-            | false ->
-                match CheckForRoomFlip roomOrigin man with
-                    | Some roomFlipData ->
-                        model |> WithRoomFlipAppliedFrom roomFlipData gameTime
-                    | None ->
-                        normalGamePlay ()
+    match manCentre |> CheckForNextLevel levelNumber inventory interactibles roomNumber with
+
+        | true ->
+            let switchToNextLevel gameTime =
+                model
+                    |> WithLevelChangeApplied gameTime
+                    |> ReplacesModelIn gameState
+
+            model 
+                |> ReplacesModelIn gameState
+                |> FrozenInTimeAt gameTime
+                |> UntilFutureTimeAndThen (gameTime + LevelExitPauseDuration) switchToNextLevel
 
 
+        | false ->
+            match CheckForRoomFlip roomOrigin man with
+                | Some roomFlipData ->
+                    model 
+                        |> WithRoomFlipAppliedFrom roomFlipData gameTime
+                        |> ReplacesModelIn gameState
 
-    gameState |> WithUpdatedModel model
+                | None ->
+                    normalGamePlay () 
+                        |> ReplacesModelIn gameState
+
 
 
 
