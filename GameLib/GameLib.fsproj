@@ -33,6 +33,7 @@
     <Compile Include="CaptureRendering.fs" />
     <Compile Include="FlickBook.fs" />
     <Compile Include="GameStateManagement.fs" />
+    <Compile Include="SustainModeUntil.fs" />
     <Compile Include="BlankScreen.fs" />
     <Compile Include="FreezeFrame.fs" />
     <Compile Include="InterruptableVideo.fs" />

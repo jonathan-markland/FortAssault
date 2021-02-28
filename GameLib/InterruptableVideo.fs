@@ -1,4 +1,5 @@
-﻿module InterruptableVideo
+﻿/// TODO: Re-write in terms of the general purpose "SustainModeUntil" filter.
+module InterruptableVideo
 
 open Time
 open GameStateManagement
