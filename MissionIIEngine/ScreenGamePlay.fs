@@ -1603,9 +1603,13 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
 
 let NewMissionIIScreen whereToOnGameOver (betweenScreenStatus:BetweenScreenStatus) gameTime =
 
-    let screenModel = ModelForStartingLevel 0 whereToOnGameOver betweenScreenStatus gameTime
+    let switchToNextLevel gameTime = 
+        let screenModel = ModelForStartingLevel 0 whereToOnGameOver betweenScreenStatus gameTime
+        NewGameState NextMissionIIScreenState RenderMissionIIScreen screenModel
 
-    NewGameState NextMissionIIScreenState RenderMissionIIScreen screenModel
+    NewLevelIntroScreen 1
+        |> UntilFutureTimeAndThen (gameTime + LevelIntroCardDuration) switchToNextLevel
+
 
 
 
