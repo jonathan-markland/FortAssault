@@ -1607,7 +1607,7 @@ let NewMissionIIScreen whereToOnGameOver (betweenScreenStatus:BetweenScreenStatu
         let screenModel = ModelForStartingLevel 0 whereToOnGameOver betweenScreenStatus gameTime
         NewGameState NextMissionIIScreenState RenderMissionIIScreen screenModel
 
-    NewLevelIntroScreen 1
+    NewLevelIntroScreen 1 // TODO: do in one place
         |> UntilFutureTimeAndThen (gameTime + LevelIntroCardDuration) switchToNextLevel
 
 
