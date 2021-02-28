@@ -26,6 +26,7 @@ open Mechanics
 open ScoreHiScore
 open Random
 open SustainModeUntil
+open ScreenLevelIntro
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -1565,10 +1566,16 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
                     |> WithLevelChangeApplied gameTime
                     |> ReplacesModelIn gameState
 
+            let showLevelCard gameTime =
+                let (LevelIndex levelIndex) = levelNumber
+                let nextLevelNumber = (levelIndex + 2)  // one extra for zero-based indexing
+                NewLevelIntroScreen nextLevelNumber
+                    |> UntilFutureTimeAndThen (gameTime + LevelIntroCardDuration) switchToNextLevel
+
             model 
                 |> ReplacesModelIn gameState
                 |> FrozenInTimeAt gameTime
-                |> UntilFutureTimeAndThen (gameTime + LevelExitPauseDuration) switchToNextLevel
+                |> UntilFutureTimeAndThen (gameTime + LevelExitPauseDuration) showLevelCard
 
 
         | false ->

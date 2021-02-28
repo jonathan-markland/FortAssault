@@ -9,6 +9,7 @@ open ScreenGameTitle
 open ScreenGamePlay
 open ScreenGameOver
 open ScreenPotentialEnterYourName
+open ScreenLevelIntro
 
 open ScoreboardModel
 
