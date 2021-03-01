@@ -89,6 +89,14 @@ type ManModel =
         ManCentrePosition : ViewPoint
     }
 
+/// A record of the state where the man started in the current room.
+/// Only used when re-spawning the man after a life loss.
+type ManStartPositionInRoom =
+    {
+        ManStartFacingDirection : EightWayDirection
+        ManStartPosition        : ViewPoint
+    }
+
 
 /// Types of droid.  This affects visuals and behaviours.
 type DroidType = 
@@ -183,6 +191,9 @@ type InnerScreenModel =
     {
         /// A reference to the current room within the level matrix.
         RoomReference     : RoomReference
+
+        /// Man position on entry to the current room.  Used when re-spawning after life loss.
+        ManStartPositionInRoom : ManStartPositionInRoom
 
         /// The player's score, and hi-score.
         ScreenScore       : ScoreAndHiScore

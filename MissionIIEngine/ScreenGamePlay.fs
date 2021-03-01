@@ -858,6 +858,50 @@ let PossiblyFiringAtDroids keyStateGetter man =
     else
         None
 
+/// Used when switching rooms.
+let SnapshotOfManPositionAndDirection manModel =
+
+    let {
+            ManState          = state
+            ManCentrePosition = centre
+        } = manModel
+
+    let facing = 
+        match state with
+            | ManStandingFacing direction -> direction
+            | ManWalking direction -> direction
+            | ManDead -> failwith "Man shouldn't be dead AND entering a room!"
+            | ManElectrocuted -> failwith "Man shouldn't be electrocuted AND entering a room!"
+
+    {
+        ManStartFacingDirection = facing
+        ManStartPosition        = centre
+    }
+
+let RespawnedManStateAfterLifeLoss manStartPositionInRoom =
+
+    let {
+            ManStartFacingDirection = facing
+            ManStartPosition        = position
+        } = manStartPositionInRoom
+
+    {
+        ManState = ManStandingFacing facing
+        ManCentrePosition = position
+    }
+
+let DecrementLives model =
+
+    let (ManLives manLives) = model.InnerScreenModel.ManLives
+    let (manLives, isGameOver) = if manLives > 0u then (manLives - 1u,false) else (0u,true)
+
+    let model =
+        {
+            model with 
+                InnerScreenModel = { model.InnerScreenModel with ManLives = ManLives manLives }
+        }
+
+    (model, isGameOver)
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Droids
@@ -1253,11 +1297,22 @@ let ModelForStartingLevel levelIndex whereToOnGameOver (betweenScreenStatus:Betw
     // let placesForAdversariesInThisRoom = 
     //     AvailableObjectPositionsWithinRoom roomReference exclusionRectangles LargestAdversaryDimension |> Seq.toArray
 
+    let screenMan = 
+        {
+            ManState          = ManStandingFacing EightWayDirection.Down8
+            ManCentrePosition = manCentre
+        }
+
+    let manStartPositionInRoom = 
+        SnapshotOfManPositionAndDirection screenMan
+
     let screenModel =
         {
             InnerScreenModel =
                 {
-                    RoomReference      = roomReference
+                    RoomReference          = roomReference
+                    ManStartPositionInRoom = manStartPositionInRoom
+
                     ScreenScore        = betweenScreenStatus.ScoreAndHiScore
                     ManInventory       = []
                     ManLives           = ManLives InitialLives
@@ -1298,11 +1353,7 @@ let ModelForStartingLevel levelIndex whereToOnGameOver (betweenScreenStatus:Betw
                     WhereToOnGameOver = whereToOnGameOver
                 }
 
-            ScreenMan =
-                {
-                    ManState          = ManStandingFacing EightWayDirection.Down8
-                    ManCentrePosition = manCentre
-                }
+            ScreenMan = screenMan
 
             ScreenDroids = 
                 [] // Let's not:  NewDroidsForRoom roomReference.LevelModel.LevelIndex placesForAdversariesInThisRoom gameTime
@@ -1352,7 +1403,7 @@ let WithLevelChangeApplied gameTime model =
 //  Apply room flip
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let WithRoomFlipAppliedFrom roomFlipData gameTime model =
+let WithRoomFlipAppliedFrom roomFlipData manStateToApply gameTime model =
 
     let {
             NewRoomManCentre    = manCentreInNewRoom
@@ -1376,19 +1427,22 @@ let WithRoomFlipAppliedFrom roomFlipData gameTime model =
             | [] -> ScoreBonusForShootingAllDroids
             | _  -> 0u
 
+    let manModel =
+        {
+            ManState          = manStateToApply
+            ManCentrePosition = manCentreInNewRoom
+        }
+
     let model =
         {
             InnerScreenModel = 
                 { 
                     model.InnerScreenModel with 
-                        RoomReference = roomReference 
-                        ScreenScore   = model.InnerScreenModel.ScreenScore |> ScoreIncrementedBy bonus
+                        RoomReference          = roomReference 
+                        ManStartPositionInRoom = SnapshotOfManPositionAndDirection manModel
+                        ScreenScore            = model.InnerScreenModel.ScreenScore |> ScoreIncrementedBy bonus
                 }
-            ScreenMan =
-                {
-                    ManState          = model.ScreenMan.ManState
-                    ManCentrePosition = manCentreInNewRoom
-                }
+            ScreenMan            = manModel
             ScreenDroids         = NewDroidsForRoom roomReference.LevelModel.LevelIndex placesForAdversariesInThisRoom gameTime
             ScreenGhost          = NoGhostUntil (gameTime + GhostGraceDuration)
             ManBullets           = []
@@ -1414,7 +1468,9 @@ let private WithTheFollowingStateApplied  // TODO: rename for clarification, bec
 
     let innerScreenModel =  // TODO: possibly optimise further.
         {
-            RoomReference      = model.InnerScreenModel.RoomReference // Will never change here because change handling done at higher level.
+            RoomReference          = model.InnerScreenModel.RoomReference // Will never change here because change handling done at higher level.
+            ManStartPositionInRoom = model.InnerScreenModel.ManStartPositionInRoom
+
             ScreenScore        = model.InnerScreenModel.ScreenScore |> ScoreIncrementedBy additionalScore
             
             ManInventory       =
@@ -1599,17 +1655,46 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
             match CheckForRoomFlip roomOrigin man with
                 | Some roomFlipData ->
                     model 
-                        |> WithRoomFlipAppliedFrom roomFlipData gameTime
+                        |> WithRoomFlipAppliedFrom roomFlipData model.ScreenMan.ManState gameTime
                         |> ReplacesModelIn gameState 
 
                 | None ->
-                    let model = normalGamePlay () 
-                    let gameState = model |> ReplacesModelIn gameState
+                    let model = normalGamePlay ()
+
                     if ManJustDied modelOnPreviousFrame model then
-                        gameState
-                            // |> UntilFutureTimeAndThen (gameTime + LifeLossPauseDuration) showLevelCard
+
+                        let decideWhatToDo gameTime =
+
+                            let (model, isGameOver) =
+                                model |> DecrementLives
+
+                            if isGameOver then
+                                model.InnerScreenModel.WhereToOnGameOver model.InnerScreenModel.ScreenScore gameTime
+
+                            else
+                                let respawnedManModel =
+                                    RespawnedManStateAfterLifeLoss model.InnerScreenModel.ManStartPositionInRoom
+
+                                let fakeRoomFlipData =
+                                    {
+                                        NewRoomOrigin    = model.InnerScreenModel.RoomReference.RoomOrigin
+                                        NewRoomManCentre = respawnedManModel.ManCentrePosition
+                                    }
+
+                                model 
+                                    |> WithRoomFlipAppliedFrom fakeRoomFlipData respawnedManModel.ManState gameTime
+                                    |> ReplacesModelIn gameState
+
+                        let dyingGameState = 
+                            model |> ReplacesModelIn gameState
+                            
+                        dyingGameState
+                            |> UntilFutureTimeAndThen (gameTime + LifeLossPauseDuration) decideWhatToDo
+
                     else
-                        gameState
+
+                        // Man didn't just die.  (Already dead or continuing play)
+                        model |> ReplacesModelIn gameState
 
                     
 
