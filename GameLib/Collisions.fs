@@ -14,12 +14,13 @@ type private Notepad<'explosion> =
 
 
 let ResultOfProjectileCollisions
-        (projectiles     : 'projectile list)
-        (targets         : 'target list)
-        collides
-        (getProjectileId : 'projectile -> 'projectileId)
-        (getTargetId     : 'target -> 'targetId)
-        (createExplosionAndScoreFor : ('projectile -> 'explosion * uint32)) =
+    (projectiles     : 'projectile list)
+    (targets         : 'target list)
+    collides
+    (getProjectileId : 'projectile -> 'projectileId)
+    (getTargetId     : 'target -> 'targetId)
+    (explosionAndScoreForProjectile : ('projectile -> 'explosion * uint32) option)
+    (explosionAndScoreForTarget : ('target -> 'explosion * uint32) option) =
 
     let collidingPairs =
         List.allPairs projectiles targets |> List.filter (fun (projectile,target) -> collides projectile target)
@@ -49,21 +50,28 @@ let ResultOfProjectileCollisions
     
             let additionalExplosions, additionalScore = 
                 
-                let initialNotes = { AdditionalExplosionsList = [] ; AdditionalScore = 0u }
+                let notepad = { AdditionalExplosionsList = [] ; AdditionalScore = 0u }
                 
-                let folder notes projectile =
-                    let explosion,score = createExplosionAndScoreFor projectile  // TODO: Separate into two functions the caller must pass
+                let folder createExplosionAndScoreFor notes item =
+                    let (explosion,score) = createExplosionAndScoreFor item
                     { 
                         AdditionalExplosionsList = explosion::notes.AdditionalExplosionsList
                         AdditionalScore = notes.AdditionalScore + score 
                     }
                 
-                let finalNotes = collidedProjectiles |> List.fold folder initialNotes
+                let notepad = 
+                    match explosionAndScoreForProjectile with
+                        | Some provider -> collidedProjectiles |> List.fold (folder provider) notepad
+                        | None -> notepad
+
+                let notepad = 
+                    match explosionAndScoreForTarget with
+                        | Some provider -> collidedTargets |> List.fold (folder provider) notepad
+                        | None -> notepad
                 
-                finalNotes.AdditionalExplosionsList, finalNotes.AdditionalScore
+                notepad.AdditionalExplosionsList, notepad.AdditionalScore
 
             survivingProjectiles, survivingTargets, additionalExplosions, additionalScore
-
 
 
 
@@ -77,7 +85,9 @@ let ResultOfProjectileCollisionsWithSingleTarget  // TODO:  Hmmm.. Ideology:  It
     (target          : 'target)
     collides
     (getProjectileId : 'projectile -> 'projectileId)
-    createExplosionAndScoreFor =
+    explosionAndScoreForProjectile =
+
+    let explosionAndScoreForTarget = fun _ -> ()
 
     let survivingProjectiles, survivingTargets, additionalExplosions, additionalScore =
         ResultOfProjectileCollisions
@@ -86,7 +96,8 @@ let ResultOfProjectileCollisionsWithSingleTarget  // TODO:  Hmmm.. Ideology:  It
             collides
             getProjectileId
             (fun _ -> 1)
-            createExplosionAndScoreFor 
+            (Some explosionAndScoreForProjectile)
+            None
 
     let status =
         if (survivingTargets |> List.isEmpty) then PlayerDestroyed else PlayerSurvives

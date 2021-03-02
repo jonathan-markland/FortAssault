@@ -1089,8 +1089,8 @@ let DroidsExplodedIfShotBy bullets gameTime droids =
     let doesBulletCollideWithDroid bullet droid =
         (BulletCentreOf bullet) |> IsWithinRegionOf (DroidCentreOf droid) BulletTriggerDistance
 
-    let createExplosionAndScore bullet =   // TODO:  Explosion needs to be in the centre of the adversary, not the bullet centre.
-        (NewExplosion (VPBulletCentreOf bullet) gameTime)  ,  ScoreForPlayerHittingDroid
+    let createExplosionAndScore droid =
+        (NewExplosion (VPDroidCentreOf droid) gameTime)  ,  ScoreForPlayerHittingDroid
 
     ResultOfProjectileCollisions
         bullets
@@ -1098,7 +1098,8 @@ let DroidsExplodedIfShotBy bullets gameTime droids =
         doesBulletCollideWithDroid
         BulletCentreOf  // used as identity
         DroidIdentity
-        createExplosionAndScore
+        None
+        (Some createExplosionAndScore)
 
 
 

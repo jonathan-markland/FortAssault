@@ -119,7 +119,8 @@ let private ResultOfWhateverShellsHitTheFort shells (targets:Target list) explos
             (shellCollidesWithFort gameTime)
             (fun x -> x.ShellStartTime)
             (fun x -> x.TargetLocation.ptx)
-            createExplosionAndScoreFor
+            (Some createExplosionAndScoreFor)
+            None
 
     shells, targets, explosions |> List.append additionalExplosions, score |> ScoreIncrementedBy additionalScore
 

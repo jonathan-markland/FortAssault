@@ -167,7 +167,8 @@ let ResultOfWhateverShellsHitThePlanes shells planes explosions score gameTime =
             (ShellCollidesWithPlane gameTime)
             (fun x -> x.ShellStartTime) // Shell identity basis: They will all have different start times.
             (fun x -> x.PlaneFlickBookInstance.FlickBookStartTime) // Plane identity basis: They will all have different start times.
-            createExplosionAndScoreFor
+            (Some createExplosionAndScoreFor)
+            None
 
     shells, planes, explosions |> List.append additionalExplosions, score |> ScoreIncrementedBy additionalScore
 
