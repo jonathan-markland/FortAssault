@@ -37,6 +37,7 @@ let DroidVsWallTriggerDistance   =  6.0F<epx>
 let DroidVsDroidTriggerDistance  = 12.0F<epx>
 let DroidVsManTriggerDistance    = DroidTriggerDistance + 2.0F<epx>  // Stop droid moving inside man's collision distance.
 let BulletVsWallsTriggerDistance =  1.0F<epx>
+let ManExclusionRectangleExtension = 80<epx>
 
 /// Used for initial positioning of adversaries in the room.
 let LargestAdversaryDimension    = 20<epx>
@@ -44,9 +45,9 @@ let LargestAdversaryDimension    = 20<epx>
 let ManFiringStartDistance      = 10.0F    // Used as multiplier hence no units.
 let DroidFiringStartDistance    = 8.0F     // Used as multiplier hence no units.
 
-let HomingDroidSpeed    = 0.7F<epx>
+let HomingDroidSpeed    = 0.6F<epx>
 let WanderingDroidSpeed = 0.9F
-let AssassinDroidSpeed  = 0.5F<epx>
+let AssassinDroidSpeed  = 0.45F<epx>
 let BulletSpeed         = 4.0F
 let ManSpeed            = 1.0F
 let GhostSpeed          = 2.0F<epx>

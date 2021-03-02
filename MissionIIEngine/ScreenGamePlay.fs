@@ -111,8 +111,8 @@ let EightWayDirectionFromKeys left right up down =
 
 let ManExclusionRectangleAround (ViewPoint manCentre) =
     let manImage = ImageFromID FacingUpImageID
-    let w = manImage.ImageMetadata.ImageWidth
-    let h = manImage.ImageMetadata.ImageHeight
+    let w = manImage.ImageMetadata.ImageWidth + ManExclusionRectangleExtension
+    let h = manImage.ImageMetadata.ImageHeight + ManExclusionRectangleExtension
     RectangleCenteredAbout { ptx=(manCentre.ptx) |> FloatEpxToIntEpx ; pty=(manCentre.pty) |> FloatEpxToIntEpx } { dimx=w ; dimy=h } 2
 
 let DroidImageIndexFor droidType =
@@ -600,7 +600,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
     drawBullets manBullets
     drawBullets droidBullets
     drawDroids ()
-    // FOR DEBUG:  drawManExclusionDebugRectangle ()
+    // FOR DEBUG:      drawManExclusionDebugRectangle ()
     drawMan ()
     drawGhost ()
     drawDecoratives ()
@@ -890,10 +890,13 @@ let RespawnedManStateAfterLifeLoss manStartPositionInRoom =
         ManCentrePosition = position
     }
 
-let DecrementLives model =
+let WithLivesDecremented model =
 
-    let (ManLives manLives) = model.InnerScreenModel.ManLives
-    let (manLives, isGameOver) = if manLives > 0u then (manLives - 1u,false) else (0u,true)
+    let (ManLives manLives) = 
+        model.InnerScreenModel.ManLives
+
+    let (manLives, isGameOver) = 
+        if manLives > 0u then (manLives - 1u,false) else (0u,true)
 
     let model =
         {
@@ -902,6 +905,7 @@ let DecrementLives model =
         }
 
     (model, isGameOver)
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Droids
@@ -957,7 +961,7 @@ let NewDroidsForRoom levelNumber placesForAdversariesInThisRoom gameTime =
             | MakeWandering ->
                 { 
                     DroidIdentity       = identity
-                    DroidType           = WanderingDroid (EightWayDirection.Up8, gameTime)
+                    DroidType           = WanderingDroid (EightWayDirection.Up8, gameTime)  // TODO: Do we need to generate different directions here?
                     DroidCentrePosition = centre
                 }
 
@@ -1292,7 +1296,7 @@ let ModelForStartingLevel levelIndex whereToOnGameOver (betweenScreenStatus:Betw
 
     let manCentre = ViewPoint { ptx=220.0F<epx> ; pty=100.0F<epx> } // TODO: decide from positioner?
 
-    let exclusionRectangles = [ManExclusionRectangleAround manCentre] // TODO: Need greater surround gap.
+    let exclusionRectangles = [ManExclusionRectangleAround manCentre]
 
     // let placesForAdversariesInThisRoom = 
     //     AvailableObjectPositionsWithinRoom roomReference exclusionRectangles LargestAdversaryDimension |> Seq.toArray
@@ -1666,7 +1670,7 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
                         let decideWhatToDo gameTime =
 
                             let (model, isGameOver) =
-                                model |> DecrementLives
+                                model |> WithLivesDecremented
 
                             if isGameOver then
                                 model.InnerScreenModel.WhereToOnGameOver model.InnerScreenModel.ScreenScore gameTime
@@ -1675,14 +1679,14 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
                                 let respawnedManModel =
                                     RespawnedManStateAfterLifeLoss model.InnerScreenModel.ManStartPositionInRoom
 
-                                let fakeRoomFlipData =
+                                let roomFlipData =
                                     {
                                         NewRoomOrigin    = model.InnerScreenModel.RoomReference.RoomOrigin
                                         NewRoomManCentre = respawnedManModel.ManCentrePosition
                                     }
 
                                 model 
-                                    |> WithRoomFlipAppliedFrom fakeRoomFlipData respawnedManModel.ManState gameTime
+                                    |> WithRoomFlipAppliedFrom roomFlipData respawnedManModel.ManState gameTime
                                     |> ReplacesModelIn gameState
 
                         let dyingGameState = 
