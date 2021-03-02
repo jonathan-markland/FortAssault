@@ -710,7 +710,8 @@ let private OldNextTankBattleScreenState oldState keyStateGetter gameTime frameE
                         (AlliedMissileCollidesWithEnemyTank numTilesHorizontally gameTime)
                         FlickBookStartTimeOf  // will do as identity since there's time gaps between firings
                         id // TODO: Using the whole record as identity.  Will do for now.
-                        (fun projectile -> (MissileExplosionFor projectile gameTime), ScoreForHittingEnemyTank)
+                        (Some (fun projectile -> (MissileExplosionFor projectile gameTime), ScoreForHittingEnemyTank))
+                        None
 
                 let decoratives = decoratives |> List.append additionalExplosions
                 let scoreAndHiScore = scoreAndHiScore |> ScoreIncrementedBy additionalScore
