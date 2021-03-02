@@ -1,6 +1,5 @@
 ﻿module ScreenPotentialEnterYourName
 
-(*
 open DrawingFunctions
 open ResourceIDs
 open Geometry
@@ -14,7 +13,6 @@ open StaticResourceAccess
 open Rules
 open Input
 open Directions
-open TitleScreenShared
 open Keys
 open Sounds
 open FreezeFrame
@@ -27,7 +25,6 @@ type private PotentialEnterYourNameScreenModel =
         ScoreAndHiScore    : ScoreAndHiScore
         EnterYourNameModel : EnterYourNameModel
         MemoizedText       : string list
-        PacMemo       : TitleScreenPacmanState
         WhereToAfterCtor   : ScoreAndName list -> float32<seconds> -> ErasedGameState
     }
 
@@ -35,18 +32,9 @@ type private PotentialEnterYourNameScreenModel =
 
 let private RenderPotentialEnterYourNameScreen render (model:PotentialEnterYourNameScreenModel) gameTime =
 
-    let backgroundImage = BackgroundImageID |> ImageFromID
+    let backgroundImage = Background2ImageID |> ImageFromID
     Image1to1 render 0<epx> 0<epx> backgroundImage
-
-    let tilesImage = 
-        Level1ImageID |> ImageFromID
-
-    let pacAt = 
-        DrawPacMan render tilesImage gameTime
-
-    pacAt  model.PacMemo
-
-    Paragraph render GreyFontID CentreAlign MiddleAlign 160<epx> 100<epx> 10<epx> model.MemoizedText
+    Paragraph render MissionIIFontID CentreAlign MiddleAlign 160<epx> 100<epx> 10<epx> model.MemoizedText
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -78,7 +66,6 @@ let private AddingIntoScoreboard (dataModel:EnterYourNameModel) score oldScoreBo
                     NewPlayerName  = dataModel.Name
                     NewPlayerScore = score
                 }
-    
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -102,7 +89,7 @@ let private NextPotentialEnterYourNameScreenState gameState keyStateGetter gameT
                         |> AddingIntoScoreboard enterYourNameModel model.ScoreAndHiScore.Score
     
                 model.WhereToAfterCtor updatedScoreboard gameTime
-                    |> WithOneShotSound [PlaySoundEffect (SoundFromID VictorySoundID)]
+                    // TODO: |> WithOneShotSound [PlaySoundEffect (SoundFromID VictorySoundID)]
     
             else
                 gameState 
@@ -112,10 +99,9 @@ let private NextPotentialEnterYourNameScreenState gameState keyStateGetter gameT
                             ScoreAndHiScore    = model.ScoreAndHiScore  // never changes
                             EnterYourNameModel = enterYourNameModel
                             MemoizedText       = enterYourNameModel |> EnterYourNameModelScreenText
-                            PacMemo            = model.PacMemo
                             WhereToAfterCtor   = model.WhereToAfterCtor
                         }
-                        [PlaySoundEffect (SoundFromID PelletSoundID)]
+                        [] // TODO: [PlaySoundEffect (SoundFromID PelletSoundID)]
 
 
 
@@ -135,7 +121,6 @@ let NewPotentialEnterYourNameScreen scoreAndHiScore oldScoreboard whereToAfter g
                 EnterYourNameModel = enterYourNameModel
                 MemoizedText       = enterYourNameModel |> EnterYourNameModelScreenText
                 WhereToAfterCtor   = whereToAfter
-                PacMemo            = TitleScreenPac FacingRight  50 15
             }
 
         NewGameState NextPotentialEnterYourNameScreenState RenderPotentialEnterYourNameScreen screenModel
@@ -148,4 +133,3 @@ let NewPotentialEnterYourNameScreen scoreAndHiScore oldScoreboard whereToAfter g
         whereToAfter oldScoreboard gameTime
 
 
-*)

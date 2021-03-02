@@ -87,6 +87,9 @@ let inline RotateClockwise8way stepsDelta (fromDirection:EightWayDirection) =
 
 
 let EightWayDirectionFromKeys left right up down =
+
+    // TODO: This is no good, it ignores LEFT && RIGHT for instance.
+
     if left && up then Some EightWayDirection.UpLeft8
     else if left && down then Some EightWayDirection.DownLeft8
     else if right && up then Some EightWayDirection.UpRight8
@@ -735,6 +738,8 @@ let RespondingToKeys keyStateGetter man =
     let up    = keyStateGetter |> UpButtonHeld
     let down  = keyStateGetter |> DownButtonHeld
 
+    // TODO: Is this the best way of doing this?
+
     if left || right || up || down then
         match EightWayDirectionFromKeys left right up down with
             | Some direction ->
@@ -1278,6 +1283,11 @@ let StyleResources levelIndex =
 
 let ModelForStartingLevel levelIndex whereToOnGameOver (betweenScreenStatus:BetweenScreenStatus) gameTime =
 
+    let {
+            ScoreAndHiScore = scoreAndHiScore
+            Lives           = lives
+        } = betweenScreenStatus
+
     let numberOfMazes = AllLevels.Length
     let levelIndex    = levelIndex % numberOfMazes
     let levelMatrix   = AllLevels.[levelIndex] |> LevelTextToMatrix
@@ -1318,9 +1328,9 @@ let ModelForStartingLevel levelIndex whereToOnGameOver (betweenScreenStatus:Betw
                     RoomReference          = roomReference
                     ManStartPositionInRoom = manStartPositionInRoom
 
-                    ScreenScore        = betweenScreenStatus.ScoreAndHiScore
+                    ScreenScore        = scoreAndHiScore
                     ManInventory       = []
-                    ManLives           = ManLives InitialLives
+                    ManLives           = ManLives lives
                     Interactible       = // TODO: Decide positions
                         [
                             {
@@ -1462,7 +1472,7 @@ let WithRoomFlipAppliedFrom roomFlipData manStateToApply gameTime model =
 //  Apply in-game changes required
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
     
-let private WithTheFollowingStateApplied  // TODO: rename for clarification, because this is only applied when the man is alive
+let private WithTheFollowingStateApplied
         gameTime
         man manBullets additionalManBullet
         droids droidBullets additionalDroidBullets

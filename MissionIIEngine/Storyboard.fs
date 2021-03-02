@@ -26,6 +26,7 @@ open Sounds
 open GameStateManagement
 open StaticResourceAccess
 open ResourceIDs
+open GamePlayScreenConstants
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -34,7 +35,7 @@ let mutable private globalScoreboard : ScoreAndName list = []
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-(*let rec private EnterYourNameStory scoreAndHiScore gameTime =
+let rec private EnterYourNameStory scoreAndHiScore gameTime =
 
     // You can just direct here, and it will sort out whether to show or not.
 
@@ -48,13 +49,6 @@ let mutable private globalScoreboard : ScoreAndName list = []
         afterEntry
         gameTime
 
-and private AllEatenStory levelNumber betweenScreenStatus gameTime =
- 
-    WithScreenCompleteIntermissionCard
-        betweenScreenStatus
-        (PacmanStory (levelNumber + 1) betweenScreenStatus)
-        gameTime
-
 and private GameOverStory scoreAndHiScore gameTime =
  
     let slideInEnterYourName outgoingGameState gameTime = 
@@ -64,25 +58,18 @@ and private GameOverStory scoreAndHiScore gameTime =
             ScreenWidthInt ScreenHeightInt
             SpeedingUpMotion 1.0F<seconds> gameTime 
 
-    NewGameOverScreen scoreAndHiScore 
-        |> WithDrawingOnlyFor GameOverPauseTime gameTime slideInEnterYourName
-        |> WithOneShotSound [PlaySoundEffect (SoundFromID GameOverSoundID)]
+    NewGameOverScreen scoreAndHiScore gameTime
+        |> WithDrawingOnlyFor GameOverPauseTime gameTime slideInEnterYourName  // TODO: Can we remove FreezeFrame dependency?  Possibly want to erase FreezeFrame
+        // |> WithOneShotSound [PlaySoundEffect (SoundFromID GameOverSoundID)]
 
-and private PacmanStory (levelNumber:int) betweenScreenStatus (gameTime:float32<seconds>) =
+and private MissionIIStory betweenScreenStatus (gameTime:float32<seconds>) =
 
-    let newGame _gameTime =
-        NewPacmanScreen
-            levelNumber
-            AllEatenStory
-            GameOverStory
-            betweenScreenStatus
-
-    let messageOverlay = NewPacmanGetReadyOverlay ()
-
-    FreezeForGetReady newGame messageOverlay GetReadyCardTime gameTime
+    NewMissionIIScreen
+        GameOverStory
+        betweenScreenStatus
+        gameTime
     
-and private *)
-let rec GameTitleStory gameTime =
+and private GameTitleStory gameTime =
 
     let betweenScreenStatus = 
         {
@@ -90,12 +77,9 @@ let rec GameTitleStory gameTime =
             Lives = InitialLives
         }
     
-    let temp shs gt =
-        failwith ""
-
-    NewGameTitleScreen globalScoreboard
+    NewGameTitleScreen globalScoreboard // TODO: wrap rolling to the hi-score screen in the interruptable video.
         |> AsInterruptableVideoThen 
-                (NewMissionIIScreen temp betweenScreenStatus)
+                (MissionIIStory betweenScreenStatus)
                 KeyFire
 
 

@@ -1,82 +1,53 @@
 ﻿module ScreenGameOver
 
-(*
-
+open GameStateManagement
 open DrawingFunctions
 open ResourceIDs
-open ScoreHiScore
 open Geometry
 open ImagesAndFonts
-open GameStateManagement
-open Directions
-open PacmanShared
-open TitleScreenShared
+open Time
 open StaticResourceAccess
+open GamePlayScreenConstants
+open ScoreHiScore
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 type private GameOverScreenModel =
     {
-        ScoreAndHiScore : ScoreAndHiScore
-        ScoreText       : string
-        HiScoreText     : string
-        PacLeftMemo     : TitleScreenPacmanState
-        PacRightMemo    : TitleScreenPacmanState
-        Ghost0Memo      : TitleScreenGhostState
-        Ghost1Memo      : TitleScreenGhostState
-        Ghost2Memo      : TitleScreenGhostState
-        Ghost3Memo      : TitleScreenGhostState
+        ScoreMemo : string
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private RenderGameOverScreen render (model:GameOverScreenModel) gameTime =
+let private RenderGameOverScreen render model (gameTime:float32<seconds>) =
 
-    let backgroundImage = Background3ImageID |> ImageFromID
+    let backgroundImage = Background2ImageID |> ImageFromID
     Image1to1 render 0<epx> 0<epx> backgroundImage
 
-    let msgAt percent message =
-        Text render GreyFontID CentreAlign MiddleAlign (ScreenWidthInt / 2) (percent |> PercentOfScreenHeight) message
+    let x50pc = 50 |> PercentOfScreenWidth
+    let y1 = 40 |> PercentOfScreenHeight
+    let y2 = 60 |> PercentOfScreenHeight
 
-    let tilesImage = 
-        Level1ImageID |> ImageFromID
+    let smallFont = FontFromID MissionIIFontID
+    let bigFont = MagnifiedFont  6  3 5  smallFont
 
-    let pacAt = 
-        DrawPacMan render tilesImage gameTime
-
-    let ghostAt = 
-        DrawGhost render tilesImage gameTime 
-
-    msgAt  20 "PAC MAN"
-    msgAt  30 "GAME OVER"
-    msgAt  45 model.ScoreText
-    msgAt  55 model.HiScoreText
-
-    pacAt  model.PacRightMemo
-    pacAt  model.PacLeftMemo 
-
-    ghostAt  model.Ghost0Memo
-    ghostAt  model.Ghost1Memo
-    ghostAt  model.Ghost2Memo
-    ghostAt  model.Ghost3Memo
+    TextX render bigFont     CentreAlign MiddleAlign x50pc y1 "GAME OVER"
+    TextX render smallFont   CentreAlign MiddleAlign x50pc y2 model.ScoreMemo
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NewGameOverScreen scoreAndHiScore =
+let NewGameOverScreen scoreAndHiScore gameTime =
 
-    let gameOverModel =
+    let {
+            Score   = score
+            HiScore = _
+        } = scoreAndHiScore
+
+    let model =
         {
-            ScoreAndHiScore = scoreAndHiScore
-            ScoreText       = "SCORE   " + scoreAndHiScore.Score.ToString()
-            HiScoreText     = "HI SCORE   " + scoreAndHiScore.HiScore.ToString()
-            PacLeftMemo     = TitleScreenPac FacingRight 20 50 
-            PacRightMemo    = TitleScreenPac FacingLeft  80 50
-            Ghost0Memo      = TitleScreenGhost (GhostNumber 0) 20 75
-            Ghost1Memo      = TitleScreenGhost (GhostNumber 1) 40 75
-            Ghost2Memo      = TitleScreenGhost (GhostNumber 2) 60 75
-            Ghost3Memo      = TitleScreenGhost (GhostNumber 3) 80 75
+            ScoreMemo = sprintf "SCORE %d" score
         }
 
-    NewGameState ModelNeverChanges RenderGameOverScreen gameOverModel
+    NewGameState ModelNeverChanges RenderGameOverScreen model
 
-    *)
+
