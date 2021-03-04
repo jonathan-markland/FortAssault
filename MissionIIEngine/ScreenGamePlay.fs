@@ -102,6 +102,17 @@ let EightWayDirectionFromKeys left right up down =
 
 
 
+/// Chose N things randomly from the array, with no repetitions of choice.
+let NRandomChosenThings numRequired (things:'t[]) randomSeed = // TODO: library?
+
+    if numRequired > things.Length then
+        failwith "Array isn't large enough to supply requested number of randomly chosen items"
+
+    let (sequence, randomState) = ShuffledArrayAsSeq things randomSeed
+    (sequence |> Seq.take numRequired, randomState)
+
+
+
     
 
 
@@ -111,6 +122,9 @@ let EightWayDirectionFromKeys left right up down =
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  PROPERTIES AND SMALL FUNCTIONS
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let inline RandomSeedFromGameTime gameTime =
+    XorShift32State (uint32 gameTime)
 
 let ManExclusionRectangleAround (ViewPoint manCentre) =
     let manImage = ImageFromID FacingUpImageID
@@ -257,11 +271,24 @@ let RoomCornerFurthestFrom (ViewPoint point) =
 //  LEVEL
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-/// The rule for the number of items required to exit the given numbered level.
-let NumItemsRequiredOnLevel (LevelIndex levelNumber) =
+/// The rule for the number of inventory items required to exit the given level.
+let NumItemsRequiredOnLevel (LevelIndex levelIndex) =
 
-    let itemCountNeededToExitLevel = min (max 1 levelNumber) 3
+    let itemCountNeededToExitLevel = min (max 1 levelIndex) 3
     itemCountNeededToExitLevel
+
+/// A sequence of the interactible objects to be found on the given level.
+let InteractiblesOnLevel (LevelIndex levelIndex) =
+    
+    seq {
+        yield ObKey
+        if levelIndex > 0 then yield ObRing
+        if levelIndex > 1 then 
+            yield ObGold
+            yield ObAmulet
+        yield ObHealthBonus
+        yield ObLevelExit
+    }
 
 /// Do we intersect the level exit, and do we have the required items?
 let CheckForNextLevel currentLevelNumber (inventory:InventoryObjectType list) (interactibles:Interactible list) currentRoomNumber manCentre =
@@ -414,6 +441,59 @@ let AvailableObjectPositionsWithinRoom roomReference exclusionRectangles (desire
 
             ty <- ty + desiredSquareSide
     }
+
+
+/// A list of all needed interactibles, and their rooms and positions.
+let PlacesWhereObjectsCanBeLocatedInLevel levelModel gameTime : Interactible list =
+
+    let levelIndex = levelModel.LevelIndex
+
+    let randomSeed = XorShift32State 7u // TODO: RandomSeedFromGameTime gameTime
+
+    let rooms = 
+        [| 
+            for y in 0..(NumRoomsPerSide-1) do
+                for x in 0..(NumRoomsPerSide-1) do
+                    let roomOrigin = RoomOrigin (x,y)
+                    let number     = RoomNumberFromRoomOrigin roomOrigin
+                    let reference  = 
+                        {
+                            RoomOrigin = roomOrigin
+                            LevelModel = levelModel
+                        }
+                    (number, reference)
+        |]
+    
+    let (shuffledRooms, _randomState) = ShuffledArrayAsSeq rooms randomSeed
+    let shuffledRooms = shuffledRooms |> Seq.toArray
+
+    (InteractiblesOnLevel levelIndex)
+        |> Seq.mapi (fun i interactibleType ->
+
+            if i > shuffledRooms.Length then
+                failwith "We have too many objects and not enough rooms to put them in!"  // Should never happen by design
+
+            let (roomNumber, roomReference) = shuffledRooms.[i]
+
+            let positions = 
+                AvailableObjectPositionsWithinRoom roomReference [] LargestInteractibleDimension
+                    |> Seq.toArray
+
+            // TODO: On game boot, for each level and each room, count the available positions 
+            //       that the above would return, and do a failwith right away if any room could
+            //       never host an object because of the complexity of its passages.
+
+            let (positionsSequence, _) =
+                NRandomChosenThings 1 positions randomSeed
+
+            let (x,y) = positionsSequence |> Seq.head  // Every room should have at least 1 place for an object!!!
+
+            {
+                InteractibleRoom           = roomNumber
+                InteractibleType           = interactibleType
+                InteractibleCentrePosition = ViewPoint { ptx=x |> IntToFloatEpx ; pty=y |> IntToFloatEpx }
+            })
+        |> Seq.toList
 
 
 
@@ -576,10 +656,8 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
         DrawFlickbookInstanceList render decoratives gameTime
 
     // DEBUG:
-    let drawPotentialObjectPositionsInRoom () =
+    let drawPotentialObjectPositionsInRoom side =
         
-        let side = LargestAdversaryDimension
-
         let potentialObjectPositionsInRoom = 
             AvailableObjectPositionsWithinRoom roomReference [] side
 
@@ -589,9 +667,18 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
             |> Seq.iter (fun (x,y) -> 
                 Rectangle render (x+PlayAreaOffsetX) (y+PlayAreaOffsetY) (2<epx>) (2<epx>) colour)
 
+    // DEBUG:
     let drawManExclusionDebugRectangle () =
         let r = ManExclusionRectangleAround (VPManCentreOf man)
         Rectangle render (r.Left+PlayAreaOffsetX) (r.Top+PlayAreaOffsetY) (r |> RectangleWidth) (r |> RectangleHeight) (SolidColour 0x000040u)
+
+    // DEBUG:
+    let drawInteractiblesOnLevel () =
+        (InteractiblesOnLevel levelIndex) 
+            |> Seq.iteri (fun i interactibleObjectType -> 
+                let image = interactibleObjectImages.[InteractibleImageIndexFor interactibleObjectType]
+                let centrePos = ViewPoint { ptx=((float32)i) * 30.0F<epx> ; pty=40.0F<epx> }
+                CentreImagePoint render (centrePos |> Offset) image)
 
 
     drawBackground ()
@@ -604,10 +691,12 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
     drawBullets droidBullets
     drawDroids ()
     // FOR DEBUG:      drawManExclusionDebugRectangle ()
-    drawMan ()
     drawGhost ()
+    drawMan ()
     drawDecoratives ()
-    // FOR DEBUG:  drawPotentialObjectPositionsInRoom ()
+    // FOR DEBUG:       drawPotentialObjectPositionsInRoom LargestAdversaryDimension
+    // FOR DEBUG:       drawPotentialObjectPositionsInRoom LargestInteractibleDimension
+    // FOR DEBUG:       drawInteractiblesOnLevel ()
 
     
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -916,23 +1005,13 @@ let WithLivesDecremented model =
 //  Droids
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let NRandomChosenThings numRequired (things:'t[]) randomSeed =
-
-    if numRequired > things.Length then
-        failwith "Array isn't large enough to supply requested number of randomly chosen items"
-
-    let (sequence, randomState) = ShuffledArrayAsSeq things randomSeed
-    (sequence |> Seq.take numRequired, randomState)
-
-
-
 type DroidTypeToMake = MakeHoming | MakeWandering | MakeAssassin      
 
 let NewDroidsForRoom levelNumber placesForAdversariesInThisRoom gameTime =
    
     let numberToMake = 10
 
-    let randomSeed = XorShift32State (uint32 gameTime)
+    let randomSeed = RandomSeedFromGameTime gameTime
     let (chosenPositions,_) = NRandomChosenThings numberToMake placesForAdversariesInThisRoom randomSeed
 
     let newDroidTypeToMakeFor (LevelIndex levelIndex) i =  // TODO: Throughout this should be LevelIndex if it is going to be zero-based!
@@ -1139,7 +1218,7 @@ let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
         match droids |> filteredForDroidsThatCanFire with
             | [] -> []
             | droids ->
-                let randomSeed = XorShift32State (uint32 gameTime)
+                let randomSeed = RandomSeedFromGameTime gameTime
                 let (chosenDroids,_) = NRandomChosenThings 1 (droids |> List.toArray) randomSeed
                 chosenDroids |> Seq.choose newBulletFiredByDroid |> Seq.toList // TODO: Use seq in interface?
     else
@@ -1292,17 +1371,17 @@ let ModelForStartingLevel levelIndex whereToOnGameOver (betweenScreenStatus:Betw
     let levelIndex    = levelIndex % numberOfMazes
     let levelMatrix   = AllLevels.[levelIndex] |> LevelTextToMatrix
 
-    // TODO:  let sparePlacesForInteractibles = PlacesWhereObjectsCanBeLocatedInLevel levelMatrix |> Seq.toArray
+    let levelModel = 
+        {
+            LevelIndex       = LevelIndex levelIndex
+            LevelTileMatrix  = levelMatrix
+            TileMatrixTraits = LevelTileMatrixDetails ()
+        }
 
     let roomReference =
         {
-            RoomOrigin = RoomOrigin (0,0)  // TODO: Choose random start room.
-            LevelModel =
-                {
-                    LevelIndex       = LevelIndex levelIndex
-                    LevelTileMatrix  = levelMatrix
-                    TileMatrixTraits = LevelTileMatrixDetails ()
-                }
+            RoomOrigin = RoomOrigin (0,0)  // TODO: Choose random start room?
+            LevelModel = levelModel
         }
 
     let manCentre = ViewPoint { ptx=220.0F<epx> ; pty=100.0F<epx> } // TODO: decide from positioner?
@@ -1327,45 +1406,12 @@ let ModelForStartingLevel levelIndex whereToOnGameOver (betweenScreenStatus:Betw
                 {
                     RoomReference          = roomReference
                     ManStartPositionInRoom = manStartPositionInRoom
-
-                    ScreenScore        = scoreAndHiScore
-                    ManInventory       = []
-                    ManLives           = ManLives lives
-                    Interactible       = // TODO: Decide positions
-                        [
-                            {
-                                InteractibleRoom           = RoomNumber 2
-                                InteractibleType           = InteractibleObjectType.ObKey
-                                InteractibleCentrePosition = ViewPoint { ptx=200.0F<epx> ; pty=100.0F<epx> }
-                            }
-                            {
-                                InteractibleRoom           = RoomNumber 4
-                                InteractibleType           = InteractibleObjectType.ObRing
-                                InteractibleCentrePosition = ViewPoint { ptx=200.0F<epx> ; pty=100.0F<epx> }
-                            }
-                            {
-                                InteractibleRoom           = RoomNumber 8
-                                InteractibleType           = InteractibleObjectType.ObHealthBonus
-                                InteractibleCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty=100.0F<epx> }
-                            }
-                            {
-                                InteractibleRoom           = RoomNumber 8
-                                InteractibleType           = InteractibleObjectType.ObLevelExit
-                                InteractibleCentrePosition = ViewPoint { ptx=200.0F<epx> ; pty=120.0F<epx> }
-                            }
-                            {
-                                InteractibleRoom           = RoomNumber 6
-                                InteractibleType           = InteractibleObjectType.ObLevelExit
-                                InteractibleCentrePosition = ViewPoint { ptx=200.0F<epx> ; pty=80.0F<epx> }
-                            }
-                            {
-                                InteractibleRoom           = RoomNumber 5
-                                InteractibleType           = InteractibleObjectType.ObGold
-                                InteractibleCentrePosition = ViewPoint { ptx=100.0F<epx> ; pty=100.0F<epx> }
-                            }
-                        ]
-                    ImageLookupsTables = StyleResources levelIndex
-                    WhereToOnGameOver = whereToOnGameOver
+                    ScreenScore            = scoreAndHiScore
+                    ManInventory           = []
+                    ManLives               = ManLives lives
+                    Interactible           = PlacesWhereObjectsCanBeLocatedInLevel levelModel gameTime
+                    ImageLookupsTables     = StyleResources levelIndex
+                    WhereToOnGameOver      = whereToOnGameOver
                 }
 
             ScreenMan = screenMan

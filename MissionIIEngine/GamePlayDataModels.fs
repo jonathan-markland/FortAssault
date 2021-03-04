@@ -169,17 +169,17 @@ type LevelModel =
 
 
 
-/// Identifies a room by its Cartesian position in the level arrangement.
+/// Identifies a room by its Cartesian position in the level arrangement ie: (0..3,0..3)
 type RoomOrigin = RoomOrigin of (int * int)
 
 
 
 type RoomReference =  // TODO: rename "RoomModel"
     {
-        /// Indicates the current room by index into the matrix ie: (0..3,0..3)
+        /// This room as Cartesian position within level matrix.
         RoomOrigin        : RoomOrigin
 
-        /// The current level data
+        /// The level this room is part of.
         LevelModel        : LevelModel
     }
 

@@ -42,6 +42,9 @@ let ManExclusionRectangleExtension = 80<epx>
 /// Used for initial positioning of adversaries in the room.
 let LargestAdversaryDimension    = 20<epx>
 
+/// Used for initial positioning of interactibles throughout the level.
+let LargestInteractibleDimension = 25<epx>
+
 let ManFiringStartDistance      = 10.0F    // Used as multiplier hence no units.
 let DroidFiringStartDistance    = 8.0F     // Used as multiplier hence no units.
 
