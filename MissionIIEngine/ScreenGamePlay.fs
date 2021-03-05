@@ -27,6 +27,7 @@ open ScoreHiScore
 open Random
 open SustainModeUntil
 open ScreenLevelIntro
+open ListSplicer
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -274,13 +275,14 @@ let RoomCornerFurthestFrom (ViewPoint point) =
 /// The rule for the number of inventory items required to exit the given level.
 let NumItemsRequiredOnLevel (LevelIndex levelIndex) =
 
-    let itemCountNeededToExitLevel = min (max 1 levelIndex) 3
-    itemCountNeededToExitLevel
+    let itemCountNeededToExitLevelLessOne = min (max 0 levelIndex) 1
+    itemCountNeededToExitLevelLessOne + 1
 
 /// A sequence of the interactible objects to be found on the given level.
 let InteractiblesOnLevel (LevelIndex levelIndex) =
     
     seq {
+        yield ObLevelStart
         yield ObKey
         if levelIndex > 0 then yield ObRing
         if levelIndex > 1 then 
@@ -291,7 +293,7 @@ let InteractiblesOnLevel (LevelIndex levelIndex) =
     }
 
 /// Do we intersect the level exit, and do we have the required items?
-let CheckForNextLevel currentLevelNumber (inventory:InventoryObjectType list) (interactibles:Interactible list) currentRoomNumber manCentre =
+let CheckForNextLevel currentLevelNumber (inventory:InventoryObjectType list) (interactibles:Interactible list) currentRoomOrigin manCentre =
 
     let numCarrying = inventory.Length
     let numNeeded   = NumItemsRequiredOnLevel currentLevelNumber
@@ -303,13 +305,13 @@ let CheckForNextLevel currentLevelNumber (inventory:InventoryObjectType list) (i
         interactibles |> List.exists (fun interactible ->
             
             let {
-                    InteractibleRoom           = objectRoomNumber
+                    InteractibleRoom           = objectRoomOrigin
                     InteractibleType           = objectType
                     InteractibleCentrePosition = ViewPoint objectCentre
                 } = interactible
 
             objectType = InteractibleObjectType.ObLevelExit
-                && objectRoomNumber = currentRoomNumber
+                && objectRoomOrigin = currentRoomOrigin
                 && objectCentre |> IsWithinRegionOf manCentre InteractibleTriggerDistance
         )
     
@@ -448,20 +450,19 @@ let PlacesWhereObjectsCanBeLocatedInLevel levelModel gameTime : Interactible lis
 
     let levelIndex = levelModel.LevelIndex
 
-    let randomSeed = XorShift32State 7u // TODO: RandomSeedFromGameTime gameTime
+    let randomSeed = RandomSeedFromGameTime gameTime
 
     let rooms = 
         [| 
             for y in 0..(NumRoomsPerSide-1) do
                 for x in 0..(NumRoomsPerSide-1) do
                     let roomOrigin = RoomOrigin (x,y)
-                    let number     = RoomNumberFromRoomOrigin roomOrigin
                     let reference  = 
                         {
                             RoomOrigin = roomOrigin
                             LevelModel = levelModel
                         }
-                    (number, reference)
+                    reference
         |]
     
     let (shuffledRooms, _randomState) = ShuffledArrayAsSeq rooms randomSeed
@@ -473,7 +474,7 @@ let PlacesWhereObjectsCanBeLocatedInLevel levelModel gameTime : Interactible lis
             if i > shuffledRooms.Length then
                 failwith "We have too many objects and not enough rooms to put them in!"  // Should never happen by design
 
-            let (roomNumber, roomReference) = shuffledRooms.[i]
+            let roomReference = shuffledRooms.[i]
 
             let positions = 
                 AvailableObjectPositionsWithinRoom roomReference [] LargestInteractibleDimension
@@ -488,8 +489,13 @@ let PlacesWhereObjectsCanBeLocatedInLevel levelModel gameTime : Interactible lis
 
             let (x,y) = positionsSequence |> Seq.head  // Every room should have at least 1 place for an object!!!
 
+            let {
+                    RoomOrigin = roomOrigin
+                    LevelModel = _
+                } = roomReference
+
             {
-                InteractibleRoom           = roomNumber
+                InteractibleRoom           = roomOrigin
                 InteractibleType           = interactibleType
                 InteractibleCentrePosition = ViewPoint { ptx=x |> IntToFloatEpx ; pty=y |> IntToFloatEpx }
             })
@@ -545,7 +551,6 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
             InteractibleObjectImages = interactibleObjectImages
         } = imageLookupTables
 
-    let roomNumber = roomOrigin |> RoomNumberFromRoomOrigin
     let (RoomOrigin (roomOriginX,roomOriginY)) = roomOrigin
 
     let drawBackground () =
@@ -553,7 +558,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
 
     let drawTopLineOfScoreboard () =
         let fatFont = MagnifiedFont  6  2 1  (FontFromID MissionIIFontID)
-        let (RoomNumber roomNumber) = roomNumber
+        let (RoomNumber roomNumber) = roomOrigin |> RoomNumberFromRoomOrigin
         let scoreText = $"SCORE {score}"
         let (LevelIndex levelIndex) = levelIndex
         let roomText  = $"ROOM {roomNumber} L{levelIndex + 1}"
@@ -643,13 +648,16 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
     let drawInteractibles () =
         interactibles |> List.iter (fun interactible ->
             let {
-                    InteractibleRoom           = interactibleRoomNumber
+                    InteractibleRoom           = interactibleRoomOrigin
                     InteractibleType           = interactibleObjectType
                     InteractibleCentrePosition = centrePos
                 } = interactible
-            if roomNumber = interactibleRoomNumber then
-                let image = interactibleObjectImages.[InteractibleImageIndexFor interactibleObjectType]
-                CentreImagePoint render (centrePos |> Offset) image
+            if roomOrigin = interactibleRoomOrigin then
+                match interactibleObjectType with
+                    | ObLevelStart -> ()
+                    | _ -> 
+                        let image = interactibleObjectImages.[InteractibleImageIndexFor interactibleObjectType]
+                        CentreImagePoint render (centrePos |> Offset) image
         )
 
     let drawDecoratives () =
@@ -828,6 +836,7 @@ let RespondingToKeys keyStateGetter man =
     let down  = keyStateGetter |> DownButtonHeld
 
     // TODO: Is this the best way of doing this?
+    // TODO: Holding opposing keys favours one direction arbitrarily.  Should cancel each other out.
 
     if left || right || up || down then
         match EightWayDirectionFromKeys left right up down with
@@ -903,15 +912,16 @@ let PossiblyInteractingWith interactibles currentRoomNumber man =
     let interactionResultFor interactibleType =
 
         let collect inventoryItem =
-            (NoExtraLife, NoChangeInvincibility, Some inventoryItem)
+            (RemoveInteractible, NoExtraLife, NoChangeInvincibility, Some inventoryItem)
 
         match interactibleType with
             | ObKey         -> collect InvKey
             | ObRing        -> collect InvRing
             | ObGold        -> collect InvGold
-            | ObAmulet      -> (NoExtraLife,     GainInvincibility,     None)
-            | ObHealthBonus -> (ExtraLifeGained, NoChangeInvincibility, None)
-            | ObLevelExit   -> (NoExtraLife,     NoChangeInvincibility, None)   // NB: No operation because of separate handling elsewhere.
+            | ObAmulet      -> (RemoveInteractible, NoExtraLife,     GainInvincibility,     None)
+            | ObHealthBonus -> (RemoveInteractible, ExtraLifeGained, NoChangeInvincibility, None)
+            | ObLevelExit   -> (KeepInteractible,   NoExtraLife,     NoChangeInvincibility, None)   // NB: No operation because of separate handling elsewhere.
+            | ObLevelStart  -> (KeepInteractible,   NoExtraLife,     NoChangeInvincibility, None)   // NB: No operation ever.
 
     let possibleFirstTouchedInteractible = 
         interactibles |> List.tryFind isItemTouched
@@ -923,17 +933,13 @@ let PossiblyInteractingWith interactibles currentRoomNumber man =
         
         | Some interactible ->
 
-            let shouldBeRemoved interactible =
-                interactible.InteractibleType <> InteractibleObjectType.ObLevelExit
-
-            let (livesDelta, invincibilityTrigger, itemGained) = 
+            let (removal, livesDelta, invincibilityTrigger, itemGained) = 
                 interactionResultFor interactible.InteractibleType
 
             let interactibles = 
-                if interactible |> shouldBeRemoved then
-                    interactibles |> PlanetSavingListFilter (not << isItemTouched)
-                else
-                    interactibles
+                match removal with
+                    | RemoveInteractible -> interactibles |> PlanetSavingListFilter (not << isItemTouched)
+                    | KeepInteractible   -> interactibles
 
             (livesDelta, invincibilityTrigger, itemGained, interactibles)
 
@@ -1378,18 +1384,24 @@ let ModelForStartingLevel levelIndex whereToOnGameOver (betweenScreenStatus:Betw
             TileMatrixTraits = LevelTileMatrixDetails ()
         }
 
+    let struct (interactibles, manlocationlist) =
+        PlacesWhereObjectsCanBeLocatedInLevel levelModel gameTime
+            |> ListSplicedBy (fun item ->
+                match item.InteractibleType with
+                    | ObLevelStart -> SecondList item
+                    | _ -> FirstList item)
+
+    let {
+            InteractibleRoom           = roomOrigin
+            InteractibleType           = _
+            InteractibleCentrePosition = manCentre
+        } = manlocationlist |> List.exactlyOne
+
     let roomReference =
         {
-            RoomOrigin = RoomOrigin (0,0)  // TODO: Choose random start room?
+            RoomOrigin = roomOrigin
             LevelModel = levelModel
         }
-
-    let manCentre = ViewPoint { ptx=220.0F<epx> ; pty=100.0F<epx> } // TODO: decide from positioner?
-
-    let exclusionRectangles = [ManExclusionRectangleAround manCentre]
-
-    // let placesForAdversariesInThisRoom = 
-    //     AvailableObjectPositionsWithinRoom roomReference exclusionRectangles LargestAdversaryDimension |> Seq.toArray
 
     let screenMan = 
         {
@@ -1409,7 +1421,7 @@ let ModelForStartingLevel levelIndex whereToOnGameOver (betweenScreenStatus:Betw
                     ScreenScore            = scoreAndHiScore
                     ManInventory           = []
                     ManLives               = ManLives lives
-                    Interactible           = PlacesWhereObjectsCanBeLocatedInLevel levelModel gameTime
+                    Interactible           = interactibles
                     ImageLookupsTables     = StyleResources levelIndex
                     WhereToOnGameOver      = whereToOnGameOver
                 }
@@ -1628,8 +1640,6 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
             TileMatrixTraits = _
         } = levelModel
 
-    let roomNumber = RoomNumberFromRoomOrigin roomOrigin
-
 
     let normalGamePlay () =
 
@@ -1662,7 +1672,7 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
 
         // TODO: We do not yet have data modelling for the invincibility.
         let livesDelta, invincibTrigger, newItemForInventory, interactibles = // TODO: Use below to generate next state
-            man |> PossiblyInteractingWith interactibles roomNumber   // Reminder: Ignores level exit (filtered above).
+            man |> PossiblyInteractingWith interactibles roomOrigin   // Reminder: Ignores level exit (filtered above).
 
         let manBullets, droids, additionalExplosions1, additionalScore =
             droids |> DroidsExplodedIfShotBy manBullets gameTime
@@ -1692,7 +1702,7 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
 
     let manCentre = ManCentreOf man
 
-    match manCentre |> CheckForNextLevel levelNumber inventory interactibles roomNumber with
+    match manCentre |> CheckForNextLevel levelNumber inventory interactibles roomOrigin with
 
         | true ->
             let switchToNextLevel gameTime =

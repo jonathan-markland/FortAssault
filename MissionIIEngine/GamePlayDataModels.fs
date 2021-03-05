@@ -19,6 +19,9 @@ type LevelNumber = LevelIndex of int  // TODO: rename LevelNumber to index!
 /// During gameplay - the screen number that the gameplay is showing.
 type RoomNumber = RoomNumber of int
 
+/// Identifies a room by its Cartesian position in the level arrangement ie: (0..3,0..3)
+type RoomOrigin = RoomOrigin of (int * int)
+
 /// Wall and floor tile matrix type.
 type TileIndex =
     | TileFloor1 =  0uy  // Where the man can walk
@@ -53,7 +56,7 @@ type Bullet =
 type InventoryObjectType = InvKey | InvRing | InvGold
 
 /// Items scattered about the level that the player can interact with in some way.
-type InteractibleObjectType = ObKey | ObRing | ObGold | ObAmulet | ObHealthBonus | ObLevelExit
+type InteractibleObjectType = ObKey | ObRing | ObGold | ObAmulet | ObHealthBonus | ObLevelExit | ObLevelStart
 
 let InteractibleImageIndexFor interactibleObjectType =
     match interactibleObjectType with
@@ -63,11 +66,12 @@ let InteractibleImageIndexFor interactibleObjectType =
         | ObAmulet      -> 3
         | ObHealthBonus -> 4
         | ObLevelExit   -> 5
+        | ObLevelStart  -> 5  // This is filtered out by the drawing function anyway.
         
 /// An item that the player can collect on the current level.
 type Interactible =
     {
-        InteractibleRoom           : RoomNumber
+        InteractibleRoom           : RoomOrigin
         InteractibleType           : InteractibleObjectType
         InteractibleCentrePosition : ViewPoint
     }
@@ -155,6 +159,7 @@ type ImageLookupsTables =
     }
 
 
+
 type LevelModel =
     {
         /// Current level number.  Displayed at top of screen.
@@ -166,11 +171,6 @@ type LevelModel =
         /// TileMatrixTraits for rooms (cached).
         TileMatrixTraits  : TileMatrixTraits
     }
-
-
-
-/// Identifies a room by its Cartesian position in the level arrangement ie: (0..3,0..3)
-type RoomOrigin = RoomOrigin of (int * int)
 
 
 
@@ -213,6 +213,7 @@ type InnerScreenModel =
         /// Constructor for GameOver
         WhereToOnGameOver : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
     }
+
 
 
 /// The data model for the gameplay screen.
