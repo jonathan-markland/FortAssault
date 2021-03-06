@@ -77,7 +77,7 @@ and private GameTitleStory gameTime =
             Lives = InitialLives
         }
     
-    NewGameTitleScreen globalScoreboard // TODO: wrap rolling to the hi-score screen in the interruptable video.
+    NewGameTitleScreen globalScoreboard gameTime // TODO: wrap rolling to the hi-score screen in the interruptable video.
         |> AsInterruptableVideoThen 
                 (MissionIIStory betweenScreenStatus)
                 KeyFire
