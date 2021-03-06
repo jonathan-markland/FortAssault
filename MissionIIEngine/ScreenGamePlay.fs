@@ -190,7 +190,25 @@ let ManJustDied lastModel thisModel =
         | (false,true) -> true
         | _ -> false
 
+let IsManInvincible innerScreenModel =
+
+    match innerScreenModel.ManInvincibilityUntil with
+        | None   -> false
+        | Some _ -> true    // Someone else switches the status OFF on the appropriate frame.  Hence no need to check the gameTime here.
+
+type InvincibilityDetail = VulnerableMode | InvincibleMode | InvincibilityWaningMode
+
+let ManInvincibilityDetail innerScreenModel gameTime =
     
+    match innerScreenModel.ManInvincibilityUntil with
+        | None         -> VulnerableMode
+        | Some endTime ->
+            if gameTime > (endTime - InvincibilityEndDuration) then
+                InvincibilityWaningMode
+            else
+                InvincibleMode
+
+
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  ROOMS
@@ -285,6 +303,7 @@ let InteractiblesOnLevel (LevelIndex levelIndex) =
         yield ObLevelStart
         yield ObKey
         if levelIndex > 0 then yield ObRing
+        if levelIndex = 2 then yield ObAmulet  // Make the third level easier.
         if levelIndex > 1 then 
             yield ObGold
             yield ObAmulet
@@ -520,13 +539,13 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
         } = model
 
     let {
-            RoomReference      = roomReference
-            ScreenScore        = { Score=score ; HiScore = hiScore }
-            ManInventory       = inventory
-            ManLives           = ManLives lives
-            Interactible       = interactibles
-            ImageLookupsTables = imageLookupTables
-            WhereToOnGameOver  = _
+            RoomReference         = roomReference
+            ScreenScore           = { Score=score ; HiScore = hiScore }
+            ManInventory          = inventory
+            ManLives              = ManLives lives
+            Interactible          = interactibles
+            ImageLookupsTables    = imageLookupTables
+            WhereToOnGameOver     = _
         } = innerScreenModel
 
 
@@ -611,14 +630,22 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
                 Image1to1 render x' y' brick
 
     let drawMan () =
-        let { ManState=manState ; ManCentrePosition=manCentre } = man
-        let manImage = 
-            match manState with
-                | ManStandingFacing direction -> manFacingStyles.[int direction]
-                | ManWalking        direction -> (gameTime |> PulseBetween ManWalkingStepsPerSecond manWalkingStyles1 manWalkingStyles2).[int direction]
-                | ManElectrocuted             ->  gameTime |> PulseBetween ManElectrocutionSwitchesPerSecond Electrocution1ImageID Electrocution2ImageID |> ImageFromID
-                | ManDead                     -> DeadImageID |> ImageFromID
-        CentreImagePoint render (manCentre |> Offset) manImage
+
+        let drawManAtAll =
+            match ManInvincibilityDetail innerScreenModel gameTime with
+                | VulnerableMode          -> true
+                | InvincibleMode          -> PulseActiveAtRate InvincibilityFlashesPerSecond gameTime
+                | InvincibilityWaningMode -> PulseActiveAtRate InvincibilityWaningFlashesPerSecond gameTime
+
+        if drawManAtAll then
+            let { ManState=manState ; ManCentrePosition=manCentre } = man
+            let manImage = 
+                match manState with
+                    | ManStandingFacing direction -> manFacingStyles.[int direction]
+                    | ManWalking        direction -> (gameTime |> PulseBetween ManWalkingStepsPerSecond manWalkingStyles1 manWalkingStyles2).[int direction]
+                    | ManElectrocuted             ->  gameTime |> PulseBetween ManElectrocutionSwitchesPerSecond Electrocution1ImageID Electrocution2ImageID |> ImageFromID
+                    | ManDead                     -> DeadImageID |> ImageFromID
+            CentreImagePoint render (manCentre |> Offset) manImage
 
     let drawDroids () =
         droids |> List.iter (fun droid ->
@@ -1421,6 +1448,7 @@ let ModelForStartingLevel levelIndex whereToOnGameOver (betweenScreenStatus:Betw
                     ScreenScore            = scoreAndHiScore
                     ManInventory           = []
                     ManLives               = ManLives lives
+                    ManInvincibilityUntil  = None
                     Interactible           = interactibles
                     ImageLookupsTables     = StyleResources levelIndex
                     WhereToOnGameOver      = whereToOnGameOver
@@ -1537,7 +1565,24 @@ let private WithTheFollowingStateApplied
         ghost
         additionalExplosions1 additionalExplosions2
         additionalScore
-        newItemForInventory livesDelta interactibles decoratives model =
+        newItemForInventory livesDelta interactibles decoratives invincibTrigger 
+        model =
+
+    let currentInvincibilityStatus =
+        model.InnerScreenModel.ManInvincibilityUntil
+
+    let manInvincibilityUntil =
+        match invincibTrigger with
+            | NoChangeInvincibility -> 
+                match currentInvincibilityStatus with
+                    | None -> None
+                    | Some futureTime ->
+                        if gameTime >= futureTime then
+                            None
+                        else
+                            currentInvincibilityStatus
+            | GainInvincibility -> 
+                Some (gameTime + InvincibilityDuration)
 
     let innerScreenModel =  // TODO: possibly optimise further.
         {
@@ -1552,6 +1597,7 @@ let private WithTheFollowingStateApplied
                     | None       -> model.InnerScreenModel.ManInventory
 
             ManLives           = model.InnerScreenModel.ManLives |> LivesIncrementedBy livesDelta
+            ManInvincibilityUntil = manInvincibilityUntil
             Interactible       = interactibles
             ImageLookupsTables = model.InnerScreenModel.ImageLookupsTables
             WhereToOnGameOver  = model.InnerScreenModel.WhereToOnGameOver
@@ -1658,13 +1704,16 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
         let man       = man |> RespondingToKeys keyStateGetter
         let manCentre = man.ManCentrePosition
 
+        let manVulnerable =
+            not (IsManInvincible innerScreenModel)
+
         let man = 
             if (manCentre |> IntersectsRoomWallsOf roomReference) 
-                || (manCentre |> IntersectsGhost ghost) 
-                || (manCentre |> IntersectsDroids droids) then
+                || (manVulnerable && manCentre |> IntersectsGhost ghost) 
+                || (manVulnerable && manCentre |> IntersectsDroids droids) then
                     Electrocuted man
 
-            else if (manCentre |> IntersectsBullets droidBullets) then
+            else if (manVulnerable && manCentre |> IntersectsBullets droidBullets) then
                 Dead man
 
             else
@@ -1697,6 +1746,7 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
             additionalExplosions1 additionalExplosions2
             additionalScore
             newItemForInventory livesDelta interactibles decoratives
+            invincibTrigger
 
 
 

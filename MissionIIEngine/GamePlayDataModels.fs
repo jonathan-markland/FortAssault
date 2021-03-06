@@ -204,6 +204,9 @@ type InnerScreenModel =
         /// The number of lives that the player has left.
         ManLives          : ManLives
 
+        /// Invincibility status of man
+        ManInvincibilityUntil : float32<seconds> option
+
         /// The locations within the current level items the player can interact with.
         Interactible      : Interactible list
 

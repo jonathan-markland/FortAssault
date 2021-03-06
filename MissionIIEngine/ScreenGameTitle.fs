@@ -17,7 +17,6 @@ let MainScreenSwitchRate = 0.125F
 type private GameTitleScreenModel =
     {
         ScreenStartTime : float32<seconds>
-        Scoreboard      : ScoreAndName list
         ScoreboardMemo  : string list
     }
 
@@ -66,7 +65,6 @@ let NewGameTitleScreen globalScoreboard gameTime =
     let titleScreenModel =
         {
             ScreenStartTime = gameTime
-            Scoreboard      = globalScoreboard
             ScoreboardMemo  = ScoreboardText 24 globalScoreboard
         }
 
