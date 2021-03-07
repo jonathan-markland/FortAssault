@@ -20,10 +20,8 @@ open ResourceIDs
 open Directions
 open LevelTextToMatrix
 open FlickBook
-open Algorithm
 open Collisions
 open Mechanics
-open ScoreHiScore
 open Random
 open SustainModeUntil
 open ScreenLevelIntro
@@ -578,9 +576,9 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
     let drawTopLineOfScoreboard () =
         let fatFont = MagnifiedFont  6  2 1  (FontFromID MissionIIFontID)
         let (RoomNumber roomNumber) = roomOrigin |> RoomNumberFromRoomOrigin
-        let scoreText = $"SCORE {score}"
+        let scoreText = sprintf "SCORE %d" score
         let (LevelIndex levelIndex) = levelIndex
-        let roomText  = $"ROOM {roomNumber} L{levelIndex + 1}"
+        let roomText  = sprintf "ROOM %d L%d" roomNumber (levelIndex + 1)
         TextX render fatFont LeftAlign  TopAlign TextIndent TopPanelTopY scoreText
         TextX render fatFont RightAlign TopAlign (ScreenWidthInt - TextIndent) TopPanelTopY roomText
 
@@ -1130,7 +1128,7 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
 
         // (Without regard for intersections)
 
-        // Note: the droids may "stick" a bit because they are beside a wall, and are
+        // Note: the droids may stick a bit because they are beside a wall, and are
         //       turning through an angle and only move once they turn towards a free direction.
 
         let (ViewPoint centre) = centre

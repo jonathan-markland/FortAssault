@@ -1,31 +1,19 @@
 ﻿module Storyboard
 
-open Rules
-open SustainModeUntil
-
+open Mechanics
+open Time
 open Keys
+open SustainModeUntil
+open FreezeFrame
+open ScoreHiScore
+open SlideTransitions
 
+open Rules
 open ScreenGameTitle
 open ScreenGamePlay
 open ScreenGameOver
 open ScreenPotentialEnterYourName
-open ScreenLevelIntro
-
 open ScoreboardModel
-
-open FreezeFrame
-open ScreenIntermissions
-open ScoreHiScore
-
-
-open ResourceIDs
-open SlideTransitions
-open Mechanics
-open Time
-open Sounds
-open GameStateManagement
-open StaticResourceAccess
-open ResourceIDs
 open GamePlayScreenConstants
 
 
@@ -82,7 +70,6 @@ and private GameTitleStory gameTime =
                 KeyFire
 
 
-
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let NewMissionIIStoryboard _ gameTime =
@@ -90,3 +77,4 @@ let NewMissionIIStoryboard _ gameTime =
     globalScoreboard <- InitialScoreboard [ "BARNEY" ; "MARTIN" ; "HELEN" ; "JULIA" ] 2500u 2500u
     
     GameTitleStory gameTime
+    
