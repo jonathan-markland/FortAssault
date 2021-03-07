@@ -89,7 +89,7 @@ let private NextPotentialEnterYourNameScreenState gameState keyStateGetter gameT
                         |> AddingIntoScoreboard enterYourNameModel model.ScoreAndHiScore.Score
     
                 model.WhereToAfterCtor updatedScoreboard gameTime
-                    // TODO: |> WithOneShotSound [PlaySoundEffect (SoundFromID VictorySoundID)]
+                    |> WithOneShotSound [PlaySoundEffect (SoundFromID BonusSoundID)]
     
             else
                 gameState 
@@ -101,7 +101,7 @@ let private NextPotentialEnterYourNameScreenState gameState keyStateGetter gameT
                             MemoizedText       = enterYourNameModel |> EnterYourNameModelScreenText
                             WhereToAfterCtor   = model.WhereToAfterCtor
                         }
-                        [] // TODO: [PlaySoundEffect (SoundFromID PelletSoundID)]
+                        [PlaySoundEffect (SoundFromID Footstep1SoundID)]
 
 
 

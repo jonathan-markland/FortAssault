@@ -939,16 +939,16 @@ let PossiblyInteractingWith interactibles currentRoomNumber man =
     let interactionResultFor interactibleType =
 
         let collect inventoryItem =
-            (RemoveInteractible, NoExtraLife, NoChangeInvincibility, Some inventoryItem)
+            (RemoveInteractible, NoExtraLife, NoChangeInvincibility, Some inventoryItem, Some PickUpObjectSoundID)
 
         match interactibleType with
             | ObKey         -> collect InvKey
             | ObRing        -> collect InvRing
             | ObGold        -> collect InvGold
-            | ObAmulet      -> (RemoveInteractible, NoExtraLife,     GainInvincibility,     None)
-            | ObHealthBonus -> (RemoveInteractible, ExtraLifeGained, NoChangeInvincibility, None)
-            | ObLevelExit   -> (KeepInteractible,   NoExtraLife,     NoChangeInvincibility, None)   // NB: No operation because of separate handling elsewhere.
-            | ObLevelStart  -> (KeepInteractible,   NoExtraLife,     NoChangeInvincibility, None)   // NB: No operation ever.
+            | ObAmulet      -> (RemoveInteractible, NoExtraLife,     GainInvincibility,     None, Some InvincibilityAmuletSoundID)
+            | ObHealthBonus -> (RemoveInteractible, ExtraLifeGained, NoChangeInvincibility, None, Some ExtraLifeSoundID)
+            | ObLevelExit   -> (KeepInteractible,   NoExtraLife,     NoChangeInvincibility, None, None)   // NB: No operation because of separate handling elsewhere.
+            | ObLevelStart  -> (KeepInteractible,   NoExtraLife,     NoChangeInvincibility, None, None)   // NB: No operation ever.
 
     let possibleFirstTouchedInteractible = 
         interactibles |> List.tryFind isItemTouched
@@ -956,11 +956,11 @@ let PossiblyInteractingWith interactibles currentRoomNumber man =
     match possibleFirstTouchedInteractible with
         
         | None -> 
-            (NoExtraLife, NoChangeInvincibility, None, interactibles)
+            (NoExtraLife, NoChangeInvincibility, None, interactibles, None)
         
         | Some interactible ->
 
-            let (removal, livesDelta, invincibilityTrigger, itemGained) = 
+            let (removal, livesDelta, invincibilityTrigger, itemGained, soundEffectOption) = 
                 interactionResultFor interactible.InteractibleType
 
             let interactibles = 
@@ -968,7 +968,7 @@ let PossiblyInteractingWith interactibles currentRoomNumber man =
                     | RemoveInteractible -> interactibles |> PlanetSavingListFilter (not << isItemTouched)
                     | KeepInteractible   -> interactibles
 
-            (livesDelta, invincibilityTrigger, itemGained, interactibles)
+            (livesDelta, invincibilityTrigger, itemGained, interactibles, soundEffectOption)
 
 let PossiblyFiringAtDroids keyStateGetter man =
     
@@ -1245,7 +1245,7 @@ let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
         droidList |> List.filter CanDroidTypeFire
 
     let shouldConsiderNow =
-        ((int) (gameTime * 50.0F)) % 50 = 0   // TODO: Hack until I refactor use of float32<seconds> throughout in favour of integer 'FrameCount of uint32'?
+        ((int) ((gameTime * 50.0F) + 0.5F<seconds>)) % 50 = 0   // TODO: Hack until I refactor use of float32<seconds> throughout in favour of integer 'FrameCount of uint32'?
 
     if shouldConsiderNow then
         match droids |> filteredForDroidsThatCanFire with
@@ -1274,23 +1274,26 @@ let GhostUpdatedWithRespectTo man manBullets gameTime ghost =
     match ghost with
 
         | NoGhostUntil appearanceTime ->
-            if gameTime > appearanceTime then GhostActive (RoomCornerFurthestFrom (VPManCentreOf man)) else ghost
+            if gameTime > appearanceTime then 
+                (GhostActive (RoomCornerFurthestFrom (VPManCentreOf man))) , Some GhostAppearingSoundID
+            else 
+                ghost, None
 
         | GhostActive ghostCentre -> 
             if ghostCentre |> shotBy manBullets then
-                GhostStunned (ghostCentre,gameTime + GhostStunDuration)
+                (GhostStunned (ghostCentre,gameTime + GhostStunDuration)) , Some StunGhostSoundID
             else
                 let (ViewPoint ghostCentre) = ghostCentre
                 let ghostCentre = NewLocationForAttractor ghostCentre (ManCentreOf man) GhostSpeed
-                GhostActive (ViewPoint ghostCentre)
+                (GhostActive (ViewPoint ghostCentre)) , None
 
         | GhostStunned (ghostCentre,reactivationTime) ->
             if ghostCentre |> shotBy manBullets then
-                GhostStunned (ghostCentre,gameTime + GhostStunDuration)
+                (GhostStunned (ghostCentre,gameTime + GhostStunDuration)) , Some StunGhostSoundID
             else if gameTime > reactivationTime then 
-                GhostActive ghostCentre 
+                (GhostActive ghostCentre) , None
             else 
-                ghost
+                ghost, None
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -1523,10 +1526,10 @@ let WithRoomFlipAppliedFrom roomFlipData manStateToApply gameTime model =
     let placesForAdversariesInThisRoom = 
         AvailableObjectPositionsWithinRoom roomReference exclusionRectangles LargestAdversaryDimension |> Seq.toArray
 
-    let bonus =
+    let (bonus,bonusSound) =
         match model.ScreenDroids with   
-            | [] -> ScoreBonusForShootingAllDroids
-            | _  -> 0u
+            | [] -> ScoreBonusForShootingAllDroids , [PlaySoundEffect (SoundFromID BonusSoundID)]
+            | _  -> 0u , []
 
     let manModel =
         {
@@ -1551,7 +1554,7 @@ let WithRoomFlipAppliedFrom roomFlipData manStateToApply gameTime model =
             DecorativeFlickbooks = []
         }
 
-    model
+    (model, bonusSound)
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -1631,6 +1634,58 @@ let private WithTheFollowingStateApplied
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+//  Calculation of sounds
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+let SoundEffectInstructionsFor 
+    manSoundOption          // ElectrocutionSoundID ManGrunt1SoundID ManGrunt2SoundID
+    additionalManBullet     // ManFiringSoundID
+    additionalDroidBullets  // DroidFiringSoundID
+    scoringExplosions noScoreExplosions // ExplosionSoundID DuoBonusSoundID
+    interactionSoundOption  // Interactibles
+    ghostSoundOption =      // GhostAppearingSoundID
+
+    let manFiringSoundOption =
+        match additionalManBullet with
+            | None   -> None
+            | Some _ -> Some ManFiringSoundID
+
+    let droidsFiringSoundOption =
+        match additionalDroidBullets with
+            | [] -> None
+            | _  -> Some DroidFiringSoundID
+
+    let explosionSoundOption =
+        match scoringExplosions, noScoreExplosions with
+            | [],[] -> None
+            | _     -> Some ExplosionSoundID
+
+    let duoBonusSoundOption =
+        match scoringExplosions with
+            | []  -> None
+            | [_] -> None
+            | _   -> Some DuoBonusSoundID
+
+    let consOption option lst =
+        match option with
+            | None -> lst
+            | Some item -> item::lst
+
+    let soundsList =
+        []
+            |> consOption manSoundOption
+            |> consOption manFiringSoundOption
+            |> consOption droidsFiringSoundOption
+            |> consOption explosionSoundOption
+            |> consOption duoBonusSoundOption
+            |> consOption interactionSoundOption
+            |> consOption ghostSoundOption
+
+    soundsList |> List.map (fun soundId -> PlaySoundEffect (SoundFromID soundId))
+
+
+
+// - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Screen state advance on frame
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -1648,6 +1703,7 @@ let InhibitingPlayerKeys (keyStateGetterToOverride : WebBrowserKeyCode -> InputE
     filteredKeyStateGetter
 
 
+type ManWalkingSoundInclusionOptions = NoWalkingSound | IncludeWalkingSound
 
 let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
 
@@ -1707,26 +1763,39 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
         let manVulnerable =
             not (IsManInvincible innerScreenModel)
 
-        let man = 
+        let updatedMan walkingSoundOption =
             if (manCentre |> IntersectsRoomWallsOf roomReference) 
                 || (manVulnerable && manCentre |> IntersectsGhost ghost) 
                 || (manVulnerable && manCentre |> IntersectsDroids droids) then
-                    Electrocuted man
+                    (Electrocuted man, Some ElectrocutionSoundID)
 
             else if (manVulnerable && manCentre |> IntersectsBullets droidBullets) then
-                Dead man
+                let deathSound = gameTime |> PulseBetween 1.0F ManGrunt1SoundID ManGrunt2SoundID
+                (Dead man, Some deathSound)
 
             else
-                man
+                let sound =
+                    match walkingSoundOption with
+                        | NoWalkingSound -> None
+                        | IncludeWalkingSound -> 
+                            gameTime |> EdgePulseBetween ManWalkingStepsPerSecond (Some Footstep1SoundID) (Some Footstep2SoundID) None elapsed
 
-        // TODO: We do not yet have data modelling for the invincibility.
-        let livesDelta, invincibTrigger, newItemForInventory, interactibles = // TODO: Use below to generate next state
+                (man, sound)
+
+        let (man, manSoundOption) =
+            match man.ManState with
+                | ManStandingFacing _ -> updatedMan NoWalkingSound
+                | ManWalking        _ -> updatedMan IncludeWalkingSound
+                | ManElectrocuted | ManDead -> (man, None)
+
+        let livesDelta, invincibTrigger, newItemForInventory, interactibles, interactionSoundOption =
             man |> PossiblyInteractingWith interactibles roomOrigin   // Reminder: Ignores level exit (filtered above).
 
-        let manBullets, droids, additionalExplosions1, additionalScore =
+        // TODO: Apply the duo bonus to the score
+        let manBullets, droids, scoringExplosions, additionalScore =
             droids |> DroidsExplodedIfShotBy manBullets gameTime
 
-        let droidBullets, droids, additionalExplosions2, _ =
+        let droidBullets, droids, noScoreExplosions, _ =
             droids |> DroidsExplodedIfShotBy droidBullets gameTime
 
         let additionalManBullet =
@@ -1735,19 +1804,31 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
         let additionalDroidBullets =
             droids |> DroidsPossiblyFiring man gameTime
 
-        let ghost =
+        let ghost, ghostSoundOption =
             ghost |> GhostUpdatedWithRespectTo man manBullets gameTime
 
-        model |> WithTheFollowingStateApplied
-            gameTime
-            man manBullets additionalManBullet
-            droids droidBullets additionalDroidBullets
-            ghost
-            additionalExplosions1 additionalExplosions2
-            additionalScore
-            newItemForInventory livesDelta interactibles decoratives
-            invincibTrigger
+        let gamePlaySounds =
+            SoundEffectInstructionsFor 
+                manSoundOption          // ElectrocutionSoundID ManGrunt1SoundID ManGrunt2SoundID
+                additionalManBullet     // ManFiringSoundID
+                additionalDroidBullets  // DroidFiringSoundID
+                scoringExplosions noScoreExplosions // ExplosionSoundID DuoBonusSoundID
+                interactionSoundOption  // Interactibles
+                ghostSoundOption        // GhostAppearingSoundID
 
+
+        let model = 
+            model |> WithTheFollowingStateApplied
+                gameTime
+                man manBullets additionalManBullet
+                droids droidBullets additionalDroidBullets
+                ghost
+                scoringExplosions noScoreExplosions
+                additionalScore
+                newItemForInventory livesDelta interactibles decoratives
+                invincibTrigger
+
+        (model, gamePlaySounds)
 
 
     let manCentre = ManCentreOf man
@@ -1770,27 +1851,30 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
                 |> ReplacesModelIn gameState
                 |> FrozenInTimeAt gameTime
                 |> UntilFutureTimeAndThen (gameTime + LevelExitPauseDuration) showLevelCard
+                |> WithOneShotSound [PlaySoundEffect (SoundFromID LevelExitActivatedSoundID)]
 
 
         | false ->
             match CheckForRoomFlip roomOrigin man with
                 | Some roomFlipData ->
-                    model 
-                        |> WithRoomFlipAppliedFrom roomFlipData model.ScreenMan.ManState gameTime
-                        |> ReplacesModelIn gameState 
+                    let (model, roomChangeSounds) =
+                        model |> WithRoomFlipAppliedFrom roomFlipData model.ScreenMan.ManState gameTime
+                    gameState |> WithUpdatedModelAndSounds model roomChangeSounds
 
                 | None ->
-                    let model = normalGamePlay ()
+                    let (model,gamePlaySounds) = normalGamePlay ()
 
                     if ManJustDied modelOnPreviousFrame model then
 
-                        let decideWhatToDo gameTime =
+                        let decideWhatToDoAfterSustainPause gameTime =
 
                             let (model, isGameOver) =
                                 model |> WithLivesDecremented
 
                             if isGameOver then
+                                let gameOverSound = gameTime |> RotateBetweenGroup 1.0F [| GameOver1SoundID ; GameOver2SoundID ; GameOver3SoundID ; GameOver4SoundID |]
                                 model.InnerScreenModel.WhereToOnGameOver model.InnerScreenModel.ScreenScore gameTime
+                                    |> WithOneShotSound [PlaySoundEffect (SoundFromID gameOverSound)]
 
                             else
                                 let respawnedManModel =
@@ -1802,20 +1886,19 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
                                         NewRoomManCentre = respawnedManModel.ManCentrePosition
                                     }
 
-                                model 
-                                    |> WithRoomFlipAppliedFrom roomFlipData respawnedManModel.ManState gameTime
-                                    |> ReplacesModelIn gameState
+                                let (model, roomChangeSounds) =
+                                    model |> WithRoomFlipAppliedFrom roomFlipData respawnedManModel.ManState gameTime
 
-                        let dyingGameState = 
-                            model |> ReplacesModelIn gameState
-                            
-                        dyingGameState
-                            |> UntilFutureTimeAndThen (gameTime + LifeLossPauseDuration) decideWhatToDo
+                                gameState |> WithUpdatedModelAndSounds model roomChangeSounds
+
+                        gameState 
+                            |> WithUpdatedModelAndSounds model gamePlaySounds
+                            |> UntilFutureTimeAndThen (gameTime + LifeLossPauseDuration) decideWhatToDoAfterSustainPause
 
                     else
 
                         // Man didn't just die.  (Already dead or continuing play)
-                        model |> ReplacesModelIn gameState
+                        gameState |> WithUpdatedModelAndSounds model gamePlaySounds
 
                     
 

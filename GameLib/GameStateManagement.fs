@@ -83,7 +83,7 @@ let inline ModelFrom (gameState:SpecificGameState<'Model>) =
     gameState.Model
 
 
-/// Return a new game state with a model instance, frame handler and drawing handler.
+/// Return a new game state with a model instance, no sound commands, frame handler and drawing handler.
 let inline NewGameState frameFunc drawFunc model =
     (new SpecificGameState<'Model>(model, drawFunc, frameFunc, []))
         :> ErasedGameState
@@ -95,7 +95,7 @@ let inline NewGameStateAndSounds frameFunc drawFunc model sounds =
         :> ErasedGameState
 
 
-/// Update the model instance, but keep the model type and handler functions the same.
+/// Update the model instance, clear sound commands, but keep the model type and handler functions the same.
 let inline WithUpdatedModel model (gameState:SpecificGameState<'Model>) =
     NewGameState (gameState.FrameFunc) (gameState.DrawFunc) model
 
@@ -105,12 +105,12 @@ let inline WithUpdatedModelAndSounds model sounds (gameState:SpecificGameState<'
     NewGameStateAndSounds (gameState.FrameFunc) (gameState.DrawFunc) model sounds
 
 
-/// Update the model instance, but keep the model type and handler functions the same.
+/// Update the model instance, clear sound commands, but keep the model type and handler functions the same.
 let inline ReplacesModelIn gameState model =
     WithUpdatedModel model gameState
 
 
-/// Update the model instance and frame handler function, but keep the drawing function the same.
+/// Update the model instance and frame handler function, clear sound commands, but keep the drawing function the same.
 let inline WithUpdatedModelAndFrameFunc model frameFunc (gameState:SpecificGameState<'Model>) =
     NewGameState frameFunc (gameState.DrawFunc) model
 
@@ -133,3 +133,17 @@ let FrozenInTimeAt gameTime (gameState:ErasedGameState) =
     let drawSameFrame render _ _ = gameState.Draw render gameTime
     NewGameState ModelNeverChanges drawSameFrame ()
 
+
+let WithOneShotSound oneShotSoundOperations (innerGameState:ErasedGameState) =
+
+    let frameFunc _gameState keyStateGetter gameTime elapsed =
+        // Just delegate the call, and whatever innerGameState returns 
+        // will naturally replace us on the next frame:
+        innerGameState.Frame keyStateGetter gameTime elapsed  
+
+    let drawFunc render _model (gameTime:float32<seconds>) =
+        // Just delegate drawing.
+        // This will only be called once because of the replacement done by frameFunc
+        innerGameState.Draw render gameTime
+
+    NewGameStateAndSounds frameFunc drawFunc () oneShotSoundOperations

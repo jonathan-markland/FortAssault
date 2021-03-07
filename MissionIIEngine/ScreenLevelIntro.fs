@@ -8,6 +8,7 @@ open ImagesAndFonts
 open Time
 open StaticResourceAccess
 open GamePlayScreenConstants
+open Sounds
 
 let ItemSeparation = 30<epx>
 
@@ -62,6 +63,9 @@ let NewLevelIntroScreen levelNumber =
             BigFont      = MagnifiedFont  6  4 6  smallFont
         }
 
-    NewGameState ModelNeverChanges RenderLevelIntroScreen model
+    let soundCommands =
+        [PlaySoundEffect (SoundFromID EnteringLevelSoundID)]
+
+    NewGameStateAndSounds ModelNeverChanges RenderLevelIntroScreen model soundCommands
 
 

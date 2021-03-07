@@ -39,6 +39,7 @@ let private DecideNextState gameState keyStateGetter gameTime elapsed =
 /// Sustains updates and rendering for the given initialGuestGameState
 /// until a condition (defined by the stateSwitchChooser) is met, whereupon
 /// we are replaced by the game state returned by the chooser (handover).
+/// Sounds given by initialGuestGameState are honoured.
 let SustainModeUntil stateSwitchChooser initialGuestGameState =
 
     let model =
@@ -47,5 +48,5 @@ let SustainModeUntil stateSwitchChooser initialGuestGameState =
             StateSwitchChooser = stateSwitchChooser
         }
 
-    NewGameState DecideNextState RenderGuestState model
+    NewGameStateAndSounds DecideNextState RenderGuestState model (initialGuestGameState.Sounds ())
 

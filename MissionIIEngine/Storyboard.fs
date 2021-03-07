@@ -60,7 +60,6 @@ and private GameOverStory scoreAndHiScore gameTime =
 
     NewGameOverScreen scoreAndHiScore gameTime
         |> WithDrawingOnlyFor GameOverPauseTime gameTime slideInEnterYourName  // TODO: Can we remove FreezeFrame dependency?  Possibly want to erase FreezeFrame
-        // |> WithOneShotSound [PlaySoundEffect (SoundFromID GameOverSoundID)]
 
 and private MissionIIStory betweenScreenStatus (gameTime:float32<seconds>) =
 

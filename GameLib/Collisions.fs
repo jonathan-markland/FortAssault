@@ -12,8 +12,12 @@ type private Notepad<'explosion> =
     }
 
 
+// TODO: This would be simplified if constructing explosions and scores 
+//       were separated out.  Let's return surviving and collided lists.
+//       The caller can map the collided lists to explosion objects, scores and sounds itself
+//       or with a helper function.
 
-let ResultOfProjectileCollisions
+let ResultOfProjectileCollisions  
     (projectiles     : 'projectile list)
     (targets         : 'target list)
     collides
