@@ -58,6 +58,12 @@ let private LoadImageThenDo
 
 
 
+[<Emit("$1.imageSmoothingEnabled = $0;")>]
+let inline private JsImageSmoothing
+    (enabled:bool)
+    (context2d:Browser.Types.CanvasRenderingContext2D) = jsNative
+
+
 [<Emit("$0.drawImage($1, $2, $3)")>]
 let private JsDrawImage 
     (context2d:Browser.Types.CanvasRenderingContext2D)
@@ -329,6 +335,7 @@ let FrameworkWebMain
 
     let canvas = document.getElementById("gameScreen") :?> Browser.Types.HTMLCanvasElement
     let context2d = canvas.getContext("2d") :?> Browser.Types.CanvasRenderingContext2D
+    context2d |> JsImageSmoothing false
    
     let gameGlobalState =
         match gameGlobalStateConstructor () with
