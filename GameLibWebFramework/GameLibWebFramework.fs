@@ -377,7 +377,9 @@ let FrameworkWebMain
 
     let mutable tickCount = 0u
 
-    let intervalHandler () () =
+    let intervalHandler () =
+
+        ConsoleLog "Jonathan [c]"
 
         tickCount <- tickCount + 1u
                 
@@ -399,5 +401,5 @@ let FrameworkWebMain
 
         gameState <- nextGameState
 
-    window.setInterval (intervalHandler, 20, ()) |> ignore
+    window.setInterval (intervalHandler, 20, ()) |> ignore  // TODO: Revisit parameterisation of frame rate  (20 = 20ms).
     
