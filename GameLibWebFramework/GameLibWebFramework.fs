@@ -321,8 +321,6 @@ let private RenderToWebCanvas (context2d:Browser.Types.CanvasRenderingContext2D)
 
 // ------------------------------------------------------------------------------------------------------------
 
-open StaticResourceAccess // TODO: HACK  (remove)
-
 let FrameworkWebMain
     listOfKeysNeeded
     gameGlobalStateConstructor
@@ -396,8 +394,6 @@ let FrameworkWebMain
             |> List.iter (fun soundCommand -> 
                 match soundCommand with
                     | PlaySoundEffect s -> PlaySound (s.HostSoundRef)
-                    | ChangeTheMusic s -> () // TODO: implement
-                    | StopTheMusic -> () // TODO: implement
             )
 
         ClearKeyJustPressedFlags mutableKeyStateStore

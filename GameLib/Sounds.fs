@@ -30,8 +30,13 @@ type SoundOperation =
     | PlaySoundEffect of Sound
 
     /// Change the background music, or start it.
-    | ChangeTheMusic of Sound
+    // TODO: | ChangeTheMusic of Sound  <--- reconsider design
 
     /// Stop the background music.
-    | StopTheMusic
+    // TODO: | StopTheMusic  <--- reconsider design
+
+    // TODO: Consider for sound that "music" may be a looped effect.  We need looping.
+
+    // TODO: Consider what could conveniently be the identity for a sound resource that
+    //       would enable us to request switching an instance of it on, and then off again.
 

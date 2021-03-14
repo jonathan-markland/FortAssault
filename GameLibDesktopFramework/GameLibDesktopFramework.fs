@@ -240,8 +240,6 @@ let private MainLoopProcessing
             |> List.iter (fun soundCommand -> 
                 match soundCommand with
                     | PlaySoundEffect s -> PlaySound (s.HostSoundRef)
-                    | ChangeTheMusic s -> () // TODO: implement
-                    | StopTheMusic -> () // TODO: implement
             )
 
         tickCount <- tickCount + 1u
