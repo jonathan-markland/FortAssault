@@ -343,7 +343,7 @@ let FrameworkWebMain
     let gameTime = 0.0F<seconds>
     let frameElapsedTime = 0.02F<seconds>  // TODO: Revisit parameterisation of frame rate.
 
-    let gameState : ErasedGameState =
+    let mutable gameState : ErasedGameState =
         gameplayStartConstructor gameGlobalState gameTime
 
     let renderFunction = RenderToWebCanvas context2d
@@ -375,9 +375,11 @@ let FrameworkWebMain
     let keyStateGetter = 
         LiveKeyStateFrom mutableKeyStateStore
 
-    let rec mainLoop (gameState : ErasedGameState) tickCount () =
+    let mutable tickCount = 0u
 
-        let tickCount = tickCount + 1u
+    let intervalHandler () () =
+
+        tickCount <- tickCount + 1u
                 
         let gameTime = 
             (float32 tickCount) / 50.0F |> InSeconds  // TODO: Revisit parameterisation of frame rate.
@@ -385,10 +387,7 @@ let FrameworkWebMain
         gameState.Draw renderFunction gameTime
 
         let nextGameState = 
-            gameState.Frame 
-                keyStateGetter 
-                gameTime 
-                frameElapsedTime 
+            gameState.Frame keyStateGetter gameTime frameElapsedTime 
 
         nextGameState.Sounds () 
             |> List.iter (fun soundCommand -> 
@@ -398,10 +397,7 @@ let FrameworkWebMain
 
         ClearKeyJustPressedFlags mutableKeyStateStore
 
-        // TODO: The setTimeout 20ms will not account for time taken to calculate
-        //       the nextGameState.   I am fudging this with 17ms requested.
-        //       See MDN for resolution to request animation frame.
-        window.setTimeout((mainLoop nextGameState tickCount), 17) |> ignore   // TODO: Revisit parameterisation of frame rate.
+        gameState <- nextGameState
 
-    mainLoop gameState 0u ()
+    window.setInterval (intervalHandler, 20, ()) |> ignore
     
