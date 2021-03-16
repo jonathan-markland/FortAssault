@@ -133,7 +133,7 @@ let ManExclusionRectangleAround (ViewPoint manCentre) =
 
 let DroidImageIndexFor droidType =
     match droidType with
-        | HomingDroid      -> 0
+        | HomingDroid _    -> 0
         | WanderingDroid _ -> 1
         | AssassinDroid    -> 2
 
@@ -163,7 +163,7 @@ let VPManCentreOf { ManCentrePosition=centre } =  // TODO: sort out this
 
 let CanDroidTypeFire { DroidIdentity=_ ; DroidType=droidType ; DroidCentrePosition=_ } =
     match droidType with
-        | HomingDroid      -> false
+        | HomingDroid _    -> false
         | WanderingDroid _ -> true
         | AssassinDroid    -> true
 
@@ -1036,6 +1036,13 @@ let WithLivesDecremented model =
 //  Droids
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
+let HomingDroidSpeedMultiplierForIndex i =
+    HomingDroidSpeed * 
+        if i < 2 then 1.0F
+        else if i < 4 then 0.7F
+        else if i < 8 then 0.4F
+        else 0.05F
+
 type DroidTypeToMake = MakeHoming | MakeWandering | MakeAssassin      
 
 let NewDroidsForRoom levelNumber placesForAdversariesInThisRoom gameTime =
@@ -1069,7 +1076,7 @@ let NewDroidsForRoom levelNumber placesForAdversariesInThisRoom gameTime =
             | MakeHoming -> 
                 { 
                     DroidIdentity       = identity
-                    DroidType           = HomingDroid
+                    DroidType           = HomingDroid (HomingDroidSpeedMultiplierForIndex i)
                     DroidCentrePosition = centre
                 }
 
@@ -1117,12 +1124,12 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
             || point |> intersectsDroidsIn droidsMovedSoFar
             || point |> OutOfPlayAreaBounds
 
-    let proposedLocationForHomingDroid centre =
+    let proposedLocationForHomingDroid centre speed =
         // (Without regard for intersections)
         let (ViewPoint centre) = centre
         let (ViewPoint manCentre) = manCentre
-        let newCentre = NewLocationForAttractor centre manCentre HomingDroidSpeed
-        (ViewPoint newCentre, HomingDroid)
+        let newCentre = NewLocationForAttractor centre manCentre speed
+        (ViewPoint newCentre, HomingDroid speed) // TODO: Avoid HomingDroid reconstruction
 
     let proposedLocationForWanderingDroid centre direction changeTime otherDroidsNotYetMoved droidsMovedSoFar gameTime =
 
@@ -1181,8 +1188,8 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
         
         let idealCentreWithoutRegardForOverlaps , updatedDroidType =   // TODO: updatedDroidType not absolutely ideal just because we want wandering droid to change direction
             match dtype with
-                | HomingDroid ->
-                    proposedLocationForHomingDroid oldCentre
+                | HomingDroid speed ->
+                    proposedLocationForHomingDroid oldCentre speed
 
                 | WanderingDroid (direction,changeTime) ->
                     proposedLocationForWanderingDroid oldCentre direction changeTime otherDroidsNotYetMoved droidsMovedSoFar gameTime
@@ -1229,7 +1236,7 @@ let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
     let newBulletFiredByDroid droid =
         let droidCentre = VPDroidCentreOf droid
         match droid.DroidType with
-            | HomingDroid -> 
+            | HomingDroid _ -> 
                 None  // never fires
             
             | WanderingDroid (direction,_) -> 

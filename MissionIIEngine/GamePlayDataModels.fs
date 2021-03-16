@@ -104,8 +104,8 @@ type ManStartPositionInRoom =
 
 /// Types of droid.  This affects visuals and behaviours.
 type DroidType = 
-    | HomingDroid   // TODO: different speeds for the individual droids?
-    | WanderingDroid of movement:EightWayDirection * nextDirectionChangeTime:float32<seconds>
+    | HomingDroid    of speed    : float32<epx>
+    | WanderingDroid of movement : EightWayDirection * nextDirectionChangeTime:float32<seconds>
     | AssassinDroid
 
 

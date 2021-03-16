@@ -48,7 +48,7 @@ let LargestInteractibleDimension = 25<epx>
 let ManFiringStartDistance      = 10.0F    // Used as multiplier hence no units.
 let DroidFiringStartDistance    = 8.0F     // Used as multiplier hence no units.
 
-let HomingDroidSpeed    = 0.6F<epx>
+let HomingDroidSpeed    = 0.9F<epx>   // The fastest ones.  Others are fractions of this.
 let WanderingDroidSpeed = 0.9F
 let AssassinDroidSpeed  = 0.45F<epx>
 let BulletSpeed         = 4.0F
