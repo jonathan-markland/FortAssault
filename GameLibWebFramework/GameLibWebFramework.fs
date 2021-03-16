@@ -379,8 +379,6 @@ let FrameworkWebMain
 
     let intervalHandler () =
 
-        ConsoleLog "Jonathan [c]"
-
         tickCount <- tickCount + 1u
                 
         let gameTime = 
