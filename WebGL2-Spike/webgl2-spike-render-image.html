@@ -11,7 +11,7 @@
 
     <!-- Display canvas -->
 
-	<canvas id="gameScreen" width="500" height="300">
+	<canvas id="gameScreen" width="500" height="300" style="image-rendering: pixelated;">
 		<p>Web Canvas isn't supported by this browser, so the game cannot be displayed.</p>
 	</canvas>
 
@@ -301,10 +301,12 @@
 
 		function main(image) {
 
+			var glOptions = {antialias: false, alpha: false};
+
 			// Get A WebGL context
 			/** @type {HTMLCanvasElement} */
 			var canvas = document.getElementById("gameScreen");
-			var gl = canvas.getContext("webgl2");
+			var gl = canvas.getContext("webgl2", glOptions);
 			if (!gl) {
 				return;
 			}
@@ -371,10 +373,12 @@
 
 			var tex = gl.createTexture();
 			gl.bindTexture(gl.TEXTURE_2D, tex);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+			//gl.generateMipmap(gl.TEXTURE_2D);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-			gl.generateMipmap(gl.TEXTURE_2D);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);			
 
 			resizeCanvasToDisplaySize(gl.canvas);
 
@@ -425,7 +429,7 @@
 
 
 
-			drawImage(tex, image.width, image.height, 200, 150);
+			drawImage(tex, image.width, image.height, 300, 150);
 		}
 		
 			
