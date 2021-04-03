@@ -7,7 +7,7 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
-<body style="margin:0; padding:0; border:0; width:100%; height:100%; overflow:hidden; background-color:#000;">
+<body style="margin:0; padding:0; border:0; width:100%; height:100%; overflow:hidden; background-color:#222;">
 
 	<style>
 		.hidden { display:none; }
@@ -77,13 +77,15 @@
 
             img.onload = function () {
                 console.log('Successfully loaded: ' + img.src);
+                var img2;
                 if (needsMagentaColourKey) {
-                    onCompletionOfLoad(setMagentaToAlphaZero(img));
+                    img2 = setMagentaToAlphaZero(img);
                     console.log('Successfully applied magenta colour key for image: ' + img.src);
                 }
                 else {
-                    onCompletionOfLoad(img);
+                    img2 = img;
                 }
+                createImageBitmap(img2).then(onCompletionOfLoad);
             }
 			
 			img.onerror = function () {

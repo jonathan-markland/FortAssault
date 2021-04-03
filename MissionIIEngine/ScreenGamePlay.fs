@@ -616,10 +616,11 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
         let blockOriginY = roomOriginY * NumBricksPerSide
         let (LevelTileMatrix levelTileMatrix) = levelTileMatrix
         for y in 0..NumBricksPerSide-1 do
+            let row = levelTileMatrix.[blockOriginY+y]
+            let y' = y * brickHeight + PlayAreaOffsetY
             for x in 0..NumBricksPerSide-1 do
-                let tile = levelTileMatrix.[blockOriginY+y].[blockOriginX+x]
+                let tile = row.[blockOriginX+x]
                 let x' = x * brickWidth + PlayAreaOffsetX
-                let y' = y * brickHeight + PlayAreaOffsetY
                 let brick = 
                     if tile |> isEdge then
                         gameTime |> PulseBetween WallElectrocutionSwitchesPerSecond (brickStyles.[int tile]) (WallElectricImageID |> ImageFromID)
@@ -1041,7 +1042,7 @@ let HomingDroidSpeedMultiplierForIndex i =
         if i < 2 then 1.0F
         else if i < 4 then 0.7F
         else if i < 8 then 0.4F
-        else 0.05F
+        else 0.1F
 
 type DroidTypeToMake = MakeHoming | MakeWandering | MakeAssassin      
 

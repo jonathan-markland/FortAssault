@@ -1,0 +1,141 @@
+
+Performance Measurement Notes
+=============================
+
+Quick and dirty performance tests on the Desktop version of Mission II
+on Jonathan's laptop.
+
+Figures are a quick read from task manager, not measured well, or repeated.
+
+This is to get a rough idea.
+
+
+NB:  default window size  =  ~956 x 766
+
+
+Performance of the Title Screen (Desktop)
+-------------------------------
+
+We have observed with Windows Task Manager:-
+
+	6.3% GPU    on title screen at default window size
+	15.2% GPU   on title screen at maximised 1080P window size
+	
+
+Performance of the Game Play screen (Desktop)
+-----------------------------------
+
+We have observed with Windows Task Manager:-
+
+	7.9% GPU    on Game Play screen at default window size
+	16.4% GPU   on Game Play screen at maximised 1080P window size
+	
+
+Triple-paint the background investigation (Desktop)
+-----------------------------------------
+
+We want to consider what the performance might be for a parallax
+side-scroller comprising:
+
+	- A fixed background, namely a single full-screen sprite.
+	- A second and third overlay layer, implemented here as single sprites.
+	
+Method:
+
+	Compose the background sprite three times onto the "retro" off-screen
+	frame buffer.
+	
+We have observed with Windows Task Manager:-
+
+	6.4% GPU    on Game Play screen at default window size
+	15.7% GPU   on Game Play screen at maximised 1080P window size
+	
+
+Paint less bricks investigation (Desktop)
+-------------------------------
+
+Paint 11 x 11 instead of 25 x 25.
+
+We have observed with Windows Task Manager:-
+
+	6.4% GPU    on Game Play screen at default window size
+	15.6% GPU   on Game Play screen at maximised 1080P window size
+	
+
+Paint bricks over three times investigation (Desktop)
+-------------------------------------------
+
+Paint the 25 x 25 matrix three times over, to simulate the amount
+of painting work needed for a parallax scroller that uses a tile
+approach.
+
+We have observed with Windows Task Manager:-
+
+	10.7% GPU   on Game Play screen at default window size
+	19.2% GPU   on Game Play screen at maximised 1080P window size
+	
+
+Conclusions (Desktop)
+-----------
+
+	- The stretch blit copy of the "retro" screen onto the window surface
+	  is consuming the most of the GPU time (as expected) particularly as
+	  running games in a window must share with the other windowed apps
+	  through the window manager.
+	  
+	- Reducing the number of bricks didn't affect the Desktop performance.
+
+	- Parallax approach is fine if entire level images could be represented
+	  as single sprites.
+	  
+	- Parallax approach is workable even if painting with a tiled approach.
+	  
+	  
+
+Further work
+------------
+
+		- Test the browser at the same res. - DONE
+		- Does FABLE have a RELEASE build? - DONE:  Seems nothing obvious.
+		
+	
+	
+	
+	
+Browser Investigation
+=====================
+	
+Browser (normal game)
+---------------------
+
+	   8% GPU   on title screen at default window size
+	  14% GPU   on title screen at F11 size (1080P)
+
+	23.9% GPU   on Game Play screen at default window size
+	29.0% GPU   on Game Play screen at F11 size (1080P)
+
+Browser (paint bricks three times)
+----------------------------------
+
+	25.0% GPU   on Game Play screen at F11 size (1080P)
+
+	Also of important note - the CPU usage is high on the browser
+	version suggesting the CPU is involved in painting, possibly
+	it could be transferring image data?
+	
+createImageBitmap
+-----------------
+
+This solution looked promising, but made no measurable difference on my machine.
+
+A benchmarking website was found that suggested that other users did see a 
+difference using this, so it may be merited for other people.  The result I
+saw only saw a 2 x speedup on their machine.
+
+https://www.measurethat.net/Benchmarks/Show/5072/0/image-vs-imagebitmap-2#latest_results_block
+
+Further work
+------------
+
+Investigate switching to WebGL2 to draw the screen as textures.
+
