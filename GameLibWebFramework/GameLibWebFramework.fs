@@ -1,6 +1,7 @@
 module WebGameFramework
 
 open Fable.Core
+open Fable.Core.JsInterop
 open Browser.Dom
 
 open StaticResourceSetup
@@ -332,7 +333,15 @@ let FrameworkWebMain
     SetStaticImageAndFontResourceArrays arrayOfLoadedImages arrayOfLoadedFonts arrayOfLoadedSounds
 
     let canvas = document.getElementById("gameScreen") :?> Browser.Types.HTMLCanvasElement
-    let context2d = canvas.getContext("2d") :?> Browser.Types.CanvasRenderingContext2D
+
+    let context2dOptions =
+        createObj [
+            "alpha" ==> false
+            "antialias" ==> false
+            // "desynchronized" ==> true   // This reduced 3% GPU on MissionII, but filters.
+        ]
+
+    let context2d = canvas.getContext("2d", context2dOptions) :?> Browser.Types.CanvasRenderingContext2D
     context2d |> JsImageSmoothing false
    
     let gameGlobalState =
