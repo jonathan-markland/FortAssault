@@ -16,16 +16,16 @@ let MainScreenSwitchRate = 0.125F
 
 type private GameTitleScreenModel =
     {
-        ScreenStartTime : float32<seconds>
-        ScoreboardMemo  : string list
+        ScreenStartTime    : float32<seconds>
+        ScoreboardMemo     : string list
+        MemoizedBackground : Image
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
 
-    let backgroundImage = BackgroundImageID |> ImageFromID
-    Image1to1 render 0<epx> 0<epx> backgroundImage
+    Image1to1 render 0<epx> 0<epx> (model.MemoizedBackground)
 
     let x50pc = 50 |> PercentOfScreenWidth
     let y0 = 20 |> PercentOfScreenHeight
@@ -48,9 +48,7 @@ let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
     else
 
         let verticalSpacing = smallFont.CharHeight * 3<epx> + 4<epx>
-
         TextX render scoreFont CentreAlign MiddleAlign x50pc y0 "HI SCORES"
-
         ParagraphX render scoreFont CentreAlign MiddleAlign x50pc y2 verticalSpacing model.ScoreboardMemo
 
 
@@ -64,8 +62,9 @@ let NewGameTitleScreen globalScoreboard gameTime =
 
     let titleScreenModel =
         {
-            ScreenStartTime = gameTime
-            ScoreboardMemo  = ScoreboardText 24 globalScoreboard
+            ScreenStartTime    = gameTime
+            ScoreboardMemo     = ScoreboardText 24 globalScoreboard
+            MemoizedBackground = PulseBetween 1.0F BackgroundImageID Background2ImageID gameTime |> ImageFromID
         }
 
     NewGameState ModelNeverChanges RenderGameTitleScreen titleScreenModel
