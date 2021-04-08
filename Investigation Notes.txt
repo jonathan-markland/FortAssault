@@ -95,8 +95,8 @@ Conclusions (Desktop)
 Further work
 ------------
 
-		- Test the browser at the same res. - DONE
-		- Does FABLE have a RELEASE build? - DONE:  Seems nothing obvious.
+		[X] Test the browser at the same res. - results in section below.
+		[X] Does FABLE have a RELEASE build?  - result:  Seems nothing obvious.
 		
 	
 	
@@ -134,8 +134,56 @@ saw only saw a 2 x speedup on their machine.
 
 https://www.measurethat.net/Benchmarks/Show/5072/0/image-vs-imagebitmap-2#latest_results_block
 
+
 Further work
 ------------
 
-Investigate switching to WebGL2 to draw the screen as textures.
+	[ ] Investigate switching to WebGL2 to draw the screen as textures.
+	
+	[ ] Observation:  If the room was rendered onto a single bitmap, the time to then
+	  draw it would be similar to the time to draw the blue "planet"
+	  background bitmap.
+	  
+	  Idea:  Draw the blue planet instead of the 625 x bricks, and to
+	  get an estimate of the performance of render-to-single-bitmap.
+
+
+
+
+Browser Investigation II
+========================
+
+Measurements of brick drawing and simulation of alternative drawing techniques.
+
+Method
+======
+
+Tests performed on DELL laptop at F11 screen size.
+
+Source code modified to swap what we're drawing behind the man and droids
+in the gameplay screen.
+
+VS and Fable/Webpack refreshed the same browser instance.
+
+Obervations
+===========
+
+	What we drew                     CPU          GPU
+	-------------------------------------------------
+
+	No bricks at all              8% CPU     7.8% GPU
+
+	Red planet no bricks          8% CPU     7.8% GPU
+
+	125 bricks                 14.8% CPU    13.1% GPU
+	
+	625 bricks                   32% CPU    25.1% GPU
+
+	625 bricks x 2 layers        51% CPU      38% GPU
+
+	625 bricks x 3 layers        51% CPU      38% GPU   -- frames certainly dropping (stutter)
+
+
+
+
 
