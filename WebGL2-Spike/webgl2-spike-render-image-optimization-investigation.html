@@ -244,10 +244,9 @@
 
 
 
-		function main(program, gl, tex, matrixLocation, image, frameCounter) {
+		function main(program, gl, tex, matrixLocation, textureLocation, image, frameCounter) {
 
 			// lookup uniforms
-			var textureLocation = gl.getUniformLocation(program, "u_texture");
 			
 			// Create a vertex array object (attribute state) and make it the one we're currently working with
 			var vao = gl.createVertexArray();
@@ -389,9 +388,10 @@
 			var program = createProgram(gl, vs, fs);
 			
 			var matrixLocation = gl.getUniformLocation(program, "u_matrix");
+			var textureLocation = gl.getUniformLocation(program, "u_texture");
 
 			var i = 0;
-			setInterval(function(){ main(program, gl, tex, matrixLocation, image, i); i = i + 1; }, 20);  // 50FPS
+			setInterval(function(){ main(program, gl, tex, matrixLocation, textureLocation, image, i); i = i + 1; }, 20);  // 50FPS
 		});
 		
 
