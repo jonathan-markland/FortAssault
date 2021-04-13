@@ -225,12 +225,13 @@
 			in vec2 a_texcoord;
 
 			uniform mat3 u_matrix;
+			uniform mat3 u_textureMatrix;
 
 			out vec2 v_texcoord;
 
 			void main() {
 			  gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
-			  v_texcoord = a_texcoord;
+			  v_texcoord = (u_textureMatrix * vec3(a_texcoord, 1)).xy;
 			}`;
 
 
@@ -260,11 +261,13 @@
 
 
 
-		function main(program, gl, tex, vao, matrixLocation, textureLocation, image, frameCounter) {
+		function main(program, gl, tex, vao, matrixLocation, textureLocation, textureMatrixLocation, image, frameCounter) {
 		
-			// Unlike images, textures do not have a width and height associated
-			// with them so we'll pass in the width and height of the texture
-			function drawImage(tex, texWidth, texHeight, dstX, dstY) {
+			function drawImage(
+				tex, texWidth, texHeight, 
+				srcX, srcY, srcWidth, srcHeight, 
+				dstX, dstY, destWidth, destHeight) {
+			
 				gl.useProgram(program);
 				
 				// Setup the attributes for the quad
@@ -277,14 +280,16 @@
 				// Bind the texture to texture unit 0
 				gl.activeTexture(gl.TEXTURE0 + textureUnit);
 				gl.bindTexture(gl.TEXTURE_2D, tex);
+
+				// Compute texture matrix  (GL uses unit space as the extents of every texture no matter it's texel count)
+				var texMatrix = m3translation(srcX / texWidth, srcY / texHeight);
+				texMatrix = m3scale(texMatrix, srcWidth / texWidth, srcHeight / texHeight);
+				gl.uniformMatrix3fv(textureMatrixLocation, false, texMatrix);
 				
-				// Compute matrix
-				var matrix = m3projection(320, 256); // Not this any more:  gl.canvas.clientWidth, gl.canvas.clientHeight);
+				// Compute display matrix
+				var matrix = m3projection(320, 256);
 				matrix = m3translate(matrix, dstX, dstY);
-				// matrix = m3rotate(matrix, angleInRadians);
-				matrix = m3scale(matrix, texWidth, texHeight);
-				
-				// Set the matrix.
+				matrix = m3scale(matrix, destWidth, destHeight);
 				gl.uniformMatrix3fv(matrixLocation, false, matrix);
 				
 				// draw the quad (2 triangles, 6 vertices)
@@ -294,7 +299,11 @@
 			}
 
 
-			var offsetX = frameCounter % 100;
+			var offsetX = 0; // TODO:  frameCounter % 100;
+
+			var texWidth = image.width;
+			var texHeight = image.height;
+					
 
 			//var repeat;
 			//for(repeat=0; repeat<3; repeat++)
@@ -305,7 +314,10 @@
 				var x;
 				for (x = 0; x < 25; x++)
 				{
-					drawImage(tex, image.width, image.height, offsetX + x*12, y*8);
+					drawImage(
+						tex, texWidth, texHeight,
+						2,2, 8,4,
+						offsetX + x*12, y*8, 12,8);
 				}
 			}
 			}
@@ -380,6 +392,7 @@
 			
 			var matrixLocation = gl.getUniformLocation(program, "u_matrix");
 			var textureLocation = gl.getUniformLocation(program, "u_texture");
+			var textureMatrixLocation = gl.getUniformLocation(program, "u_textureMatrix");
 
 			// Asynchronously load an image
 			var image = new Image();
@@ -403,7 +416,7 @@
 				var i = 0;
 				setInterval(
 					function(){ 
-						main(program, gl, tex, vao, matrixLocation, textureLocation, image, i); 
+						main(program, gl, tex, vao, matrixLocation, textureLocation, textureMatrixLocation, image, i); 
 						i = i + 1; }, 
 					20);  // 50FPS
 			});
