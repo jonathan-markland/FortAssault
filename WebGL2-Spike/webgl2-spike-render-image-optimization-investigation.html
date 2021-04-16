@@ -197,27 +197,38 @@
 	
 	
 	
-	
-	
-	
-	
-
-		var vs = 
+		/*
+		A Vertex Shader's job is to generate clipspace coordinates.
 		
-			/*
-			A Vertex Shader's job is to generate clipspace coordinates.
-			
-			Your shader is called once per vertex. Each time it's called 
-			you are required to set the special global variable, 
-			gl_Position to some clipspace coordinates.
-			
-			Vertex shaders need data. They can get that data in 3 ways.
-			- Attributes (data pulled from buffers)
-			- Uniforms (values that stay the same for all vertices of a single draw call)
-			- Textures (data from pixels/texels)
-			
-			https://webgl2fundamentals.org/webgl/lessons/webgl-shaders-and-glsl.html
-			*/
+		Your shader is called once per vertex. Each time it's called 
+		you are required to set the special global variable, 
+		gl_Position to some clipspace coordinates.
+		
+		Vertex shaders need data. They can get that data in 3 ways.
+		- Attributes (data pulled from buffers)
+		- Uniforms (values that stay the same for all vertices of a single draw call)
+		- Textures (data from pixels/texels)
+		
+		https://webgl2fundamentals.org/webgl/lessons/webgl-shaders-and-glsl.html
+		*/
+	
+		var vsDrawWholeImage =
+
+			`#version 300 es
+
+			in vec2 a_position;
+			in vec2 a_texcoord;
+
+			uniform mat3 u_matrix;
+
+			out vec2 v_texcoord;
+
+			void main() {
+			  gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
+			  v_texcoord = a_texcoord;
+			}`;	
+
+		var vsDrawSubImage =
 		
 			`#version 300 es
 
@@ -234,27 +245,45 @@
 			  v_texcoord = (u_textureMatrix * vec3(a_texcoord, 1)).xy;
 			}`;
 
-
-
-		var fs = 
-		
-			/*
-			A Fragment Shader's job is to provide a color for the current pixel being rasterized.
-			
-			Your fragment shader is called once per pixel. Each time it's called you are required 
-			to set your out variable to some color.
-			
-			Fragment shaders need data. They can get data in 3 ways
-			- Uniforms (values that stay the same for every pixel of a single draw call)
-			- Textures (data from pixels/texels)
-			- Varyings (data passed from the vertex shader and interpolated)			
-			*/
+		var vsDrawSolidColour =
 		
 			`#version 300 es
+
+			in vec2 a_position;
+
+			uniform mat3 u_matrix;
+
+			void main() {
+			  // Multiply the position by the matrix.
+			  gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
+			}
+			`;
+		
+
+		/*
+		A Fragment Shader's job is to provide a color for the current pixel being rasterized.
+		
+		Your fragment shader is called once per pixel. Each time it's called you are required 
+		to set your out variable to some color.
+		
+		Fragment shaders need data. They can get data in 3 ways
+		- Uniforms (values that stay the same for every pixel of a single draw call)
+		- Textures (data from pixels/texels)
+		- Varyings (data passed from the vertex shader and interpolated)			
+		*/
+
+		var fsDrawSubOrWholeImage = 
+				
+			`#version 300 es
+			
 			precision highp float;
+			
 			in vec2 v_texcoord;
+			
 			uniform sampler2D u_texture;
+			
 			out vec4 outColor;
+			
 			void main() {
 				outColor = texture(u_texture, v_texcoord);
 			}`;
@@ -332,7 +361,7 @@
 		if (gl) {
 
 			// setup GLSL program
-			var program = createProgram(gl, vs, fs);
+			var program = createProgram(gl, vsDrawSubImage, fsDrawSubOrWholeImage);
 			
 			// Create a vertex array object (attribute state) and make it the one we're currently working with
 			var vao = gl.createVertexArray();
