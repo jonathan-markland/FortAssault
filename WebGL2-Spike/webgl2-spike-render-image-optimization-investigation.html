@@ -308,18 +308,18 @@
 			//var repeat;
 			//for(repeat=0; repeat<3; repeat++)
 			{
-			var y;
-			for (y = 0; y < 25; y++)
-			{
-				var x;
-				for (x = 0; x < 25; x++)
+				var y;
+				for (y = 0; y < 25; y++)
 				{
-					drawImage(
-						tex, texWidth, texHeight,
-						2,2, 8,4,
-						offsetX + x*12, y*8, 12,8);
+					var x;
+					for (x = 0; x < 25; x++)
+					{
+						drawImage(
+							tex, texWidth, texHeight,
+							2,2, 8,4,
+							offsetX + x*12, y*8, 12,8);
+					}
 				}
-			}
 			}
 		}
 		
