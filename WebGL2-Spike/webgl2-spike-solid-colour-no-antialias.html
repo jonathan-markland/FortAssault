@@ -193,8 +193,11 @@
 	
 	
 	
+		// ---------------------------------------------------------------------------------------------------
+		//   Rectangle Vertex and Fragment shaders
+		// ---------------------------------------------------------------------------------------------------
 
-		var vs = 
+		var rectangleVertexShader = 
 		
 			/*
 			A Vertex Shader's job is to generate clipspace coordinates.
@@ -224,7 +227,7 @@
 
 
 
-		var fs = 
+		var rectangleFragmentShader = 
 		
 			/*
 			A Fragment Shader's job is to provide a color for the current pixel being rasterized.
@@ -250,6 +253,9 @@
 
 
 
+
+
+
 		function main() {
 
 			// Get A WebGL context
@@ -260,9 +266,9 @@
 				return;
 			}
 			
-			//
-			// Setup that's outside of all GL-programs:
-			//
+			// ---------------------------------------------------------------------------------------------------
+			//   Setup that's outside of all GL-programs:
+			// ---------------------------------------------------------------------------------------------------
 
 			gl.viewport(0, 0, 320, 256);
 			gl.clearColor(0, 0, 0, 255);
@@ -270,11 +276,11 @@
 
 			var projectToRetroScreenMatrix = m3projection(320, 256); // This is a constant
 
-			//
-			// Setup GLSL program for solid filled rectangle drawing:
-			//
+			// ---------------------------------------------------------------------------------------------------
+			//   Setup GLSL program for solid filled rectangle drawing:
+			// ---------------------------------------------------------------------------------------------------
 
-			var rectangleProgram = createProgram(gl, vs, fs);
+			var rectangleProgram = createProgram(gl, rectangleVertexShader, rectangleFragmentShader);
 			var positionLocation = gl.getAttribLocation(rectangleProgram, "a_position");
 			var colorLocation    = gl.getUniformLocation(rectangleProgram, "u_color");
 			var matrixLocation   = gl.getUniformLocation(rectangleProgram, "u_matrix");
