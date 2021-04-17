@@ -289,7 +289,7 @@
 
 
 
-		function main() {
+		function main(image1) {
 
 			// Get A WebGL context
 			/** @type {HTMLCanvasElement} */
@@ -303,8 +303,8 @@
 			//   Setup that's outside of all GL-programs:
 			// ---------------------------------------------------------------------------------------------------
 
-			gl.viewport(0, 0, 320, 256);
-			gl.clearColor(0, 0, 0, 255);
+			gl.viewport(0, 0, 320, 256);  // TODO: use of 320 256
+			gl.clearColor(0, 0, 0, 255);  // TODO: Should we do this?
 			gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
 			var projectToRetroScreenMatrix = m3projection(320, 256); // This is a constant
@@ -317,6 +317,9 @@
 			var rectanglePositionLocation = gl.getAttribLocation(rectangleProgram, "a_position");
 			var rectangleColorLocation    = gl.getUniformLocation(rectangleProgram, "u_color");
 			var rectangleMatrixLocation   = gl.getUniformLocation(rectangleProgram, "u_matrix");
+
+			var rectangleVao = gl.createVertexArray();
+			gl.bindVertexArray(rectangleVao);
 
 			// Reserve a buffer for the solid filled rectangle vertices.
 			var rectangleBuffer = gl.createBuffer();
@@ -333,8 +336,6 @@
 				]),
 				gl.STATIC_DRAW);
 
-			var rectangleVao = gl.createVertexArray();
-			gl.bindVertexArray(rectangleVao);
 			gl.enableVertexAttribArray(rectanglePositionLocation);
 			gl.vertexAttribPointer(rectanglePositionLocation, 2 /*size*/, gl.FLOAT /*type*/, false /*normalize*/, 0 /*stride*/, 0 /*offset*/);
 
@@ -342,69 +343,142 @@
 			//   Setup GLSL program for image-portion drawing:
 			// ---------------------------------------------------------------------------------------------------
 
-			// var imagePortionProgram = createProgram(gl, imagePortionVertexShader, imagePortionFragmentShader);
+			var imagePortionProgram               = createProgram(gl, imagePortionVertexShader, imagePortionFragmentShader);
+			var imagePortionAPosition             = gl.getAttribLocation(imagePortionProgram, "a_position");
+			var imagePortionATexCoord             = gl.getAttribLocation(imagePortionProgram, "a_texcoord");
+			var imagePortionMatrixLocation        = gl.getUniformLocation(imagePortionProgram, "u_matrix");
+			var imagePortionTextureLocation       = gl.getUniformLocation(imagePortionProgram, "u_texture");
+			var imagePortionTextureMatrixLocation = gl.getUniformLocation(imagePortionProgram, "u_textureMatrix");
 
+			var imagePortionVao = gl.createVertexArray();
+			gl.bindVertexArray(imagePortionVao);
 
-
-
-
-
-
-
-
-			// ---------------------------------------------------------------------------------------------------
-			//   Drawing rectangles #1
-			// ---------------------------------------------------------------------------------------------------
-
-			gl.useProgram(rectangleProgram);
-			gl.bindVertexArray(rectangleVao);
-			gl.uniformMatrix3fv(rectangleMatrixLocation, false, projectToRetroScreenMatrix);
-
-			gl.bindBuffer(gl.ARRAY_BUFFER, rectangleBuffer);
-			gl.bufferSubData(
-				gl.ARRAY_BUFFER,
-				0 /* offset */,
+			// Initialise imagePortionProgram.a_position array with the positions on an Unit Quad:
+		
+			var unitQuadBuffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, unitQuadBuffer);
+			gl.bufferData(
+				gl.ARRAY_BUFFER, 
 				new Float32Array([
-					 10,   10,
-					250,   10,
-					250,  150,
+					0, 0,
+					0, 1,
+					1, 0,
+					1, 0,
+					0, 1,
+					1, 1,
+				]), 
+				gl.STATIC_DRAW);
 
-					250,  150,
-					 10,   10,
-					 10,  150,
-					]));
-	
-			gl.uniform4f(rectangleColorLocation, 1.0, 0.5, 1.0, 1);    // Set colour
-			gl.drawArrays(gl.TRIANGLES, 0 /*offset*/, 6 /*count*/);    // Draw the geometry.
+			gl.enableVertexAttribArray(imagePortionAPosition);
+			gl.vertexAttribPointer(imagePortionAPosition, 2 /* size */, gl.FLOAT /* type */, false /* normalize */, 0 /* stride */, 0 /* offset */);
 
-			// ---------------------------------------------------------------------------------------------------
-			//   Drawing rectangles #2
-			// ---------------------------------------------------------------------------------------------------
-
-			gl.useProgram(rectangleProgram);
-			gl.bindVertexArray(rectangleVao);
-			gl.uniformMatrix3fv(rectangleMatrixLocation, false, projectToRetroScreenMatrix);
-
-			gl.bindBuffer(gl.ARRAY_BUFFER, rectangleBuffer);
-			gl.bufferSubData(
-				gl.ARRAY_BUFFER,
-				0 /* offset */,
+			// Initialise imagePortionProgram.a_texcoord array:
+			
+			var imagePortionTexCoordBuffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, imagePortionTexCoordBuffer);
+			gl.bufferData(
+				gl.ARRAY_BUFFER, 
 				new Float32Array([
-					 80,   80,
-					230,   80,
-					230,  130,
+					0, 0,
+					0, 1,
+					1, 0,
+					1, 0,
+					0, 1,
+					1, 1,
+				]), 
+				gl.STATIC_DRAW);
+			
+			gl.enableVertexAttribArray(imagePortionATexCoord);
+			gl.vertexAttribPointer(imagePortionATexCoord, 2 /*size*/, gl.FLOAT /*type*/, true /*normalize*/, 0 /*stride*/, 0 /*offset*/);
 
-					230,  130,
-					 80,   80,
-					 80,  130,
-					]));
-	
-			gl.uniform4f(rectangleColorLocation, 1.0, 1.0, 0.5, 1);    // Set colour
-			gl.drawArrays(gl.TRIANGLES, 0 /*offset*/, 6 /*count*/);    // Draw the geometry.
+
+
+
+
+
+
+			// ---------------------------------------------------------------------------------------------------
+			//   Rectangle draw function
+			// ---------------------------------------------------------------------------------------------------
+
+			function drawRectangle(x, y, width, height, redf, greenf, bluef)
+			{
+				gl.useProgram(rectangleProgram);
+				gl.bindVertexArray(rectangleVao);
+				gl.uniformMatrix3fv(rectangleMatrixLocation, false, projectToRetroScreenMatrix);
+
+				var r = x + width
+				var b = y + height
+
+				gl.bindBuffer(gl.ARRAY_BUFFER, rectangleBuffer);
+				gl.bufferSubData(gl.ARRAY_BUFFER, 0 /* offset */, new Float32Array([x,y, r,y, r,b, r,b, x,y, x,b]));
+				gl.uniform4f(rectangleColorLocation, redf, greenf, bluef, 1);   // Set colour
+				gl.drawArrays(gl.TRIANGLES, 0 /*offset*/, 6 /*count*/);         // Draw the geometry.
+			}
+
+			// ---------------------------------------------------------------------------------------------------
+			//   Image portion draw function
+			// ---------------------------------------------------------------------------------------------------
+
+			function drawImagePortion(
+				tex, texWidth, texHeight, 
+				srcX, srcY, srcWidth, srcHeight, 
+				dstX, dstY, destWidth, destHeight) 
+			{
+				gl.useProgram(imagePortionProgram);
+				gl.bindVertexArray(imagePortionVao);
+				gl.uniform1i(imagePortionTextureLocation, 0 /* textureUnit */);
+				gl.activeTexture(gl.TEXTURE0 + 0 /* textureUnit */);
+				gl.bindTexture(gl.TEXTURE_2D, tex);
+
+				var texMatrix = m3translation(srcX / texWidth, srcY / texHeight);
+				texMatrix     = m3scale(texMatrix, srcWidth / texWidth, srcHeight / texHeight);
+				gl.uniformMatrix3fv(imagePortionTextureMatrixLocation, false, texMatrix);
+				
+				var matrix = m3projection(320, 256);
+				matrix     = m3translate(matrix, dstX, dstY);
+				matrix     = m3scale(matrix, destWidth, destHeight);
+				gl.uniformMatrix3fv(imagePortionMatrixLocation, false, matrix);
+				
+				gl.drawArrays(gl.TRIANGLES, 0 /*offset*/, 6 /*count*/);         // Draw the geometry.
+			}
+
+			// ---------------------------------------------------------------------------------------------------
+			//   Examples
+			// ---------------------------------------------------------------------------------------------------
+
+			drawRectangle( 10, 10, 200, 150, 1.0, 0.5, 1.0);
+			drawRectangle( 50, 90, 200, 150, 0.5, 0.5, 1.0);
+			drawRectangle(170, 60, 100,  50, 1.0, 1.0, 0.5);
+			
+			var tex = gl.createTexture();
+			gl.bindTexture(gl.TEXTURE_2D, tex);
+			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+			
+			drawImagePortion(
+				tex, 12, 8, 
+				0, 0, 12, 8,   // source
+				70, 70, 120, 80);
+
+			drawImagePortion(
+				tex, 12, 8, 
+				0, 0, 12, 8,   // source
+				30, 70, 12, 8);
 		}
 
 
-		main();
+
+		// Asynchronously load an image
+		var image = new Image();
+		image.src = "brick-12-8.png";
+		image.addEventListener('load', function() {
+			console.log('Loaded image 1');
+			main(image);
+		});
 
     </script>
 
