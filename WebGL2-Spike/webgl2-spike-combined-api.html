@@ -283,6 +283,38 @@
 				outColor = texture(u_texture, v_texcoord);
 			}`;
 
+		// ---------------------------------------------------------------------------------------------------
+		//   Image 1:1 Vertex and Fragment shaders
+		// ---------------------------------------------------------------------------------------------------
+
+		var imageOneToOneVertexShader = 
+		
+			`#version 300 es
+
+			in vec2 a_position;
+			in vec2 a_texcoord;
+
+			uniform mat3 u_matrix;
+
+			out vec2 v_texcoord;
+
+			void main() {
+				gl_Position = vec4((u_matrix * vec3(a_position, 1)).xy, 0, 1);
+				v_texcoord = a_texcoord;
+			}`;
+
+		var imageOneToOneFragmentShader =   // TODO:  This is actually the same as the fragment shader above.
+		
+			`#version 300 es
+			
+			precision highp float;
+			in vec2 v_texcoord;
+			uniform sampler2D u_texture;
+			out vec4 outColor;
+			
+			void main() {
+				outColor = texture(u_texture, v_texcoord);
+			}`;
 
 
 
@@ -324,18 +356,7 @@
 			// Reserve a buffer for the solid filled rectangle vertices.
 			var rectangleBuffer = gl.createBuffer();
 			gl.bindBuffer(gl.ARRAY_BUFFER, rectangleBuffer);
-			gl.bufferData(
-				gl.ARRAY_BUFFER,
-				new Float32Array([
-					0,  0,
-					0,  0,
-					0,  0,
-					0,  0,
-					0,  0,
-					0,  0,
-				]),
-				gl.STATIC_DRAW);
-
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([ 0,0, 0,0, 0,0, 0,0, 0,0, 0,0 ]), gl.STATIC_DRAW);
 			gl.enableVertexAttribArray(rectanglePositionLocation);
 			gl.vertexAttribPointer(rectanglePositionLocation, 2 /*size*/, gl.FLOAT /*type*/, false /*normalize*/, 0 /*stride*/, 0 /*offset*/);
 
@@ -357,18 +378,7 @@
 		
 			var unitQuadBuffer = gl.createBuffer();
 			gl.bindBuffer(gl.ARRAY_BUFFER, unitQuadBuffer);
-			gl.bufferData(
-				gl.ARRAY_BUFFER, 
-				new Float32Array([
-					0, 0,
-					0, 1,
-					1, 0,
-					1, 0,
-					0, 1,
-					1, 1,
-				]), 
-				gl.STATIC_DRAW);
-
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([ 0,0, 0,1, 1,0, 1,0, 0,1, 1,1 ]), gl.STATIC_DRAW);
 			gl.enableVertexAttribArray(imagePortionAPosition);
 			gl.vertexAttribPointer(imagePortionAPosition, 2 /* size */, gl.FLOAT /* type */, false /* normalize */, 0 /* stride */, 0 /* offset */);
 
@@ -376,21 +386,38 @@
 			
 			var imagePortionTexCoordBuffer = gl.createBuffer();
 			gl.bindBuffer(gl.ARRAY_BUFFER, imagePortionTexCoordBuffer);
-			gl.bufferData(
-				gl.ARRAY_BUFFER, 
-				new Float32Array([
-					0, 0,
-					0, 1,
-					1, 0,
-					1, 0,
-					0, 1,
-					1, 1,
-				]), 
-				gl.STATIC_DRAW);
-			
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([ 0,0, 0,1, 1,0, 1,0, 0,1, 1,1 ]), gl.STATIC_DRAW);
 			gl.enableVertexAttribArray(imagePortionATexCoord);
 			gl.vertexAttribPointer(imagePortionATexCoord, 2 /*size*/, gl.FLOAT /*type*/, true /*normalize*/, 0 /*stride*/, 0 /*offset*/);
 
+			// ---------------------------------------------------------------------------------------------------
+			//   Setup GLSL program for image one-to-one drawing  (no stretch):
+			// ---------------------------------------------------------------------------------------------------
+
+			var imageOneToOneProgram               = createProgram(gl, imageOneToOneVertexShader, imageOneToOneFragmentShader);
+			var imageOneToOneAPosition             = gl.getAttribLocation(imageOneToOneProgram, "a_position");
+			var imageOneToOneATexCoord             = gl.getAttribLocation(imageOneToOneProgram, "a_texcoord");
+			var imageOneToOneMatrixLocation        = gl.getUniformLocation(imageOneToOneProgram, "u_matrix");
+			var imageOneToOneTextureLocation       = gl.getUniformLocation(imageOneToOneProgram, "u_texture");
+
+			var imageOneToOneVao = gl.createVertexArray();
+			gl.bindVertexArray(imageOneToOneVao);
+
+			// Initialise imageOneToOneProgram.a_position array with the positions on an Unit Quad:
+		
+			// var unitQuadBuffer = gl.createBuffer();  --  because we re-use from above   TODO: clarify
+			gl.bindBuffer(gl.ARRAY_BUFFER, unitQuadBuffer);
+			// gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([ 0,0, 0,1, 1,0, 1,0, 0,1, 1,1 ]), gl.STATIC_DRAW);  --  because we re-use from above   TODO: clarify
+			gl.enableVertexAttribArray(imageOneToOneAPosition);
+			gl.vertexAttribPointer(imageOneToOneAPosition, 2 /* size */, gl.FLOAT /* type */, false /* normalize */, 0 /* stride */, 0 /* offset */);
+
+			// Initialise imageOneToOneProgram.a_texcoord array:
+			
+			var imageOneToOneTexCoordBuffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, imageOneToOneTexCoordBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([ 0,0, 0,1, 1,0, 1,0, 0,1, 1,1 ]), gl.STATIC_DRAW);
+			gl.enableVertexAttribArray(imageOneToOneATexCoord);
+			gl.vertexAttribPointer(imageOneToOneATexCoord, 2 /*size*/, gl.FLOAT /*type*/, true /*normalize*/, 0 /*stride*/, 0 /*offset*/);
 
 
 
@@ -440,7 +467,27 @@
 				matrix     = m3scale(matrix, destWidth, destHeight);
 				gl.uniformMatrix3fv(imagePortionMatrixLocation, false, matrix);
 				
-				gl.drawArrays(gl.TRIANGLES, 0 /*offset*/, 6 /*count*/);         // Draw the geometry.
+				gl.drawArrays(gl.TRIANGLES, 0 /*offset*/, 6 /*count*/);
+			}
+
+			// ---------------------------------------------------------------------------------------------------
+			//   Image one-to-one draw function
+			// ---------------------------------------------------------------------------------------------------
+
+			function drawImageOneToOne(tex, texWidth, texHeight, dstX, dstY)
+			{
+				gl.useProgram(imageOneToOneProgram);
+				gl.bindVertexArray(imageOneToOneVao);
+				gl.uniform1i(imageOneToOneTextureLocation, 0 /* textureUnit */);
+				gl.activeTexture(gl.TEXTURE0 + 0 /* textureUnit */);
+				gl.bindTexture(gl.TEXTURE_2D, tex);
+
+				var matrix = m3projection(320, 256);
+				matrix     = m3translate(matrix, dstX, dstY);
+				matrix     = m3scale(matrix, texWidth, texHeight);
+				gl.uniformMatrix3fv(imageOneToOneMatrixLocation, false, matrix);
+
+				gl.drawArrays(gl.TRIANGLES, 0 /*offset*/, 6 /*count*/);
 			}
 
 			// ---------------------------------------------------------------------------------------------------
@@ -454,8 +501,8 @@
 			var tex = gl.createTexture();
 			gl.bindTexture(gl.TEXTURE_2D, tex);
 			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+			// TODO: Do we need these?  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+			// TODO: Do we need these?  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
 			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
 			
@@ -468,6 +515,29 @@
 				tex, 12, 8, 
 				0, 0, 12, 8,   // source
 				30, 70, 12, 8);
+
+			drawImagePortion(
+				tex, 12, 8, 
+				1, 1, 10, 6,   // source
+				130, 30, 20, 12);
+
+			drawRectangle(0, 248, 320, 8, 1.0, 1.0, 1.0);
+
+			//var repeat;
+			//for(repeat=0; repeat<3; repeat++)
+			{
+				var y;
+				for (y = 0; y < 25; y++)
+				{
+					var x;
+					for (x = 0; x < 25; x++)
+					{
+						drawImageOneToOne(tex, 12,8, 10 + x*12, 16 + y*8);
+					}
+				}
+			}
+
+			
 		}
 
 
