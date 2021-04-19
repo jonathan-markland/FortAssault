@@ -462,8 +462,7 @@
 				texMatrix     = m3scale(texMatrix, srcWidth / texWidth, srcHeight / texHeight);
 				gl.uniformMatrix3fv(imagePortionTextureMatrixLocation, false, texMatrix);
 				
-				var matrix = m3projection(320, 256);
-				matrix     = m3translate(matrix, dstX, dstY);
+				var matrix = m3translate(projectToRetroScreenMatrix, dstX, dstY);
 				matrix     = m3scale(matrix, destWidth, destHeight);
 				gl.uniformMatrix3fv(imagePortionMatrixLocation, false, matrix);
 				
@@ -482,8 +481,7 @@
 				gl.activeTexture(gl.TEXTURE0 + 0 /* textureUnit */);
 				gl.bindTexture(gl.TEXTURE_2D, tex);
 
-				var matrix = m3projection(320, 256);
-				matrix     = m3translate(matrix, dstX, dstY);
+				var matrix = m3translate(projectToRetroScreenMatrix, dstX, dstY);
 				matrix     = m3scale(matrix, texWidth, texHeight);
 				gl.uniformMatrix3fv(imageOneToOneMatrixLocation, false, matrix);
 
@@ -494,50 +492,59 @@
 			//   Examples
 			// ---------------------------------------------------------------------------------------------------
 
-			drawRectangle( 10, 10, 200, 150, 1.0, 0.5, 1.0);
-			drawRectangle( 50, 90, 200, 150, 0.5, 0.5, 1.0);
-			drawRectangle(170, 60, 100,  50, 1.0, 1.0, 0.5);
-			
-			var tex = gl.createTexture();
-			gl.bindTexture(gl.TEXTURE_2D, tex);
-			gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
-			// TODO: Do we need these?  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
-			// TODO: Do we need these?  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
-			gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
-			
-			drawImagePortion(
-				tex, 12, 8, 
-				0, 0, 12, 8,   // source
-				70, 70, 120, 80);
+			setInterval(
 
-			drawImagePortion(
-				tex, 12, 8, 
-				0, 0, 12, 8,   // source
-				30, 70, 12, 8);
+				function(){ 
+				
+					drawRectangle( 10, 10, 200, 150, 1.0, 0.5, 1.0);
+					drawRectangle( 50, 90, 200, 150, 0.5, 0.5, 1.0);
+					drawRectangle(170, 60, 100,  50, 1.0, 1.0, 0.5);
+					
+					var tex = gl.createTexture();
+					gl.bindTexture(gl.TEXTURE_2D, tex);
+					gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, image);
+					// TODO: Do we need these?  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+					// TODO: Do we need these?  gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
+					gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
+					
+					drawImagePortion(
+						tex, 12, 8, 
+						0, 0, 12, 8,   // source
+						70, 70, 120, 80);
 
-			drawImagePortion(
-				tex, 12, 8, 
-				1, 1, 10, 6,   // source
-				130, 30, 20, 12);
+					drawImagePortion(
+						tex, 12, 8, 
+						0, 0, 12, 8,   // source
+						30, 70, 12, 8);
 
-			drawRectangle(0, 248, 320, 8, 1.0, 1.0, 1.0);
+					drawImagePortion(
+						tex, 12, 8, 
+						1, 1, 10, 6,   // source
+						130, 30, 20, 12);
 
-			//var repeat;
-			//for(repeat=0; repeat<3; repeat++)
-			{
-				var y;
-				for (y = 0; y < 25; y++)
-				{
-					var x;
-					for (x = 0; x < 25; x++)
+					drawRectangle(0, 248, 320, 8, 1.0, 1.0, 1.0);
+
+					var repeat;
+					for(repeat=0; repeat<3; repeat++)
 					{
-						drawImageOneToOne(tex, 12,8, 10 + x*12, 16 + y*8);
+						var y;
+						for (y = 0; y < 25; y++)
+						{
+							var x;
+							for (x = 0; x < 25; x++)
+							{
+								drawImageOneToOne(tex, 12,8, 10 + x*12, 16 + y*8);
+								// drawImagePortion(
+								// 	tex, 12, 8,
+								// 	0,0,12,8,
+								// 	10 + x*12, 16 + y*8, 12, 8);
+							}
+						}
 					}
-				}
-			}
-
-			
+				
+					 }, 
+				20);  // 50FPS
 		}
 
 
