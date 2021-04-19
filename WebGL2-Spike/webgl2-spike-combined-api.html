@@ -197,8 +197,6 @@
 		//   Rectangle Vertex and Fragment shaders
 		// ---------------------------------------------------------------------------------------------------
 
-		var rectangleVertexShader = 
-		
 			/*
 			A Vertex Shader's job is to generate clipspace coordinates.
 			
@@ -213,6 +211,20 @@
 			
 			https://webgl2fundamentals.org/webgl/lessons/webgl-shaders-and-glsl.html
 			*/
+			
+			/*
+			A Fragment Shader's job is to provide a color for the current pixel being rasterized.
+			
+			Your fragment shader is called once per pixel. Each time it's called you are required 
+			to set your out variable to some color.
+			
+			Fragment shaders need data. They can get data in 3 ways
+			- Uniforms (values that stay the same for every pixel of a single draw call)
+			- Textures (data from pixels/texels)
+			- Varyings (data passed from the vertex shader and interpolated)			
+			*/
+
+		var rectangleVertexShader = 
 		
 			`#version 300 es
 			in vec2 a_position;
@@ -226,18 +238,6 @@
 			`;
 
 		var rectangleFragmentShader = 
-		
-			/*
-			A Fragment Shader's job is to provide a color for the current pixel being rasterized.
-			
-			Your fragment shader is called once per pixel. Each time it's called you are required 
-			to set your out variable to some color.
-			
-			Fragment shaders need data. They can get data in 3 ways
-			- Uniforms (values that stay the same for every pixel of a single draw call)
-			- Textures (data from pixels/texels)
-			- Varyings (data passed from the vertex shader and interpolated)			
-			*/
 		
 			`#version 300 es
 			precision highp float;
