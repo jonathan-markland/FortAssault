@@ -356,7 +356,7 @@
 			// Reserve a buffer for the solid filled rectangle vertices.
 			var rectangleBuffer = gl.createBuffer();
 			gl.bindBuffer(gl.ARRAY_BUFFER, rectangleBuffer);
-			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([ 0,0, 0,0, 0,0, 0,0, 0,0, 0,0 ]), gl.STATIC_DRAW);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([ 0,0, 0,0, 0,0, 0,0, 0,0, 0,0 ]), gl.DYNAMIC_DRAW);
 			gl.enableVertexAttribArray(rectanglePositionLocation);
 			gl.vertexAttribPointer(rectanglePositionLocation, 2 /*size*/, gl.FLOAT /*type*/, false /*normalize*/, 0 /*stride*/, 0 /*offset*/);
 
@@ -376,8 +376,8 @@
 
 			// Initialise imagePortionProgram.a_position array with the positions on an Unit Quad:
 		
-			var unitQuadBuffer = gl.createBuffer();
-			gl.bindBuffer(gl.ARRAY_BUFFER, unitQuadBuffer);
+			var imagePortionUnitQuadBuffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, imagePortionUnitQuadBuffer);
 			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([ 0,0, 0,1, 1,0, 1,0, 0,1, 1,1 ]), gl.STATIC_DRAW);
 			gl.enableVertexAttribArray(imagePortionAPosition);
 			gl.vertexAttribPointer(imagePortionAPosition, 2 /* size */, gl.FLOAT /* type */, false /* normalize */, 0 /* stride */, 0 /* offset */);
@@ -405,9 +405,9 @@
 
 			// Initialise imageOneToOneProgram.a_position array with the positions on an Unit Quad:
 		
-			// var unitQuadBuffer = gl.createBuffer();  --  because we re-use from above   TODO: clarify
-			gl.bindBuffer(gl.ARRAY_BUFFER, unitQuadBuffer);
-			// gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([ 0,0, 0,1, 1,0, 1,0, 0,1, 1,1 ]), gl.STATIC_DRAW);  --  because we re-use from above   TODO: clarify
+			var imageOneToOneUnitQuadBuffer = gl.createBuffer();
+			gl.bindBuffer(gl.ARRAY_BUFFER, imageOneToOneUnitQuadBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([ 0,0, 0,1, 1,0, 1,0, 0,1, 1,1 ]), gl.STATIC_DRAW);
 			gl.enableVertexAttribArray(imageOneToOneAPosition);
 			gl.vertexAttribPointer(imageOneToOneAPosition, 2 /* size */, gl.FLOAT /* type */, false /* normalize */, 0 /* stride */, 0 /* offset */);
 
