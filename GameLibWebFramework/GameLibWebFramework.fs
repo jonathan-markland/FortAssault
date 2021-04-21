@@ -20,10 +20,6 @@ open GameStateManagement
 
 // [ ] TODO: If ever the onLoad fails on the javascript side, the continuation will never be called, so the game won't start.
 
-
-        // The start command is:    npm start
-
-
 type JavascriptGraphicResources =
     {
         Fonts  : Font[]
@@ -50,56 +46,85 @@ let private Alert (messageText:string) : unit = jsNative
 //  Image and drawing support:   Fable to Javascript interfacing
 // ------------------------------------------------------------------------------------------------------------
 
+// TODO: Function naming:  Improve on 'JSIFsharp' prefix.
+
+/// Initialise the WebGL2 interface functions.  If this is not called at startup, the functions will be undefined.
+[<Emit("InitialiseWebGl2Interface()")>]
+let private InitialiseWebGl2Interface () = jsNative
+
+[<Emit("IFsharpImageToTexture($0)")>]
+let private JSIFsharpImageToTexture (image:obj) : obj = jsNative
+
+
+[<Emit("IFsharpDrawRectangle($0,$1,$2,$3,$4,$5,$6)")>]
+let private JSIFsharpDrawRectangle 
+    (x:int)                    // $0
+    (y:int)                    // $1
+    (width:int)                // $2
+    (height:int)               // $3
+    (redf:double)              // $4 // TODO: Can WebGL2 accept RGB as bytes?
+    (greenf:double)            // $5 // TODO: Can WebGL2 accept RGB as bytes?
+    (bluef:double) = jsNative  // $6 // TODO: Can WebGL2 accept RGB as bytes?
+
+let private DrawFilledRectangle (x:int) (y:int) (w:int) (h:int) (colouru:uint32) =
+
+    // TODO: Can WebGL2 directly accept RGB as bytes?
+
+    let red = (colouru &&& 0xFF0000u) >>> 16
+    let grn = (colouru &&& 0x00FF00u) >>>  8
+    let blu = (colouru &&& 0x0000FFu)
+
+    let inline f (value:uint32) = ((double) value) / 256.0
+
+    JSIFsharpDrawRectangle x y w h (f red) (f grn) (f blu)
+
+
+[<Emit("IFsharpDrawImagePortion($0,$1,$2,$3,$4,$5,$6,$7,$8,$9,$10)")>]
+let private JSIFsharpDrawImagePortion 
+    (tex:obj)                    // $0
+    (texWidth:int)               // $1
+    (texHeight:int)              // $2
+    (srcX:int)                   // $3
+    (srcY:int)                   // $4
+    (srcWidth:int)               // $5
+    (srcHeight:int)              // $6
+    (dstX:int)                   // $7
+    (dstY:int)                   // $8
+    (destWidth:int)              // $9
+    (destHeight:int) = jsNative  // $10
+
+let inline private DrawSubImage
+    (HostImageRef(tex)) texwidth texheight
+    srcleft srctop srcwidth srcheight 
+    dstleft dsttop dstwidth dstheight =
+        if srcwidth > 0 && srcheight > 0 && dstwidth > 0 && dstheight > 0 then // Avoid firefox exception  TODO: Do we need this with the move to WebGL2, and should this even be done here?
+            JSIFsharpDrawImagePortion 
+                tex texwidth texheight
+                srcleft srctop srcwidth srcheight 
+                dstleft dsttop dstwidth dstheight
+
+
+
+[<Emit("IFsharpDrawImageOneToOne($0,$1,$2,$3,$4)")>]
+let private JSIFsharpDrawImageOneToOne
+    (tex:obj)              // $0
+    (texWidth:int)         // $1
+    (texHeight:int)        // $2
+    (dstX:int)             // $3
+    (dstY:int) = jsNative  // $4
+
+let inline private DrawImage 
+    (HostImageRef(tex)) texwidth texheight x y =
+        JSIFsharpDrawImageOneToOne tex texwidth texheight x y
+
+
+
 /// A supplementary Javascript function that we made.  TODO: It may not be necessary to even have this in Javascript!
 [<Emit("loadImageThenDo($0, $1, $2)")>]
 let private LoadImageThenDo
     (fileName:string)
     (needsMagentaColourKey:bool)
     (onCompletionOfLoad:obj -> unit) : unit = jsNative
-
-
-
-[<Emit("$1.imageSmoothingEnabled = $0;")>]
-let inline private JsImageSmoothing
-    (enabled:bool)
-    (context2d:Browser.Types.CanvasRenderingContext2D) = jsNative
-
-
-[<Emit("$0.drawImage($1, $2, $3)")>]
-let private JsDrawImage 
-    (context2d:Browser.Types.CanvasRenderingContext2D)
-    (htmlImageObject:obj)
-    (x:int)
-    (y:int) = jsNative
-
-let inline private DrawImage context2d (HostImageRef(htmlImageObject)) x y =
-    JsDrawImage context2d htmlImageObject x y
-
-
-[<Emit("$0.drawImage($1, $2, $3, $4, $5, $6, $7, $8, $9)")>]
-let private JsDrawSubImage 
-    (context2d:Browser.Types.CanvasRenderingContext2D) // $0
-    (htmlImageObject:obj)                              // $1
-    (srcleft:int)                                      // $2
-    (srctop:int)                                       // $3
-    (srcwidth:int)                                     // $4 
-    (srcheight:int)                                    // $5 
-    (dstleft:int)                                      // $6
-    (dsttop:int)                                       // $7
-    (dstwidth:int)                                     // $8 
-    (dstheight:int) = jsNative                         // $9 
-
-let inline private DrawSubImage context2d (HostImageRef(htmlImageObject)) srcleft srctop srcwidth srcheight dstleft dsttop dstwidth dstheight =
-    if srcwidth > 0 && srcheight > 0 && dstwidth > 0 && dstheight > 0 then // Avoid firefox exception
-        JsDrawSubImage context2d htmlImageObject srcleft srctop srcwidth srcheight dstleft dsttop dstwidth dstheight
-
-
-[<Emit("$0.fillStyle=$5 ; $0.fillRect($1,$2,$3,$4)")>]
-let private JsDrawFilledRectangle (context2d:Browser.Types.CanvasRenderingContext2D) (x:int) (y:int) (w:int) (h:int) (colour:string) = jsNative
-    
-let inline private DrawFilledRectangle context2d x y w h (colouru:uint32) =
-    let colourStr = "#" + colouru.ToString("x6")
-    JsDrawFilledRectangle context2d x y w h colourStr
 
 
 
@@ -160,7 +185,7 @@ let private LoadImageFileListThenDo fileNameObtainer needsMagentaObtainer widthG
                                     ImageWidth     = w
                                     ImageHeight    = h
                                 }
-                            HostImageRef = HostImageRef(htmlImageElement)
+                            HostImageRef = HostImageRef(htmlImageElement |> JSIFsharpImageToTexture)
                         }
 
                     resizeArray.Add(imgWithHostObject)
@@ -201,7 +226,7 @@ let private LoadFontFileListThenDo fileNameObtainer widthGetter charWidthGetter 
                                     ImageWidth     = w
                                     ImageHeight    = h
                                 }
-                            HostImageRef = HostImageRef(htmlImageElement)
+                            HostImageRef = HostImageRef(htmlImageElement |> JSIFsharpImageToTexture)
                         }
                     
                     resizeArray.Add(BasicFont imgWithHostObject charWidth)
@@ -250,8 +275,9 @@ let private LoadSoundsFileListThenDo fileNameObtainer continuation resourceList 
 
 // ------------------------------------------------------------------------------------------------------------
 
-// TODO: This should not need to be private?
 let LoadResourceFilesThenDo resourceImages (fontResourceImages:FontMetadata list) resourceSounds afterAllLoaded =
+
+    InitialiseWebGl2Interface ()
 
     let soundFileNameGetter metadata =
         metadata.SoundFileName
@@ -288,25 +314,31 @@ let LoadResourceFilesThenDo resourceImages (fontResourceImages:FontMetadata list
 
 // ------------------------------------------------------------------------------------------------------------
 
-let private RenderToWebCanvas (context2d:Browser.Types.CanvasRenderingContext2D) drawingCommand =
+let private RenderToWebGL2 drawingCommand =
 
     match drawingCommand with
 
         | DrawImageWithTopLeftAtInt(left, top, imageVisual) ->
             DrawImage 
-                context2d imageVisual.HostImageRef 
+                imageVisual.HostImageRef 
+                (imageVisual.ImageMetadata.ImageWidth |> IntEpxToInt)
+                (imageVisual.ImageMetadata.ImageHeight |> IntEpxToInt)
                 (left |> IntEpxToInt) (top |> IntEpxToInt)
 
         | DrawStretchedImageWithTopLeftAt(left, top, imageVisual, width, height) ->
             let (w,h) = (imageVisual.ImageMetadata.ImageWidth , imageVisual.ImageMetadata.ImageHeight)
             DrawSubImage 
-                context2d imageVisual.HostImageRef
+                imageVisual.HostImageRef 
+                (imageVisual.ImageMetadata.ImageWidth |> IntEpxToInt)
+                (imageVisual.ImageMetadata.ImageHeight |> IntEpxToInt)
                 0 0 (w |> IntEpxToInt) (h |> IntEpxToInt) 
                 (left |> FloatEpxToInt) (top |> FloatEpxToInt) (width |> IntEpxToInt) (height |> IntEpxToInt)
 
         | DrawSubImageStretchedToTarget(srcleft, srctop, srcwidth, srcheight, dstleft, dsttop, dstwidth, dstheight, imageVisual) ->
             DrawSubImage 
-                context2d imageVisual.HostImageRef
+                imageVisual.HostImageRef 
+                (imageVisual.ImageMetadata.ImageWidth |> IntEpxToInt)
+                (imageVisual.ImageMetadata.ImageHeight |> IntEpxToInt)
                 srcleft srctop srcwidth srcheight 
                 (dstleft |> FloatEpxToInt) (dsttop |> FloatEpxToInt) (dstwidth |> IntEpxToInt) (dstheight |> IntEpxToInt)
 
@@ -316,7 +348,6 @@ let private RenderToWebCanvas (context2d:Browser.Types.CanvasRenderingContext2D)
             let left   = left   |> IntEpxToInt
             let top    = top    |> IntEpxToInt
             DrawFilledRectangle 
-                context2d 
                 left top width height 
                 colour
 
@@ -330,20 +361,11 @@ let FrameworkWebMain
     arrayOfLoadedFonts
     arrayOfLoadedSounds =
 
-    SetStaticImageAndFontResourceArrays arrayOfLoadedImages arrayOfLoadedFonts arrayOfLoadedSounds
+    SetStaticImageAndFontResourceArrays
+        arrayOfLoadedImages
+        arrayOfLoadedFonts
+        arrayOfLoadedSounds
 
-    let canvas = document.getElementById("gameScreen") :?> Browser.Types.HTMLCanvasElement
-
-    let context2dOptions =
-        createObj [
-            "alpha" ==> false
-            "antialias" ==> false
-            // "desynchronized" ==> true   // This reduced 3% GPU on MissionII, but filters.
-        ]
-
-    let context2d = canvas.getContext("2d", context2dOptions) :?> Browser.Types.CanvasRenderingContext2D
-    context2d |> JsImageSmoothing false
-   
     let gameGlobalState =
         match gameGlobalStateConstructor () with
             | Error msg -> failwith msg
@@ -355,7 +377,7 @@ let FrameworkWebMain
     let mutable gameState : ErasedGameState =
         gameplayStartConstructor gameGlobalState gameTime
 
-    let renderFunction = RenderToWebCanvas context2d
+    let renderFunction = RenderToWebGL2
 
     let toKeyTuple (WebBrowserKeyCode k) =
         (k, WebBrowserKeyCode k)
