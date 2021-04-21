@@ -329,8 +329,8 @@ let private RenderToWebGL2 drawingCommand =
             let (w,h) = (imageVisual.ImageMetadata.ImageWidth , imageVisual.ImageMetadata.ImageHeight)
             DrawSubImage 
                 imageVisual.HostImageRef 
-                (imageVisual.ImageMetadata.ImageWidth |> IntEpxToInt)
-                (imageVisual.ImageMetadata.ImageHeight |> IntEpxToInt)
+                (w |> IntEpxToInt)
+                (h |> IntEpxToInt)
                 0 0 (w |> IntEpxToInt) (h |> IntEpxToInt) 
                 (left |> FloatEpxToInt) (top |> FloatEpxToInt) (width |> IntEpxToInt) (height |> IntEpxToInt)
 
