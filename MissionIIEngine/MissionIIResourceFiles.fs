@@ -20,7 +20,7 @@ let private font fileName width charWidth charHeight =
 
 let MissionIIFontResourceImages =
     [
-        font "Font.png"     216 6 8
+        font "Font.png"     222 6 8
     ]
 
 let MissionIIResourceImages =
