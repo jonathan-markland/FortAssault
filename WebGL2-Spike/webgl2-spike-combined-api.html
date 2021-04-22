@@ -472,29 +472,12 @@
 		{
 			setInterval(
 
-				function(){ 
-				
+				function()
+				{ 
 					IFsharpDrawRectangle( 10, 10, 200, 150, 1.0, 0.5, 1.0);
 					IFsharpDrawRectangle( 50, 90, 200, 150, 0.5, 0.5, 1.0);
 					IFsharpDrawRectangle(170, 60, 100,  50, 1.0, 1.0, 0.5);
 				
-					IFsharpDrawImagePortion(
-						tex, 12, 8, 
-						0, 0, 12, 8,   // source
-						70, 70, 120, 80);
-
-					IFsharpDrawImagePortion(
-						tex, 12, 8, 
-						0, 0, 12, 8,   // source
-						30, 70, 12, 8);
-
-					IFsharpDrawImagePortion(
-						tex, 12, 8, 
-						1, 1, 10, 6,   // source
-						130, 30, 20, 12);
-
-					IFsharpDrawRectangle(0, 248, 320, 8, 1.0, 1.0, 1.0);
-
 					// var repeat;
 					// for(repeat=0; repeat<3; repeat++)
 					{
@@ -512,8 +495,30 @@
 							}
 						}
 					}
-				
-					 }, 
+
+					IFsharpDrawImagePortion(
+						tex, 12, 8, 
+						0, 0, 12, 8,   // source
+						70, 70, 120, 80);
+
+					IFsharpDrawImagePortion(
+						tex, 12, 8, 
+						0, 0, 12, 8,   // source
+						30, 70, 12, 8);
+
+					IFsharpDrawImagePortion(
+						tex, 12, 8, 
+						1, 1, 10, 6,   // source
+						130, 30, 20, 12);
+
+					IFsharpDrawImagePortion(
+						tex, 12, 8, 
+						3, 2, 2, 2,   // source
+						230, 43, 16, 16);
+
+					IFsharpDrawRectangle(0, 248, 320, 8, 1.0, 1.0, 1.0);
+
+				}, 
 				20);  // 50FPS
 		}
 
