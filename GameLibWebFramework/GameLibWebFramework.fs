@@ -326,12 +326,12 @@ let private RenderToWebGL2 drawingCommand =
                 (left |> IntEpxToInt) (top |> IntEpxToInt)
 
         | DrawStretchedImageWithTopLeftAt(left, top, imageVisual, width, height) ->
-            let (w,h) = (imageVisual.ImageMetadata.ImageWidth , imageVisual.ImageMetadata.ImageHeight)
+            let (texw,texh) = (imageVisual.ImageMetadata.ImageWidth , imageVisual.ImageMetadata.ImageHeight)
             DrawSubImage 
                 imageVisual.HostImageRef 
-                (w |> IntEpxToInt)
-                (h |> IntEpxToInt)
-                0 0 (w |> IntEpxToInt) (h |> IntEpxToInt) 
+                (texw |> IntEpxToInt)
+                (texh |> IntEpxToInt)
+                0 0 (texw |> IntEpxToInt) (texh |> IntEpxToInt) 
                 (left |> FloatEpxToInt) (top |> FloatEpxToInt) (width |> IntEpxToInt) (height |> IntEpxToInt)
 
         | DrawSubImageStretchedToTarget(srcleft, srctop, srcwidth, srcheight, dstleft, dsttop, dstwidth, dstheight, imageVisual) ->
@@ -340,7 +340,10 @@ let private RenderToWebGL2 drawingCommand =
                 (imageVisual.ImageMetadata.ImageWidth |> IntEpxToInt)
                 (imageVisual.ImageMetadata.ImageHeight |> IntEpxToInt)
                 srcleft srctop srcwidth srcheight 
-                (dstleft |> FloatEpxToInt) (dsttop |> FloatEpxToInt) (dstwidth |> IntEpxToInt) (dstheight |> IntEpxToInt)
+                (dstleft |> FloatEpxToInt) 
+                (dsttop |> FloatEpxToInt) 
+                (dstwidth |> IntEpxToInt) 
+                (dstheight |> IntEpxToInt)
 
         | DrawFilledRectangle(left, top, width, height, SolidColour colour) ->
             let width  = width  |> IntEpxToInt
