@@ -5,6 +5,8 @@ open WebGameFramework
 open MissionIIResourceFiles
 open Storyboard
 open Input
+open GamePlayScreenConstants
+open Geometry
 
 
 
@@ -25,7 +27,9 @@ let WebMain () =
 
     let stubGlobalStateConstructor () = Ok 1  // Feature not used.
 
-    LoadResourceFilesThenDo 
+    InitWebFrameworkThenDo 
+        (ScreenWidthInt |> IntEpxToInt)
+        (ScreenHeightInt |> IntEpxToInt)
         MissionIIResourceImages 
         MissionIIFontResourceImages 
         MissionIIResourceSounds
