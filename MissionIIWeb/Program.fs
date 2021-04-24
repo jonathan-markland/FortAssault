@@ -5,8 +5,8 @@ open WebGameFramework
 open MissionIIResourceFiles
 open Storyboard
 open Input
+open Screen
 open GamePlayScreenConstants
-open Geometry
 
 
 
@@ -27,9 +27,15 @@ let WebMain () =
 
     let stubGlobalStateConstructor () = Ok 1  // Feature not used.
 
+    let retroScreenSettings = 
+        {
+            RetroScreenWidth  = ScreenWidthInt
+            RetroScreenHeight = ScreenHeightInt
+            RetroScreenTitle  = "Mission II"
+        }
+
     InitWebFrameworkThenDo 
-        (ScreenWidthInt |> IntEpxToInt)
-        (ScreenHeightInt |> IntEpxToInt)
+        retroScreenSettings
         MissionIIResourceImages 
         MissionIIFontResourceImages 
         MissionIIResourceSounds

@@ -5,7 +5,9 @@ open WebGameFramework
 open PacmanResourceFiles
 open Storyboard
 open Input
-
+open ResourceIDs
+open Geometry
+open Screen
 
 
 // ------------------------------------------------------------------------------------------------------------
@@ -25,7 +27,15 @@ let WebMain () =
 
     let stubGlobalStateConstructor () = Ok 1  // Feature not used by Pacman.
 
-    LoadResourceFilesThenDo 
+    let retroScreenSettings = 
+        {
+            RetroScreenWidth  = ScreenWidthInt
+            RetroScreenHeight = ScreenHeightInt
+            RetroScreenTitle  = "Pac Man"
+        }
+
+    InitWebFrameworkThenDo
+        retroScreenSettings
         PacmanResourceImages 
         PacmanFontResourceImages 
         PacmanResourceSounds

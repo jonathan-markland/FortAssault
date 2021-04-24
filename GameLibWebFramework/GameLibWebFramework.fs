@@ -15,6 +15,10 @@ open Sounds
 
 open Input
 open GameStateManagement
+open Screen
+
+
+
 
 
 
@@ -49,8 +53,12 @@ let private Alert (messageText:string) : unit = jsNative
 // TODO: Function naming:  Improve on 'JSIFsharp' prefix.
 
 /// Initialise the WebGL2 interface functions.  If this is not called at startup, the functions will be undefined.
-[<Emit("InitialiseWebGl2Interface()")>]
-let private InitialiseWebGl2Interface () = jsNative
+[<Emit("InitialiseWebGl2Interface($0,$1,$2)")>]
+let private JSInitialiseWebGl2Interface 
+    (retroScreenWidth:int) 
+    (retroScreenHeight:int) 
+    (windowTitleText:string) = jsNative
+
 
 [<Emit("IFsharpImageToTexture($0)")>]
 let private JSIFsharpImageToTexture (image:obj) : obj = jsNative
@@ -275,9 +283,23 @@ let private LoadSoundsFileListThenDo fileNameObtainer continuation resourceList 
 
 // ------------------------------------------------------------------------------------------------------------
 
-let LoadResourceFilesThenDo resourceImages (fontResourceImages:FontMetadata list) resourceSounds afterAllLoaded =
+let InitWebFrameworkThenDo 
+        retroScreenSettings 
+        resourceImages 
+        (fontResourceImages:FontMetadata list) 
+        resourceSounds 
+        afterAllLoaded =
 
-    InitialiseWebGl2Interface ()
+    let {
+            RetroScreenTitle  = retroScreenTitle
+            RetroScreenWidth  = retroScreenWidth 
+            RetroScreenHeight = retroScreenHeight
+        } = retroScreenSettings
+
+    JSInitialiseWebGl2Interface 
+        (retroScreenWidth |> IntEpxToInt)
+        (retroScreenHeight |> IntEpxToInt)
+        retroScreenTitle
 
     let soundFileNameGetter metadata =
         metadata.SoundFileName

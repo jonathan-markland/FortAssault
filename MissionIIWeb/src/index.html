@@ -2,12 +2,14 @@
 <html style="margin:0; padding:0; border:0; width:100%; height:100%;">
 
 <head>
-  <title>Mission II - Retro re-make by Jonathan Markland</title>
+  <title>Game</title><!-- Note: The title is initialised in code -->
   <meta http-equiv='Content-Type' content='text/html; charset=utf-8'>
   <meta name="viewport" content="width=device-width, initial-scale=1">
 </head>
 
-<body style="margin:0; padding:0; border:0; width:100%; height:100%; overflow:hidden; background-color:#222;">
+<!-- TODO: Possibly parameterise the background-color in the RetroScreenSettings record -->
+
+<body style="margin:0; padding:0; border:0; width:100%; height:100%; overflow:hidden; background-color:#111;">
 
     <style>
         .hidden {
@@ -156,7 +158,9 @@
         var IFsharpDrawImagePortion;
         var IFsharpDrawImageOneToOne;
 
-        function InitialiseWebGl2Interface(retroScreenWidth, retroScreenHeight) {
+        function InitialiseWebGl2Interface(retroScreenWidth, retroScreenHeight, retroScreenTitle) {
+
+			document.title = retroScreenTitle;
 
             var canvas = document.getElementById("gameScreen");
             canvas.setAttribute("width", retroScreenWidth);
