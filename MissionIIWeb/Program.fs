@@ -5,6 +5,8 @@ open WebGameFramework
 open MissionIIResourceFiles
 open Storyboard
 open Input
+open Screen
+open GamePlayScreenConstants
 
 
 
@@ -25,7 +27,15 @@ let WebMain () =
 
     let stubGlobalStateConstructor () = Ok 1  // Feature not used.
 
-    LoadResourceFilesThenDo 
+    let retroScreenSettings = 
+        {
+            RetroScreenWidth  = ScreenWidthInt
+            RetroScreenHeight = ScreenHeightInt
+            RetroScreenTitle  = "Mission II"
+        }
+
+    InitWebFrameworkThenDo 
+        retroScreenSettings
         MissionIIResourceImages 
         MissionIIFontResourceImages 
         MissionIIResourceSounds
