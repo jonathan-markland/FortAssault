@@ -7,6 +7,7 @@ open GameStateManagement
 open ImagesAndFonts
 open Sounds
 open StaticResourceAccess
+open Geometry
 
 
 
@@ -15,7 +16,7 @@ type PacmanGetReadyOverlayModel = unit
 
 
 let private RenderGetReadyOverlay render (model:PacmanGetReadyOverlayModel) gameTime =
-    let cx,cy = (ScreenWidthInt / 2) , (ScreenHeightInt / 3) 
+    let cx,cy = (ScreenWidthInt / 2) , ((ScreenHeightInt / 3) + 3<epx>)   // Plus a fudge factor to avoid clash with the maze dots.  TODO: Can we do better?
     Text render GreyFontID CentreAlign  MiddleAlign cx cy "GET READY"
 
 
