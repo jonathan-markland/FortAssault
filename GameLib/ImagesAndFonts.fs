@@ -51,17 +51,33 @@ type Image =
 /// Obtain the dimensions of the given image as integers, which are native.
 let inline ImageDimensions imageWithHostObject =
     (imageWithHostObject.ImageMetadata.ImageWidth , 
-        imageWithHostObject.ImageMetadata.ImageHeight)
+        imageWithHostObject.ImageMetadata.ImageHeight)  // TODO: Use Dimensions2D type
 
 /// Obtain the dimensions of the given image as floating point.
 let inline ImageDimensionsF imageWithHostObject =
     (imageWithHostObject.ImageMetadata.ImageWidth |> IntToFloatEpx , 
-        imageWithHostObject.ImageMetadata.ImageHeight |> IntToFloatEpx)
+        imageWithHostObject.ImageMetadata.ImageHeight |> IntToFloatEpx)  // TODO: Use Dimensions2D type
+
+let inline ImageDimensionsF_v2 imageWithHostObject =  // TODO: Supercede.
+    {
+        dimx = imageWithHostObject.ImageMetadata.ImageWidth
+        dimy = imageWithHostObject.ImageMetadata.ImageHeight
+    }
 
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 //  Font
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
+
+/// Font information supplied by the game engine to the host.
+type FontMetadata =
+    {
+        /// The font is stored as a bitmap.
+        FontImageMetadata : ImageMetadata
+
+        /// The width of the characters in the font.
+        FontCharWidth : int
+    }
 
 /// Opaque type for referring to a *static* font resource, which can be
 /// obtained through the StaticResourceAccess module.
@@ -85,34 +101,34 @@ type TextHAlignment = LeftAlign | CentreAlign | RightAlign
 type TextVAlignment = TopAlign  | MiddleAlign | BottomAlign
 
 /// Obtain a basic font record from image resource
-let BasicFont fontImage =
+let BasicFont fontImage charWidth =
 
-    let charSide =
+    let charHeight =
         int (fontImage.ImageMetadata.ImageHeight)
 
     {
         FontImage     = fontImage
         MagnifyX      = 1
         MagnifyY      = 1
-        SrcCharWidth  = charSide
-        SrcCharHeight = charSide
-        CharWidth     = charSide
-        CharHeight    = charSide
+        SrcCharWidth  = charWidth
+        SrcCharHeight = charHeight
+        CharWidth     = charWidth
+        CharHeight    = charHeight
     }
 
 /// Obtain a magnified version of an existing font.
-let MagnifiedFont dx dy oldFont =
+let MagnifiedFont charWidth magX magY oldFont =
 
-    let charSide =
+    let charHeight =
         int (oldFont.FontImage.ImageMetadata.ImageHeight)
 
     {
         FontImage     = oldFont.FontImage
-        MagnifyX      = dx
-        MagnifyY      = dy
-        SrcCharWidth  = charSide
-        SrcCharHeight = charSide
-        CharWidth     = dx * charSide
-        CharHeight    = dy * charSide
+        MagnifyX      = magX
+        MagnifyY      = magY
+        SrcCharWidth  = charWidth
+        SrcCharHeight = charHeight
+        CharWidth     = magX * charWidth
+        CharHeight    = magY * charHeight
     }
 

@@ -15,7 +15,7 @@ module.exports = {
 	],
 	output: {
         path: path.join(__dirname, "./wwwroot"),
-        filename: "[name].[chunkhash].js",
+			filename: "[name].[chunkhash].js",
     },
     devServer: {
         publicPath: "/",

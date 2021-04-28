@@ -612,15 +612,16 @@ let private HasPlayerBeenHitByEnemyMissiles alliedState enemyMissiles decorative
             enemyMissiles, alliedState, decoratives, scoreAndHiScore
 
         | AlliedTankInPlay(tankY, _) ->
-            let enemyMissiles, survivalResult, decoratives, scoreAndHiScore =
+            let enemyMissiles, survivalResult, additionalExplosions, additionalScore =
                 ResultOfProjectileCollisionsWithSingleTarget
                     enemyMissiles
                     tankY
                     (EnemyMissileCollidesWithPlayer gameTime)
                     FlickBookStartTimeOf  // will do as an identity-function, since there's time gaps between firings
-                    decoratives
-                    scoreAndHiScore
                     (fun projectile -> (MissileExplosionFor projectile gameTime), 0u)
+
+            let decoratives = decoratives |> List.append additionalExplosions
+            let scoreAndHiScore = scoreAndHiScore |> ScoreIncrementedBy additionalScore
 
             match survivalResult with
                 | PlayerSurvives  -> enemyMissiles, alliedState, decoratives, scoreAndHiScore
@@ -702,16 +703,18 @@ let private OldNextTankBattleScreenState oldState keyStateGetter gameTime frameE
                 let alliedMissiles =
                     PlayerMissileFiring alliedState input alliedMissiles gameTime
 
-                let alliedMissiles, enemyTanks, decoratives, scoreAndHiScore =
+                let alliedMissiles, enemyTanks, additionalExplosions, additionalScore =
                     ResultOfProjectileCollisions
                         alliedMissiles // Do the player's missiles hit any enemies?
                         enemyTanks
                         (AlliedMissileCollidesWithEnemyTank numTilesHorizontally gameTime)
                         FlickBookStartTimeOf  // will do as identity since there's time gaps between firings
                         id // TODO: Using the whole record as identity.  Will do for now.
-                        decoratives
-                        scoreAndHiScore
-                        (fun projectile -> (MissileExplosionFor projectile gameTime), ScoreForHittingEnemyTank)
+                        (Some (fun projectile -> (MissileExplosionFor projectile gameTime), ScoreForHittingEnemyTank))
+                        None
+
+                let decoratives = decoratives |> List.append additionalExplosions
+                let scoreAndHiScore = scoreAndHiScore |> ScoreIncrementedBy additionalScore
 
                 let enemyMissiles, alliedState, decoratives, scoreAndHiScore =
                     HasPlayerBeenHitByEnemyMissiles alliedState enemyMissiles decoratives scoreAndHiScore gameTime

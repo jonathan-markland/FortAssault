@@ -16,7 +16,7 @@ mkdir wwwroot\Sounds
 xcopy /s ..\PacmanResources\Images\*.png wwwroot\Images\
 @if ERRORLEVEL 1 goto Failed
 
-xcopy /s ..\PacmanResources\Sounds\*.* wwwroot\Sounds\
+xcopy /s ..\PacmanResources\Sounds\*.ogg wwwroot\Sounds\
 @if ERRORLEVEL 1 goto Failed
 
 npx webpack --mode production

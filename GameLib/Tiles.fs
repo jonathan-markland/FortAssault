@@ -10,6 +10,7 @@ type TileMatrixTraits =
         TileHeightPixels  : int<epx>
     }
 
+[<Struct>]
 type TileMatrixViewportWindow =
     {
         WindowLeft   : int<epx>
@@ -18,6 +19,7 @@ type TileMatrixViewportWindow =
         WindowHeight : int<epx>
     }
 
+[<Struct>]
 type TileMatrixOffset =
     {
         OffsetX : int<epx>
@@ -27,7 +29,7 @@ type TileMatrixOffset =
 /// tilingOffset is relative to the top left of the viewportWindow.
 /// f is called for all partially/fully visible tiles, and only ever
 /// with indices that lie within the TileMatrixTraits extents.
-let ForEachTileWithVisiblePortion tileMatrix viewportWindow tilingOffset f =
+let ForEachTileWithVisiblePortion tileMatrix viewportWindow tilingOffset f =   // TODO: Provide a "fold" cover for this.
 
     let startPixelPositionAndTileIndex (side:int<epx>) offset =
         if offset <= 0<epx> then

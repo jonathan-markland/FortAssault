@@ -1,8 +1,8 @@
-﻿module FreezeFrame
+﻿/// TODO: Reconsider this module since ScreenHandler.FrozenInTimeAt and ScreenHandler.WithoutAnyFurtherUpdates
+module FreezeFrame
 
 open Time
 open GameStateManagement
-open Mechanics
 
 
 
@@ -40,7 +40,7 @@ let AdaptedToIgnoreOutgoingStateParameter (func:float32<seconds> -> ErasedGameSt
 
 
 
-// TODO: Review this for ScreenHandler.FrozenInTimeAt and ScreenHandler.WithoutAnyFurtherUpdates
+// TODO: Review the need for the following since ScreenHandler.FrozenInTimeAt and ScreenHandler.WithoutAnyFurtherUpdates
 
 
 
@@ -79,18 +79,5 @@ let WithDrawingOnlyFor duration gameTime whereToAfter outgoingGameState =
 
 
 
-let WithOneShotSound oneShotSoundOperations (innerGameState:ErasedGameState) =
-
-    let frameFunc _gameState keyStateGetter gameTime elapsed =
-        // Just delegate the call, and whatever innerGameState returns 
-        // will naturally replace us on the next frame:
-        innerGameState.Frame keyStateGetter gameTime elapsed  
-
-    let drawFunc render model (gameTime:float32<seconds>) =
-        // Just delegate drawing.
-        // This will only be called once because of the replacement done by nextFrame
-        innerGameState.Draw render gameTime
-
-    NewGameStateAndSounds frameFunc drawFunc () oneShotSoundOperations
             
     

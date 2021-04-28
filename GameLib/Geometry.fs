@@ -6,11 +6,13 @@
 /// This is the units with which the game engine calculates.
 [<Measure>] type epx
 
+let inline Float32ToEpx (x:float32) = LanguagePrimitives.Float32WithMeasure<epx> (x)
+
 let inline IntEpxToInt (x:int<epx>) = int (x)
 let inline IntToIntEpx (x:int)      = LanguagePrimitives.Int32WithMeasure<epx> x
 
 let inline FloatEpxToInt x = int (x + 0.5F<epx>)
-let inline IntToFloatEpx x = LanguagePrimitives.Float32WithMeasure<epx> (float32 x)
+let inline IntToFloatEpx x = Float32ToEpx (float32 x)
 
 let inline FloatEpxToIntEpx x = x |> FloatEpxToInt |> IntToIntEpx
 
@@ -39,6 +41,13 @@ type Rectangle<'t> =
         Bottom : 't
     }
 
+/// Dimensions of a rectangular area in Cartesian space
+type RectDimensions<'t> =
+    {
+        dimx : 't
+        dimy : 't
+    }
+
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 let inline InvertVector (p:Point<'t>) = { ptx = -p.ptx ; pty = -p.pty }
@@ -46,7 +55,7 @@ let inline InvertVector (p:Point<'t>) = { ptx = -p.ptx ; pty = -p.pty }
 let inline ApplyToPoint f (p:Point<'t>) = { ptx = f p.ptx ; pty = f p.pty }
 
 let inline PointMult factor (p:Point<'t>) = { ptx = p.ptx * factor ; pty = p.pty * factor }
-    
+
 let inline RectangleWidth  (r:Rectangle<'t>) = r.Right - r.Left
 let inline RectangleHeight (r:Rectangle<'t>) = r.Bottom - r.Top
 
@@ -126,6 +135,22 @@ let inline InflateRectangle border r =
         Bottom = r.Bottom + border
     }
 
+let inline SquareWithTopLeftAt point side =
+    let { ptx=x ; pty=y } = point
+    { Left=x ; Top=y ; Right=x+side ; Bottom=y+side }
+
+/// Return a rectangle of given width and height centred about the given point.
+/// 'two' needs to be the number 2 in the same type as the point and dimensions.
+let inline RectangleCenteredAbout point dims two =  // TODO: Can we avoid passing 'two'?
+    let x' = point.ptx - (dims.dimx / two)
+    let y' = point.pty - (dims.dimy / two) 
+    {
+        Left    = x'
+        Top     = y'
+        Right   = x' + dims.dimx
+        Bottom  = y' + dims.dimy
+    }
+
 /// Returns a floating point movement delta that, if applied, would 
 /// cause a given object located at 'fromPoint' to move towards a target
 /// located at 'toPoint'.
@@ -158,8 +183,11 @@ let SimpleMovementDeltaI32ToGetTo toPoint fromPoint =  // TODO: revisit for gene
 
 /// Returns true if the given point lies within any of the rectangles in a list.
 let LiesWithinRectangleList rectangleList point =
-
     rectangleList |> List.exists (fun r -> IsPointWithinRectangle r point)
+
+/// Returns true if the given point lies within any of the rectangles reported by the things in the list.
+let LiesWithinRectangularThingList getRectangleFrom thingList point =
+    thingList |> List.exists (fun thing -> point |> IsPointWithinRectangle (getRectangleFrom thing))
 
 /// Returns the square of a number.
 let inline Squared x = x * x

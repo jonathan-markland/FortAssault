@@ -1,0 +1,29 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Include="GamePlayScreenConstants.fs" />
+    <Compile Include="GamePlayDataModels.fs" />
+    <Compile Include="Keys.fs" />
+    <Compile Include="Levels.fs" />
+    <Compile Include="Rules.fs" />
+    <Compile Include="LevelTextToMatrix.fs" />
+    <Compile Include="MissionIIResourceFiles.fs" />
+    <Compile Include="ResourceIDs.fs" />
+    <Compile Include="ScreenLevelIntro.fs" />
+    <Compile Include="ScreenIntermissions.fs" />
+    <Compile Include="ScreenGamePlay.fs" />
+    <Compile Include="ScreenGameOver.fs" />
+    <Compile Include="ScreenGameTitle.fs" />
+    <Compile Include="ScreenPotentialEnterYourName.fs" />
+    <Compile Include="Storyboard.fs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\GameLib\GameLib.fsproj" />
+  </ItemGroup>
+
+</Project>

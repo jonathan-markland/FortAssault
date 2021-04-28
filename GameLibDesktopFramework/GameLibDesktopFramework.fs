@@ -31,7 +31,7 @@ let private LoadGameImagesFontsAndSounds gameResourceImages gameFontResourceImag
     let fromFile transparencyColour name = 
 
         let fullPath =
-            Path.Combine(rootPath, name)
+            Path.Combine(Path.Combine(rootPath, "Images"), name)
         
         if not (File.Exists(fullPath)) then
             failwith (sprintf "Game could not start because file '%s' is missing." fullPath)
@@ -43,7 +43,7 @@ let private LoadGameImagesFontsAndSounds gameResourceImages gameFontResourceImag
     let fromSoundFile name = 
 
         let fullPath =
-            Path.Combine(rootPath, name)
+            Path.Combine(Path.Combine(rootPath, "Sounds"), name)
     
         if not (File.Exists(fullPath)) then
             failwith (sprintf "Game could not start because file '%s' is missing." fullPath)
@@ -78,15 +78,15 @@ let private LoadGameImagesFontsAndSounds gameResourceImages gameFontResourceImag
     let fontsArray =
         gameFontResourceImages 
             |> List.map (fun metadata -> 
-                let hostImageObject = fromFile magenta metadata.ImageFileName
+                let hostImageObject = fromFile magenta metadata.FontImageMetadata.ImageFileName
 
                 let imageWithHostObject =
                     {
-                        ImageMetadata = metadata
+                        ImageMetadata = metadata.FontImageMetadata
                         HostImageRef  = HostImageRef(hostImageObject)
                     }
 
-                BasicFont imageWithHostObject
+                BasicFont imageWithHostObject (metadata.FontCharWidth)
             ) 
                 |> List.toArray
 
@@ -240,8 +240,6 @@ let private MainLoopProcessing
             |> List.iter (fun soundCommand -> 
                 match soundCommand with
                     | PlaySoundEffect s -> PlaySound (s.HostSoundRef)
-                    | ChangeTheMusic s -> () // TODO: implement
-                    | StopTheMusic -> () // TODO: implement
             )
 
         tickCount <- tickCount + 1u
@@ -290,7 +288,7 @@ let FrameworkDesktopMain
     hostRetroScreenWidthPixels 
     hostRetroScreenHeightPixels 
     gameResourceImages 
-    gameFontResourceImages
+    (gameFontResourceImages:FontMetadata list)
     gameResourceSounds
     listOfKeysNeeded 
     (gameGlobalStateConstructor : unit -> Result<'gameGlobalState,string>)
@@ -316,7 +314,12 @@ let FrameworkDesktopMain
                             let path = System.IO.Path.GetDirectoryName(System.Reflection.Assembly.GetExecutingAssembly().Location)
                             
                             let gameResources = 
-                                LoadGameImagesFontsAndSounds gameResourceImages gameFontResourceImages gameResourceSounds renderer path   // TODO:  Minor: We don't actually free the imageSet handles.
+                                LoadGameImagesFontsAndSounds 
+                                    gameResourceImages 
+                                    gameFontResourceImages 
+                                    gameResourceSounds 
+                                    renderer 
+                                    path   // TODO:  Minor: We don't actually free the imageSet handles.
 
                             let gameGlobalStateResult = 
                                 gameGlobalStateConstructor ()

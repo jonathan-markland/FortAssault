@@ -5,6 +5,8 @@ open WebGameFramework
 open FortAssaultResourceFiles
 open Storyboard
 open Input
+open ResourceIDs
+open Screen
 
 
 
@@ -25,7 +27,15 @@ let WebMain () =
 
     let stubGlobalStateConstructor () = Ok 1  // Feature not used by Fort Assault.
 
-    LoadResourceFilesThenDo 
+    let retroScreenSettings = 
+        {
+            RetroScreenWidth  = ScreenWidthInt
+            RetroScreenHeight = ScreenHeightInt
+            RetroScreenTitle  = "Pac Man"
+        }
+
+    InitWebFrameworkThenDo 
+        retroScreenSettings
         FortAssaultResourceImages 
         FortAssaultFontResourceImages 
         FortAssaultResourceSounds

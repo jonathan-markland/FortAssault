@@ -1,28 +1,30 @@
 ﻿module Collisions
 
 open Algorithm
-open ScoreHiScore
 
 
 
 [<Struct>]
 type private Notepad<'explosion> =
     {
-        ExplosionsList : 'explosion list
-        TotalScore     : uint32
+        AdditionalExplosionsList : 'explosion list
+        AdditionalScore          : uint32
     }
 
 
+// TODO: This would be simplified if constructing explosions and scores 
+//       were separated out.  Let's return surviving and collided lists.
+//       The caller can map the collided lists to explosion objects, scores and sounds itself
+//       or with a helper function.
 
-let ResultOfProjectileCollisions
-        (projectiles     : 'projectile list)
-        (targets         : 'target list)
-        collides
-        (getProjectileId : 'projectile -> 'projectileId)
-        (getTargetId     : 'target -> 'targetId)
-        (explosions      : 'explosion list)
-        (score           : ScoreAndHiScore)
-        createExplosionAndScoreFor =
+let ResultOfProjectileCollisions  
+    (projectiles     : 'projectile list)
+    (targets         : 'target list)
+    collides
+    (getProjectileId : 'projectile -> 'projectileId)
+    (getTargetId     : 'target -> 'targetId)
+    (explosionAndScoreForProjectile : ('projectile -> 'explosion * uint32) option)
+    (explosionAndScoreForTarget : ('target -> 'explosion * uint32) option) =
 
     let collidingPairs =
         List.allPairs projectiles targets |> List.filter (fun (projectile,target) -> collides projectile target)
@@ -31,9 +33,7 @@ let ResultOfProjectileCollisions
 
         | [] ->
 
-            // performance optimisation when no intersections.
-
-            projectiles, targets, explosions, score
+            projectiles, targets, [], 0u   // performance optimisation when no intersections.
 
         | _ ->
 
@@ -52,20 +52,30 @@ let ResultOfProjectileCollisions
             let survivingTargets = 
                 targets |> List.filter (NotInListById collidedTargets getTargetId)
     
-            let newExplosions, totalScore = 
+            let additionalExplosions, additionalScore = 
                 
-                let initialNotes = { ExplosionsList = explosions ; TotalScore = 0u }
+                let notepad = { AdditionalExplosionsList = [] ; AdditionalScore = 0u }
                 
-                let folder notes projectile =
-                    let explosion,score = createExplosionAndScoreFor projectile  // TODO: Separate into two functions the caller must pass
-                    { ExplosionsList = explosion::notes.ExplosionsList ; TotalScore = notes.TotalScore + score }
+                let folder createExplosionAndScoreFor notes item =
+                    let (explosion,score) = createExplosionAndScoreFor item
+                    { 
+                        AdditionalExplosionsList = explosion::notes.AdditionalExplosionsList
+                        AdditionalScore = notes.AdditionalScore + score 
+                    }
                 
-                let finalNotes = collidedProjectiles |> List.fold folder initialNotes
-                
-                finalNotes.ExplosionsList, finalNotes.TotalScore
+                let notepad = 
+                    match explosionAndScoreForProjectile with
+                        | Some provider -> collidedProjectiles |> List.fold (folder provider) notepad
+                        | None -> notepad
 
-            survivingProjectiles, survivingTargets, newExplosions, score |> ScoreIncrementedBy totalScore
+                let notepad = 
+                    match explosionAndScoreForTarget with
+                        | Some provider -> collidedTargets |> List.fold (folder provider) notepad
+                        | None -> notepad
+                
+                notepad.AdditionalExplosionsList, notepad.AdditionalScore
 
+            survivingProjectiles, survivingTargets, additionalExplosions, additionalScore
 
 
 
@@ -79,22 +89,21 @@ let ResultOfProjectileCollisionsWithSingleTarget  // TODO:  Hmmm.. Ideology:  It
     (target          : 'target)
     collides
     (getProjectileId : 'projectile -> 'projectileId)
-    (explosions      : 'explosion list)
-    (score           : ScoreAndHiScore)
-    createExplosionAndScoreFor =
+    explosionAndScoreForProjectile =
 
-    let survivingProjectiles, survivingTargets, newExplosions, score =
+    let explosionAndScoreForTarget = fun _ -> ()
+
+    let survivingProjectiles, survivingTargets, additionalExplosions, additionalScore =
         ResultOfProjectileCollisions
             projectiles
             [target]  // TODO:  This is slightly bad -- making a list of one thing!
             collides
             getProjectileId
             (fun _ -> 1)
-            explosions
-            score
-            createExplosionAndScoreFor 
+            (Some explosionAndScoreForProjectile)
+            None
 
     let status =
         if (survivingTargets |> List.isEmpty) then PlayerDestroyed else PlayerSurvives
 
-    survivingProjectiles, status, newExplosions, score
+    survivingProjectiles, status, additionalExplosions, additionalScore

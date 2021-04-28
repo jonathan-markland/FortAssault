@@ -101,8 +101,6 @@ let private AnimationSequence gameTime =
 
 let private RenderAnimationStage render (currentStage:string) =
 
-    let CentreImage render cx cy img = CentreImage render cx cy (img |> ImageFromID)
-
     let medalTransferPhase    = (currentStage.[7] = 'x')
     let colonelHoldsOutHand   = (currentStage.[6] = 'C')
     let presidentHoldsOutHand = (currentStage.[5] = 'P')
@@ -111,49 +109,42 @@ let private RenderAnimationStage render (currentStage:string) =
     let secondOfficerSalutes  = (currentStage.[1] = '2')
     let firstOfficerSalutes   = (currentStage.[0] = '1')
 
-    let cy = 100.F<epx>
-    let my =  80.0F<epx>
+    let manY       = 100.0F<epx>
+    let medalY     =  80.0F<epx>
+    let presidentX = 256.0F<epx>
+    let colonelX   = 192.0F<epx>
+    let secondOffX = 128.0F<epx>
+    let firstOffX  =  64.0F<epx>
 
-    // President
+    let presidentImage = 
+        if presidentSalutes           then ImagePresidentSaluting
+        else if presidentHoldsOutHand then ImagePresidentPresentingMedal
+        else ImagePresidentStanding
 
-    if presidentSalutes then
-        CentreImage render 256.0F<epx> cy ImagePresidentSaluting
-    else if presidentHoldsOutHand then
-        CentreImage render 256.0F<epx> cy ImagePresidentPresentingMedal
-    else 
-        CentreImage render 256.0F<epx> cy ImagePresidentStanding
+    let colonelImage = 
+        if colonelSalutes           then ImageColonelSaluting
+        else if colonelHoldsOutHand then ImageColonelReceivingMedal
+        else ImageColonelStanding
 
-    // Colonel
+    let medalX =
+        if not medalTransferPhase then (colonelX + 10.0F<epx>)
+        else if presidentHoldsOutHand || colonelHoldsOutHand then (presidentX + colonelX) / 2.0F
+        else presidentX
 
-    if colonelSalutes then
-        CentreImage render 192.0F<epx> cy ImageColonelSaluting
-    else if colonelHoldsOutHand then
-        CentreImage render 192.0F<epx> cy ImageColonelReceivingMedal
-    else
-        CentreImage render 192.0F<epx> cy ImageColonelStanding
+    let secondOfficerImage =
+        if secondOfficerSalutes then ImageSoldierSaluting else ImageSoldierStanding
 
-    // Medal
+    let firstOfficerImage =
+        if firstOfficerSalutes then ImageSoldierSaluting else ImageSoldierStanding
 
-    if not medalTransferPhase then
-        CentreImage render 192.0F<epx> my ImageMedal
-    else if presidentHoldsOutHand || colonelHoldsOutHand then
-        CentreImage render 224.0F<epx> my ImageMedal
-    else
-        CentreImage render 256.0F<epx> my ImageMedal
+    let draw cy cx imageId =
+        CentreImage render cx cy (ImageFromID imageId)
 
-    // Second officer    
-
-    if secondOfficerSalutes then
-        CentreImage render 128.0F<epx> cy ImageSoldierSaluting
-    else
-        CentreImage render 128.0F<epx> cy ImageSoldierStanding
-
-    // First officer
-
-    if firstOfficerSalutes then
-        CentreImage render 64.0F<epx> cy ImageSoldierSaluting
-    else
-        CentreImage render 64.0F<epx> cy ImageSoldierStanding
+    draw manY presidentX presidentImage
+    draw manY colonelX colonelImage
+    draw medalY medalX ImageMedal
+    draw manY secondOffX secondOfficerImage
+    draw manY firstOffX firstOfficerImage
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
