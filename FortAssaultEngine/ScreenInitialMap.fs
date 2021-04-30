@@ -19,7 +19,7 @@ open ImagesAndFonts
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private PauseDuration = 2.0F<seconds>
+let private PauseDuration = 2.0<seconds>
 
 let private DefaultAlliedFleetLocation = { ptx=290.0F<epx> ; pty=15.0F<epx> }
 

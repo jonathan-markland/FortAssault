@@ -228,7 +228,7 @@ let DrawPacTileInt render image x y (tileIndex:int) gameTime =
 
         let xIndex =
             if tileIndex = ((int) TileIndex.Pill1) then
-                gameTime |> PulseBetween 10.0F ((int) TileIndex.Pill1) ((int) TileIndex.Pill2)
+                gameTime |> PulseBetween 10.0 ((int) TileIndex.Pill1) ((int) TileIndex.Pill2)
             else
                 tileIndex
 
@@ -266,8 +266,8 @@ let DrawPacManAlive render image pos facingDirection pacDrawType (gameTime:GameT
                 pacDirectionalImageIndex (pacDirectionalImageIndex + 4) 
 
         match pacDrawType with
-            | DrawPacNormal   -> imageWithSnapSpeedTimes 1.0F
-            | DrawPacPillMode -> imageWithSnapSpeedTimes 2.0F
+            | DrawPacNormal   -> imageWithSnapSpeedTimes 1.0
+            | DrawPacPillMode -> imageWithSnapSpeedTimes 2.0
             | DrawPacZapped ->
                 pacDirectionalImageIndex
 
@@ -305,7 +305,7 @@ let DrawGhost render image pos (GhostNumber(ghostNumber)) ghostMode (gameTime:Ga
 
     DrawPacTileInt render image x y ghostImageIndex gameTime
 
-    let wiggleRate = EyesTwitchesPerSecond * (float32 (ghostNumber + 1))
+    let wiggleRate = EyesTwitchesPerSecond * (float (ghostNumber + 1))
     let eyes = gameTime |> PulseBetween wiggleRate TileIndex.Eyes1 TileIndex.Eyes2
 
     DrawPacTileInt render image x y ((int) eyes) gameTime

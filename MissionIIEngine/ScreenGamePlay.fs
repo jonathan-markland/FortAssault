@@ -695,7 +695,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
         let potentialObjectPositionsInRoom = 
             AvailableObjectPositionsWithinRoom roomReference [] side
 
-        let colour = gameTime |> PulseBetween 10.0F (SolidColour 0xFF0000u) (SolidColour 0x0000FFu) 
+        let colour = gameTime |> PulseBetween 10.0 (SolidColour 0xFF0000u) (SolidColour 0x0000FFu) 
 
         potentialObjectPositionsInRoom
             |> Seq.iter (fun (x,y) -> 
@@ -1142,7 +1142,7 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
         let (ViewPoint centre) = centre
 
         let rotationAmountByTime (time:GameTime) =
-            let delta = (((int) (time * 7.0F)) % 5) - 2  // 7.0 is arbitrary.
+            let delta = (((int) (time * 7.0)) % 5) - 2  // 7.0 is arbitrary.
             System.Diagnostics.Debug.Assert (delta >= -2 && delta <= 2)
             delta
 
@@ -1251,7 +1251,7 @@ let DroidsPossiblyFiring man (gameTime:GameTime) droids =
         droidList |> List.filter CanDroidTypeFire
 
     let shouldConsiderNow =
-        ((int) ((gameTime * 50.0F) + 0.5F<seconds>)) % 50 = 0   // TODO: Hack until I refactor use of GameTime throughout in favour of integer 'FrameCount of uint32'?
+        ((int) ((gameTime * 50.0) + 0.5<seconds>)) % 50 = 0   // TODO: Hack until I refactor use of GameTime throughout in favour of integer 'FrameCount of uint32'?
 
     if shouldConsiderNow then
         match droids |> filteredForDroidsThatCanFire with
@@ -1776,7 +1776,7 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
                     (Electrocuted man, Some ElectrocutionSoundID)
 
             else if (manVulnerable && manCentre |> IntersectsBullets droidBullets) then
-                let deathSound = gameTime |> PulseBetween 1.0F ManGrunt1SoundID ManGrunt2SoundID
+                let deathSound = gameTime |> PulseBetween 1.0 ManGrunt1SoundID ManGrunt2SoundID
                 (Dead man, Some deathSound)
 
             else
@@ -1878,7 +1878,7 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
                                 model |> WithLivesDecremented
 
                             if isGameOver then
-                                let gameOverSound = gameTime |> RotateBetweenGroup 1.0F [| GameOver1SoundID ; GameOver2SoundID ; GameOver3SoundID ; GameOver4SoundID |]
+                                let gameOverSound = gameTime |> RotateBetweenGroup 1.0 [| GameOver1SoundID ; GameOver2SoundID ; GameOver3SoundID ; GameOver4SoundID |]
                                 model.InnerScreenModel.WhereToOnGameOver model.InnerScreenModel.ScreenScore gameTime
                                     |> WithOneShotSound [PlaySoundEffect (SoundFromID gameOverSound)]
 

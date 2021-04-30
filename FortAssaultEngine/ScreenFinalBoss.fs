@@ -26,10 +26,10 @@ open GameStateManagement
 let private TargetTriggerDistance     =   3.0F<epx>
 let private InitialPlayerGunPositionX = 160.0F<epx>
 let private BossGunCentrePosition     = { ptx=160.0F<epx> ; pty=20.0F<epx> }
-let private PauseTimeWhenEnded        =   4.0F<seconds>
-let private BossAnimationDuration     =  20.0F<seconds>
-let private ExplosionDuration         =   0.75F<seconds>
-let private FlagFlutterAnimDuration   =   0.5F<seconds>
+let private PauseTimeWhenEnded        =   4.0<seconds>
+let private BossAnimationDuration     =  20.0<seconds>
+let private ExplosionDuration         =   0.75<seconds>
+let private FlagFlutterAnimDuration   =   0.5<seconds>
 let private ScoreForHittingTarget     =  2000u
 let private GunStepRate               =   30.0F<degrees/seconds>
 let private InitialGunElevation       =   30.0F<degrees>

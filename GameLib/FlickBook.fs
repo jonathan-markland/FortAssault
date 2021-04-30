@@ -98,7 +98,7 @@ let DrawFlickbookInstance render flickBookInstance gameTime =
 
         | MOMVisibleAtPosition (pos) ->
 
-            let timePerImage = duration / (float32 numImages)
+            let timePerImage = duration / (float numImages)
             let index = abs (int (elapsed / timePerImage))
             if index < numImages then
                 CentreImage render pos.ptx pos.pty (imageArray.[index])

@@ -34,14 +34,14 @@ let TankGunOffsetFromCentreX        = 12.0F<epx>  // TODO: Need a metadata file 
 let TankGunOffsetFromCentreY        =  3.0F<epx>  // TODO: Need a metadata file so artist could alter these.
 let EnemyTankGunOffsetFromCentreX   = 12.0F<epx>  // TODO: Need a metadata file so artist could alter these.
 let EnemyTankGunOffsetFromCentreY   =  1.0F<epx>  // TODO: Need a metadata file so artist could alter these.
-let EnemyTankFiringInterval         =  3.0F<seconds>
+let EnemyTankFiringInterval         =  3.0<seconds>
 
-let PauseTimeWhenEnded              =   4.0F<seconds>
-let WholeScreenTime                 = 120.0F<seconds>
+let PauseTimeWhenEnded              =   4.0<seconds>
+let WholeScreenTime                 = 120.0<seconds>
 let TankMovementPerSecond           = 15.0F<epx/seconds>
-let TankReFireInterval              =  2.5F<seconds>
-let TankTracksAnimDuration          =  0.2F<seconds>
-let ExplosionDuration               =  0.75F<seconds>
+let TankReFireInterval              =  2.5<seconds>
+let TankTracksAnimDuration          =  0.2<seconds>
+let ExplosionDuration               =  0.75<seconds>
 
 let ScoreForHittingEnemyTank        = 1000u
 let MissileCollisionTriggerDistance =  7.0F<epx>
@@ -114,7 +114,7 @@ type private TankBattleScreenModel =
 
 let private MissileFlickbookType () = // TODO: Made into a function because of Fable static-initializer-order problem
     {
-        FlickBookDuration     = 3.0F<seconds>
+        FlickBookDuration     = 3.0<seconds>
         FlickBookImages       = [| ImageTorpedo0 |> ImageFromID |]
         VisibilityBeforeStart = Hidden
         VisibilityAfterEnd    = Hidden
@@ -160,7 +160,7 @@ let private TankCollisionRectangle (tankX:float32<epx>) (tankY:float32<epx>) tan
 /// Offset of the LEFT edge of the whole matrix, measured from the view rectangle.
 let private TileMatrixOffsetXAtTimeOffset numTilesHorizontally (timeOffsetIntoLevel:GameTime) =
 
-    let s = int (timeOffsetIntoLevel * 5.0F) |> IntToIntEpx
+    let s = int (timeOffsetIntoLevel * 5.0) |> IntToIntEpx
     (-numTilesHorizontally * TileSquareSide) + ScreenWidthInt + s
 
 let private ScreenXtoMatrixPixelX numTilesHorizontally (timeOffsetIntoLevel:GameTime) (x:float32<epx>) =

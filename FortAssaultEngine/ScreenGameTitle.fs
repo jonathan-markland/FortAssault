@@ -18,7 +18,7 @@ open ScoreHiScore
 
 /// Intended to form a barrier against pressing FIRE 
 /// repeatedly at the end of the Enter Your Name screen.
-let private TimeBeforeResponding = 2.0F<seconds>
+let private TimeBeforeResponding = 2.0<seconds>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -42,7 +42,7 @@ let private IsFireButtonOperative model gameTime =
 
 let private RenderGameTitleScreen render model (gameTime:GameTime) =
 
-    RenderBeachBackground render (gameTime / 4.0F)
+    RenderBeachBackground render (gameTime / 4.0)
     CentreImage render 160.0F<epx> 68.0F<epx> (ImageTitle |> ImageFromID)
     Paragraph render BlackFontID CentreAlign TopAlign 160<epx> 94<epx> 20<epx> model.ScoreboardMemo
 

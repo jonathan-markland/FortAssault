@@ -23,19 +23,19 @@ open GameStateManagement
 
 let InitialGunElevation            =   30.0F<degrees>
 let InitialPlayerGunPositionX      =  160.0F<epx>
-let PauseTimeWhenEnded             =    4.0F<seconds>
-let ExplosionDuration              =    0.75F<seconds>
-let IncomingOrdinanceDuration      =    6.0F<seconds>
+let PauseTimeWhenEnded             =    4.0<seconds>
+let ExplosionDuration              =    0.75<seconds>
+let IncomingOrdinanceDuration      =    6.0<seconds>
 let ScoreForSinkingEnemyShip       = 2000u
 let MessageY                       =   15<epx>
-let SplashDuration                 =    0.2F<seconds>
-let TimeBetweenEnemyFirings        =    3.5F<seconds>  
-let TimeBetweenEnemyLaunchGoingOffTopOfScreenAndComingBackOn = 0.3F<seconds>
+let SplashDuration                 =    0.2<seconds>
+let TimeBetweenEnemyFirings        =    3.5<seconds>  
+let TimeBetweenEnemyLaunchGoingOffTopOfScreenAndComingBackOn = 0.3<seconds>
 let EnemyFireHittingShipY          =  155.0F<epx>
 let EnemyFireMissingShipY          =  140.0F<epx>
 let DamageToSinkAllies             =    5u
-let SinkingShipFiringPauseDuration =    4.0F<seconds>
-let GunStepRate                    =   10.0F<degrees/seconds>
+let SinkingShipFiringPauseDuration =    4.0<seconds>
+let GunStepRate                    =   10.0<degrees/seconds>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -109,7 +109,7 @@ let WithEnemyShipSinking gameTime enemyShipX enemyShips =
 
 let EnemyLaunchPart1FlickbookType () =
     {
-        FlickBookDuration     = 0.7F<seconds>
+        FlickBookDuration     = 0.7<seconds>
         FlickBookImages       = Imgs [| ImagePlaneBomb0 ; ImagePlaneBomb1 |]
         VisibilityBeforeStart = Hidden
         VisibilityAfterEnd    = Hidden
@@ -117,7 +117,7 @@ let EnemyLaunchPart1FlickbookType () =
 
 let EnemyLaunchPart2FlickbookType () =
     {
-        FlickBookDuration     = 0.7F<seconds>
+        FlickBookDuration     = 0.7<seconds>
         FlickBookImages       = Imgs [| ImagePlaneBomb3 ; ImagePlaneBomb4 |]
         VisibilityBeforeStart = Hidden
         VisibilityAfterEnd    = Hidden
@@ -249,7 +249,7 @@ let ConsiderStateChangesForWhenPlayerFiresGun input gun enemyShips gameTime =
             (abs diff) * 100
 
         let hitTime =
-            gameTime + (gun.GunTraits.GunShellDuration * 2.0F)
+            gameTime + (gun.GunTraits.GunShellDuration * 2.0)
 
         match gun.GunCentreX |> MappedToUnsinkingEnemyShipIn enemyShips with
 

@@ -55,14 +55,14 @@ let BulletSpeed         = 4.0F
 let ManSpeed            = 1.0F
 let GhostSpeed          = 2.0F<epx>
 
-let WanderingDroidDecisionInterval =  3.0F<seconds>
-let GhostGraceDuration             = 20.0F<seconds>
-let GhostStunDuration              =  4.0F<seconds>
-let LevelExitPauseDuration         =  2.0F<seconds>
-let LevelIntroCardDuration         =  5.0F<seconds>
-let LifeLossPauseDuration          =  2.0F<seconds>
-let InvincibilityEndDuration       =  5.0F<seconds>
-let InvincibilityDuration          = InvincibilityEndDuration + 15.0F<seconds>
+let WanderingDroidDecisionInterval =  3.0<seconds>
+let GhostGraceDuration             = 20.0<seconds>
+let GhostStunDuration              =  4.0<seconds>
+let LevelExitPauseDuration         =  2.0<seconds>
+let LevelIntroCardDuration         =  5.0<seconds>
+let LifeLossPauseDuration          =  2.0<seconds>
+let InvincibilityEndDuration       =  5.0<seconds>
+let InvincibilityDuration          = InvincibilityEndDuration + 15.0<seconds>
 
 /// Distance in from the sides at which to position man when flipping between rooms.
 let ManRoomFlipMargin = ManSpeed * 4.0F<epx>
@@ -82,11 +82,11 @@ let InventoryItemSpacing = 20<epx>
 /// Spacing between lives in the inventory display.
 let LifeItemSpacing = 3<epx>
 
-let ManWalkingStepsPerSecond = 5.0F
-let ManElectrocutionSwitchesPerSecond = 8.0F
-let WallElectrocutionSwitchesPerSecond = 20.0F
-let DroidAnimationPerSecond = 6.0F
-let InvincibilityFlashesPerSecond = 12.0F
-let InvincibilityWaningFlashesPerSecond = 4.0F
+let ManWalkingStepsPerSecond = 5.0
+let ManElectrocutionSwitchesPerSecond = 8.0
+let WallElectrocutionSwitchesPerSecond = 20.0
+let DroidAnimationPerSecond = 6.0
+let InvincibilityFlashesPerSecond = 12.0
+let InvincibilityWaningFlashesPerSecond = 4.0
 
 let ScoreBonusForShootingAllDroids = 250u

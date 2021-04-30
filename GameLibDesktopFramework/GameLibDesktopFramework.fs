@@ -192,7 +192,7 @@ let private MainLoopProcessing
     let mutable tickCount = 1u
     
     let GetGameTime () = 
-        (float32 tickCount) / 50.0F |> InSeconds     // TODO: Revisit parameterisation of frame rate.
+        (float tickCount) / 50.0 |> InSeconds     // TODO: Revisit parameterisation of frame rate.
 
     let mutable gameState : ErasedGameState =
         initialGameStateConstructor (GetGameTime ())
@@ -251,7 +251,7 @@ let private MainLoopProcessing
     // Classic main event loop.
 
     let mutable event            = new SDL.SDL_Event ()
-    let mutable lastGameTime     = 0.0F<seconds>
+    let mutable lastGameTime     = 0.0<seconds>
     let mutable terminateProgram = false
 
     while terminateProgram = false do

@@ -396,8 +396,8 @@ let FrameworkWebMain
             | Error msg -> failwith msg
             | Ok globals -> globals
 
-    let gameTime = 0.0F<seconds>
-    let frameElapsedTime = 0.02F<seconds>  // TODO: Revisit parameterisation of frame rate.
+    let gameTime = 0.0<seconds>
+    let frameElapsedTime = 0.02<seconds>  // TODO: Revisit parameterisation of frame rate.
 
     let mutable gameState : ErasedGameState =
         gameplayStartConstructor gameGlobalState gameTime
@@ -438,7 +438,7 @@ let FrameworkWebMain
         tickCount <- tickCount + 1u
                 
         let gameTime = 
-            (float32 tickCount) / 50.0F |> InSeconds  // TODO: Revisit parameterisation of frame rate.
+            (float tickCount) / 50.0 |> InSeconds  // TODO: Revisit parameterisation of frame rate.
                 
         gameState.Draw renderFunction gameTime
 

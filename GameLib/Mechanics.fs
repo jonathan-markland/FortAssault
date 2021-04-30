@@ -40,24 +40,26 @@ let FunctionThatGetsPositionOfStationaryObject
 
 
 let FunctionThatGetsPositionOfMovingObject
-    motionFunction
+    (motionFunction : GameTime -> GameTime -> GameTime)
     (startPos  : Point<float32<epx>>) 
     (endPos    : Point<float32<epx>>)
     (startTime : GameTime) 
     (duration  : GameTime) =
 
-    let dx = (endPos.ptx - startPos.ptx) / duration
-    let dy = (endPos.pty - startPos.pty) / duration
+    let durationf32 = (float32) duration
+
+    let dx = (endPos.ptx - startPos.ptx) / durationf32
+    let dy = (endPos.pty - startPos.pty) / durationf32
 
     let getPosAtTimeFunction (atTime:GameTime) =
 
         let t = atTime - startTime
 
-        if t >= 0.0F<seconds> then
+        if t >= 0.0<seconds> then
             if t <= duration then
                 let t = motionFunction t duration
-                let x = startPos.ptx + dx * t
-                let y = startPos.pty + dy * t
+                let x = startPos.ptx + dx * (float32 t)
+                let y = startPos.pty + dy * (float32 t)
                 MOMVisibleAtPosition ({ptx=x ; pty=y})
             else
                 MOMDisappeared
@@ -108,8 +110,8 @@ let inline HalfAndHalf f1 f2 (tu:float32<unitspace>) =
 /// Parmeter 'duration' defines a time period over which an animation will happen.
 /// Parameter 't' is the current time offset, within that period.
 let inline DoneOverDuration (t:GameTime) (duration:GameTime) (unitSpaceMotionFunction:float32<unitspace> -> float32<unitspace>) =
-    let tu = (t / duration) |> InUnitSpace
-    let t' = tu |> unitSpaceMotionFunction |> float32 |> ((*) (float32 duration)) |> InSeconds
+    let tu = (t / duration) |> (float32) |> InUnitSpace
+    let t' = tu |> unitSpaceMotionFunction |> float |> ((*) (float duration)) |> InSeconds
     t'
 
 

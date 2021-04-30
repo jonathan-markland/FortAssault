@@ -16,8 +16,8 @@ type BetweenScreenStatus =
         Lives           : uint32
     }
 
-let GameOverPauseTime            = 5.0F<seconds>
-let LifeOverGetReadyPauseTime    = 3.0F<seconds>
-let ScreenCompleteStatusCardTime = 3.0F<seconds>
-let ExplosionDuration            = 0.25F<seconds>
+let GameOverPauseTime            = 5.0<seconds>
+let LifeOverGetReadyPauseTime    = 3.0<seconds>
+let ScreenCompleteStatusCardTime = 3.0<seconds>
+let ExplosionDuration            = 0.25<seconds>
 

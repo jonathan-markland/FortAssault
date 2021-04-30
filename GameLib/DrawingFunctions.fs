@@ -34,7 +34,7 @@ let inline CentreImagePoint render { ptx=cx ; pty=cy } imageWithHostObject =
 /// The image is one of a repeating animation collection.
 let CycleImages render cx cy (imageArray:Image array) (fullCycleDuration:GameTime) (elapsed:GameTime) =
     let numImages    = imageArray.Length
-    let timePerImage = fullCycleDuration / (float32 numImages)
+    let timePerImage = fullCycleDuration / (float numImages)
     let index        = (abs (int (elapsed / timePerImage))) % numImages
     if index < numImages then
         CentreImage render cx cy (imageArray.[index])

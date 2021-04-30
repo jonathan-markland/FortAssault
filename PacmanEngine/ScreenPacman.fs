@@ -826,7 +826,7 @@ let private AdvanceGhost mazeState allGhosts pacman ghost rand gameTime =
                 DecideNewPositionAndDirectionFor ghost mazeState allGhosts pacman rand gameTime
 
             | GhostEdibleUntil _ -> 
-                if gameTime |> PulseActiveAtRate 20.0F then
+                if gameTime |> PulseActiveAtRate 20.0 then
                     DecideNewPositionAndDirectionFor ghost mazeState allGhosts pacman rand gameTime
                 else
                     (position , direction)

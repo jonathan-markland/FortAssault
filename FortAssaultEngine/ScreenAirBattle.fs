@@ -32,17 +32,17 @@ let NumberOfRaidersWhenStrong =  NumShipsAtInitialEngagement * 4u
 
 let InitialPlayerGunPositionX =  160.0F<epx>
 let PlaneTriggerDistance      =    6.0F<epx>   // TODO: This might need to be rectangular at the very least, certainly not square.  Also is a candidate for the game difficulty!
-let PauseTimeWhenEnded        =    4.0F<seconds>
-let ExplosionDuration         =    0.75F<seconds>
+let PauseTimeWhenEnded        =    4.0<seconds>
+let ExplosionDuration         =    0.75<seconds>
 let ScoreForHittingPlane      = 2000u
 let MaxDamagePerShip          =    5u
-let PlaneDuration             =    6.0F<seconds>
-let PlaneFiringTimeOffset     =    3.0F<seconds>
-let SortieApproxInterval      =    5.0F<seconds>
-let BombsDuration             =    1.0F<seconds>
+let PlaneDuration             =    6.0<seconds>
+let PlaneFiringTimeOffset     =    3.0<seconds>
+let SortieApproxInterval      =    5.0<seconds>
+let BombsDuration             =    1.0<seconds>
 let PlaneBombTargetY          =  150.0F<epx>  // TODO: Calculate somehow?
 let MaxPlanesActiveAtOnce     =    3
-let GunStepRate               =   30.0F<degrees/seconds>
+let GunStepRate               =   30.0<degrees/seconds>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -341,7 +341,7 @@ let private OldNewAirBattleScreen enemyStrength scoreAndHiScore shipsRemaining w
         Planes           = []
         PlaneBombs       = []
         Damage           = 0u
-        LastSortieAt     = 0.0F<seconds>
+        LastSortieAt     = 0.0<seconds>
         WhereToGoOnGameOver       = whereToOnGameOver 
         WhereToOnCourseCompletion = whereToOnCourseCompletion
     }

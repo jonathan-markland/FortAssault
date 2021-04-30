@@ -28,13 +28,13 @@ type GunTraits =
         GunType              : GunType
         GunLeftExtent        : float32<epx>
         GunRightExtent       : float32<epx>
-        GunStepRatePerSecond : float32<epx/seconds>
+        GunStepRatePerSecond : float<epx/seconds>
         HighestShellY        : float32<epx>
         GunRepeatTime        : GameTime  // TODO: Turn into a parameter of GunAim within GunType field?
         GunShellDuration     : GameTime  // TODO: More realistic in sea battle to relate this to elevation.
         GunLowestElevation   : float32<degrees>
         GunHighestElevation  : float32<degrees>
-        GunElevationStepRate : float32<degrees/seconds>
+        GunElevationStepRate : float<degrees/seconds>
     }
 
 type GunAim =
@@ -51,10 +51,10 @@ let DefaultGunTraits gunType stepRate =
         GunType              = gunType
         GunLeftExtent        =  20.0F<epx>
         GunRightExtent       = 300.0F<epx>
-        GunStepRatePerSecond =  80.0F<epx/seconds>
+        GunStepRatePerSecond =  80.0<epx/seconds>
         HighestShellY        =   0.0F<epx>
-        GunRepeatTime        =   0.5F<seconds>   // TODO: Turn into a parameter of GunAim within GunType field?
-        GunShellDuration     =   0.7F<seconds>   // TODO: More realistic in sea battle to relate this to elevation.
+        GunRepeatTime        =   0.5<seconds>   // TODO: Turn into a parameter of GunAim within GunType field?
+        GunShellDuration     =   0.7<seconds>   // TODO: More realistic in sea battle to relate this to elevation.
         GunLowestElevation   =  5.0F<degrees>
         GunHighestElevation  = 80.0F<degrees>
         GunElevationStepRate = stepRate
@@ -103,9 +103,9 @@ let DrawGun render gunBaseY gunAim gameTime =
         match shell.ShellMechanicsObject.PositionGetter gameTime with
 
             | MOMVisibleAtPosition({ptx=x ; pty=y}) ->
-                let v = (1.0F - ShellPercentageCompleted gunAim.GunTraits shell gameTime)
-                let w = v * 12.0F<epx> + 4.0F<epx>   // TODO: base on ShipGunBulletImageWidth
-                let h = v * 5.0F<epx> + 1.0F<epx>
+                let v = (1.0 - ShellPercentageCompleted gunAim.GunTraits shell gameTime)
+                let w = float32 (v * 12.0<epx> + 4.0<epx>)   // TODO: base on ShipGunBulletImageWidth
+                let h = float32 (v * 5.0<epx> + 1.0<epx> )
                 let x = x - (w / 2.0F)
                 let y = y - (h / 2.0F)
                 ImageStretched render x y (ShipGunBulletImageID |> ImageFromID) (w |> FloatEpxToIntEpx) (h |> FloatEpxToIntEpx)

@@ -10,8 +10,8 @@ open ImagesAndFonts
 open StaticResourceAccess
 open GameStateManagement
 
-let private AnimDurationSeconds = 3.0F<seconds>
-let private AnimRepeatPeriod    = 5.0F<seconds>
+let private AnimDurationSeconds = 3.0<seconds>
+let private AnimRepeatPeriod    = 5.0<seconds>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

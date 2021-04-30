@@ -62,7 +62,7 @@ and private GameOverStory scoreAndHiScore gameTime =
             outgoingGameState
             (EnterYourNameStory scoreAndHiScore gameTime) ComingFromLeft
             ScreenWidthInt ScreenHeightInt
-            SpeedingUpMotion 1.0F<seconds> gameTime 
+            SpeedingUpMotion 1.0<seconds> gameTime 
 
     NewGameOverScreen scoreAndHiScore 
         |> WithDrawingOnlyFor GameOverPauseTime gameTime slideInEnterYourName

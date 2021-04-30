@@ -10,7 +10,7 @@ open ScoreboardModel
 open StaticResourceAccess
 open GamePlayScreenConstants
 
-let MainScreenSwitchRate = 0.125F
+let MainScreenSwitchRate = 0.125
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -64,7 +64,7 @@ let NewGameTitleScreen globalScoreboard gameTime =
         {
             ScreenStartTime    = gameTime
             ScoreboardMemo     = ScoreboardText 24 globalScoreboard
-            MemoizedBackground = PulseBetween 1.0F BackgroundImageID Background2ImageID gameTime |> ImageFromID
+            MemoizedBackground = PulseBetween 1.0 BackgroundImageID Background2ImageID gameTime |> ImageFromID
         }
 
     NewGameState ModelNeverChanges RenderGameTitleScreen titleScreenModel

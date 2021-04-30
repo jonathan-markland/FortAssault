@@ -13,8 +13,8 @@ open Algorithm
 open ImagesAndFonts
 open StaticResourceAccess
 
-let SkyExplosionDuration  = 3.0F<seconds>
-let EnemyShipSinkDuration = 6.0F<seconds>
+let SkyExplosionDuration  = 3.0<seconds>
+let EnemyShipSinkDuration = 6.0<seconds>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

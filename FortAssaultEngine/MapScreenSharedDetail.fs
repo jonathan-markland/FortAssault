@@ -14,7 +14,7 @@ let EnemySpeed           = 0.3F<epx>
 
 let DefaultEnemyFleetLocation  = { ptx= 97.0F<epx> ; pty=129.0F<epx> }
 
-let PauseTimeOnceEngaged = 2.0F<seconds>
+let PauseTimeOnceEngaged = 2.0<seconds>
 
 
 // The trigger rectangles must at least partially overlap the travel rectangles.

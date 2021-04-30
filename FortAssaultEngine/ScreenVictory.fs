@@ -36,7 +36,7 @@ type private VictoryScreenModel =
 // - Medal default state is on the Colonel's uniform.
 // - Default states are overridden by letters indicated below:
 
-let private TimePerAnimStage = 1.0F<seconds>
+let private TimePerAnimStage = 1.0<seconds>
 
 //           |v---- P = President holds out hand  | Either of these implies showing the medal in the hands position.
 //           | v--- C = Colonel holds out hand    | 
@@ -95,7 +95,7 @@ let private NormalAnimation = MedalSequence @ SaluteSequence       @ pauseAfterw
 let private MickeyAnimation = MedalSequence @ MickeySaluteSequence @ pauseAfterwardsSequence
 
 let private AnimationSequence gameTime =
-    if (gameTime % 4.0F<seconds>) < 1.0F<seconds> then MickeyAnimation else NormalAnimation
+    if (gameTime % 4.0<seconds>) < 1.0<seconds> then MickeyAnimation else NormalAnimation
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
