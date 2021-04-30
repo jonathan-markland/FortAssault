@@ -16,14 +16,14 @@ let MainScreenSwitchRate = 0.125F
 
 type private GameTitleScreenModel =
     {
-        ScreenStartTime    : float32<seconds>
+        ScreenStartTime    : GameTime
         ScoreboardMemo     : string list
         MemoizedBackground : Image
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
+let private RenderGameTitleScreen render model (gameTime:GameTime) =
 
     Image1to1 render 0<epx> 0<epx> (model.MemoizedBackground)
 

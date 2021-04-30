@@ -119,9 +119,9 @@ type AirBattleScreenModel =
         Explosions      : FlickBookInstance list
         EnemyShips      : EnemyShip list
         Damage          : uint32
-        LastSortieAt    : float32<seconds>
+        LastSortieAt    : GameTime
         WhereToGoOnGameOver       : ScoreAndHiScore -> ErasedGameState
-        WhereToOnCourseCompletion : uint32 -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToOnCourseCompletion : uint32 -> ScoreAndHiScore -> GameTime -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

@@ -20,12 +20,12 @@ type MOMReason =
 
 let FunctionThatGetsPositionOfStationaryObject
     (pos       : Point<float32<epx>>)
-    (startTime : float32<seconds>) 
-    (duration  : float32<seconds>) =
+    (startTime : GameTime) 
+    (duration  : GameTime) =
 
     let endTime = startTime + duration
 
-    let getPosAtTimeFunction (atTime:float32<seconds>) =
+    let getPosAtTimeFunction (atTime:GameTime) =
 
         if atTime >= startTime then
             if atTime <= endTime then
@@ -43,13 +43,13 @@ let FunctionThatGetsPositionOfMovingObject
     motionFunction
     (startPos  : Point<float32<epx>>) 
     (endPos    : Point<float32<epx>>)
-    (startTime : float32<seconds>) 
-    (duration  : float32<seconds>) =
+    (startTime : GameTime) 
+    (duration  : GameTime) =
 
     let dx = (endPos.ptx - startPos.ptx) / duration
     let dy = (endPos.pty - startPos.pty) / duration
 
-    let getPosAtTimeFunction (atTime:float32<seconds>) =
+    let getPosAtTimeFunction (atTime:GameTime) =
 
         let t = atTime - startTime
 
@@ -107,24 +107,24 @@ let inline HalfAndHalf f1 f2 (tu:float32<unitspace>) =
 
 /// Parmeter 'duration' defines a time period over which an animation will happen.
 /// Parameter 't' is the current time offset, within that period.
-let inline DoneOverDuration (t:float32<seconds>) (duration:float32<seconds>) (unitSpaceMotionFunction:float32<unitspace> -> float32<unitspace>) =
+let inline DoneOverDuration (t:GameTime) (duration:GameTime) (unitSpaceMotionFunction:float32<unitspace> -> float32<unitspace>) =
     let tu = (t / duration) |> InUnitSpace
     let t' = tu |> unitSpaceMotionFunction |> float32 |> ((*) (float32 duration)) |> InSeconds
     t'
 
 
 /// Time 't' is the offset into the duration.
-let inline LinearMotion (t:float32<seconds>) (_duration:float32<seconds>) = 
+let inline LinearMotion (t:GameTime) (_duration:GameTime) = 
     t
 
 
 /// Time 't' is the offset into the duration.
-let inline SpeedingUpMotion (t:float32<seconds>) (duration:float32<seconds>) =
+let inline SpeedingUpMotion (t:GameTime) (duration:GameTime) =
     SpeedingUp |> DoneOverDuration t duration
 
 
 /// Time 't' is the offset into the duration.
-let inline SlowingDownMotion (t:float32<seconds>) (duration:float32<seconds>) =
+let inline SlowingDownMotion (t:GameTime) (duration:GameTime) =
     SlowingDown |> DoneOverDuration t duration
 
 
@@ -141,18 +141,18 @@ let inline SlowingDownMotion (t:float32<seconds>) (duration:float32<seconds>) =
 
 type MechanicsObjectModel =
     {
-        PositionGetter  :  (float32<seconds> -> MOMReason)
+        PositionGetter  :  (GameTime -> MOMReason)
         StartPosition   :  Point<float32<epx>>
         FinalPosition   :  Point<float32<epx>>
-        EndGameTime     :  float32<seconds>
+        EndGameTime     :  GameTime
     }
 
 
 
 let MechanicsControlledStationaryObject
         (pos       : Point<float32<epx>>)
-        (startTime : float32<seconds>) 
-        (duration  : float32<seconds>) =
+        (startTime : GameTime) 
+        (duration  : GameTime) =
     {
         PositionGetter   = FunctionThatGetsPositionOfStationaryObject pos startTime duration
         StartPosition    = pos
@@ -166,8 +166,8 @@ let MechanicsControlledMovingObject
         motionFunction
         (startPos  : Point<float32<epx>>) 
         (endPos    : Point<float32<epx>>)
-        (startTime : float32<seconds>) 
-        (duration  : float32<seconds>) =
+        (startTime : GameTime) 
+        (duration  : GameTime) =
     {
         PositionGetter   = FunctionThatGetsPositionOfMovingObject motionFunction startPos endPos startTime duration
         StartPosition    = startPos

@@ -8,7 +8,7 @@ open StaticResourceAccess
 
 
 
-let RenderBeachBackground render (gameTime:float32<seconds>) =
+let RenderBeachBackground render (gameTime:GameTime) =
 
     // TODO: We need repeat-tile-rendering support for this!
     // TODO: constants throughout this routine

@@ -69,8 +69,8 @@ type private PacmanScreenModel =  // TODO: Getting fat with things that don't ch
         PacmanState                : PacmanState
         GhostsState                : GhostState list
         MemoizedStatusPanelStrings : MemoizedStatusPanelStrings
-        WhereToOnGameOver          : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
-        WhereToOnAllEaten          : int -> BetweenScreenStatus -> float32<seconds> -> ErasedGameState
+        WhereToOnGameOver          : ScoreAndHiScore -> GameTime -> ErasedGameState
+        WhereToOnAllEaten          : int -> BetweenScreenStatus -> GameTime -> ErasedGameState
     }
 
 

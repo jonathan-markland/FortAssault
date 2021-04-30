@@ -20,8 +20,8 @@ let EnemyShipSinkDuration = 6.0F<seconds>
 
 type AlliedState =
     | AlliedShipInPlay
-    | ShipSinking      of startTime:float32<seconds>
-    | WonScreen        of startTime:float32<seconds>
+    | ShipSinking      of startTime:GameTime
+    | WonScreen        of startTime:GameTime
     | AirOrSeaBattleScreenOver
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -48,7 +48,7 @@ type EnemyShip =
         CentreX        : float32<epx>
         BaseY          : float32<epx>
         ShipImage      : Image
-        SinkStartTime  : float32<seconds> option
+        SinkStartTime  : GameTime option
         ElevationToHit : float32<degrees>
     }
 

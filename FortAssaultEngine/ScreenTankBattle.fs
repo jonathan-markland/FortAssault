@@ -72,7 +72,7 @@ type private TankDirection = TankFacingUpLeft | TankFacingLeft | TankFacingDownL
 
 type private AlliedState =
     | AlliedTankInPlay     of tankY:float32<epx> * TankDirection
-    | AlliedTankExploding  of startTime:float32<seconds>
+    | AlliedTankExploding  of startTime:GameTime
     | AlliedTankReachedFort
     | AlliedTankDestroyed
 
@@ -85,11 +85,11 @@ type private EnemyTankMatrixLocation =
 
 type private TankBattleScreenConstantsModel =  // TODO: Use this convention in other screens?
     {
-        ScreenStartTime                 : float32<seconds>
+        ScreenStartTime                 : GameTime
         TileMatrixTraits                : TileMatrixTraits
         LevelMap                        : TankBattleMapMatrix
         GameOverOnTankBattleScreen      : ScoreAndHiScore -> ErasedGameState
-        TankCompletedCourseSuccessfully : uint32 -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        TankCompletedCourseSuccessfully : uint32 -> ScoreAndHiScore -> GameTime -> ErasedGameState
         TankMapsList                    : TankBattleMapMatrix list
         MapNumber                       : int
     }
@@ -158,12 +158,12 @@ let private TankCollisionRectangle (tankX:float32<epx>) (tankY:float32<epx>) tan
         | TankFacingUpLeft   -> { Left = tankX - 8.0F<epx> ; Top = tankY - 6.0F<epx> ; Right = tankX + 8.0F<epx> ; Bottom = tankY + 6.0F<epx> }
 
 /// Offset of the LEFT edge of the whole matrix, measured from the view rectangle.
-let private TileMatrixOffsetXAtTimeOffset numTilesHorizontally (timeOffsetIntoLevel:float32<seconds>) =
+let private TileMatrixOffsetXAtTimeOffset numTilesHorizontally (timeOffsetIntoLevel:GameTime) =
 
     let s = int (timeOffsetIntoLevel * 5.0F) |> IntToIntEpx
     (-numTilesHorizontally * TileSquareSide) + ScreenWidthInt + s
 
-let private ScreenXtoMatrixPixelX numTilesHorizontally (timeOffsetIntoLevel:float32<seconds>) (x:float32<epx>) =
+let private ScreenXtoMatrixPixelX numTilesHorizontally (timeOffsetIntoLevel:GameTime) (x:float32<epx>) =
 
     let amountOfMatrixOffLeftOfScreen = -(TileMatrixOffsetXAtTimeOffset numTilesHorizontally timeOffsetIntoLevel)
     amountOfMatrixOffLeftOfScreen + (x |> FloatEpxToIntEpx)
@@ -183,7 +183,7 @@ let private CanTankPassOverTile tileImageId =
 
     tileImageId = ImageTileSand || tileImageId = ImageTileBridge
 
-let private HasTankCrashed (tankY:float32<epx>) tankDirection (timeOffsetIntoLevel:float32<seconds>) (constants:TankBattleScreenConstantsModel) =
+let private HasTankCrashed (tankY:float32<epx>) tankDirection (timeOffsetIntoLevel:GameTime) (constants:TankBattleScreenConstantsModel) =
 
     let tiles = constants.LevelMap.TilesArray
     let numTilesHorizontally = constants.LevelMap.TilesHorizontally
@@ -223,7 +223,7 @@ let private HasTankCrashed (tankY:float32<epx>) tankDirection (timeOffsetIntoLev
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private DrawMatrix render (constants:TankBattleScreenConstantsModel) (timeOffset:float32<seconds>) =
+let private DrawMatrix render (constants:TankBattleScreenConstantsModel) (timeOffset:GameTime) =
 
     let tileMatrixViewportWindow =
         {

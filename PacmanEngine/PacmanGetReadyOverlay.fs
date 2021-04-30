@@ -35,7 +35,7 @@ open FreezeFrame
 
 type FreezeForGetReadyModel =
     {
-        GameTimeLie     : float32<seconds>
+        GameTimeLie     : GameTime
 
         /// This is the ErasedGameState that is frozen in time, at time GameTimeLie.
         FrozenGameState : ErasedGameState
@@ -45,7 +45,7 @@ type FreezeForGetReadyModel =
     }
 
 
-let private RenderFreezeForGetReady render model (gameTime:float32<seconds>) =
+let private RenderFreezeForGetReady render model (gameTime:GameTime) =
     model.FrozenGameState.Draw render model.GameTimeLie
     model.Overlay.Draw render gameTime
 

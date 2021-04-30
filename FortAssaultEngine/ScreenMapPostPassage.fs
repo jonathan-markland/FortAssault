@@ -38,7 +38,7 @@ type private MapPostPassageScreenModel =
         ShipsThrough      : uint32
         AlliedFleetCentre : Point<float32<epx>>
         EnemyFleetCentre  : Point<float32<epx>>
-        BattleCtor        : float32<seconds> -> ErasedGameState
+        BattleCtor        : GameTime -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

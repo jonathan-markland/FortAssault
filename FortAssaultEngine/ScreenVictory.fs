@@ -17,9 +17,9 @@ type private VictoryScreenModel =
         ScoreAndHiScore     : ScoreAndHiScore
         ScoreText           : string
         HiScoreText         : string
-        NextAnimStageTime   : float32<seconds>
+        NextAnimStageTime   : GameTime
         AnimationStage      : string list
-        WhereToAfterCtor    : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToAfterCtor    : ScoreAndHiScore -> GameTime -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

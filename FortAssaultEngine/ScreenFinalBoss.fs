@@ -58,8 +58,8 @@ let private ExplosionFlickBookType () =  // TODO: Made into a function because o
 
 type private AlliedState =
     | AlliedTankInPlay
-    | WonScreen        of startTime : float32<seconds>
-    | TankIsShot       of startTime : float32<seconds>
+    | WonScreen        of startTime : GameTime
+    | TankIsShot       of startTime : GameTime
     | FinalBossScreenOver
 
 type private FinalBossScreenModel =
@@ -67,14 +67,14 @@ type private FinalBossScreenModel =
         FinalBossTargets           : FinalBossTargets
         ScoreAndHiScore            : ScoreAndHiScore
         TanksRemaining             : uint32
-        ScreenStartTime            : float32<seconds>
+        ScreenStartTime            : GameTime
         GunAim                     : GunAim
         AlliedState                : AlliedState
         Explosions                 : FlickBookInstance list
         BossGunFlickBook           : FlickBookInstance
         WhereToGoOnGameOver        : ScoreAndHiScore -> ErasedGameState
-        WhereToOnVictory           : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
-        WhereToOnTankDestroyed     : int -> uint32 -> ScoreAndHiScore -> FinalBossTargets -> float32<seconds> -> ErasedGameState
+        WhereToOnVictory           : ScoreAndHiScore -> GameTime -> ErasedGameState
+        WhereToOnTankDestroyed     : int -> uint32 -> ScoreAndHiScore -> FinalBossTargets -> GameTime -> ErasedGameState
         MapNumber                  : int
     }
 

@@ -292,7 +292,7 @@ let FrameworkDesktopMain
     gameResourceSounds
     listOfKeysNeeded 
     (gameGlobalStateConstructor : unit -> Result<'gameGlobalState,string>)
-    (gameplayStartConstructor   : 'gameGlobalState -> float32<seconds> -> ErasedGameState)
+    (gameplayStartConstructor   : 'gameGlobalState -> GameTime -> ErasedGameState)
         : string option =
 
         let runGame () =

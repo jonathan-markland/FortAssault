@@ -45,7 +45,7 @@ type private MapBeforeBeachLandingScreenModel =
         ScoreAndHiScore  : ScoreAndHiScore
         ShipsThrough     : uint32
         Location         : Point<float32<epx>>
-        BeachLandingCtor : float32<seconds> -> ErasedGameState
+        BeachLandingCtor : GameTime -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

@@ -16,7 +16,7 @@ type GameOverScreenModel =
     {
         ScoreAndHiScore : ScoreAndHiScore
         HiScoreText     : string
-        WhereAfter      : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereAfter      : ScoreAndHiScore -> GameTime -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

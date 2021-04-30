@@ -32,7 +32,7 @@ let inline CentreImagePoint render { ptx=cx ; pty=cy } imageWithHostObject =
 
 /// Draw image centered about a point, without stretching.
 /// The image is one of a repeating animation collection.
-let CycleImages render cx cy (imageArray:Image array) (fullCycleDuration:float32<seconds>) (elapsed:float32<seconds>) =
+let CycleImages render cx cy (imageArray:Image array) (fullCycleDuration:GameTime) (elapsed:GameTime) =
     let numImages    = imageArray.Length
     let timePerImage = fullCycleDuration / (float32 numImages)
     let index        = (abs (int (elapsed / timePerImage))) % numImages

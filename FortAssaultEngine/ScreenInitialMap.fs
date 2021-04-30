@@ -75,8 +75,8 @@ type private InitialMapScreenModel =
         ScoreAndHiScore     : ScoreAndHiScore
         AlliedFleetCentre   : Point<float32<epx>>
         EnemyFleetCentre    : Point<float32<epx>>
-        SecretPassageCtor   : float32<seconds> -> ErasedGameState
-        EngageEnemyCtor     : float32<seconds> -> ErasedGameState
+        SecretPassageCtor   : GameTime -> ErasedGameState
+        EngageEnemyCtor     : GameTime -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

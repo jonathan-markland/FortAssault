@@ -62,7 +62,7 @@ type SeaBattleScreenModel =
         PendingScoreChanges : Pending<uint32> list
         MessageText         : string
         WhereToGoOnGameOver       : ScoreAndHiScore -> ErasedGameState
-        WhereToOnCourseCompletion : uint32 -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToOnCourseCompletion : uint32 -> ScoreAndHiScore -> GameTime -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

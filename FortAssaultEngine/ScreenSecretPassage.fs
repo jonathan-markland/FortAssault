@@ -69,8 +69,8 @@ type Ship =
 
 type ShipState =
     | ShipInPlay     of Ship
-    | ShipGotThrough of finishTime : float32<seconds> * Ship
-    | ShipExploding  of finishTime : float32<seconds>
+    | ShipGotThrough of finishTime : GameTime * Ship
+    | ShipExploding  of finishTime : GameTime
     | SecretPassageScreenOver
 
 type Mine =
@@ -80,8 +80,8 @@ type Mine =
 
 type Torpedo =
     {
-        TorpedoLaunchDetail   :  (float * float) * (float * float) * float32<seconds> * float32<seconds>
-        TorpedoPositionGetter :  (float32<seconds> -> MOMReason)
+        TorpedoLaunchDetail   :  (float * float) * (float * float) * GameTime * GameTime
+        TorpedoPositionGetter :  (GameTime -> MOMReason)
         TorpedoIsHorizontal   :  bool
     }
 
@@ -93,7 +93,7 @@ type SecretPassageScreenModel =
         Animations   : FlickBookInstance list
         Ship         : ShipState
         WhereToGoOnGameOver       : ScoreAndHiScore -> ErasedGameState
-        WhereToOnCourseCompletion : uint32 -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToOnCourseCompletion : uint32 -> ScoreAndHiScore -> GameTime -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

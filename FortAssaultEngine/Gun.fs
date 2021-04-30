@@ -18,7 +18,7 @@ open StaticResourceAccess
 type Shell =
     {
         ShellMechanicsObject : MechanicsObjectModel
-        ShellStartTime       : float32<seconds>  // TODO: Delete this an use the one inside the ShellMechanicsObject
+        ShellStartTime       : GameTime  // TODO: Delete this an use the one inside the ShellMechanicsObject
     }
 
 type GunType = SingleBarrelGun | DoubleBarrelGun
@@ -30,8 +30,8 @@ type GunTraits =
         GunRightExtent       : float32<epx>
         GunStepRatePerSecond : float32<epx/seconds>
         HighestShellY        : float32<epx>
-        GunRepeatTime        : float32<seconds>  // TODO: Turn into a parameter of GunAim within GunType field?
-        GunShellDuration     : float32<seconds>  // TODO: More realistic in sea battle to relate this to elevation.
+        GunRepeatTime        : GameTime  // TODO: Turn into a parameter of GunAim within GunType field?
+        GunShellDuration     : GameTime  // TODO: More realistic in sea battle to relate this to elevation.
         GunLowestElevation   : float32<degrees>
         GunHighestElevation  : float32<degrees>
         GunElevationStepRate : float32<degrees/seconds>
@@ -43,7 +43,7 @@ type GunAim =
         GunCentreX          : float32<epx>
         GunElevation        : float32<degrees>
         Shells              : Shell list
-        LastFireTime        : float32<seconds>
+        LastFireTime        : GameTime
     }
 
 let DefaultGunTraits gunType stepRate =

@@ -25,7 +25,7 @@ let private InitialTopLeft secondScreenLocation displayWidth displayHeight =
 type private SlideTransitionModel2 =
     {
         SecondScreenRelativePosition : Point<int<epx>>
-        PositionFunction             : float32<seconds> -> MOMReason
+        PositionFunction             : GameTime -> MOMReason
     }
 
 

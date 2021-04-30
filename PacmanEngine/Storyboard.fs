@@ -68,7 +68,7 @@ and private GameOverStory scoreAndHiScore gameTime =
         |> WithDrawingOnlyFor GameOverPauseTime gameTime slideInEnterYourName
         |> WithOneShotSound [PlaySoundEffect (SoundFromID GameOverSoundID)]
 
-and private PacmanStory (levelNumber:int) betweenScreenStatus (gameTime:float32<seconds>) =
+and private PacmanStory (levelNumber:int) betweenScreenStatus (gameTime:GameTime) =
 
     let newGame _gameTime =
         NewPacmanScreen

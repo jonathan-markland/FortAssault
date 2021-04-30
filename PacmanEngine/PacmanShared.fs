@@ -59,7 +59,7 @@ type PacMode =
 
     /// Pacman flashing during death phase.
     /// Player cannot control during this.
-    | PacDyingUntil of float32<seconds>
+    | PacDyingUntil of GameTime
 
     /// Signal main loop to decrement lives count and switch to life lost card.
     | PacDead
@@ -127,7 +127,7 @@ type GhostMode =
 
     /// Ghost is edible until the given time.
     /// If eaten during this time, it will return to base.
-    | GhostEdibleUntil of float32<seconds>
+    | GhostEdibleUntil of GameTime
 
     /// Ghost is returning to base, and will change to GhostRegeneratingUntil
     /// state when it gets to its GhostHomePosition spot.
@@ -135,7 +135,7 @@ type GhostMode =
 
     /// Ghost is at its home spot, and is re-generating until the
     /// given game time whereupon it returns to GhostNormal.
-    | GhostRegeneratingUntil of float32<seconds>
+    | GhostRegeneratingUntil of GameTime
 
 
 
@@ -247,7 +247,7 @@ type PacDrawType = DrawPacNormal | DrawPacPillMode | DrawPacZapped
 
 /// Draw pac man image with top left at pos facing in the direction given,
 /// with appropriate open/closed mouth animation.
-let DrawPacManAlive render image pos facingDirection pacDrawType (gameTime:float32<seconds>) =
+let DrawPacManAlive render image pos facingDirection pacDrawType (gameTime:GameTime) =
 
     let { ptx=x ; pty=y } = pos
 
@@ -277,7 +277,7 @@ let DrawPacManAlive render image pos facingDirection pacDrawType (gameTime:float
 
 /// Draw ghost image with top left at pos, selecting the appropriate
 /// ghost colour and eyes animation frame.
-let DrawGhost render image pos (GhostNumber(ghostNumber)) ghostMode (gameTime:float32<seconds>) =
+let DrawGhost render image pos (GhostNumber(ghostNumber)) ghostMode (gameTime:GameTime) =
 
     let { ptx=x ; pty=y } = pos
 

@@ -25,7 +25,7 @@ let private TimeBeforeResponding = 2.0F<seconds>
 type private GameTitleScreenModel =
     {
         Scoreboard            : ScoreAndName list
-        ScreenStartTime       : float32<seconds>
+        ScreenStartTime       : GameTime
         HiScore               : uint32
         ScoreboardMemo        : string list
         NextScreenConstructor : ScoreAndHiScore -> ErasedGameState
@@ -40,7 +40,7 @@ let private IsFireButtonOperative model gameTime =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
+let private RenderGameTitleScreen render model (gameTime:GameTime) =
 
     RenderBeachBackground render (gameTime / 4.0F)
     CentreImage render 160.0F<epx> 68.0F<epx> (ImageTitle |> ImageFromID)

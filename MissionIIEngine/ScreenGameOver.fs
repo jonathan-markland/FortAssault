@@ -19,7 +19,7 @@ type private GameOverScreenModel =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private RenderGameOverScreen render model (gameTime:float32<seconds>) =
+let private RenderGameOverScreen render model (gameTime:GameTime) =
 
     let backgroundImage = Background2ImageID |> ImageFromID
     Image1to1 render 0<epx> 0<epx> backgroundImage

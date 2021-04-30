@@ -1141,7 +1141,7 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
 
         let (ViewPoint centre) = centre
 
-        let rotationAmountByTime (time:float32<seconds>) =
+        let rotationAmountByTime (time:GameTime) =
             let delta = (((int) (time * 7.0F)) % 5) - 2  // 7.0 is arbitrary.
             System.Diagnostics.Debug.Assert (delta >= -2 && delta <= 2)
             delta
@@ -1226,7 +1226,7 @@ let DroidsExplodedIfShotBy bullets gameTime droids =
 
 
 
-let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
+let DroidsPossiblyFiring man (gameTime:GameTime) droids =
 
     let possiblyFireIn direction (ViewPoint droidCentre) =
         Some (NewBulletFrom (ViewPoint droidCentre) DroidFiringStartDistance direction)
@@ -1251,7 +1251,7 @@ let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
         droidList |> List.filter CanDroidTypeFire
 
     let shouldConsiderNow =
-        ((int) ((gameTime * 50.0F) + 0.5F<seconds>)) % 50 = 0   // TODO: Hack until I refactor use of float32<seconds> throughout in favour of integer 'FrameCount of uint32'?
+        ((int) ((gameTime * 50.0F) + 0.5F<seconds>)) % 50 = 0   // TODO: Hack until I refactor use of GameTime throughout in favour of integer 'FrameCount of uint32'?
 
     if shouldConsiderNow then
         match droids |> filteredForDroidsThatCanFire with

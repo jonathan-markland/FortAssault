@@ -15,7 +15,7 @@ type FlickBookVisibility = Visible | Hidden
 
 type FlickBookType =
     {
-        FlickBookDuration      : float32<seconds>
+        FlickBookDuration      : GameTime
         FlickBookImages        : Image[]   // Array used so we can calculate an index from a time offset in O(1).
         VisibilityBeforeStart  : FlickBookVisibility
         VisibilityAfterEnd     : FlickBookVisibility
@@ -24,7 +24,7 @@ type FlickBookType =
 type FlickBookInstance =
     {
         FlickBookType            : FlickBookType
-        FlickBookStartTime       : float32<seconds>
+        FlickBookStartTime       : GameTime
         FlickBookMechanicsObject : MechanicsObjectModel
     }
 
