@@ -16,7 +16,14 @@ type ImageTransparency =
     /// are fully transparent.
     | MagentaColourKeyImage
 
-/// Image information supplied by the game engine to the host.
+/// A game's engine will use this type to request an image.
+type RequestedImage =
+    {
+        RequestedImageFileName     : string
+        RequestedImageTransparency : ImageTransparency
+    }
+
+/// Image information that is available after loading.
 type ImageMetadata =
     {
         /// The leaf-name of the file from which an image resource originates.
@@ -69,7 +76,14 @@ let inline ImageDimensionsF_v2 imageWithHostObject =  // TODO: Supercede.
 //  Font
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-/// Font information supplied by the game engine to the host.
+/// A game's engine will use this type to request a font.
+type RequestedFont =
+    {
+        RequestedFontImage     : RequestedImage
+        RequestedFontCharWidth : int
+    }
+
+/// Information for a font that is available after loading.
 type FontMetadata =
     {
         /// The font is stored as a bitmap.

@@ -2,44 +2,47 @@
 
 open ImagesAndFonts
 open Sounds
-open Geometry
 
-let private image colourKey fileName width height =
+let private image colourKey fileName =
     {
-        ImageTransparency = colourKey
-        ImageFileName  = fileName
-        ImageWidth     = width  |> AsIntEpx
-        ImageHeight    = height |> AsIntEpx
+        RequestedImageTransparency = colourKey
+        RequestedImageFileName     = fileName
     }
 
-let private font fileName width charWidth charHeight =
+let private font fileName charWidth =
     {
-        FontImageMetadata = image MagentaColourKeyImage fileName width charHeight
-        FontCharWidth     = charWidth
+        RequestedFontImage     = image MagentaColourKeyImage fileName
+        RequestedFontCharWidth = charWidth
     }
+
+let private sound fileName =
+    {
+        RequestedSoundFileName = fileName
+    }
+
 
 let PacmanFontResourceImages =
     [
-        font "PacmanFont.png"     296 8 8
+        font "PacmanFont.png" 8
     ]
 
 let PacmanResourceImages =
     [
-        image OpaqueImage           "PacmanBackground.png"   320 256
-        image MagentaColourKeyImage "PacmanLevel1.png"       560  16
-        image OpaqueImage           "PacmanBackground2.png"  320 256
-        image OpaqueImage           "PacmanBackground3.png"  320 256
+        image OpaqueImage           "PacmanBackground.png" 
+        image MagentaColourKeyImage "PacmanLevel1.png"     
+        image OpaqueImage           "PacmanBackground2.png"
+        image OpaqueImage           "PacmanBackground3.png"
     ]
 
-let PacmanResourceSounds : SoundMetadata list =
+let PacmanResourceSounds =
     [
-        { SoundFileName = "pellet.ogg" }
-        { SoundFileName = "pill.ogg" }
-        { SoundFileName = "321.ogg" }
-        { SoundFileName = "game-over.ogg" }
-        { SoundFileName = "go.ogg" }
-        { SoundFileName = "gulp.ogg" }
-        { SoundFileName = "oww.ogg" }
-        { SoundFileName = "victory.ogg" }
-        { SoundFileName = "life.ogg" }
+        sound "pellet.ogg" 
+        sound "pill.ogg" 
+        sound "321.ogg" 
+        sound "game-over.ogg" 
+        sound "go.ogg" 
+        sound "gulp.ogg" 
+        sound "oww.ogg" 
+        sound "victory.ogg"
+        sound "life.ogg"
     ]

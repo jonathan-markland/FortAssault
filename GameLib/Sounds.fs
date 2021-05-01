@@ -1,5 +1,11 @@
 ﻿module Sounds
 
+/// A game's engine will use this type to request a sound.
+type RequestedSound =
+    {
+        RequestedSoundFileName : string
+    }
+
 /// Sound information supplied by the game engine to the host.
 type SoundMetadata =
     {
