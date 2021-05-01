@@ -3,7 +3,7 @@
 [<Measure>] type seconds
 
 type GameTimeBasis = float
-type GameTime = float<seconds>  // TODO: Use 64-bit float
+type GameTime = float<seconds>
 
 let inline InSeconds s = LanguagePrimitives.FloatWithMeasure<seconds> (s)
 
