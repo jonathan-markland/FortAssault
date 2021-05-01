@@ -158,7 +158,7 @@ let private RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
     let h = imgBack.ImageMetadata.ImageHeight
 
     let DrawGun gameTime =
-        Gun.DrawGun render (h |> IntToFloatEpx) model.GunAim gameTime
+        Gun.DrawGun render (h |> IntToF32Epx) model.GunAim gameTime
 
     match model.AlliedState with
 
@@ -257,7 +257,7 @@ let private OldNextFinalBossScreenState oldState keyStateGetter gameTime frameEl
                     explosions |> WithCompletedFlickbooksRemoved gameTime
 
                 let gunBaseY =
-                    (ImageFinalBossBackground |> ImageFromID).ImageMetadata.ImageHeight |> IntToFloatEpx
+                    (ImageFinalBossBackground |> ImageFromID).ImageMetadata.ImageHeight |> IntToF32Epx
                 
                 let gun =
                     UpdatedGunAimAccordingToInput input gameTime frameElapsedTime gunBaseY gun

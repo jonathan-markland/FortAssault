@@ -74,8 +74,8 @@ let MovedBy8way movementDirection speed point =
     let (dx,dy) = DeltasForEightWayDirection movementDirection
 
     {
-        ptx = point.ptx + ((dx |> IntToFloatEpx) * speed)
-        pty = point.pty + ((dy |> IntToFloatEpx) * speed)
+        ptx = point.ptx + ((dx |> IntToF32Epx) * speed)
+        pty = point.pty + ((dy |> IntToF32Epx) * speed)
     }
 
 
@@ -129,7 +129,7 @@ let ManExclusionRectangleAround (ViewPoint manCentre) =
     let manImage = ImageFromID FacingUpImageID
     let w = manImage.ImageMetadata.ImageWidth + ManExclusionRectangleExtension
     let h = manImage.ImageMetadata.ImageHeight + ManExclusionRectangleExtension
-    RectangleCenteredAbout { ptx=(manCentre.ptx) |> FloatEpxToIntEpx ; pty=(manCentre.pty) |> FloatEpxToIntEpx } { dimx=w ; dimy=h } 2
+    RectangleCenteredAbout { ptx=(manCentre.ptx) |> RoundF32EpxToIntEpx ; pty=(manCentre.pty) |> RoundF32EpxToIntEpx } { dimx=w ; dimy=h } 2
 
 let DroidImageIndexFor droidType =
     match droidType with
@@ -514,7 +514,7 @@ let PlacesWhereObjectsCanBeLocatedInLevel levelModel gameTime : Interactible lis
             {
                 InteractibleRoom           = roomOrigin
                 InteractibleType           = interactibleType
-                InteractibleCentrePosition = ViewPoint { ptx=x |> IntToFloatEpx ; pty=y |> IntToFloatEpx }
+                InteractibleCentrePosition = ViewPoint { ptx=x |> IntToF32Epx ; pty=y |> IntToF32Epx }
             })
         |> Seq.toList
 
@@ -747,12 +747,12 @@ let LevelTileMatrixDetails () =
 
 let IntersectsWalls hitTestDistance roomReference itemCentre =
 
-    let hitTestDistance = hitTestDistance |> FloatEpxToIntEpx
+    let hitTestDistance = hitTestDistance |> RoundF32EpxToIntEpx
 
     let (ViewPoint { ptx=x ; pty=y }) = itemCentre
 
-    let xi = (x |> FloatEpxToIntEpx) - hitTestDistance
-    let yi = (y |> FloatEpxToIntEpx) - hitTestDistance
+    let xi = (x |> RoundF32EpxToIntEpx) - hitTestDistance
+    let yi = (y |> RoundF32EpxToIntEpx) - hitTestDistance
 
     let viewportWindow =
         {
@@ -784,8 +784,8 @@ let IntersectsWalls hitTestDistance roomReference itemCentre =
 
 let OutOfPlayAreaBounds (ViewPoint point) =
 
-    let sideh = (BrickTileWidth  * NumBricksPerSide) |> IntToFloatEpx
-    let sidev = (BrickTileHeight * NumBricksPerSide) |> IntToFloatEpx
+    let sideh = (BrickTileWidth  * NumBricksPerSide) |> IntToF32Epx
+    let sidev = (BrickTileHeight * NumBricksPerSide) |> IntToF32Epx
 
     point.ptx < 0.0F<epx> || point.pty < 0.0F<epx> || point.ptx > sideh || point.pty > sidev
 
@@ -1098,7 +1098,7 @@ let NewDroidsForRoom levelNumber placesForAdversariesInThisRoom gameTime =
 
     chosenPositions
         |> Seq.mapi (fun i (centreX,centreY) ->
-            let newDroidCentre = (centreX |> IntToFloatEpx, centreY |> IntToFloatEpx)
+            let newDroidCentre = (centreX |> IntToF32Epx, centreY |> IntToF32Epx)
             newDroidBy levelNumber i newDroidCentre)
         |> Seq.toList
 

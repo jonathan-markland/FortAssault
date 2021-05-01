@@ -108,26 +108,26 @@ let DrawGun render gunBaseY gunAim gameTime =
                 let h = (v * 5.0<epx> + 1.0<epx> ) |> EpxF64toF32
                 let x = x - (w / 2.0F)
                 let y = y - (h / 2.0F)
-                ImageStretched render x y (ShipGunBulletImageID |> ImageFromID) (w |> FloatEpxToIntEpx) (h |> FloatEpxToIntEpx)
+                ImageStretched render x y (ShipGunBulletImageID |> ImageFromID) (w |> RoundF32EpxToIntEpx) (h |> RoundF32EpxToIntEpx)
 
             | _ -> ()
 
     let drawGun (centreX:float32<epx>) =
         let struct (stemHeight, nozzleHeight, stemTopY, nozzleTopY) = GetGunImageLocation gunBaseY gunAim
-        let stemLeftX   = centreX - ((ShipGunStemImageWidth / 2) |> IntToFloatEpx)
-        let nozzleLeftX = centreX - ((ShipGunNozzleImageWidth / 2) |> IntToFloatEpx)
+        let stemLeftX   = centreX - ((ShipGunStemImageWidth / 2) |> IntToF32Epx)
+        let nozzleLeftX = centreX - ((ShipGunNozzleImageWidth / 2) |> IntToF32Epx)
 
         ImageStretched 
             render 
             stemLeftX stemTopY 
             (ShipGunStemImageID |> ImageFromID) 
-            ShipGunStemImageWidth (stemHeight |> FloatEpxToIntEpx)
+            ShipGunStemImageWidth (stemHeight |> RoundF32EpxToIntEpx)
 
         ImageStretched 
             render 
             nozzleLeftX nozzleTopY 
             (ShipGunNozzleImageID |> ImageFromID) 
-            ShipGunNozzleImageWidth (nozzleHeight |> FloatEpxToIntEpx)
+            ShipGunNozzleImageWidth (nozzleHeight |> RoundF32EpxToIntEpx)
 
     match gunAim.GunTraits.GunType with
 

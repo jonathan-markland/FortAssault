@@ -90,7 +90,7 @@ let MappedToUnsinkingEnemyShipIn enemyShips gunX =
 
     enemyShips
         |> List.tryFind (fun ship -> 
-            let halfShipWidth = (ship.ShipImage.ImageMetadata.ImageWidth |> IntToFloatEpx) / 2.0F
+            let halfShipWidth = (ship.ShipImage.ImageMetadata.ImageWidth |> IntToF32Epx) / 2.0F
             (Option.isNone ship.SinkStartTime)
                 && (gunX |> IsWithinRangeOf ship.CentreX halfShipWidth))
 
@@ -128,7 +128,7 @@ let EnemyLaunchPart2FlickbookType () =
 let FlickbooksForEnemyLaunchFrom (ship:EnemyShip) decoratives willHit gameTime =
 
     let x       = ship.CentreX
-    let originY = ship.BaseY - (ship.ShipImage.ImageMetadata.ImageHeight |> IntToFloatEpx)
+    let originY = ship.BaseY - (ship.ShipImage.ImageMetadata.ImageHeight |> IntToF32Epx)
     let targetY = if willHit then EnemyFireHittingShipY else EnemyFireMissingShipY
 
     let fb1 = EnemyLaunchPart1FlickbookType ()
@@ -215,7 +215,7 @@ let rec PossiblyLaunchEnemyFire currentState _changeRequired gameTime =
 let NewSplashFlickbookForFiredGun gun hitTime = 
     
     let splashHeight =
-        (ImageSplash0 |> ImageFromID).ImageMetadata.ImageHeight |> IntToFloatEpx
+        (ImageSplash0 |> ImageFromID).ImageMetadata.ImageHeight |> IntToF32Epx
 
     let splashCentreY = 
         (gun.GunElevation |> ElevationToScreenY) - (splashHeight / 2.0F) // TODO:  Here a fudge is needed, because the splash Flickbooks are drawn with centered sprites.
@@ -315,7 +315,7 @@ let RenderSeaBattleScreen render (model:SeaBattleScreenModel) gameTime =
         imgBack.ImageMetadata.ImageHeight  // They are all the same
 
     let DrawGun gameTime =
-        Gun.DrawGun render (backgroundHeight |> IntToFloatEpx) model.GunAim gameTime
+        Gun.DrawGun render (backgroundHeight |> IntToF32Epx) model.GunAim gameTime
 
     let DrawBasicStuff () =
         DrawBackground ()
@@ -418,7 +418,7 @@ let OldNextSeaBattleScreenState oldState keyStateGetter gameTime frameElapsedTim
                     enemyShips |> WithSunkenEnemyShipsRemoved gameTime
 
                 let gunBaseY =
-                    (ImageSeaBattleBackground0 |> ImageFromID).ImageMetadata.ImageHeight |> IntToFloatEpx  // TODO: This need crops up in a lot of places:  search for EngineImageMetadata and consider cases
+                    (ImageSeaBattleBackground0 |> ImageFromID).ImageMetadata.ImageHeight |> IntToF32Epx  // TODO: This need crops up in a lot of places:  search for EngineImageMetadata and consider cases
                 
                 let gun =
                     UpdatedGunAimAccordingToInput input gameTime frameElapsedTime gunBaseY gun

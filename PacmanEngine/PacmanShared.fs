@@ -235,8 +235,8 @@ let DrawPacTileInt render image x y (tileIndex:int) gameTime =
         render (
             DrawSubImageStretchedToTarget (
                 (xIndex - 1) * 16, 0, 16, 16,   // subtract 1 because we don't store image data for the blank tile.
-                (x |> IntEpxToInt |> IntToFloatEpx), 
-                (y |> IntEpxToInt |> IntToFloatEpx), 
+                (x |> RemoveEpxFromInt |> IntToF32Epx), // TODO: reconsider library
+                (y |> RemoveEpxFromInt |> IntToF32Epx), 
                 16<epx>, 
                 16<epx>,
                 image)) 

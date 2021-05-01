@@ -101,10 +101,10 @@ let DrawDebugRectangles render rectangles =
     rectangles |> List.iteri (fun i r ->
         render (
             DrawFilledRectangle (
-                r.Left |> FloatEpxToIntEpx, 
-                r.Top |> FloatEpxToIntEpx, 
-                r |> RectangleWidth |> FloatEpxToIntEpx, 
-                r |> RectangleHeight |> FloatEpxToIntEpx, 
+                r.Left |> RoundF32EpxToIntEpx, 
+                r.Top |> RoundF32EpxToIntEpx, 
+                r |> RectangleWidth |> RoundF32EpxToIntEpx, 
+                r |> RectangleHeight |> RoundF32EpxToIntEpx, 
                 i |> AlternateOf (SolidColour 0xEE0000u) (SolidColour 0x00FF00u))))
 
 

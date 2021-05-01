@@ -22,8 +22,8 @@ let ImageStretched render left top imageWithHostObject destWidth destHeight =
 /// Draw image centered about a point, without stretching.
 let CentreImage render cx cy (imageWithHostObject:Image) =
     let (w,h) = imageWithHostObject |> ImageDimensions
-    let left  = cx - ((w / 2) |> IntToFloatEpx)
-    let top   = cy - ((h / 2) |> IntToFloatEpx)
+    let left  = cx - ((w / 2) |> IntToF32Epx)
+    let top   = cy - ((h / 2) |> IntToF32Epx)
     render (DrawStretchedImageWithTopLeftAt(left, top, imageWithHostObject, w, h))
 
 /// Draw image centered about a point, without stretching.
@@ -99,10 +99,10 @@ let private DrawCharImageWithTopLeftAt render (x:int) (y:int) charIndex (fontDef
     render (
         DrawSubImageStretchedToTarget (
             chx, 0, srcCharWidth, srcCharHeight,
-            (x |> IntToFloatEpx), 
-            (y |> IntToFloatEpx), 
-            (fontDefinition.CharWidth  |> IntToIntEpx), 
-            (fontDefinition.CharHeight |> IntToIntEpx),
+            (x |> IntToF32Epx), 
+            (y |> IntToF32Epx), 
+            (fontDefinition.CharWidth  |> AsIntEpx), 
+            (fontDefinition.CharHeight |> AsIntEpx),
             fontDefinition.FontImage)) 
         
     
@@ -116,7 +116,7 @@ let TextX render (fontDefinition:Font) hAlign vAlign (x:int<epx>) (y:int<epx>) m
     
     let cw = fontDefinition.CharWidth
     let ch = fontDefinition.CharHeight
-    LayOutMonospaceFontTextString drawCharImage cw ch (IntEpxToInt x) (IntEpxToInt y) message hAlign vAlign  
+    LayOutMonospaceFontTextString drawCharImage cw ch (RemoveEpxFromInt x) (RemoveEpxFromInt y) message hAlign vAlign  
 
 
 
@@ -174,7 +174,7 @@ let ParagraphX render fontDefinition hAlign vAlign (x:int<epx>) (y:int<epx>) (yd
         | [] -> ()
         | _  ->
 
-            let chei   = fontDefinition.CharHeight |> IntToIntEpx
+            let chei   = fontDefinition.CharHeight |> AsIntEpx
             let ydelta = max chei ydelta
 
             let verticalSpan = (messageList.Length - 1) * ydelta + chei

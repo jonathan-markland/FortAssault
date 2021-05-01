@@ -45,7 +45,7 @@ let private RenderSlideTransition render (model:SlideTransitionModel) gameTime =
         | MOMYetToAppear -> ()
 
         | MOMVisibleAtPosition pt -> 
-            let pt = pt |> ApplyToPoint FloatEpxToIntEpx
+            let pt = pt |> ApplyToPoint RoundF32EpxToIntEpx
             model.FromScreenState.Draw (render |> OffsetBy pt) gameTime
             let ox = model.SlideTransitionModel2.SecondScreenRelativePosition.ptx
             let oy = model.SlideTransitionModel2.SecondScreenRelativePosition.pty
@@ -95,7 +95,7 @@ let NewSlideTransition fromScreen toScreen toScreenLocation displayWidth display
         { ptx=0.0F<epx> ; pty=0.0F<epx> }
 
     let endPos = 
-        toScreenRelativePosition |> InvertVector |> ApplyToPoint IntToFloatEpx
+        toScreenRelativePosition |> InvertVector |> ApplyToPoint IntToF32Epx
     
     let slideTransitionModel2 = 
         { 

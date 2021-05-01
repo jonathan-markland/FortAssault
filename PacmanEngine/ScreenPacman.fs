@@ -121,7 +121,7 @@ let KeysFrom keyStateGetter =
 let IsAlignedOnTile position =
 
     let {ptx=x ; pty=y} = position
-    let isAligned n = ((n |> IntEpxToInt) % TileSideInt) = 0
+    let isAligned n = ((n |> RemoveEpxFromInt) % TileSideInt) = 0
 
     x |> isAligned && y |> isAligned
 

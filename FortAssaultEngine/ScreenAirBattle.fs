@@ -178,8 +178,8 @@ let DrawDebugPlaneHitTestRectangle render planes gameTime =
 
     planes |> List.iter (fun plane ->
         let {ptx=x;pty=y} = plane.PlaneFlickBookInstance |> FlickBookPositionAtTime gameTime
-        let x,y = x |> FloatEpxToIntEpx , y |> FloatEpxToIntEpx
-        let dist = PlaneTriggerDistance |> FloatEpxToIntEpx
+        let x,y = x |> RoundF32EpxToIntEpx , y |> RoundF32EpxToIntEpx
+        let dist = PlaneTriggerDistance |> RoundF32EpxToIntEpx
         SquareAroundPoint render x y (dist * 2) (SolidColour(0xFF0000u))
     )
 
@@ -195,7 +195,7 @@ let RenderAirBattleScreen render (model:AirBattleScreenModel) gameTime =
         (ImageSeaBattleBackground0 |> ImageFromID).ImageMetadata.ImageHeight  // They are all the same
 
     let DrawGun gameTime =
-        Gun.DrawGun render (backgroundHeight |> IntToFloatEpx) model.GunAim gameTime
+        Gun.DrawGun render (backgroundHeight |> IntToF32Epx) model.GunAim gameTime
 
     let DrawBasicStuff () =
         DrawBackground ()
@@ -361,7 +361,7 @@ let private OldNextAirBattleScreenState oldState keyStateGetter gameTime frameEl
             
             else
                 let gunBaseY =
-                    (ImageSeaBattleBackground0 |> ImageFromID).ImageMetadata.ImageHeight |> IntToFloatEpx
+                    (ImageSeaBattleBackground0 |> ImageFromID).ImageMetadata.ImageHeight |> IntToF32Epx
 
                 let alliedState  = oldState.AlliedState
                 let gun          = oldState.GunAim
