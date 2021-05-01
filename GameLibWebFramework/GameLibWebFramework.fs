@@ -177,6 +177,7 @@ let private LoadImageFileListThenDo fileNameObtainer needsMagentaObtainer widthG
                 continuation (resizeArray.ToArray())
 
             | resourceRecord::tail ->
+
                 let fileName = resourceRecord |> fileNameObtainer
                 let needsMagentaColourKeying = resourceRecord |> needsMagentaObtainer
                 let w = resourceRecord |> widthGetter
@@ -285,9 +286,9 @@ let private LoadSoundsFileListThenDo fileNameObtainer continuation resourceList 
 
 let InitWebFrameworkThenDo 
         retroScreenSettings 
-        resourceImages 
-        (fontResourceImages:FontMetadata list) 
-        resourceSounds 
+        (resourceImages:RequestedImage list) 
+        (fontResourceImages:RequestedFont list) 
+        (resourceSounds:RequestedSound list)
         afterAllLoaded =
 
     let {

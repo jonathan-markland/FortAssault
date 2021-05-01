@@ -26,7 +26,11 @@ type FrameworkGameResourcesRecord =  // TODO: Unify with the javascript version!
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private LoadGameImagesFontsAndSounds gameResourceImages gameFontResourceImages gameResourceSounds (renderer:SdlRendererNativeInt) rootPath =  // TODO: Result error string
+let private LoadGameImagesFontsAndSounds 
+        (gameResourceImages     : RequestedImage list)
+        (gameFontResourceImages : RequestedFont list)
+        (gameResourceSounds     : RequestedSound list)
+        (renderer               : SdlRendererNativeInt) rootPath =  // TODO: Result error string
 
     let fromFile transparencyColour name = 
 
@@ -57,48 +61,71 @@ let private LoadGameImagesFontsAndSounds gameResourceImages gameFontResourceImag
     
     let imagesArray =
         gameResourceImages
-            |> List.map (fun metadata -> 
+            |> List.map (fun img -> 
                 
                 let key = 
-                    match metadata.ImageTransparency with 
+                    match img.RequestedImageTransparency with 
                         | OpaqueImage -> None 
                         | MagentaColourKeyImage -> magenta
                 
-                let fileName = metadata.ImageFileName
-                
+                let fileName = img.RequestedImageFileName
                 let hostImageObject = fromFile key fileName
 
                 {
-                    ImageMetadata = metadata
-                    HostImageRef  = HostImageRef(hostImageObject)
+                    ImageMetadata = 
+                        {
+                            ImageFileName       = fileName
+                            ImageTransparency   = img.RequestedImageTransparency
+                            ImageWidth          = hostImageObject.SourceRect.w |> AsIntEpx
+                            ImageHeight         = hostImageObject.SourceRect.h |> AsIntEpx
+                        }
+
+                    HostImageRef = HostImageRef hostImageObject
                 })
 
             |> List.toArray
 
     let fontsArray =
         gameFontResourceImages 
-            |> List.map (fun metadata -> 
-                let hostImageObject = fromFile magenta metadata.FontImageMetadata.ImageFileName
+            |> List.map (fun fnt -> 
+
+                let img = fnt.RequestedFontImage
+                let fileName = img.RequestedImageFileName
+
+                let hostImageObject = 
+                    fromFile magenta fileName
 
                 let imageWithHostObject =
                     {
-                        ImageMetadata = metadata.FontImageMetadata
-                        HostImageRef  = HostImageRef(hostImageObject)
+                        ImageMetadata =
+                            {
+                                ImageFileName       = fileName
+                                ImageTransparency   = img.RequestedImageTransparency
+                                ImageWidth          = hostImageObject.SourceRect.w |> AsIntEpx
+                                ImageHeight         = hostImageObject.SourceRect.h |> AsIntEpx
+                            }
+
+                        HostImageRef = HostImageRef hostImageObject
                     }
 
-                BasicFont imageWithHostObject (metadata.FontCharWidth)
+                BasicFont imageWithHostObject (fnt.RequestedFontCharWidth)
             ) 
                 |> List.toArray
 
     let soundsArray =
         gameResourceSounds 
-            |> List.map (fun metadata -> 
-                let hostSoundObject = fromSoundFile metadata.SoundFileName
+            |> List.map (fun snd -> 
+                
+                let hostSoundObject = fromSoundFile snd.RequestedSoundFileName
 
                 let soundWithHostObject =
                     {
-                        SoundMetadata = metadata
-                        HostSoundRef  = HostSoundRef(hostSoundObject)
+                        SoundMetadata =
+                            {
+                                SoundFileName = snd.RequestedSoundFileName
+                            }
+
+                        HostSoundRef = HostSoundRef hostSoundObject
                     }
 
                 soundWithHostObject
@@ -160,7 +187,7 @@ let PlaySound (HostSoundRef(soundNativeIntObj)) =
     let { SdlSoundNativeInt = soundNativeInt } = soundNativeIntObj :?> SdlSoundNativeInt
     let channel = SDL2.SDL_mixer.Mix_PlayChannel(-1, soundNativeInt, 0) // TODO: Should we do anything if it fails to play?
     if channel = -1 then
-        ()
+        ()  // TODO:  Was I going to actually do something here???
     else
         ()
 
@@ -287,9 +314,9 @@ let FrameworkDesktopMain
     hostWindowHeightPixels 
     hostRetroScreenWidthPixels 
     hostRetroScreenHeightPixels 
-    gameResourceImages 
-    (gameFontResourceImages:FontMetadata list)
-    gameResourceSounds
+    (gameResourceImages     : RequestedImage list) 
+    (gameFontResourceImages : RequestedFont list) 
+    (gameResourceSounds     : RequestedSound list)
     listOfKeysNeeded 
     (gameGlobalStateConstructor : unit -> Result<'gameGlobalState,string>)
     (gameplayStartConstructor   : 'gameGlobalState -> GameTime -> ErasedGameState)
