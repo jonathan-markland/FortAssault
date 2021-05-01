@@ -104,8 +104,8 @@ let DrawGun render gunBaseY gunAim gameTime =
 
             | MOMVisibleAtPosition({ptx=x ; pty=y}) ->
                 let v = (1.0 - ShellPercentageCompleted gunAim.GunTraits shell gameTime)
-                let w = (v * 12.0<epx> + 4.0<epx>) |> Float64EpxToFloat32Epx  // TODO: base on ShipGunBulletImageWidth
-                let h = (v * 5.0<epx> + 1.0<epx> ) |> Float64EpxToFloat32Epx
+                let w = (v * 12.0<epx> + 4.0<epx>) |> EpxF64toF32  // TODO: base on ShipGunBulletImageWidth
+                let h = (v * 5.0<epx> + 1.0<epx> ) |> EpxF64toF32
                 let x = x - (w / 2.0F)
                 let y = y - (h / 2.0F)
                 ImageStretched render x y (ShipGunBulletImageID |> ImageFromID) (w |> FloatEpxToIntEpx) (h |> FloatEpxToIntEpx)
@@ -203,10 +203,10 @@ let UpdatedGunAimAccordingToInput input (gameTime:GameTime) (frameElapsedTime:Ga
         if input.Left.Held && input.Right.Held then
             x
         elif input.Left.Held then
-            let a = (gunTraits.GunStepRatePerSecond * frameElapsedTime) |> Float64EpxToFloat32Epx
+            let a = (gunTraits.GunStepRatePerSecond * frameElapsedTime) |> EpxF64toF32
             max gunTraits.GunLeftExtent (x - a)
         elif input.Right.Held then
-            let a = (gunTraits.GunStepRatePerSecond * frameElapsedTime) |> Float64EpxToFloat32Epx
+            let a = (gunTraits.GunStepRatePerSecond * frameElapsedTime) |> EpxF64toF32
             min gunTraits.GunRightExtent (x + a)
         else
             x

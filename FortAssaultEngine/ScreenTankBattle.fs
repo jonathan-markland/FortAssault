@@ -410,7 +410,7 @@ let private TankDirectionFromInput (input:InputEventData) =
 
 let private TankYMovedByDirection (oldY:float32<epx>) tankDirection (frameElapsedTime:GameTime) =
 
-    let distance = (frameElapsedTime * TankMovementPerSecond) |> Float64EpxToFloat32Epx
+    let distance = (frameElapsedTime * TankMovementPerSecond) |> EpxF64toF32
 
     match tankDirection with
         | TankFacingUpLeft   -> max (oldY - distance) TankTopLimitY
