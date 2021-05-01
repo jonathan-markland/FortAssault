@@ -367,15 +367,15 @@ let DownButtonHeld keyStateGetter =
 
 let inline DimensionsToFloat32Epx { dimx=dimx ; dimy=dimy } =  // TODO: possibly reconsider?
     {
-        dimx = ((float32) dimx) |> Float32ToEpx
-        dimy = ((float32) dimy) |> Float32ToEpx
+        dimx = ((float32) dimx) |> AsF32Epx
+        dimy = ((float32) dimy) |> AsF32Epx
     }
 
 let Offset point =
     let (ViewPoint { ptx=x ; pty=y }) = point
     { 
-        ptx = ((float32 x) + (float32 PlayAreaOffsetX)) |> Float32ToEpx 
-        pty = ((float32 y) + (float32 PlayAreaOffsetY)) |> Float32ToEpx 
+        ptx = ((float32 x) + (float32 PlayAreaOffsetX)) |> AsF32Epx 
+        pty = ((float32 y) + (float32 PlayAreaOffsetY)) |> AsF32Epx 
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -798,7 +798,7 @@ let OutOfPlayAreaBounds (ViewPoint point) =
 
 let NewBulletFrom (ViewPoint { ptx=x ; pty=y }) startDistanceAway direction =
 
-    let converted x = x |> float32 |> Float32ToEpx
+    let converted x = x |> float32 |> AsF32Epx
     let (dx,dy) = DeltasForEightWayDirection direction
     let (fdx,fdy) = (converted dx , converted dy)
 
