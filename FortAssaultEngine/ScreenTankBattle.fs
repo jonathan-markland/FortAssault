@@ -38,7 +38,7 @@ let EnemyTankFiringInterval         =  3.0<seconds>
 
 let PauseTimeWhenEnded              =   4.0<seconds>
 let WholeScreenTime                 = 120.0<seconds>
-let TankMovementPerSecond           = 15.0F<epx/seconds>
+let TankMovementPerSecond           = 15.0<epx/seconds>
 let TankReFireInterval              =  2.5<seconds>
 let TankTracksAnimDuration          =  0.2<seconds>
 let ExplosionDuration               =  0.75<seconds>
@@ -408,9 +408,9 @@ let private TankDirectionFromInput (input:InputEventData) =
     else if down  then TankFacingDownLeft
     else               TankFacingLeft
 
-let private TankYMovedByDirection oldY tankDirection frameElapsedTime =
+let private TankYMovedByDirection (oldY:float32<epx>) tankDirection (frameElapsedTime:GameTime) =
 
-    let distance = frameElapsedTime * TankMovementPerSecond
+    let distance = (frameElapsedTime * TankMovementPerSecond) |> Float64EpxToFloat32Epx
 
     match tankDirection with
         | TankFacingUpLeft   -> max (oldY - distance) TankTopLimitY

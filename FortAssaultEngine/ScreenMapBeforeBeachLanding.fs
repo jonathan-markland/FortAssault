@@ -72,7 +72,7 @@ let private RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandin
             Damage           = 0u
             MaxDamage        = 0u
             PlaneIntel       = None
-            Elevation        = 0.0F<degrees>
+            Elevation        = 0.0<degrees>
         }
 
     DrawScorePanel render mapHeight scorePanel

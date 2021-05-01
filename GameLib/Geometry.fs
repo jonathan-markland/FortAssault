@@ -8,11 +8,13 @@
 
 let inline Float32ToEpx (x:float32) = LanguagePrimitives.Float32WithMeasure<epx> (x)
 
+let inline Float64EpxToFloat32Epx (x:float<epx>) = x |> (float32) |> Float32ToEpx
+
 let inline IntEpxToInt (x:int<epx>) = int (x)
 let inline IntToIntEpx (x:int)      = LanguagePrimitives.Int32WithMeasure<epx> x
 
-let inline FloatEpxToInt x = int (x + 0.5F<epx>)
-let inline IntToFloatEpx x = Float32ToEpx (float32 x)
+let inline FloatEpxToInt x = int (x + 0.5F<epx>)         // TODO: Rename to Float32EpxToInt
+let inline IntToFloatEpx x = Float32ToEpx (float32 x)    // TODO: Rename to IntToFloat32Epx
 
 let inline FloatEpxToIntEpx x = x |> FloatEpxToInt |> IntToIntEpx
 

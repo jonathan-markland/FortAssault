@@ -22,7 +22,7 @@ open GameStateManagement
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let InitialGunElevation       =   30.0F<degrees>
+let InitialGunElevation       =   30.0<degrees>
 
 #if SHORT_PLAYTHROUGH
 let NumberOfRaidersWhenStrong =  10u  // Because we don't want to wait for ages.  We can also commit suicide in this mode.

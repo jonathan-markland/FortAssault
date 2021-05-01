@@ -32,8 +32,8 @@ type GunTraits =
         HighestShellY        : float32<epx>
         GunRepeatTime        : GameTime  // TODO: Turn into a parameter of GunAim within GunType field?
         GunShellDuration     : GameTime  // TODO: More realistic in sea battle to relate this to elevation.
-        GunLowestElevation   : float32<degrees>
-        GunHighestElevation  : float32<degrees>
+        GunLowestElevation   : float<degrees>
+        GunHighestElevation  : float<degrees>
         GunElevationStepRate : float<degrees/seconds>
     }
 
@@ -41,7 +41,7 @@ type GunAim =
     {
         GunTraits           : GunTraits
         GunCentreX          : float32<epx>
-        GunElevation        : float32<degrees>
+        GunElevation        : float<degrees>
         Shells              : Shell list
         LastFireTime        : GameTime
     }
@@ -55,8 +55,8 @@ let DefaultGunTraits gunType stepRate =
         HighestShellY        =   0.0F<epx>
         GunRepeatTime        =   0.5<seconds>   // TODO: Turn into a parameter of GunAim within GunType field?
         GunShellDuration     =   0.7<seconds>   // TODO: More realistic in sea battle to relate this to elevation.
-        GunLowestElevation   =  5.0F<degrees>
-        GunHighestElevation  = 80.0F<degrees>
+        GunLowestElevation   =  5.0<degrees>
+        GunHighestElevation  = 80.0<degrees>
         GunElevationStepRate = stepRate
     }
 
@@ -104,8 +104,8 @@ let DrawGun render gunBaseY gunAim gameTime =
 
             | MOMVisibleAtPosition({ptx=x ; pty=y}) ->
                 let v = (1.0 - ShellPercentageCompleted gunAim.GunTraits shell gameTime)
-                let w = float32 (v * 12.0<epx> + 4.0<epx>)   // TODO: base on ShipGunBulletImageWidth
-                let h = float32 (v * 5.0<epx> + 1.0<epx> )
+                let w = (v * 12.0<epx> + 4.0<epx>) |> Float64EpxToFloat32Epx  // TODO: base on ShipGunBulletImageWidth
+                let h = (v * 5.0<epx> + 1.0<epx> ) |> Float64EpxToFloat32Epx
                 let x = x - (w / 2.0F)
                 let y = y - (h / 2.0F)
                 ImageStretched render x y (ShipGunBulletImageID |> ImageFromID) (w |> FloatEpxToIntEpx) (h |> FloatEpxToIntEpx)
@@ -159,8 +159,11 @@ let NewShell gunCentreX gunBaseY gunAim gameTime =
     
     let x = gunCentreX
 
+    let highestY =
+        TopmostScreenPositionOfShellByElevation gunAim.GunTraits nozzleTopY gunAim.GunElevation
+
     let shellStartPosition = { ptx=x ; pty=nozzleTopY }
-    let shellEndPosition   = { ptx=x ; pty=TopmostScreenPositionOfShellByElevation gunAim.GunTraits nozzleTopY gunAim.GunElevation       }
+    let shellEndPosition   = { ptx=x ; pty=highestY }
 
     {
         ShellStartTime = gameTime
@@ -177,11 +180,11 @@ let NewShell gunCentreX gunBaseY gunAim gameTime =
 
 /// WARNING:  Completed shells are NOT removed, thus allowing completed shells
 ///           to be identified (and reported at their final point) by the caller.
-let UpdatedGunAimAccordingToInput input gameTime frameElapsedTime gunBaseY oldGun =
+let UpdatedGunAimAccordingToInput input (gameTime:GameTime) (frameElapsedTime:GameTime) gunBaseY oldGun =
 
     let gunTraits = oldGun.GunTraits
 
-    let e = oldGun.GunElevation      
+    let e = oldGun.GunElevation
     let x = oldGun.GunCentreX
     let shells = oldGun.Shells
     let lastFireTime = oldGun.LastFireTime
@@ -200,9 +203,11 @@ let UpdatedGunAimAccordingToInput input gameTime frameElapsedTime gunBaseY oldGu
         if input.Left.Held && input.Right.Held then
             x
         elif input.Left.Held then
-            max gunTraits.GunLeftExtent (x - gunTraits.GunStepRatePerSecond * frameElapsedTime)
+            let a = (gunTraits.GunStepRatePerSecond * frameElapsedTime) |> Float64EpxToFloat32Epx
+            max gunTraits.GunLeftExtent (x - a)
         elif input.Right.Held then
-            min gunTraits.GunRightExtent (x + gunTraits.GunStepRatePerSecond * frameElapsedTime)
+            let a = (gunTraits.GunStepRatePerSecond * frameElapsedTime) |> Float64EpxToFloat32Epx
+            min gunTraits.GunRightExtent (x + a)
         else
             x
 

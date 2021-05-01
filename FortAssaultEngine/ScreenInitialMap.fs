@@ -105,7 +105,7 @@ let private RenderInitialMapScreen render (model:InitialMapScreenModel) _gameTim
             Damage           = 0u
             MaxDamage        = 0u
             PlaneIntel       = None
-            Elevation        = 0.0F<degrees> // TODO:  Should this be optional?
+            Elevation        = 0.0<degrees> // TODO:  Should this be optional?
         }
 
     DrawScorePanel render mapHeight scorePanel

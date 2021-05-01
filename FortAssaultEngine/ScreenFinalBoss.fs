@@ -31,8 +31,8 @@ let private BossAnimationDuration     =  20.0<seconds>
 let private ExplosionDuration         =   0.75<seconds>
 let private FlagFlutterAnimDuration   =   0.5<seconds>
 let private ScoreForHittingTarget     =  2000u
-let private GunStepRate               =   30.0F<degrees/seconds>
-let private InitialGunElevation       =   30.0F<degrees>
+let private GunStepRate               =   30.0<degrees/seconds>
+let private InitialGunElevation       =   30.0<degrees>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

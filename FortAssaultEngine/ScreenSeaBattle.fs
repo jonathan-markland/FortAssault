@@ -21,7 +21,7 @@ open GameStateManagement
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let InitialGunElevation            =   30.0F<degrees>
+let InitialGunElevation            =   30.0<degrees>
 let InitialPlayerGunPositionX      =  160.0F<epx>
 let PauseTimeWhenEnded             =    4.0<seconds>
 let ExplosionDuration              =    0.75<seconds>
