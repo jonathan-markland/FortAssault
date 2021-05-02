@@ -126,8 +126,8 @@ let private RenderToSdl renderer drawingCommand =
             DrawSdlImage 
                 renderer 
                 (hostImageObject :?> SdlImageFileMetadata)
-                (left |> IntEpxToInt) 
-                (top  |> IntEpxToInt)
+                (left |> RemoveEpxFromInt) 
+                (top  |> RemoveEpxFromInt)
 
         | DrawStretchedImageWithTopLeftAt(left, top, imageVisual, width, height) ->
             let (HostImageRef(hostImageObject)) = imageVisual.HostImageRef
@@ -135,9 +135,9 @@ let private RenderToSdl renderer drawingCommand =
                 renderer 
                 (hostImageObject :?> SdlImageFileMetadata).TextureHandle
                 0 0 
-                (imageVisual.ImageMetadata.ImageWidth  |> IntEpxToInt)
-                (imageVisual.ImageMetadata.ImageHeight |> IntEpxToInt)
-                (left |> FloatEpxToInt) (top |> FloatEpxToInt) (width |> IntEpxToInt) (height |> IntEpxToInt)
+                (imageVisual.ImageMetadata.ImageWidth  |> RemoveEpxFromInt)
+                (imageVisual.ImageMetadata.ImageHeight |> RemoveEpxFromInt)
+                (left |> RoundF32EpxToInt) (top |> RoundF32EpxToInt) (width |> RemoveEpxFromInt) (height |> RemoveEpxFromInt)
 
         | DrawSubImageStretchedToTarget(srcleft, srctop, srcwidth, srcheight, dstleft, dsttop, dstwidth, dstheight, imageVisual) ->
             let (HostImageRef(hostImageObject)) = imageVisual.HostImageRef
@@ -145,13 +145,13 @@ let private RenderToSdl renderer drawingCommand =
                 renderer 
                 (hostImageObject :?> SdlImageFileMetadata).TextureHandle
                 srcleft srctop srcwidth srcheight
-                (dstleft |> FloatEpxToInt) (dsttop |> FloatEpxToInt) (dstwidth |> IntEpxToInt) (dstheight |> IntEpxToInt)
+                (dstleft |> RoundF32EpxToInt) (dsttop |> RoundF32EpxToInt) (dstwidth |> RemoveEpxFromInt) (dstheight |> RemoveEpxFromInt)
 
         | DrawFilledRectangle(left, top, width, height, SolidColour(colour)) ->
-            let right  = (left + width) |> IntEpxToInt
-            let bottom = (top + height) |> IntEpxToInt
-            let left   = left |> IntEpxToInt
-            let top    = top  |> IntEpxToInt
+            let right  = (left + width) |> RemoveEpxFromInt
+            let bottom = (top + height) |> RemoveEpxFromInt
+            let left   = left |> RemoveEpxFromInt
+            let top    = top  |> RemoveEpxFromInt
             SDLCover.DrawSdlFilledRectangle renderer left top right bottom colour
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -192,7 +192,7 @@ let private MainLoopProcessing
     let mutable tickCount = 1u
     
     let GetGameTime () = 
-        (float32 tickCount) / 50.0F |> InSeconds     // TODO: Revisit parameterisation of frame rate.
+        (float tickCount) / 50.0 |> InSeconds     // TODO: Revisit parameterisation of frame rate.
 
     let mutable gameState : ErasedGameState =
         initialGameStateConstructor (GetGameTime ())
@@ -251,7 +251,7 @@ let private MainLoopProcessing
     // Classic main event loop.
 
     let mutable event            = new SDL.SDL_Event ()
-    let mutable lastGameTime     = 0.0F<seconds>
+    let mutable lastGameTime     = 0.0<seconds>
     let mutable terminateProgram = false
 
     while terminateProgram = false do
@@ -292,7 +292,7 @@ let FrameworkDesktopMain
     gameResourceSounds
     listOfKeysNeeded 
     (gameGlobalStateConstructor : unit -> Result<'gameGlobalState,string>)
-    (gameplayStartConstructor   : 'gameGlobalState -> float32<seconds> -> ErasedGameState)
+    (gameplayStartConstructor   : 'gameGlobalState -> GameTime -> ErasedGameState)
         : string option =
 
         let runGame () =

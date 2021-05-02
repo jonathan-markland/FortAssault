@@ -41,7 +41,7 @@ open Time
 /// Choose an item from the list based on elapsed time.
 /// The time must be convertible to int, and is used as an index with (%).
 /// This function throws an exception if theList is empty.
-let ChooseItemFromListBasedOnGameTime (theList:'a list) (gameTime:float32<seconds>) =
+let ChooseItemFromListBasedOnGameTime (theList:'a list) (gameTime:GameTime) =
     let n = theList.Length
     if n = 0 then
         failwith "Cannot choose one thing from an empty list"

@@ -105,7 +105,7 @@ type ManStartPositionInRoom =
 /// Types of droid.  This affects visuals and behaviours.
 type DroidType = 
     | HomingDroid    of speed    : float32<epx>
-    | WanderingDroid of movement : EightWayDirection * nextDirectionChangeTime:float32<seconds>
+    | WanderingDroid of movement : EightWayDirection * nextDirectionChangeTime:GameTime
     | AssassinDroid
 
 
@@ -129,9 +129,9 @@ type DroidModel =
 
 /// Is the ghost visible or not?
 type GhostModel =
-    | NoGhostUntil of gameTime:float32<seconds>
+    | NoGhostUntil of gameTime:GameTime
     | GhostActive of ViewPoint
-    | GhostStunned of ViewPoint * untilGameTime:float32<seconds>
+    | GhostStunned of ViewPoint * untilGameTime:GameTime
 
 
 type ImageLookupsTables =
@@ -205,7 +205,7 @@ type InnerScreenModel =
         ManLives          : ManLives
 
         /// Invincibility status of man
-        ManInvincibilityUntil : float32<seconds> option
+        ManInvincibilityUntil : GameTime option
 
         /// The locations within the current level items the player can interact with.
         Interactible      : Interactible list
@@ -214,7 +214,7 @@ type InnerScreenModel =
         ImageLookupsTables : ImageLookupsTables
 
         /// Constructor for GameOver
-        WhereToOnGameOver : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToOnGameOver : ScoreAndHiScore -> GameTime -> ErasedGameState
     }
 
 

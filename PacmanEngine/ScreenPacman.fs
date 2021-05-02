@@ -69,8 +69,8 @@ type private PacmanScreenModel =  // TODO: Getting fat with things that don't ch
         PacmanState                : PacmanState
         GhostsState                : GhostState list
         MemoizedStatusPanelStrings : MemoizedStatusPanelStrings
-        WhereToOnGameOver          : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
-        WhereToOnAllEaten          : int -> BetweenScreenStatus -> float32<seconds> -> ErasedGameState
+        WhereToOnGameOver          : ScoreAndHiScore -> GameTime -> ErasedGameState
+        WhereToOnAllEaten          : int -> BetweenScreenStatus -> GameTime -> ErasedGameState
     }
 
 
@@ -121,7 +121,7 @@ let KeysFrom keyStateGetter =
 let IsAlignedOnTile position =
 
     let {ptx=x ; pty=y} = position
-    let isAligned n = ((n |> IntEpxToInt) % TileSideInt) = 0
+    let isAligned n = ((n |> RemoveEpxFromInt) % TileSideInt) = 0
 
     x |> isAligned && y |> isAligned
 
@@ -826,7 +826,7 @@ let private AdvanceGhost mazeState allGhosts pacman ghost rand gameTime =
                 DecideNewPositionAndDirectionFor ghost mazeState allGhosts pacman rand gameTime
 
             | GhostEdibleUntil _ -> 
-                if gameTime |> PulseActiveAtRate 20.0F then
+                if gameTime |> PulseActiveAtRate 20.0 then
                     DecideNewPositionAndDirectionFor ghost mazeState allGhosts pacman rand gameTime
                 else
                     (position , direction)

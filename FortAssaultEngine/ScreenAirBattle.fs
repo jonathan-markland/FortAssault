@@ -22,7 +22,7 @@ open GameStateManagement
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let InitialGunElevation       =   30.0F<degrees>
+let InitialGunElevation       =   30.0<degrees>
 
 #if SHORT_PLAYTHROUGH
 let NumberOfRaidersWhenStrong =  10u  // Because we don't want to wait for ages.  We can also commit suicide in this mode.
@@ -32,17 +32,17 @@ let NumberOfRaidersWhenStrong =  NumShipsAtInitialEngagement * 4u
 
 let InitialPlayerGunPositionX =  160.0F<epx>
 let PlaneTriggerDistance      =    6.0F<epx>   // TODO: This might need to be rectangular at the very least, certainly not square.  Also is a candidate for the game difficulty!
-let PauseTimeWhenEnded        =    4.0F<seconds>
-let ExplosionDuration         =    0.75F<seconds>
+let PauseTimeWhenEnded        =    4.0<seconds>
+let ExplosionDuration         =    0.75<seconds>
 let ScoreForHittingPlane      = 2000u
 let MaxDamagePerShip          =    5u
-let PlaneDuration             =    6.0F<seconds>
-let PlaneFiringTimeOffset     =    3.0F<seconds>
-let SortieApproxInterval      =    5.0F<seconds>
-let BombsDuration             =    1.0F<seconds>
+let PlaneDuration             =    6.0<seconds>
+let PlaneFiringTimeOffset     =    3.0<seconds>
+let SortieApproxInterval      =    5.0<seconds>
+let BombsDuration             =    1.0<seconds>
 let PlaneBombTargetY          =  150.0F<epx>  // TODO: Calculate somehow?
 let MaxPlanesActiveAtOnce     =    3
-let GunStepRate               =   30.0F<degrees/seconds>
+let GunStepRate               =   30.0<degrees/seconds>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -119,9 +119,9 @@ type AirBattleScreenModel =
         Explosions      : FlickBookInstance list
         EnemyShips      : EnemyShip list
         Damage          : uint32
-        LastSortieAt    : float32<seconds>
+        LastSortieAt    : GameTime
         WhereToGoOnGameOver       : ScoreAndHiScore -> ErasedGameState
-        WhereToOnCourseCompletion : uint32 -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToOnCourseCompletion : uint32 -> ScoreAndHiScore -> GameTime -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -178,8 +178,8 @@ let DrawDebugPlaneHitTestRectangle render planes gameTime =
 
     planes |> List.iter (fun plane ->
         let {ptx=x;pty=y} = plane.PlaneFlickBookInstance |> FlickBookPositionAtTime gameTime
-        let x,y = x |> FloatEpxToIntEpx , y |> FloatEpxToIntEpx
-        let dist = PlaneTriggerDistance |> FloatEpxToIntEpx
+        let x,y = x |> RoundF32EpxToIntEpx , y |> RoundF32EpxToIntEpx
+        let dist = PlaneTriggerDistance |> RoundF32EpxToIntEpx
         SquareAroundPoint render x y (dist * 2) (SolidColour(0xFF0000u))
     )
 
@@ -195,7 +195,7 @@ let RenderAirBattleScreen render (model:AirBattleScreenModel) gameTime =
         (ImageSeaBattleBackground0 |> ImageFromID).ImageMetadata.ImageHeight  // They are all the same
 
     let DrawGun gameTime =
-        Gun.DrawGun render (backgroundHeight |> IntToFloatEpx) model.GunAim gameTime
+        Gun.DrawGun render (backgroundHeight |> IntToF32Epx) model.GunAim gameTime
 
     let DrawBasicStuff () =
         DrawBackground ()
@@ -341,7 +341,7 @@ let private OldNewAirBattleScreen enemyStrength scoreAndHiScore shipsRemaining w
         Planes           = []
         PlaneBombs       = []
         Damage           = 0u
-        LastSortieAt     = 0.0F<seconds>
+        LastSortieAt     = 0.0<seconds>
         WhereToGoOnGameOver       = whereToOnGameOver 
         WhereToOnCourseCompletion = whereToOnCourseCompletion
     }
@@ -361,7 +361,7 @@ let private OldNextAirBattleScreenState oldState keyStateGetter gameTime frameEl
             
             else
                 let gunBaseY =
-                    (ImageSeaBattleBackground0 |> ImageFromID).ImageMetadata.ImageHeight |> IntToFloatEpx
+                    (ImageSeaBattleBackground0 |> ImageFromID).ImageMetadata.ImageHeight |> IntToF32Epx
 
                 let alliedState  = oldState.AlliedState
                 let gun          = oldState.GunAim

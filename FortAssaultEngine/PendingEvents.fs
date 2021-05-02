@@ -9,7 +9,7 @@ open Time
 type Pending<'changeData> =
     {
         /// The future time at which to apply this.
-        ToDoTime: float32<seconds>
+        ToDoTime: GameTime
 
         /// Some data to be quoted when applying the change.
         ToDoData: 'changeData
@@ -41,7 +41,7 @@ let ReverseSecond (struct (a,b)) =  struct (a, b |> List.rev)
 /// Returns the user's resulting accumulator, and the list of the remaining items that were not done.
 let AppliedForTime 
     gameTime 
-    (f:'state -> 'changeData -> float32<seconds> -> PendingApplicationResult<'state,'changeData>) 
+    (f:'state -> 'changeData -> GameTime -> PendingApplicationResult<'state,'changeData>) 
     (struct ((state:'state) , (pendingList:Pending<'changeData> list))) 
         : (struct ('state * Pending<'changeData> list)) =
 

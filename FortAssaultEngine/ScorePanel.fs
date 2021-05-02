@@ -73,7 +73,7 @@ type ScorePanel =
         Damage:           uint32
         MaxDamage:        uint32
         PlaneIntel:       uint32 option
-        Elevation:        float32<degrees>
+        Elevation:        float<degrees>
     }
 
 let ShipBarChart panel =

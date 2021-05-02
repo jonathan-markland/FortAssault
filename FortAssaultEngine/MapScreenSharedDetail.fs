@@ -14,7 +14,7 @@ let EnemySpeed           = 0.3F<epx>
 
 let DefaultEnemyFleetLocation  = { ptx= 97.0F<epx> ; pty=129.0F<epx> }
 
-let PauseTimeOnceEngaged = 2.0F<seconds>
+let PauseTimeOnceEngaged = 2.0<seconds>
 
 
 // The trigger rectangles must at least partially overlap the travel rectangles.
@@ -101,10 +101,10 @@ let DrawDebugRectangles render rectangles =
     rectangles |> List.iteri (fun i r ->
         render (
             DrawFilledRectangle (
-                r.Left |> FloatEpxToIntEpx, 
-                r.Top |> FloatEpxToIntEpx, 
-                r |> RectangleWidth |> FloatEpxToIntEpx, 
-                r |> RectangleHeight |> FloatEpxToIntEpx, 
+                r.Left |> RoundF32EpxToIntEpx, 
+                r.Top |> RoundF32EpxToIntEpx, 
+                r |> RectangleWidth |> RoundF32EpxToIntEpx, 
+                r |> RectangleHeight |> RoundF32EpxToIntEpx, 
                 i |> AlternateOf (SolidColour 0xEE0000u) (SolidColour 0x00FF00u))))
 
 

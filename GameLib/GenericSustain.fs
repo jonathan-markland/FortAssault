@@ -8,13 +8,13 @@ open GameStateManagement
 type private SustainModel =
     {
         GuestState           : ErasedGameState
-        StateSwitchChooser   : float32<seconds> -> KeyStateFunction -> ErasedGameState option
+        StateSwitchChooser   : GameTime -> KeyStateFunction -> ErasedGameState option
     }
 
 
 
 /// We just pass rendering requests straight through to the guest state.
-let private RenderGuestState render model (gameTime:float32<seconds>) =
+let private RenderGuestState render model (gameTime:GameTime) =
     model.GuestState.Draw render gameTime
 
 

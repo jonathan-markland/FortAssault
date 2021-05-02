@@ -27,7 +27,7 @@ type private PotentialEnterYourNameScreenModel =
         EnterYourNameModel : EnterYourNameModel
         MemoizedText       : string list
         PacMemo       : TitleScreenPacmanState
-        WhereToAfterCtor   : ScoreAndName list -> float32<seconds> -> ErasedGameState
+        WhereToAfterCtor   : ScoreAndName list -> GameTime -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

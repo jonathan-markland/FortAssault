@@ -23,11 +23,11 @@ type ErasedGameState() =
 
     /// Draw the model onto the screen, for the given game time, via the given 
     /// render function.
-    abstract member Draw  : RenderFunction -> float32<seconds> -> unit
+    abstract member Draw  : RenderFunction -> GameTime -> unit
 
     /// Calculate the model value, Draw function and Frame function for the next 
     /// frame of animation.
-    abstract member Frame : KeyStateFunction -> float32<seconds> -> float32<seconds> -> ErasedGameState   // TODO: I never really wanted the framework to pass in the frame time delta.
+    abstract member Frame : KeyStateFunction -> GameTime -> GameTime -> ErasedGameState   // TODO: I never really wanted the framework to pass in the frame time delta.
 
     /// Obtain the sound commands to be executed for this frame (if any).
     abstract member Sounds : unit -> SoundOperation list
@@ -38,8 +38,8 @@ type ErasedGameState() =
 /// and a frame-advance function.
 type SpecificGameState<'Model>
     ( model     : 'Model, 
-      drawFunc  : RenderFunction -> 'Model -> float32<seconds> -> unit, 
-      frameFunc : SpecificGameState<'Model> -> KeyStateFunction -> float32<seconds> -> float32<seconds> -> ErasedGameState,
+      drawFunc  : RenderFunction -> 'Model -> GameTime -> unit, 
+      frameFunc : SpecificGameState<'Model> -> KeyStateFunction -> GameTime -> GameTime -> ErasedGameState,
       sounds    : SoundOperation list ) =
 
     inherit ErasedGameState()
@@ -141,7 +141,7 @@ let WithOneShotSound oneShotSoundOperations (innerGameState:ErasedGameState) =
         // will naturally replace us on the next frame:
         innerGameState.Frame keyStateGetter gameTime elapsed  
 
-    let drawFunc render _model (gameTime:float32<seconds>) =
+    let drawFunc render _model (gameTime:GameTime) =
         // Just delegate drawing.
         // This will only be called once because of the replacement done by frameFunc
         innerGameState.Draw render gameTime

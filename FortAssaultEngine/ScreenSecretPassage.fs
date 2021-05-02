@@ -25,8 +25,8 @@ let TorpedoTriggerDistance      =    4.0F<epx>
 let MineTriggerDistance         =    4.0F<epx>
 let ScoreForGettingAShipThrough = 3000u
 let PassageSuccessBarrierY      =   10.0F<epx>
-let PauseTime                   =    3.0F<seconds>
-let ExplosionDuration           =   0.75F<seconds>
+let PauseTime                   =    3.0<seconds>
+let ExplosionDuration           =   0.75<seconds>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -69,8 +69,8 @@ type Ship =
 
 type ShipState =
     | ShipInPlay     of Ship
-    | ShipGotThrough of finishTime : float32<seconds> * Ship
-    | ShipExploding  of finishTime : float32<seconds>
+    | ShipGotThrough of finishTime : GameTime * Ship
+    | ShipExploding  of finishTime : GameTime
     | SecretPassageScreenOver
 
 type Mine =
@@ -80,8 +80,8 @@ type Mine =
 
 type Torpedo =
     {
-        TorpedoLaunchDetail   :  (float * float) * (float * float) * float32<seconds> * float32<seconds>
-        TorpedoPositionGetter :  (float32<seconds> -> MOMReason)
+        TorpedoLaunchDetail   :  (float * float) * (float * float) * GameTime * GameTime
+        TorpedoPositionGetter :  (GameTime -> MOMReason)
         TorpedoIsHorizontal   :  bool
     }
 
@@ -93,7 +93,7 @@ type SecretPassageScreenModel =
         Animations   : FlickBookInstance list
         Ship         : ShipState
         WhereToGoOnGameOver       : ScoreAndHiScore -> ErasedGameState
-        WhereToOnCourseCompletion : uint32 -> ScoreAndHiScore -> float32<seconds> -> ErasedGameState
+        WhereToOnCourseCompletion : uint32 -> ScoreAndHiScore -> GameTime -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -271,13 +271,13 @@ let TorpedoFiringPositions =
 
         // Firing origin positions left bank
 
-        (0.086, 0.214),    (0.318, 0.082),   5.0F<seconds>,   1.0F<seconds>
-        (0.206, 0.790),    (0.846, 0.410),   7.2F<seconds>,   3.5F<seconds>
+        (0.086, 0.214),    (0.318, 0.082),   5.0<seconds>,   1.0<seconds>
+        (0.206, 0.790),    (0.846, 0.410),   7.2F<seconds>,   3.5<seconds>
     
         // Firing origin positions right bank
     
-        (0.382, 0.102),    (0.138, 0.336),   6.0F<seconds>,   1.0F<seconds>
-        (0.698, 0.204),    (0.078, 0.204),   6.4F<seconds>,   2.5F<seconds>
+        (0.382, 0.102),    (0.138, 0.336),   6.0<seconds>,   1.0<seconds>
+        (0.698, 0.204),    (0.078, 0.204),   6.4F<seconds>,   2.5<seconds>
     ]
 
 #else
@@ -292,23 +292,23 @@ let TorpedoFiringPositions =
 
         // Firing origin positions left bank
 
-        (0.086, 0.214),    (0.318, 0.082),   5.0F<seconds>,   1.0F<seconds>
-        (0.086, 0.214),    (0.616, 0.214),   4.1F<seconds>,   2.5F<seconds>
-        (0.132, 0.390),    (0.454, 0.126),   6.2F<seconds>,   2.0F<seconds>
-        (0.132, 0.390),    (0.826, 0.390),   5.3F<seconds>,   3.0F<seconds>
-        (0.170, 0.592),    (0.776, 0.312),   7.0F<seconds>,   3.5F<seconds>
-        (0.170, 0.592),    (0.958, 0.592),   7.1F<seconds>,   2.0F<seconds>
-        (0.206, 0.790),    (0.846, 0.410),   7.2F<seconds>,   3.5F<seconds>
-        (0.206, 0.790),    (0.984, 0.790),   8.3F<seconds>,   1.0F<seconds>
+        (0.086, 0.214),    (0.318, 0.082),   5.0<seconds>,   1.0<seconds>
+        (0.086, 0.214),    (0.616, 0.214),   4.1<seconds>,   2.5<seconds>
+        (0.132, 0.390),    (0.454, 0.126),   6.2<seconds>,   2.0<seconds>
+        (0.132, 0.390),    (0.826, 0.390),   5.3<seconds>,   3.0<seconds>
+        (0.170, 0.592),    (0.776, 0.312),   7.0<seconds>,   3.5<seconds>
+        (0.170, 0.592),    (0.958, 0.592),   7.1<seconds>,   2.0<seconds>
+        (0.206, 0.790),    (0.846, 0.410),   7.2<seconds>,   3.5<seconds>
+        (0.206, 0.790),    (0.984, 0.790),   8.3<seconds>,   1.0<seconds>
         
         // Firing origin positions right bank
         
-        (0.382, 0.102),    (0.138, 0.336),   6.0F<seconds>,   1.0F<seconds>
-        (0.698, 0.204),    (0.078, 0.204),   6.4F<seconds>,   2.5F<seconds>
-        (0.698, 0.204),    (0.152, 0.490),   6.5F<seconds>,   2.5F<seconds>
-        (0.884, 0.454),    (0.130, 0.454),   7.6F<seconds>,   1.5F<seconds>
-        (0.962, 0.608),    (0.260, 0.914),   7.7F<seconds>,   3.0F<seconds>
-        (0.962, 0.608),    (0.178, 0.608),   7.8F<seconds>,   1.0F<seconds>
+        (0.382, 0.102),    (0.138, 0.336),   6.0<seconds>,   1.0<seconds>
+        (0.698, 0.204),    (0.078, 0.204),   6.4<seconds>,   2.5<seconds>
+        (0.698, 0.204),    (0.152, 0.490),   6.5<seconds>,   2.5<seconds>
+        (0.884, 0.454),    (0.130, 0.454),   7.6<seconds>,   1.5<seconds>
+        (0.962, 0.608),    (0.260, 0.914),   7.7<seconds>,   3.0<seconds>
+        (0.962, 0.608),    (0.178, 0.608),   7.8<seconds>,   1.0<seconds>
     ]
 
 #endif
@@ -661,7 +661,7 @@ let RenderSecretPassageScreen render secretPassageScreenModel gameTime =
             Damage           = 0u
             MaxDamage        = 0u
             PlaneIntel       = None
-            Elevation        = 0.0F<degrees>
+            Elevation        = 0.0<degrees>
         }
 
     DrawScorePanel render h scorePanel

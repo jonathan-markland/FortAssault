@@ -44,12 +44,12 @@ and private GameOverStory scoreAndHiScore gameTime =
             outgoingGameState
             (EnterYourNameStory scoreAndHiScore gameTime) ComingFromLeft
             ScreenWidthInt ScreenHeightInt
-            SpeedingUpMotion 1.0F<seconds> gameTime 
+            SpeedingUpMotion 1.0<seconds> gameTime 
 
     NewGameOverScreen scoreAndHiScore gameTime
         |> WithDrawingOnlyFor GameOverPauseTime gameTime slideInEnterYourName  // TODO: Can we remove FreezeFrame dependency?  Possibly want to erase FreezeFrame
 
-and private MissionIIStory betweenScreenStatus (gameTime:float32<seconds>) =
+and private MissionIIStory betweenScreenStatus (gameTime:GameTime) =
 
     NewMissionIIScreen
         GameOverStory

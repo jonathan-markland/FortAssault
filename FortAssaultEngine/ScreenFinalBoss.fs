@@ -26,13 +26,13 @@ open GameStateManagement
 let private TargetTriggerDistance     =   3.0F<epx>
 let private InitialPlayerGunPositionX = 160.0F<epx>
 let private BossGunCentrePosition     = { ptx=160.0F<epx> ; pty=20.0F<epx> }
-let private PauseTimeWhenEnded        =   4.0F<seconds>
-let private BossAnimationDuration     =  20.0F<seconds>
-let private ExplosionDuration         =   0.75F<seconds>
-let private FlagFlutterAnimDuration   =   0.5F<seconds>
+let private PauseTimeWhenEnded        =   4.0<seconds>
+let private BossAnimationDuration     =  20.0<seconds>
+let private ExplosionDuration         =   0.75<seconds>
+let private FlagFlutterAnimDuration   =   0.5<seconds>
 let private ScoreForHittingTarget     =  2000u
-let private GunStepRate               =   30.0F<degrees/seconds>
-let private InitialGunElevation       =   30.0F<degrees>
+let private GunStepRate               =   30.0<degrees/seconds>
+let private InitialGunElevation       =   30.0<degrees>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
@@ -58,8 +58,8 @@ let private ExplosionFlickBookType () =  // TODO: Made into a function because o
 
 type private AlliedState =
     | AlliedTankInPlay
-    | WonScreen        of startTime : float32<seconds>
-    | TankIsShot       of startTime : float32<seconds>
+    | WonScreen        of startTime : GameTime
+    | TankIsShot       of startTime : GameTime
     | FinalBossScreenOver
 
 type private FinalBossScreenModel =
@@ -67,14 +67,14 @@ type private FinalBossScreenModel =
         FinalBossTargets           : FinalBossTargets
         ScoreAndHiScore            : ScoreAndHiScore
         TanksRemaining             : uint32
-        ScreenStartTime            : float32<seconds>
+        ScreenStartTime            : GameTime
         GunAim                     : GunAim
         AlliedState                : AlliedState
         Explosions                 : FlickBookInstance list
         BossGunFlickBook           : FlickBookInstance
         WhereToGoOnGameOver        : ScoreAndHiScore -> ErasedGameState
-        WhereToOnVictory           : ScoreAndHiScore -> float32<seconds> -> ErasedGameState
-        WhereToOnTankDestroyed     : int -> uint32 -> ScoreAndHiScore -> FinalBossTargets -> float32<seconds> -> ErasedGameState
+        WhereToOnVictory           : ScoreAndHiScore -> GameTime -> ErasedGameState
+        WhereToOnTankDestroyed     : int -> uint32 -> ScoreAndHiScore -> FinalBossTargets -> GameTime -> ErasedGameState
         MapNumber                  : int
     }
 
@@ -158,7 +158,7 @@ let private RenderFinalBossScreen render (model:FinalBossScreenModel) gameTime =
     let h = imgBack.ImageMetadata.ImageHeight
 
     let DrawGun gameTime =
-        Gun.DrawGun render (h |> IntToFloatEpx) model.GunAim gameTime
+        Gun.DrawGun render (h |> IntToF32Epx) model.GunAim gameTime
 
     match model.AlliedState with
 
@@ -257,7 +257,7 @@ let private OldNextFinalBossScreenState oldState keyStateGetter gameTime frameEl
                     explosions |> WithCompletedFlickbooksRemoved gameTime
 
                 let gunBaseY =
-                    (ImageFinalBossBackground |> ImageFromID).ImageMetadata.ImageHeight |> IntToFloatEpx
+                    (ImageFinalBossBackground |> ImageFromID).ImageMetadata.ImageHeight |> IntToF32Epx
                 
                 let gun =
                     UpdatedGunAimAccordingToInput input gameTime frameElapsedTime gunBaseY gun

@@ -55,8 +55,8 @@ let inline ImageDimensions imageWithHostObject =
 
 /// Obtain the dimensions of the given image as floating point.
 let inline ImageDimensionsF imageWithHostObject =
-    (imageWithHostObject.ImageMetadata.ImageWidth |> IntToFloatEpx , 
-        imageWithHostObject.ImageMetadata.ImageHeight |> IntToFloatEpx)  // TODO: Use Dimensions2D type
+    (imageWithHostObject.ImageMetadata.ImageWidth |> IntToF32Epx , 
+        imageWithHostObject.ImageMetadata.ImageHeight |> IntToF32Epx)  // TODO: Use Dimensions2D type
 
 let inline ImageDimensionsF_v2 imageWithHostObject =  // TODO: Supercede.
     {

@@ -8,8 +8,8 @@ let private image colourKey fileName width height =
     {
         ImageTransparency = colourKey
         ImageFileName  = fileName
-        ImageWidth     = width  |> IntToIntEpx
-        ImageHeight    = height |> IntToIntEpx
+        ImageWidth     = width  |> AsIntEpx
+        ImageHeight    = height |> AsIntEpx
     }
 
 let private font fileName width charWidth charHeight =

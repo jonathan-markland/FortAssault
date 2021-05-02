@@ -45,7 +45,7 @@ type private MapBeforeBeachLandingScreenModel =
         ScoreAndHiScore  : ScoreAndHiScore
         ShipsThrough     : uint32
         Location         : Point<float32<epx>>
-        BeachLandingCtor : float32<seconds> -> ErasedGameState
+        BeachLandingCtor : GameTime -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -72,7 +72,7 @@ let private RenderMapBeforeBeachLandingScreen render (model:MapBeforeBeachLandin
             Damage           = 0u
             MaxDamage        = 0u
             PlaneIntel       = None
-            Elevation        = 0.0F<degrees>
+            Elevation        = 0.0<degrees>
         }
 
     DrawScorePanel render mapHeight scorePanel

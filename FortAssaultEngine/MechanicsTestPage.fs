@@ -10,15 +10,15 @@ open ImagesAndFonts
 open StaticResourceAccess
 open GameStateManagement
 
-let private AnimDurationSeconds = 3.0F<seconds>
-let private AnimRepeatPeriod    = 5.0F<seconds>
+let private AnimDurationSeconds = 3.0<seconds>
+let private AnimRepeatPeriod    = 5.0<seconds>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 type private MechanicsTestPageScreenModel =
     {
-        Functions     :  (float32<seconds> -> MOMReason) list
-        RepeatAtTime  :   float32<seconds>
+        Functions     :  (GameTime -> MOMReason) list
+        RepeatAtTime  :   GameTime
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 

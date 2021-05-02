@@ -18,7 +18,7 @@ open StaticResourceAccess
 type Shell =
     {
         ShellMechanicsObject : MechanicsObjectModel
-        ShellStartTime       : float32<seconds>  // TODO: Delete this an use the one inside the ShellMechanicsObject
+        ShellStartTime       : GameTime  // TODO: Delete this an use the one inside the ShellMechanicsObject
     }
 
 type GunType = SingleBarrelGun | DoubleBarrelGun
@@ -28,22 +28,22 @@ type GunTraits =
         GunType              : GunType
         GunLeftExtent        : float32<epx>
         GunRightExtent       : float32<epx>
-        GunStepRatePerSecond : float32<epx/seconds>
+        GunStepRatePerSecond : float<epx/seconds>
         HighestShellY        : float32<epx>
-        GunRepeatTime        : float32<seconds>  // TODO: Turn into a parameter of GunAim within GunType field?
-        GunShellDuration     : float32<seconds>  // TODO: More realistic in sea battle to relate this to elevation.
-        GunLowestElevation   : float32<degrees>
-        GunHighestElevation  : float32<degrees>
-        GunElevationStepRate : float32<degrees/seconds>
+        GunRepeatTime        : GameTime  // TODO: Turn into a parameter of GunAim within GunType field?
+        GunShellDuration     : GameTime  // TODO: More realistic in sea battle to relate this to elevation.
+        GunLowestElevation   : float<degrees>
+        GunHighestElevation  : float<degrees>
+        GunElevationStepRate : float<degrees/seconds>
     }
 
 type GunAim =
     {
         GunTraits           : GunTraits
         GunCentreX          : float32<epx>
-        GunElevation        : float32<degrees>
+        GunElevation        : float<degrees>
         Shells              : Shell list
-        LastFireTime        : float32<seconds>
+        LastFireTime        : GameTime
     }
 
 let DefaultGunTraits gunType stepRate =
@@ -51,12 +51,12 @@ let DefaultGunTraits gunType stepRate =
         GunType              = gunType
         GunLeftExtent        =  20.0F<epx>
         GunRightExtent       = 300.0F<epx>
-        GunStepRatePerSecond =  80.0F<epx/seconds>
+        GunStepRatePerSecond =  80.0<epx/seconds>
         HighestShellY        =   0.0F<epx>
-        GunRepeatTime        =   0.5F<seconds>   // TODO: Turn into a parameter of GunAim within GunType field?
-        GunShellDuration     =   0.7F<seconds>   // TODO: More realistic in sea battle to relate this to elevation.
-        GunLowestElevation   =  5.0F<degrees>
-        GunHighestElevation  = 80.0F<degrees>
+        GunRepeatTime        =   0.5<seconds>   // TODO: Turn into a parameter of GunAim within GunType field?
+        GunShellDuration     =   0.7<seconds>   // TODO: More realistic in sea battle to relate this to elevation.
+        GunLowestElevation   =  5.0<degrees>
+        GunHighestElevation  = 80.0<degrees>
         GunElevationStepRate = stepRate
     }
 
@@ -103,31 +103,31 @@ let DrawGun render gunBaseY gunAim gameTime =
         match shell.ShellMechanicsObject.PositionGetter gameTime with
 
             | MOMVisibleAtPosition({ptx=x ; pty=y}) ->
-                let v = (1.0F - ShellPercentageCompleted gunAim.GunTraits shell gameTime)
-                let w = v * 12.0F<epx> + 4.0F<epx>   // TODO: base on ShipGunBulletImageWidth
-                let h = v * 5.0F<epx> + 1.0F<epx>
+                let v = (1.0 - ShellPercentageCompleted gunAim.GunTraits shell gameTime)
+                let w = (v * 12.0<epx> + 4.0<epx>) |> EpxF64toF32  // TODO: base on ShipGunBulletImageWidth
+                let h = (v * 5.0<epx> + 1.0<epx> ) |> EpxF64toF32
                 let x = x - (w / 2.0F)
                 let y = y - (h / 2.0F)
-                ImageStretched render x y (ShipGunBulletImageID |> ImageFromID) (w |> FloatEpxToIntEpx) (h |> FloatEpxToIntEpx)
+                ImageStretched render x y (ShipGunBulletImageID |> ImageFromID) (w |> RoundF32EpxToIntEpx) (h |> RoundF32EpxToIntEpx)
 
             | _ -> ()
 
     let drawGun (centreX:float32<epx>) =
         let struct (stemHeight, nozzleHeight, stemTopY, nozzleTopY) = GetGunImageLocation gunBaseY gunAim
-        let stemLeftX   = centreX - ((ShipGunStemImageWidth / 2) |> IntToFloatEpx)
-        let nozzleLeftX = centreX - ((ShipGunNozzleImageWidth / 2) |> IntToFloatEpx)
+        let stemLeftX   = centreX - ((ShipGunStemImageWidth / 2) |> IntToF32Epx)
+        let nozzleLeftX = centreX - ((ShipGunNozzleImageWidth / 2) |> IntToF32Epx)
 
         ImageStretched 
             render 
             stemLeftX stemTopY 
             (ShipGunStemImageID |> ImageFromID) 
-            ShipGunStemImageWidth (stemHeight |> FloatEpxToIntEpx)
+            ShipGunStemImageWidth (stemHeight |> RoundF32EpxToIntEpx)
 
         ImageStretched 
             render 
             nozzleLeftX nozzleTopY 
             (ShipGunNozzleImageID |> ImageFromID) 
-            ShipGunNozzleImageWidth (nozzleHeight |> FloatEpxToIntEpx)
+            ShipGunNozzleImageWidth (nozzleHeight |> RoundF32EpxToIntEpx)
 
     match gunAim.GunTraits.GunType with
 
@@ -159,8 +159,11 @@ let NewShell gunCentreX gunBaseY gunAim gameTime =
     
     let x = gunCentreX
 
+    let highestY =
+        TopmostScreenPositionOfShellByElevation gunAim.GunTraits nozzleTopY gunAim.GunElevation
+
     let shellStartPosition = { ptx=x ; pty=nozzleTopY }
-    let shellEndPosition   = { ptx=x ; pty=TopmostScreenPositionOfShellByElevation gunAim.GunTraits nozzleTopY gunAim.GunElevation       }
+    let shellEndPosition   = { ptx=x ; pty=highestY }
 
     {
         ShellStartTime = gameTime
@@ -177,11 +180,11 @@ let NewShell gunCentreX gunBaseY gunAim gameTime =
 
 /// WARNING:  Completed shells are NOT removed, thus allowing completed shells
 ///           to be identified (and reported at their final point) by the caller.
-let UpdatedGunAimAccordingToInput input gameTime frameElapsedTime gunBaseY oldGun =
+let UpdatedGunAimAccordingToInput input (gameTime:GameTime) (frameElapsedTime:GameTime) gunBaseY oldGun =
 
     let gunTraits = oldGun.GunTraits
 
-    let e = oldGun.GunElevation      
+    let e = oldGun.GunElevation
     let x = oldGun.GunCentreX
     let shells = oldGun.Shells
     let lastFireTime = oldGun.LastFireTime
@@ -200,9 +203,11 @@ let UpdatedGunAimAccordingToInput input gameTime frameElapsedTime gunBaseY oldGu
         if input.Left.Held && input.Right.Held then
             x
         elif input.Left.Held then
-            max gunTraits.GunLeftExtent (x - gunTraits.GunStepRatePerSecond * frameElapsedTime)
+            let a = (gunTraits.GunStepRatePerSecond * frameElapsedTime) |> EpxF64toF32
+            max gunTraits.GunLeftExtent (x - a)
         elif input.Right.Held then
-            min gunTraits.GunRightExtent (x + gunTraits.GunStepRatePerSecond * frameElapsedTime)
+            let a = (gunTraits.GunStepRatePerSecond * frameElapsedTime) |> EpxF64toF32
+            min gunTraits.GunRightExtent (x + a)
         else
             x
 

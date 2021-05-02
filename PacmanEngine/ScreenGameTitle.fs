@@ -28,7 +28,7 @@ type private GameTitleScreenModel =
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
+let private RenderGameTitleScreen render model (gameTime:GameTime) =
 
     let backgroundImage = Background2ImageID |> ImageFromID
     Image1to1 render 0<epx> 0<epx> backgroundImage

@@ -19,7 +19,7 @@ open ImagesAndFonts
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private PauseDuration = 2.0F<seconds>
+let private PauseDuration = 2.0<seconds>
 
 let private DefaultAlliedFleetLocation = { ptx=290.0F<epx> ; pty=15.0F<epx> }
 
@@ -75,8 +75,8 @@ type private InitialMapScreenModel =
         ScoreAndHiScore     : ScoreAndHiScore
         AlliedFleetCentre   : Point<float32<epx>>
         EnemyFleetCentre    : Point<float32<epx>>
-        SecretPassageCtor   : float32<seconds> -> ErasedGameState
-        EngageEnemyCtor     : float32<seconds> -> ErasedGameState
+        SecretPassageCtor   : GameTime -> ErasedGameState
+        EngageEnemyCtor     : GameTime -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -105,7 +105,7 @@ let private RenderInitialMapScreen render (model:InitialMapScreenModel) _gameTim
             Damage           = 0u
             MaxDamage        = 0u
             PlaneIntel       = None
-            Elevation        = 0.0F<degrees> // TODO:  Should this be optional?
+            Elevation        = 0.0<degrees> // TODO:  Should this be optional?
         }
 
     DrawScorePanel render mapHeight scorePanel

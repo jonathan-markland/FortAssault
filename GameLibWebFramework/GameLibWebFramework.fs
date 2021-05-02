@@ -297,8 +297,8 @@ let InitWebFrameworkThenDo
         } = retroScreenSettings
 
     JSInitialiseWebGl2Interface 
-        (retroScreenWidth |> IntEpxToInt)
-        (retroScreenHeight |> IntEpxToInt)
+        (retroScreenWidth |> RemoveEpxFromInt)
+        (retroScreenHeight |> RemoveEpxFromInt)
         retroScreenTitle
 
     let soundFileNameGetter metadata =
@@ -343,35 +343,35 @@ let private RenderToWebGL2 drawingCommand =
         | DrawImageWithTopLeftAtInt(left, top, imageVisual) ->
             DrawImage 
                 imageVisual.HostImageRef 
-                (imageVisual.ImageMetadata.ImageWidth |> IntEpxToInt)
-                (imageVisual.ImageMetadata.ImageHeight |> IntEpxToInt)
-                (left |> IntEpxToInt) (top |> IntEpxToInt)
+                (imageVisual.ImageMetadata.ImageWidth |> RemoveEpxFromInt)
+                (imageVisual.ImageMetadata.ImageHeight |> RemoveEpxFromInt)
+                (left |> RemoveEpxFromInt) (top |> RemoveEpxFromInt)
 
         | DrawStretchedImageWithTopLeftAt(left, top, imageVisual, width, height) ->
             let (texw,texh) = (imageVisual.ImageMetadata.ImageWidth , imageVisual.ImageMetadata.ImageHeight)
             DrawSubImage 
                 imageVisual.HostImageRef 
-                (texw |> IntEpxToInt)
-                (texh |> IntEpxToInt)
-                0 0 (texw |> IntEpxToInt) (texh |> IntEpxToInt) 
-                (left |> FloatEpxToInt) (top |> FloatEpxToInt) (width |> IntEpxToInt) (height |> IntEpxToInt)
+                (texw |> RemoveEpxFromInt)
+                (texh |> RemoveEpxFromInt)
+                0 0 (texw |> RemoveEpxFromInt) (texh |> RemoveEpxFromInt) 
+                (left |> RoundF32EpxToInt) (top |> RoundF32EpxToInt) (width |> RemoveEpxFromInt) (height |> RemoveEpxFromInt)
 
         | DrawSubImageStretchedToTarget(srcleft, srctop, srcwidth, srcheight, dstleft, dsttop, dstwidth, dstheight, imageVisual) ->
             DrawSubImage 
                 imageVisual.HostImageRef 
-                (imageVisual.ImageMetadata.ImageWidth |> IntEpxToInt)
-                (imageVisual.ImageMetadata.ImageHeight |> IntEpxToInt)
+                (imageVisual.ImageMetadata.ImageWidth |> RemoveEpxFromInt)
+                (imageVisual.ImageMetadata.ImageHeight |> RemoveEpxFromInt)
                 srcleft srctop srcwidth srcheight 
-                (dstleft |> FloatEpxToInt) 
-                (dsttop |> FloatEpxToInt) 
-                (dstwidth |> IntEpxToInt) 
-                (dstheight |> IntEpxToInt)
+                (dstleft |> RoundF32EpxToInt) 
+                (dsttop |> RoundF32EpxToInt) 
+                (dstwidth |> RemoveEpxFromInt) 
+                (dstheight |> RemoveEpxFromInt)
 
         | DrawFilledRectangle(left, top, width, height, SolidColour colour) ->
-            let width  = width  |> IntEpxToInt
-            let height = height |> IntEpxToInt
-            let left   = left   |> IntEpxToInt
-            let top    = top    |> IntEpxToInt
+            let width  = width  |> RemoveEpxFromInt
+            let height = height |> RemoveEpxFromInt
+            let left   = left   |> RemoveEpxFromInt
+            let top    = top    |> RemoveEpxFromInt
             DrawFilledRectangle 
                 left top width height 
                 colour
@@ -396,8 +396,8 @@ let FrameworkWebMain
             | Error msg -> failwith msg
             | Ok globals -> globals
 
-    let gameTime = 0.0F<seconds>
-    let frameElapsedTime = 0.02F<seconds>  // TODO: Revisit parameterisation of frame rate.
+    let gameTime = 0.0<seconds>
+    let frameElapsedTime = 0.02<seconds>  // TODO: Revisit parameterisation of frame rate.
 
     let mutable gameState : ErasedGameState =
         gameplayStartConstructor gameGlobalState gameTime
@@ -438,7 +438,7 @@ let FrameworkWebMain
         tickCount <- tickCount + 1u
                 
         let gameTime = 
-            (float32 tickCount) / 50.0F |> InSeconds  // TODO: Revisit parameterisation of frame rate.
+            (float tickCount) / 50.0 |> InSeconds  // TODO: Revisit parameterisation of frame rate.
                 
         gameState.Draw renderFunction gameTime
 

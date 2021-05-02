@@ -59,7 +59,7 @@ type PacMode =
 
     /// Pacman flashing during death phase.
     /// Player cannot control during this.
-    | PacDyingUntil of float32<seconds>
+    | PacDyingUntil of GameTime
 
     /// Signal main loop to decrement lives count and switch to life lost card.
     | PacDead
@@ -127,7 +127,7 @@ type GhostMode =
 
     /// Ghost is edible until the given time.
     /// If eaten during this time, it will return to base.
-    | GhostEdibleUntil of float32<seconds>
+    | GhostEdibleUntil of GameTime
 
     /// Ghost is returning to base, and will change to GhostRegeneratingUntil
     /// state when it gets to its GhostHomePosition spot.
@@ -135,7 +135,7 @@ type GhostMode =
 
     /// Ghost is at its home spot, and is re-generating until the
     /// given game time whereupon it returns to GhostNormal.
-    | GhostRegeneratingUntil of float32<seconds>
+    | GhostRegeneratingUntil of GameTime
 
 
 
@@ -228,15 +228,15 @@ let DrawPacTileInt render image x y (tileIndex:int) gameTime =
 
         let xIndex =
             if tileIndex = ((int) TileIndex.Pill1) then
-                gameTime |> PulseBetween 10.0F ((int) TileIndex.Pill1) ((int) TileIndex.Pill2)
+                gameTime |> PulseBetween 10.0 ((int) TileIndex.Pill1) ((int) TileIndex.Pill2)
             else
                 tileIndex
 
         render (
             DrawSubImageStretchedToTarget (
                 (xIndex - 1) * 16, 0, 16, 16,   // subtract 1 because we don't store image data for the blank tile.
-                (x |> IntEpxToInt |> IntToFloatEpx), 
-                (y |> IntEpxToInt |> IntToFloatEpx), 
+                (x |> RemoveEpxFromInt |> IntToF32Epx), // TODO: reconsider library
+                (y |> RemoveEpxFromInt |> IntToF32Epx), 
                 16<epx>, 
                 16<epx>,
                 image)) 
@@ -247,7 +247,7 @@ type PacDrawType = DrawPacNormal | DrawPacPillMode | DrawPacZapped
 
 /// Draw pac man image with top left at pos facing in the direction given,
 /// with appropriate open/closed mouth animation.
-let DrawPacManAlive render image pos facingDirection pacDrawType (gameTime:float32<seconds>) =
+let DrawPacManAlive render image pos facingDirection pacDrawType (gameTime:GameTime) =
 
     let { ptx=x ; pty=y } = pos
 
@@ -266,8 +266,8 @@ let DrawPacManAlive render image pos facingDirection pacDrawType (gameTime:float
                 pacDirectionalImageIndex (pacDirectionalImageIndex + 4) 
 
         match pacDrawType with
-            | DrawPacNormal   -> imageWithSnapSpeedTimes 1.0F
-            | DrawPacPillMode -> imageWithSnapSpeedTimes 2.0F
+            | DrawPacNormal   -> imageWithSnapSpeedTimes 1.0
+            | DrawPacPillMode -> imageWithSnapSpeedTimes 2.0
             | DrawPacZapped ->
                 pacDirectionalImageIndex
 
@@ -277,7 +277,7 @@ let DrawPacManAlive render image pos facingDirection pacDrawType (gameTime:float
 
 /// Draw ghost image with top left at pos, selecting the appropriate
 /// ghost colour and eyes animation frame.
-let DrawGhost render image pos (GhostNumber(ghostNumber)) ghostMode (gameTime:float32<seconds>) =
+let DrawGhost render image pos (GhostNumber(ghostNumber)) ghostMode (gameTime:GameTime) =
 
     let { ptx=x ; pty=y } = pos
 
@@ -305,7 +305,7 @@ let DrawGhost render image pos (GhostNumber(ghostNumber)) ghostMode (gameTime:fl
 
     DrawPacTileInt render image x y ghostImageIndex gameTime
 
-    let wiggleRate = EyesTwitchesPerSecond * (float32 (ghostNumber + 1))
+    let wiggleRate = EyesTwitchesPerSecond * (float (ghostNumber + 1))
     let eyes = gameTime |> PulseBetween wiggleRate TileIndex.Eyes1 TileIndex.Eyes2
 
     DrawPacTileInt render image x y ((int) eyes) gameTime

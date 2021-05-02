@@ -6,15 +6,33 @@
 /// This is the units with which the game engine calculates.
 [<Measure>] type epx
 
-let inline Float32ToEpx (x:float32) = LanguagePrimitives.Float32WithMeasure<epx> (x)
+// - - Units Management Casts - -
 
-let inline IntEpxToInt (x:int<epx>) = int (x)
-let inline IntToIntEpx (x:int)      = LanguagePrimitives.Int32WithMeasure<epx> x
+/// Apply units to plain 32-bit float.  To be used with care!
+let inline AsF32Epx (f:float32) = LanguagePrimitives.Float32WithMeasure<epx> (f)
 
-let inline FloatEpxToInt x = int (x + 0.5F<epx>)
-let inline IntToFloatEpx x = Float32ToEpx (float32 x)
+/// Apply units to plain int.  To be used with care!
+let inline AsIntEpx (i:int)      = LanguagePrimitives.Int32WithMeasure<epx> i
 
-let inline FloatEpxToIntEpx x = x |> FloatEpxToInt |> IntToIntEpx
+/// Apply units after converting int to 32-bit float.  To be used with care!
+let inline IntToF32Epx i = i |> (float32) |> AsF32Epx
+
+/// Remove units of measure from int<epx>
+let inline RemoveEpxFromInt (i:int<epx>) = int i
+
+// - - Units Management - -
+
+/// Type conversion retaining units of measure.
+let inline EpxF32toF64 (f:float32<epx>) = LanguagePrimitives.FloatWithMeasure<epx>   (float f)
+
+/// Type conversion retaining units of measure.
+let inline EpxF64toF32 (f:float<epx>)   = LanguagePrimitives.Float32WithMeasure<epx> (float32 f)
+
+/// For calling graphics APIs
+let inline RoundF32EpxToInt f = int (f + 0.5F<epx>)
+
+/// For calling graphics APIs
+let inline RoundF32EpxToIntEpx f = f |> RoundF32EpxToInt |> AsIntEpx
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 

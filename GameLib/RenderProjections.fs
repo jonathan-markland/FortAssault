@@ -20,15 +20,15 @@ let OffsetBy (pt:Point<int<epx>>) render =
 
             | DrawStretchedImageWithTopLeftAt (x,y,img,w,h) -> 
                 DrawStretchedImageWithTopLeftAt (
-                    (ofx + (x |> FloatEpxToIntEpx)) |> IntToFloatEpx,
-                    (ofy + (y |> FloatEpxToIntEpx)) |> IntToFloatEpx,
+                    (ofx + (x |> RoundF32EpxToIntEpx)) |> IntToF32Epx,
+                    (ofy + (y |> RoundF32EpxToIntEpx)) |> IntToF32Epx,
                     img,w,h)
 
             | DrawSubImageStretchedToTarget (sx,sy,sw,sh,dx,dy,dw,dh,img) ->
                 DrawSubImageStretchedToTarget (
                     sx,sy,sw,sh,
-                    (ofx + (dx |> FloatEpxToIntEpx)) |> IntToFloatEpx,
-                    (ofy + (dy |> FloatEpxToIntEpx)) |> IntToFloatEpx,
+                    (ofx + (dx |> RoundF32EpxToIntEpx)) |> IntToF32Epx,
+                    (ofy + (dy |> RoundF32EpxToIntEpx)) |> IntToF32Epx,
                     dw,dh,img)
             )
 

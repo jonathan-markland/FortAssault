@@ -38,7 +38,7 @@ type private MapPostPassageScreenModel =
         ShipsThrough      : uint32
         AlliedFleetCentre : Point<float32<epx>>
         EnemyFleetCentre  : Point<float32<epx>>
-        BattleCtor        : float32<seconds> -> ErasedGameState
+        BattleCtor        : GameTime -> ErasedGameState
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -68,7 +68,7 @@ let private RenderMapPostPassageScreen render (model:MapPostPassageScreenModel) 
             Damage           = 0u
             MaxDamage        = 0u
             PlaneIntel       = None
-            Elevation        = 0.0F<degrees>
+            Elevation        = 0.0<degrees>
         }
 
     DrawScorePanel render h scorePanel

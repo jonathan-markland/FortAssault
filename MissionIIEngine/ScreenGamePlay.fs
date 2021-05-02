@@ -74,8 +74,8 @@ let MovedBy8way movementDirection speed point =
     let (dx,dy) = DeltasForEightWayDirection movementDirection
 
     {
-        ptx = point.ptx + ((dx |> IntToFloatEpx) * speed)
-        pty = point.pty + ((dy |> IntToFloatEpx) * speed)
+        ptx = point.ptx + ((dx |> IntToF32Epx) * speed)
+        pty = point.pty + ((dy |> IntToF32Epx) * speed)
     }
 
 
@@ -129,7 +129,7 @@ let ManExclusionRectangleAround (ViewPoint manCentre) =
     let manImage = ImageFromID FacingUpImageID
     let w = manImage.ImageMetadata.ImageWidth + ManExclusionRectangleExtension
     let h = manImage.ImageMetadata.ImageHeight + ManExclusionRectangleExtension
-    RectangleCenteredAbout { ptx=(manCentre.ptx) |> FloatEpxToIntEpx ; pty=(manCentre.pty) |> FloatEpxToIntEpx } { dimx=w ; dimy=h } 2
+    RectangleCenteredAbout { ptx=(manCentre.ptx) |> RoundF32EpxToIntEpx ; pty=(manCentre.pty) |> RoundF32EpxToIntEpx } { dimx=w ; dimy=h } 2
 
 let DroidImageIndexFor droidType =
     match droidType with
@@ -367,15 +367,15 @@ let DownButtonHeld keyStateGetter =
 
 let inline DimensionsToFloat32Epx { dimx=dimx ; dimy=dimy } =  // TODO: possibly reconsider?
     {
-        dimx = ((float32) dimx) |> Float32ToEpx
-        dimy = ((float32) dimy) |> Float32ToEpx
+        dimx = ((float32) dimx) |> AsF32Epx
+        dimy = ((float32) dimy) |> AsF32Epx
     }
 
 let Offset point =
     let (ViewPoint { ptx=x ; pty=y }) = point
     { 
-        ptx = ((float32 x) + (float32 PlayAreaOffsetX)) |> Float32ToEpx 
-        pty = ((float32 y) + (float32 PlayAreaOffsetY)) |> Float32ToEpx 
+        ptx = ((float32 x) + (float32 PlayAreaOffsetX)) |> AsF32Epx 
+        pty = ((float32 y) + (float32 PlayAreaOffsetY)) |> AsF32Epx 
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -514,7 +514,7 @@ let PlacesWhereObjectsCanBeLocatedInLevel levelModel gameTime : Interactible lis
             {
                 InteractibleRoom           = roomOrigin
                 InteractibleType           = interactibleType
-                InteractibleCentrePosition = ViewPoint { ptx=x |> IntToFloatEpx ; pty=y |> IntToFloatEpx }
+                InteractibleCentrePosition = ViewPoint { ptx=x |> IntToF32Epx ; pty=y |> IntToF32Epx }
             })
         |> Seq.toList
 
@@ -695,7 +695,7 @@ let private RenderMissionIIScreen render (model:ScreenModel) gameTime =
         let potentialObjectPositionsInRoom = 
             AvailableObjectPositionsWithinRoom roomReference [] side
 
-        let colour = gameTime |> PulseBetween 10.0F (SolidColour 0xFF0000u) (SolidColour 0x0000FFu) 
+        let colour = gameTime |> PulseBetween 10.0 (SolidColour 0xFF0000u) (SolidColour 0x0000FFu) 
 
         potentialObjectPositionsInRoom
             |> Seq.iter (fun (x,y) -> 
@@ -747,12 +747,12 @@ let LevelTileMatrixDetails () =
 
 let IntersectsWalls hitTestDistance roomReference itemCentre =
 
-    let hitTestDistance = hitTestDistance |> FloatEpxToIntEpx
+    let hitTestDistance = hitTestDistance |> RoundF32EpxToIntEpx
 
     let (ViewPoint { ptx=x ; pty=y }) = itemCentre
 
-    let xi = (x |> FloatEpxToIntEpx) - hitTestDistance
-    let yi = (y |> FloatEpxToIntEpx) - hitTestDistance
+    let xi = (x |> RoundF32EpxToIntEpx) - hitTestDistance
+    let yi = (y |> RoundF32EpxToIntEpx) - hitTestDistance
 
     let viewportWindow =
         {
@@ -784,8 +784,8 @@ let IntersectsWalls hitTestDistance roomReference itemCentre =
 
 let OutOfPlayAreaBounds (ViewPoint point) =
 
-    let sideh = (BrickTileWidth  * NumBricksPerSide) |> IntToFloatEpx
-    let sidev = (BrickTileHeight * NumBricksPerSide) |> IntToFloatEpx
+    let sideh = (BrickTileWidth  * NumBricksPerSide) |> IntToF32Epx
+    let sidev = (BrickTileHeight * NumBricksPerSide) |> IntToF32Epx
 
     point.ptx < 0.0F<epx> || point.pty < 0.0F<epx> || point.ptx > sideh || point.pty > sidev
 
@@ -798,7 +798,7 @@ let OutOfPlayAreaBounds (ViewPoint point) =
 
 let NewBulletFrom (ViewPoint { ptx=x ; pty=y }) startDistanceAway direction =
 
-    let converted x = x |> float32 |> Float32ToEpx
+    let converted x = x |> float32 |> AsF32Epx
     let (dx,dy) = DeltasForEightWayDirection direction
     let (fdx,fdy) = (converted dx , converted dy)
 
@@ -1098,7 +1098,7 @@ let NewDroidsForRoom levelNumber placesForAdversariesInThisRoom gameTime =
 
     chosenPositions
         |> Seq.mapi (fun i (centreX,centreY) ->
-            let newDroidCentre = (centreX |> IntToFloatEpx, centreY |> IntToFloatEpx)
+            let newDroidCentre = (centreX |> IntToF32Epx, centreY |> IntToF32Epx)
             newDroidBy levelNumber i newDroidCentre)
         |> Seq.toList
 
@@ -1141,8 +1141,8 @@ let MovedToNewPositionsWhileConsidering (manCentre:ViewPoint) roomReference game
 
         let (ViewPoint centre) = centre
 
-        let rotationAmountByTime (time:float32<seconds>) =
-            let delta = (((int) (time * 7.0F)) % 5) - 2  // 7.0 is arbitrary.
+        let rotationAmountByTime (time:GameTime) =
+            let delta = (((int) (time * 7.0)) % 5) - 2  // 7.0 is arbitrary.
             System.Diagnostics.Debug.Assert (delta >= -2 && delta <= 2)
             delta
 
@@ -1226,7 +1226,7 @@ let DroidsExplodedIfShotBy bullets gameTime droids =
 
 
 
-let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
+let DroidsPossiblyFiring man (gameTime:GameTime) droids =
 
     let possiblyFireIn direction (ViewPoint droidCentre) =
         Some (NewBulletFrom (ViewPoint droidCentre) DroidFiringStartDistance direction)
@@ -1251,7 +1251,7 @@ let DroidsPossiblyFiring man (gameTime:float32<seconds>) droids =
         droidList |> List.filter CanDroidTypeFire
 
     let shouldConsiderNow =
-        ((int) ((gameTime * 50.0F) + 0.5F<seconds>)) % 50 = 0   // TODO: Hack until I refactor use of float32<seconds> throughout in favour of integer 'FrameCount of uint32'?
+        ((int) ((gameTime * 50.0) + 0.5<seconds>)) % 50 = 0   // TODO: Hack until I refactor use of GameTime throughout in favour of integer 'FrameCount of uint32'?
 
     if shouldConsiderNow then
         match droids |> filteredForDroidsThatCanFire with
@@ -1776,7 +1776,7 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
                     (Electrocuted man, Some ElectrocutionSoundID)
 
             else if (manVulnerable && manCentre |> IntersectsBullets droidBullets) then
-                let deathSound = gameTime |> PulseBetween 1.0F ManGrunt1SoundID ManGrunt2SoundID
+                let deathSound = gameTime |> PulseBetween 1.0 ManGrunt1SoundID ManGrunt2SoundID
                 (Dead man, Some deathSound)
 
             else
@@ -1878,7 +1878,7 @@ let private NextMissionIIScreenState gameState keyStateGetter gameTime elapsed =
                                 model |> WithLivesDecremented
 
                             if isGameOver then
-                                let gameOverSound = gameTime |> RotateBetweenGroup 1.0F [| GameOver1SoundID ; GameOver2SoundID ; GameOver3SoundID ; GameOver4SoundID |]
+                                let gameOverSound = gameTime |> RotateBetweenGroup 1.0 [| GameOver1SoundID ; GameOver2SoundID ; GameOver3SoundID ; GameOver4SoundID |]
                                 model.InnerScreenModel.WhereToOnGameOver model.InnerScreenModel.ScreenScore gameTime
                                     |> WithOneShotSound [PlaySoundEffect (SoundFromID gameOverSound)]
 

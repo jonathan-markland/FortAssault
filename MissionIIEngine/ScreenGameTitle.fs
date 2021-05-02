@@ -10,20 +10,20 @@ open ScoreboardModel
 open StaticResourceAccess
 open GamePlayScreenConstants
 
-let MainScreenSwitchRate = 0.125F
+let MainScreenSwitchRate = 0.125
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 type private GameTitleScreenModel =
     {
-        ScreenStartTime    : float32<seconds>
+        ScreenStartTime    : GameTime
         ScoreboardMemo     : string list
         MemoizedBackground : Image
     }
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
-let private RenderGameTitleScreen render model (gameTime:float32<seconds>) =
+let private RenderGameTitleScreen render model (gameTime:GameTime) =
 
     Image1to1 render 0<epx> 0<epx> (model.MemoizedBackground)
 
@@ -64,7 +64,7 @@ let NewGameTitleScreen globalScoreboard gameTime =
         {
             ScreenStartTime    = gameTime
             ScoreboardMemo     = ScoreboardText 24 globalScoreboard
-            MemoizedBackground = PulseBetween 1.0F BackgroundImageID Background2ImageID gameTime |> ImageFromID
+            MemoizedBackground = PulseBetween 1.0 BackgroundImageID Background2ImageID gameTime |> ImageFromID
         }
 
     NewGameState ModelNeverChanges RenderGameTitleScreen titleScreenModel

@@ -13,15 +13,15 @@ open Algorithm
 open ImagesAndFonts
 open StaticResourceAccess
 
-let SkyExplosionDuration  = 3.0F<seconds>
-let EnemyShipSinkDuration = 6.0F<seconds>
+let SkyExplosionDuration  = 3.0<seconds>
+let EnemyShipSinkDuration = 6.0<seconds>
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
 
 type AlliedState =
     | AlliedShipInPlay
-    | ShipSinking      of startTime:float32<seconds>
-    | WonScreen        of startTime:float32<seconds>
+    | ShipSinking      of startTime:GameTime
+    | WonScreen        of startTime:GameTime
     | AirOrSeaBattleScreenOver
 
 // - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - 
@@ -30,13 +30,13 @@ type AlliedState =
 
 let ReflectedElevation elevation =
 
-    if elevation <= 45.0F<degrees> then elevation else 90.0F<degrees> - elevation
+    if elevation <= 45.0<degrees> then elevation else 90.0<degrees> - elevation
 
 let ElevationToScreenY elevation =
 
     let angle                   = elevation |> ReflectedElevation
-    let angleInReverseUnitSpace = angle |> RangeMap 0.0F<degrees> 45.0F<degrees> 1.0F 0.0F
-    let asSquared               = angleInReverseUnitSpace |> Squared
+    let angleInReverseUnitSpace = angle |> RangeMap 0.0<degrees> 45.0<degrees> 1.0 0.0
+    let asSquared               = angleInReverseUnitSpace |> Squared |> (float32)
     let inScreenSpace           = asSquared |> RangeMap 0.0F 1.0F 100.0F<epx> 148.0F<epx>
     let result                  = inScreenSpace + 0.5F<epx>
     result
@@ -48,8 +48,8 @@ type EnemyShip =
         CentreX        : float32<epx>
         BaseY          : float32<epx>
         ShipImage      : Image
-        SinkStartTime  : float32<seconds> option
-        ElevationToHit : float32<degrees>
+        SinkStartTime  : GameTime option
+        ElevationToHit : float<degrees>
     }
 
 let NewEnemyShip centreX shipImage elevationToHit =
@@ -73,11 +73,11 @@ let DefaultEnemyShipsArrangement () =
 
 let DefaultEnemyShipsArrangement () =
     [
-        NewEnemyShip  29.0F<epx> (ImageEnemyShip0 |> ImageFromID) 44.0F<degrees>
-        NewEnemyShip 143.0F<epx> (ImageEnemyShip1 |> ImageFromID) 39.5F<degrees>
-        NewEnemyShip 198.0F<epx> (ImageEnemyShip2 |> ImageFromID) 36.5F<degrees>
-        NewEnemyShip 248.0F<epx> (ImageEnemyShip3 |> ImageFromID) 41.0F<degrees>
-        NewEnemyShip 288.0F<epx> (ImageEnemyShip4 |> ImageFromID) 32.5F<degrees>
+        NewEnemyShip  29.0F<epx> (ImageEnemyShip0 |> ImageFromID) 44.0<degrees>
+        NewEnemyShip 143.0F<epx> (ImageEnemyShip1 |> ImageFromID) 39.5<degrees>
+        NewEnemyShip 198.0F<epx> (ImageEnemyShip2 |> ImageFromID) 36.5<degrees>
+        NewEnemyShip 248.0F<epx> (ImageEnemyShip3 |> ImageFromID) 41.0<degrees>
+        NewEnemyShip 288.0F<epx> (ImageEnemyShip4 |> ImageFromID) 32.5<degrees>
     ]
 
 #endif
@@ -107,17 +107,19 @@ let DrawEnemyShips render listOfShips gameTime =
                 | Some(sinkStartTime) ->
                     let elapsed = gameTime - sinkStartTime
                     let offset = min elapsed EnemyShipSinkDuration
-                    (offset / EnemyShipSinkDuration) * (shipHeight |> IntToFloatEpx)
+                    let a = float32 (offset / EnemyShipSinkDuration)
+                    let b = (shipHeight |> IntToF32Epx)
+                    a * b
 
         let srcLeft   = 0
         let srcTop    = 0
-        let srcWidth  = shipWidth |> IntEpxToInt
-        let srcHeight = (shipHeight |> IntEpxToInt) - (sinkLevel |> FloatEpxToInt)
+        let srcWidth  = shipWidth |> RemoveEpxFromInt
+        let srcHeight = (shipHeight |> RemoveEpxFromInt) - (sinkLevel |> RoundF32EpxToInt)
 
-        let dstLeft   = ship.CentreX - ((shipWidth |> IntToFloatEpx) / 2.0F)
-        let dstTop    = ship.BaseY - ((shipHeight  |> IntToFloatEpx) - sinkLevel)
+        let dstLeft   = ship.CentreX - ((shipWidth |> IntToF32Epx) / 2.0F)
+        let dstTop    = ship.BaseY - ((shipHeight  |> IntToF32Epx) - sinkLevel)
         let dstWidth  = shipWidth
-        let dstHeight = srcHeight |> IntToIntEpx
+        let dstHeight = srcHeight |> AsIntEpx
         
         let cmd = 
             DrawSubImageStretchedToTarget(  // TODO: This broke the system with a struct-DU
@@ -149,8 +151,8 @@ let NewSkyExplosionFlickBook gameTime =
 
     let imgBack = ImageSeaBattleBackground0 |> ImageFromID
 
-    let w = imgBack.ImageMetadata.ImageWidth  |> IntToFloatEpx // They are all the same
-    let h = imgBack.ImageMetadata.ImageHeight |> IntToFloatEpx // They are all the same
+    let w = imgBack.ImageMetadata.ImageWidth  |> IntToF32Epx // They are all the same
+    let h = imgBack.ImageMetadata.ImageHeight |> IntToF32Epx // They are all the same
 
     {
         FlickBookType            = SkyExplosionFlickBookType ()

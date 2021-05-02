@@ -9,14 +9,14 @@ open GameStateManagement
 type private FreezeFrameModel =
     {
         FrozenGameState   : ErasedGameState
-        TimeFiddler       : float32<seconds> -> float32<seconds>
-        UnfreezeGameTime  : float32<seconds>
-        PostFreezeCtor    : ErasedGameState -> float32<seconds> -> ErasedGameState
+        TimeFiddler       : GameTime -> GameTime
+        UnfreezeGameTime  : GameTime
+        PostFreezeCtor    : ErasedGameState -> GameTime -> ErasedGameState
     }
 
 
 
-let private RenderFreezeFrame render model (gameTime:float32<seconds>) =
+let private RenderFreezeFrame render model (gameTime:GameTime) =
     
     model.FrozenGameState.Draw render (gameTime |> model.TimeFiddler)
 
@@ -33,8 +33,8 @@ let private NextFreezeFrameState gameState _keyStateGetter gameTime _elapsed =
 
 
 
-let AdaptedToIgnoreOutgoingStateParameter (func:float32<seconds> -> ErasedGameState) =
-    let adapter (_outgoingState:ErasedGameState) (gameTime:float32<seconds>) =
+let AdaptedToIgnoreOutgoingStateParameter (func:GameTime -> ErasedGameState) =
+    let adapter (_outgoingState:ErasedGameState) (gameTime:GameTime) =
         func gameTime
     adapter
 

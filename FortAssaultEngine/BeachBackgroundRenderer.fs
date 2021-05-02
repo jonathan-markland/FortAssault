@@ -8,12 +8,12 @@ open StaticResourceAccess
 
 
 
-let RenderBeachBackground render (gameTime:float32<seconds>) =
+let RenderBeachBackground render (gameTime:GameTime) =
 
     // TODO: We need repeat-tile-rendering support for this!
     // TODO: constants throughout this routine
 
-    let mutable x = (((int (gameTime * 5.0F)) % 89) - 89) |> IntToIntEpx
+    let mutable x = (((int (gameTime * 5.0)) % 89) - 89) |> AsIntEpx
 
     let imgCliffs = CliffsTileImageID |> ImageFromID
 

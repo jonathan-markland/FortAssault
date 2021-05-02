@@ -14,5 +14,5 @@ let WithFortAssaultIntermissionCard whereToAfter gameTime =
         (YellowFontID |> FontFromID)
         "GET READY" 
         ScreenWidthInt ScreenHeightInt 
-            |> WithFreezeFrameFor 4.0F<seconds> gameTime whereToAfter
+            |> WithFreezeFrameFor 4.0<seconds> gameTime whereToAfter
         
