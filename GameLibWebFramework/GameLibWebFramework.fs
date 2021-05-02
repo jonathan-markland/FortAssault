@@ -132,7 +132,7 @@ let inline private DrawImage
 let private LoadImageThenDo
     (fileName:string)
     (needsMagentaColourKey:bool)
-    (onCompletionOfLoad:obj -> unit) : unit = jsNative
+    (onCompletionOfLoad:obj -> float -> float -> unit) : unit = jsNative
 
 
 
@@ -166,7 +166,7 @@ An important point to note is that on iOS, Apple currently mutes all sound outpu
 //  Load resources
 // ------------------------------------------------------------------------------------------------------------
 
-let private LoadImageFileListThenDo fileNameObtainer needsMagentaObtainer widthGetter heightGetter continuation resourceList =
+let private LoadImageFileListThenDo fileNameObtainer needsMagentaObtainer continuation resourceList =
 
     let resizeArray = new ResizeArray<Image>(resourceList |> List.length)
 
@@ -180,19 +180,17 @@ let private LoadImageFileListThenDo fileNameObtainer needsMagentaObtainer widthG
 
                 let fileName = resourceRecord |> fileNameObtainer
                 let needsMagentaColourKeying = resourceRecord |> needsMagentaObtainer
-                let w = resourceRecord |> widthGetter
-                let h = resourceRecord |> heightGetter
 
-                LoadImageThenDo fileName needsMagentaColourKeying (fun htmlImageElement ->
+                LoadImageThenDo fileName needsMagentaColourKeying (fun htmlImageElement imgWidth imgHeight ->
 
                     let imgWithHostObject =
                         {
                             ImageMetadata = 
                                 {
-                                    ImageFileName  = fileName
+                                    ImageFileName     = fileName
                                     ImageTransparency = if needsMagentaColourKeying then MagentaColourKeyImage else OpaqueImage
-                                    ImageWidth     = w
-                                    ImageHeight    = h
+                                    ImageWidth        = (int imgWidth)  |> AsIntEpx
+                                    ImageHeight       = (int imgHeight) |> AsIntEpx
                                 }
                             HostImageRef = HostImageRef(htmlImageElement |> JSIFsharpImageToTexture)
                         }
@@ -208,7 +206,7 @@ let private LoadImageFileListThenDo fileNameObtainer needsMagentaObtainer widthG
 
 
 
-let private LoadFontFileListThenDo fileNameObtainer widthGetter charWidthGetter heightGetter continuation resourceList =
+let private LoadFontFileListThenDo fileNameObtainer charWidthGetter continuation resourceList =
 
     let resizeArray = new ResizeArray<Font>(resourceList |> List.length)
 
@@ -220,20 +218,18 @@ let private LoadFontFileListThenDo fileNameObtainer widthGetter charWidthGetter 
 
             | resourceRecord::tail ->
                 let fileName = resourceRecord |> fileNameObtainer
-                let w = resourceRecord |> widthGetter
-                let h = resourceRecord |> heightGetter
                 let charWidth = resourceRecord |> charWidthGetter
 
-                LoadImageThenDo fileName true (fun htmlImageElement ->
+                LoadImageThenDo fileName true (fun htmlImageElement imgWidth imgHeight ->
 
                     let imgWithHostObject =
                         {
                             ImageMetadata = 
                                 {
-                                    ImageFileName  = fileName
+                                    ImageFileName     = fileName
                                     ImageTransparency = MagentaColourKeyImage
-                                    ImageWidth     = w
-                                    ImageHeight    = h
+                                    ImageWidth        = (int imgWidth)  |> AsIntEpx
+                                    ImageHeight       = (int imgHeight) |> AsIntEpx
                                 }
                             HostImageRef = HostImageRef(htmlImageElement |> JSIFsharpImageToTexture)
                         }
@@ -302,30 +298,25 @@ let InitWebFrameworkThenDo
         (retroScreenHeight |> RemoveEpxFromInt)
         retroScreenTitle
 
-    let soundFileNameGetter metadata =
-        metadata.SoundFileName
+    let imageFileNameGetter requestedImage =
+        requestedImage.RequestedImageFileName
 
-    let imageFileNameGetter metadata =
-        metadata.ImageFileName
-
-    let imageIsColourKeyed metadata =
-        match metadata.ImageTransparency with 
+    let imageIsColourKeyed requestedImage =
+        match requestedImage.RequestedImageTransparency with 
             | OpaqueImage -> false
             | MagentaColourKeyImage -> true
 
-    let imageWidthGetter  metadata = metadata.ImageWidth
-    let imageHeightGetter metadata = metadata.ImageHeight
+    let fontFileNameGetter  requestedFont = requestedFont.RequestedFontImage.RequestedImageFileName
+    let fontCharWidthGetter requestedFont = requestedFont.RequestedFontCharWidth
 
-    let fontFileNameGetter metadata  = metadata.FontImageMetadata.ImageFileName
-    let fontWidthGetter metadata     = metadata.FontImageMetadata.ImageWidth
-    let fontCharWidthGetter metadata = metadata.FontCharWidth
-    let fontHeightGetter metadata    = metadata.FontImageMetadata.ImageHeight
+    let soundFileNameGetter requestedSound =
+        requestedSound.RequestedSoundFileName
 
     fontResourceImages
-        |> LoadFontFileListThenDo fontFileNameGetter fontWidthGetter fontCharWidthGetter fontHeightGetter
+        |> LoadFontFileListThenDo fontFileNameGetter fontCharWidthGetter
             (fun arrayOfLoadedFonts ->
                 resourceImages 
-                    |> LoadImageFileListThenDo imageFileNameGetter imageIsColourKeyed imageWidthGetter imageHeightGetter
+                    |> LoadImageFileListThenDo imageFileNameGetter imageIsColourKeyed 
                         (fun arrayOfLoadedImages ->
                             resourceSounds 
                                 |> LoadSoundsFileListThenDo soundFileNameGetter (fun arrayOfLoadedSounds ->
