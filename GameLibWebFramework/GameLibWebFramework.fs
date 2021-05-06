@@ -168,7 +168,7 @@ An important point to note is that on iOS, Apple currently mutes all sound outpu
 
 let private LoadImageFileListThenDo fileNameObtainer needsMagentaObtainer continuation resourceList =
 
-    let resizeArray = new ResizeArray<Image>(resourceList |> List.length)
+    let resizeArray = new ResizeArray<Image>(resourceList |> List.length)  // TODO: accumulate this and use toArray?
 
     let rec recurse resourceRecordList =
 
@@ -208,7 +208,7 @@ let private LoadImageFileListThenDo fileNameObtainer needsMagentaObtainer contin
 
 let private LoadFontFileListThenDo fileNameObtainer charWidthGetter continuation resourceList =
 
-    let resizeArray = new ResizeArray<Font>(resourceList |> List.length)
+    let resizeArray = new ResizeArray<Font>(resourceList |> List.length)  // TODO: accumulate this and use toArray?
 
     let rec recurse resourceRecordList =
 
@@ -247,7 +247,7 @@ let private LoadFontFileListThenDo fileNameObtainer charWidthGetter continuation
 
 let private LoadSoundsFileListThenDo fileNameObtainer continuation resourceList =
 
-    let resizeArray = new ResizeArray<Sound>(resourceList |> List.length)
+    let resizeArray = new ResizeArray<Sound>(resourceList |> List.length)  // TODO: accumulate this and use toArray?
 
     let rec recurse resourceRecordList =
 
